@@ -1,0 +1,9 @@
+LICENSE
+MANIFEST.in
+README.md
+setup.py
+rtichoke.egg-info/PKG-INFO
+rtichoke.egg-info/SOURCES.txt
+rtichoke.egg-info/dependency_links.txt
+rtichoke.egg-info/requires.txt
+rtichoke.egg-info/top_level.txt
