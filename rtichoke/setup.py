@@ -9,5 +9,5 @@ setup(
     name="rtichoke",
     version="0.0.1",
     packages=find_packages(include=["rtichoke","rtichoke.*"]),
-    install_requires=['pandas', 'numpy']
+    install_requires=['pandas', 'numpy', 'plotly']
 )
