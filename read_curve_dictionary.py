@@ -1,6 +1,5 @@
 import pandas as pd
-
-from rtichoke.rtichoke_curves.exported_functions import create_plotly_curve
+import rtichoke
 
 
 reference_data = pd.read_csv('C:/Users/CRI_user/Documents/reference_data.csv')
@@ -14,7 +13,7 @@ group_colors_vec = json.load(f)
 f = open('C:/Users/CRI_user/Documents/axis_ranges.json')
 axis_ranges = json.load(f)
 
-import rtichoke
+
 
 fig_new = create_plotly_curve(reference_data, performance_data_ready_for_curve, group_colors_vec, axis_ranges)
 fig_new.show()
