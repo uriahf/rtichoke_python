@@ -6,24 +6,24 @@ from rtichoke.rtichoke_curves.plotly_helper_functions import (
     create_reference_lines_for_plotly
 )
 
-def create_plotly_curve(reference_data, performance_data_ready_for_curve, group_colors_vec, axis_ranges):
+def create_plotly_curve(rtichoke_curve_dict):
     """
 
     Parameters
     ----------
-    reference_data :
-        
-    performance_data_ready_for_curve :
-        
-    group_colors_vec :
-        
-    axis_ranges :
+    rtichoke_curve_dict :
         
 
     Returns
     -------
 
     """
+
+    # reference_data, 
+    # performance_data_ready_for_curve, 
+    # group_colors_vec, 
+    # axis_ranges
+
     reference_data_list = []
     non_interactive_curve = []
     interactive_marker = []
@@ -39,27 +39,27 @@ def create_plotly_curve(reference_data, performance_data_ready_for_curve, group_
                                         method="animate",
                                         args=[None, {"frame": {"duration": 500, "redraw": False}}])])]}
 
-    for reference_group in list(group_colors_vec.keys()):
+    for reference_group in list(rtichoke_curve_dict["group_colors_vec"].keys()):
         print("Check if " + reference_group + " Exists")
-        if any(reference_data["reference_group"] == reference_group):
+        if any(rtichoke_curve_dict["reference_data"]["reference_group"] == reference_group):
             print(reference_group + " Exists :D")
             reference_data_list.append(
                 create_reference_lines_for_plotly(
-                reference_data[reference_data["reference_group"] == reference_group], 
-                group_colors_vec[reference_group]
+                rtichoke_curve_dict["reference_data"][rtichoke_curve_dict["reference_data"]["reference_group"] == reference_group], 
+                rtichoke_curve_dict["group_colors_vec"][reference_group]
             ))
-        if any(performance_data_ready_for_curve["reference_group"] == reference_group):
+        if any(rtichoke_curve_dict["performance_data_ready_for_curve"]["reference_group"] == reference_group):
             non_interactive_curve.append(
                 create_non_interactive_curve(
-                    performance_data_ready_for_curve[performance_data_ready_for_curve["reference_group"] == reference_group], 
-                    group_colors_vec[reference_group]
+                    rtichoke_curve_dict["performance_data_ready_for_curve"][rtichoke_curve_dict["performance_data_ready_for_curve"]["reference_group"] == reference_group], 
+                    rtichoke_curve_dict["group_colors_vec"][reference_group]
                 )
             )
-        if any(performance_data_ready_for_curve["reference_group"] == reference_group):
+        if any(rtichoke_curve_dict["performance_data_ready_for_curve"]["reference_group"] == reference_group):
             interactive_marker.append(
                 create_interactive_marker(
-                    performance_data_ready_for_curve[performance_data_ready_for_curve["reference_group"] == reference_group], 
-                    group_colors_vec[reference_group],
+                    rtichoke_curve_dict["performance_data_ready_for_curve"][rtichoke_curve_dict["performance_data_ready_for_curve"]["reference_group"] == reference_group], 
+                    rtichoke_curve_dict["group_colors_vec"][reference_group],
                     0
                 )
             )
@@ -86,12 +86,12 @@ def create_plotly_curve(reference_data, performance_data_ready_for_curve, group_
 
     for k in range(100):
         frame_data = reference_data_list + non_interactive_curve
-        for reference_group in list(group_colors_vec.keys()):
-            if any(performance_data_ready_for_curve["reference_group"] == reference_group):
+        for reference_group in list(rtichoke_curve_dict["group_colors_vec"].keys()):
+            if any(rtichoke_curve_dict["performance_data_ready_for_curve"]["reference_group"] == reference_group):
                 frame_data.append(
                     create_interactive_marker(
-                        performance_data_ready_for_curve[performance_data_ready_for_curve["reference_group"] == reference_group], 
-                        group_colors_vec[reference_group],
+                        rtichoke_curve_dict["performance_data_ready_for_curve"][rtichoke_curve_dict["performance_data_ready_for_curve"]["reference_group"] == reference_group], 
+                        rtichoke_curve_dict["group_colors_vec"][reference_group],
                         k)
                     )
         frames.append(go.Frame(data=frame_data, name = str(k)))
@@ -110,8 +110,8 @@ def create_plotly_curve(reference_data, performance_data_ready_for_curve, group_
                 frames=frames)
 
     plotly_curve = fig
-    fig.update_xaxes(zeroline=True, range = axis_ranges['xaxis'],
+    fig.update_xaxes(zeroline=True, range = rtichoke_curve_dict["axis_ranges"]['xaxis'],
     zerolinewidth=1, zerolinecolor='black', fixedrange=True)
-    fig.update_yaxes(zeroline=True, range = axis_ranges['yaxis'], 
+    fig.update_yaxes(zeroline=True, range = rtichoke_curve_dict["axis_ranges"]['yaxis'], 
     zerolinewidth=1, zerolinecolor='black', fixedrange=True)
     return plotly_curve
