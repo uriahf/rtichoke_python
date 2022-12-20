@@ -1,6 +1,12 @@
 import pandas as pd
 from rtichoke.rtichoke_curves.exported_functions import create_plotly_curve
 from rtichoke.rtichoke_curves.roc import create_roc_curve
+from rtichoke.rtichoke_curves.lift import create_lift_curve
+from rtichoke.rtichoke_curves.gains import create_gains_curve
+from rtichoke.rtichoke_curves.precision_recall import create_precision_recall_curve
+from rtichoke.rtichoke_curves.performance_data import prepare_performance_data
+
+
 import json
 import requests
 from sklearn.datasets import make_classification
@@ -25,14 +31,76 @@ roc_curve = create_roc_curve(
 
 roc_curve.show()
 
-
-r = requests.post(
-   "http://127.0.0.1:6706/roc_curve_list",  
-   json = {
-    "probs" : {'Logistic Regression' :  model.predict_proba(x)[:,1].tolist()},
-    "reals" : {'Logistic Regression' : y.tolist()} 
-    }
+roc_curve_ppcr = create_roc_curve(
+    probs = {'Logistic Regression' :  model.predict_proba(x)[:,1].tolist()},
+    reals = {'Logistic Regression' : y.tolist()},
+    stratified_by="ppcr"
 )
+
+roc_curve_ppcr.show()
+
+lift_curve = create_lift_curve(
+    probs = {'Logistic Regression' :  model.predict_proba(x)[:,1].tolist()},
+    reals = {'Logistic Regression' : y.tolist()}
+)
+
+lift_curve.show()
+
+lift_curve_ppcr = create_lift_curve(
+    probs = {'Logistic Regression' :  model.predict_proba(x)[:,1].tolist()},
+    reals = {'Logistic Regression' : y.tolist()},
+    stratified_by="ppcr"
+)
+
+lift_curve_ppcr.show()
+
+
+precision_recall_curve = create_precision_recall_curve(
+    probs = {'Logistic Regression' : model.predict_proba(x)[:,1].tolist()},
+    reals = {'Logistic Regression' : y.tolist()}
+)
+
+precision_recall_curve.show()
+
+precision_recall_curve_ppcr = create_precision_recall_curve(
+    probs = {'Logistic Regression' :  model.predict_proba(x)[:,1].tolist()},
+    reals = {'Logistic Regression' : y.tolist()},
+    stratified_by="ppcr"
+)
+
+precision_recall_curve_ppcr.show()
+
+gains_curve = create_gains_curve(
+    probs = {'Logistic Regression' :  model.predict_proba(x)[:,1].tolist()},
+    reals = {'Logistic Regression' : y.tolist()}
+)
+
+gains_curve.show()
+
+gains_curve_ppcr = create_gains_curve(
+    probs = {'Logistic Regression' :  model.predict_proba(x)[:,1].tolist()},
+    reals = {'Logistic Regression' : y.tolist()},
+    stratified_by="ppcr"
+)
+
+gains_curve_ppcr.show()
+
+
+performance_data = prepare_performance_data(
+    probs = {'Logistic Regression' :  model.predict_proba(x)[:,1].tolist()},
+    reals = {'Logistic Regression' : y.tolist()}
+)
+
+performance_data
+
+
+performance_data_ppcr = prepare_performance_data(
+    probs = {'Logistic Regression' :  model.predict_proba(x)[:,1].tolist()},
+    reals = {'Logistic Regression' : y.tolist()},
+    stratified_by="ppcr"
+)
+
+performance_data_ppcr
 
 rtichoke_curve_list2 = r.json()
 
