@@ -45,23 +45,23 @@ def create_plotly_curve(rtichoke_curve_dict):
     for reference_group in list(rtichoke_curve_dict["group_colors_vec"].keys()):
         print("Check if " + reference_group + " Exists")
 
-        if (rtichoke_curve_dict["perf_dat_type"] not in ["several models", "several populations"]) :
+        if (rtichoke_curve_dict["perf_dat_type"][0] not in ["several models", "several populations"]) :
             interactive_marker_color = "#f6e3be"
         else :
-            interactive_marker_color = rtichoke_curve_dict["group_colors_vec"][reference_group]
+            interactive_marker_color = rtichoke_curve_dict["group_colors_vec"][reference_group][0]
         if not (rtichoke_curve_dict["reference_data"].empty) :
             if any(rtichoke_curve_dict["reference_data"]["reference_group"] == reference_group):
                 print(reference_group + " Exists :D")
                 reference_data_list.append(
                     create_reference_lines_for_plotly(
                     rtichoke_curve_dict["reference_data"][rtichoke_curve_dict["reference_data"]["reference_group"] == reference_group], 
-                    rtichoke_curve_dict["group_colors_vec"][reference_group]
+                    rtichoke_curve_dict["group_colors_vec"][reference_group][0]
                 ))
         if any(rtichoke_curve_dict["performance_data_ready_for_curve"]["reference_group"] == reference_group):
             non_interactive_curve.append(
                 create_non_interactive_curve(
                     rtichoke_curve_dict["performance_data_ready_for_curve"][rtichoke_curve_dict["performance_data_ready_for_curve"]["reference_group"] == reference_group], 
-                    rtichoke_curve_dict["group_colors_vec"][reference_group]
+                    rtichoke_curve_dict["group_colors_vec"][reference_group][0]
                 )
             )
         if any(rtichoke_curve_dict["performance_data_ready_for_curve"]["reference_group"] == reference_group):
@@ -81,7 +81,7 @@ def create_plotly_curve(rtichoke_curve_dict):
         'xanchor': 'left',
         'currentvalue': {
             'font': {'size': 20},
-            'prefix': rtichoke_curve_dict["animation_slider_prefix"],
+            'prefix': rtichoke_curve_dict["animation_slider_prefix"][0],
             'visible': True,
             'xanchor': 'left'
         },
@@ -98,10 +98,10 @@ def create_plotly_curve(rtichoke_curve_dict):
     )):
         frame_data = reference_data_list + non_interactive_curve
         for reference_group in list(rtichoke_curve_dict["group_colors_vec"].keys()):
-            if (rtichoke_curve_dict["perf_dat_type"] not in ["several models", "several populations"]) :
+            if (rtichoke_curve_dict["perf_dat_type"][0] not in ["several models", "several populations"]) :
                 interactive_marker_color = "#f6e3be"
             else :
-                interactive_marker_color = rtichoke_curve_dict["group_colors_vec"][reference_group]
+                interactive_marker_color = rtichoke_curve_dict["group_colors_vec"][reference_group][0]
 
             if any(rtichoke_curve_dict["performance_data_ready_for_curve"]["reference_group"] == reference_group):
                 frame_data.append(
@@ -179,10 +179,10 @@ def plot_decision_combined_curve(rtichoke_decision_combined_curve_dict):
     for reference_group in list(rtichoke_decision_combined_curve_dict["group_colors_vec"].keys()):
             print("Check if " + reference_group + " Exists")
 
-            if (rtichoke_decision_combined_curve_dict["perf_dat_type"] not in ["several models", "several populations"]) :
+            if (rtichoke_decision_combined_curve_dict["perf_dat_type"][0] not in ["several models", "several populations"]) :
                 interactive_marker_color = "#f6e3be"
             else :
-                interactive_marker_color = rtichoke_decision_combined_curve_dict["group_colors_vec"][reference_group]
+                interactive_marker_color = rtichoke_decision_combined_curve_dict["group_colors_vec"][reference_group][0]
             if not (rtichoke_decision_combined_curve_dict["reference_data"]["conventional"].empty) :
                 if any(rtichoke_decision_combined_curve_dict["reference_data"]["conventional"]["reference_group"] == reference_group):
                     print(reference_group + " Exists :D")
@@ -193,7 +193,7 @@ def plot_decision_combined_curve(rtichoke_decision_combined_curve_dict):
                     # ))
                     decision_curve_combined.add_trace(create_reference_lines_for_plotly(
                         rtichoke_decision_combined_curve_dict["reference_data"]["conventional"][rtichoke_decision_combined_curve_dict["reference_data"]["conventional"]["reference_group"] == reference_group], 
-                        rtichoke_decision_combined_curve_dict["group_colors_vec"][reference_group]
+                        rtichoke_decision_combined_curve_dict["group_colors_vec"][reference_group][0]
                     ), row=2, col=1)
             if any(rtichoke_decision_combined_curve_dict["performance_data_ready_for_curve"]["conventional"]["reference_group"] == reference_group):
                 # non_interactive_conventional_curve.append(
@@ -204,7 +204,7 @@ def plot_decision_combined_curve(rtichoke_decision_combined_curve_dict):
                 # )
                 decision_curve_combined.add_trace(create_non_interactive_curve(
                         rtichoke_decision_combined_curve_dict["performance_data_ready_for_curve"]["conventional"][rtichoke_decision_combined_curve_dict["performance_data_ready_for_curve"]["conventional"]["reference_group"] == reference_group], 
-                        rtichoke_decision_combined_curve_dict["group_colors_vec"][reference_group]
+                        rtichoke_decision_combined_curve_dict["group_colors_vec"][reference_group][0]
                     ), row=2, col=1)
                 decision_curve_combined.add_trace(create_interactive_marker(
                         rtichoke_decision_combined_curve_dict["performance_data_ready_for_curve"]["conventional"][rtichoke_decision_combined_curve_dict["performance_data_ready_for_curve"]["conventional"]["reference_group"] == reference_group], 
@@ -214,7 +214,7 @@ def plot_decision_combined_curve(rtichoke_decision_combined_curve_dict):
             if any(rtichoke_decision_combined_curve_dict["performance_data_ready_for_curve"]["interventions avoided"]["reference_group"] == reference_group):
                 decision_curve_combined.add_trace(create_non_interactive_curve(
                         rtichoke_decision_combined_curve_dict["performance_data_ready_for_curve"]["interventions avoided"][rtichoke_decision_combined_curve_dict["performance_data_ready_for_curve"]["interventions avoided"]["reference_group"] == reference_group], 
-                        rtichoke_decision_combined_curve_dict["group_colors_vec"][reference_group]
+                        rtichoke_decision_combined_curve_dict["group_colors_vec"][reference_group][0]
                     ), row=1, col=1)
                 decision_curve_combined.add_trace(create_interactive_marker(
                         rtichoke_decision_combined_curve_dict["performance_data_ready_for_curve"]["interventions avoided"][rtichoke_decision_combined_curve_dict["performance_data_ready_for_curve"]["interventions avoided"]["reference_group"] == reference_group], 
@@ -230,7 +230,7 @@ def plot_decision_combined_curve(rtichoke_decision_combined_curve_dict):
         'xanchor': 'left',
         'currentvalue': {
             'font': {'size': 20},
-            'prefix': rtichoke_decision_combined_curve_dict["animation_slider_prefix"],
+            'prefix': rtichoke_decision_combined_curve_dict["animation_slider_prefix"][0],
             'visible': True,
             'xanchor': 'left'
         },
@@ -247,10 +247,10 @@ def plot_decision_combined_curve(rtichoke_decision_combined_curve_dict):
     )):
         frame_data = decision_curve_combined.to_dict()["data"]
         for reference_group in list(rtichoke_decision_combined_curve_dict["group_colors_vec"].keys()):
-            if (rtichoke_decision_combined_curve_dict["perf_dat_type"] not in ["several models", "several populations"]) :
+            if (rtichoke_decision_combined_curve_dict["perf_dat_type"][0] not in ["several models", "several populations"]) :
                 interactive_marker_color = "#f6e3be"
             else :
-                interactive_marker_color = rtichoke_decision_combined_curve_dict["group_colors_vec"][reference_group]
+                interactive_marker_color = rtichoke_decision_combined_curve_dict["group_colors_vec"][reference_group][0]
 
             if any(rtichoke_decision_combined_curve_dict["performance_data_ready_for_curve"]["conventional"]["reference_group"] == reference_group):
                 frame_data.append(
