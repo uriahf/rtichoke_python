@@ -44,7 +44,7 @@ def create_interactive_marker(performance_data_ready_for_curve, interactive_mark
     -------
 
     """
-    performance_data_ready_for_curve['y'] = performance_data_ready_for_curve['y'].fillna(-1)
+    performance_data_ready_for_curve = performance_data_ready_for_curve.assign(column_name=performance_data_ready_for_curve.loc[:, "y"].fillna(-1))
     # print("Print y values")
     # print(performance_data_ready_for_curve['y'].values)
     # print("Done Printing")

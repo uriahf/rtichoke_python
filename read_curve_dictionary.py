@@ -13,16 +13,25 @@ from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 import numpy as np
+print(pd.__version__)
+
 
 
 
 lr = LogisticRegression()
 x = np.arange(10).reshape(-1, 1)
-y = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
+y = np.array([0, 1, 0, 0, 1, 1, 1, 0, 0, 1])
+
+x_test = np.arange(7).reshape(-1, 1)
+y_test = np.array([1, 0, 1, 0, 1, 0, 0])
 
 model = LogisticRegression(solver='liblinear', random_state=0)
+lasso = LogisticRegression(solver='liblinear', penalty="l1", random_state=0)
+
+
 
 model.fit(x, y)
+lasso.fit(x_test, y_test)
 
 roc_curve = create_roc_curve(
     probs = {'Logistic Regression' :  model.predict_proba(x)[:,1].tolist()},
@@ -30,6 +39,23 @@ roc_curve = create_roc_curve(
 )
 
 roc_curve.show()
+
+roc_curve_multiple_models = create_roc_curve(
+    probs = {'Logistic Regression' :  model.predict_proba(x)[:,1].tolist(),
+             'Lasso' :  lasso.predict_proba(x)[:,1].tolist()},
+    reals = {'Outcome' : y.tolist()}
+)
+
+roc_curve_multiple_models.show()
+
+roc_curve_multiple_populations = create_roc_curve(
+    probs = {'Train' :  model.predict_proba(x)[:,1].tolist(),
+             'Test' :  model.predict_proba(x_test)[:,1].tolist()},
+    reals = {'Train' : y.tolist(),
+             'Test' : y_test.tolist()}
+)
+
+roc_curve_multiple_populations.show()
 
 roc_curve_ppcr = create_roc_curve(
     probs = {'Logistic Regression' :  model.predict_proba(x)[:,1].tolist()},
