@@ -1,4 +1,4 @@
-from rtichoke import rtichoke
+# from rtichoke import rtichoke
 
 def test_addition():
     expected = 4
