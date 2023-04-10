@@ -21,3 +21,4 @@ from rtichoke.utility.decision import plot_decision_curve
 
 from rtichoke.performance_data.performance_data import prepare_performance_data
 
+from rtichoke.summary_report.summary_report import create_summary_report

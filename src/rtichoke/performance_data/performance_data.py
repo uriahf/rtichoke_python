@@ -1,8 +1,10 @@
 import requests
 import pandas as pd
 from rtichoke.helpers.send_post_request_to_r_rtichoke import send_requests_to_rtichoke_r
+from pandas.core.frame import DataFrame
+from typing import Dict, List
 
-def prepare_performance_data(probs, reals, stratified_by = "probability_threshold", url_api = "http://localhost:4242/"):
+def prepare_performance_data(probs: Dict[str, List[float]], reals: Dict[str, List[int]], stratified_by: str = "probability_threshold", url_api: str = "http://localhost:4242/") -> DataFrame:
     
     r = send_requests_to_rtichoke_r(
            dictionary_to_send = {

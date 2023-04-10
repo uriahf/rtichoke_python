@@ -5,14 +5,16 @@ import plotly.express as px
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from plotly.graph_objs._figure import Figure
+from typing import Any, Dict, List, Optional
 
 
 def create_calibration_curve(
-    probs,
-    reals,
-    type="discrete",
-    size=None,
-    color_values=[
+    probs: Dict[str, List[float]],
+    reals: Dict[str, List[int]],
+    type: str="discrete",
+    size: Optional[int]=None,
+    color_values: List[str]=[
         "#1b9e77",
         "#d95f02",
         "#7570b3",
@@ -34,8 +36,8 @@ def create_calibration_curve(
         "#D1603D",
         "#585123",
     ],
-    url_api="http://localhost:4242/",
-):
+    url_api: str="http://localhost:4242/",
+) -> Figure:
     r = send_requests_to_rtichoke_r(
         dictionary_to_send={
             "probs": probs,
@@ -69,10 +71,10 @@ def create_calibration_curve(
 
 
 def create_plotly_curve_from_calibration_curve_list(
-    calibration_curve_list,
-    type="discrete",
-    size=None,
-    color_values=[
+    calibration_curve_list: Dict[str, Any],
+    type: str="discrete",
+    size: None=None,
+    color_values: List[str]=[
         "#1b9e77",
         "#d95f02",
         "#7570b3",
@@ -94,7 +96,7 @@ def create_plotly_curve_from_calibration_curve_list(
         "#D1603D",
         "#585123",
     ],
-):
+) -> Figure:
 
     calibration_curve = make_subplots(
         rows=2, cols=1, shared_xaxes=True, x_title="Predicted", row_heights=[0.8, 0.2]
