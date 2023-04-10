@@ -1,5 +1,4 @@
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
 from rtichoke.helpers.plotly_helper_functions import (
     create_non_interactive_curve,

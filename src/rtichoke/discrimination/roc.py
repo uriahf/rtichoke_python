@@ -1,11 +1,8 @@
-import requests
-import pandas as pd
-from rtichoke.helpers.exported_functions import create_plotly_curve
+from typing import Dict, List, Optional
+from plotly.graph_objs._figure import Figure
+from pandas.core.frame import DataFrame
 from rtichoke.helpers.send_post_request_to_r_rtichoke import create_rtichoke_curve
 from rtichoke.helpers.send_post_request_to_r_rtichoke import plot_rtichoke_curve
-from plotly.graph_objs._figure import Figure
-from typing import Dict, List, Optional
-from pandas.core.frame import DataFrame
 
 
 def create_roc_curve(probs: Dict[str, List[float]], reals: Dict[str, List[int]], by: float = 0.01, stratified_by: str = "probability_threshold", size: Optional[int]= None, color_values: List[str] = ["#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#07004D", "#E6AB02",
