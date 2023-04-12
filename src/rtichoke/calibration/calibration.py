@@ -130,11 +130,13 @@ def create_plotly_curve_from_calibration_curve_list(
             name="Perfectly Calibrated",
             legendgroup="Perfectly Calibrated",
             hoverinfo="text",
-            line=dict(
-                width=2,
-                dash="dot",
-                color=calibration_curve_list["group_colors_vec"]["reference_line"][0],
-            ),
+            line={
+                "width": 2,
+                "dash": "dot",
+                "color": calibration_curve_list["group_colors_vec"]["reference_line"][
+                    0
+                ],
+            },
             showlegend=False,
         ),
         row=1,
@@ -165,12 +167,12 @@ def create_plotly_curve_from_calibration_curve_list(
                         legendgroup=reference_group,
                         hoverinfo="text",
                         mode="lines+markers",
-                        marker=dict(
-                            size=10,
-                            color=calibration_curve_list["group_colors_vec"][
+                        marker={
+                            "size": 10,
+                            "color": calibration_curve_list["group_colors_vec"][
                                 reference_group
                             ][0],
-                        ),
+                        },
                     ),
                     row=1,
                     col=1,
@@ -200,12 +202,12 @@ def create_plotly_curve_from_calibration_curve_list(
                         legendgroup=reference_group,
                         hoverinfo="text",
                         mode="lines",
-                        marker=dict(
-                            size=10,
-                            color=calibration_curve_list["group_colors_vec"][
+                        marker={
+                            "size": 10,
+                            "color": calibration_curve_list["group_colors_vec"][
                                 reference_group
                             ][0],
-                        ),
+                        },
                     ),
                     row=1,
                     col=1,
