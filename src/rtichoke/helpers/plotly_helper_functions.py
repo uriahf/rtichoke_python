@@ -34,7 +34,7 @@ def create_non_interactive_curve(
         hovertext=performance_data_ready_for_curve["text"].values.tolist(),
         name=reference_group,
         legendgroup=reference_group,
-        line=dict(width=2, color=reference_group_color),
+        line={"width": 2, "color": reference_group_color},
     )
     return non_interactive_curve
 
@@ -78,9 +78,11 @@ def create_interactive_marker(
         name=reference_group,
         legendgroup=reference_group,
         showlegend=False,
-        marker=dict(
-            size=12, color=interactive_marker_color, line=dict(width=2, color="black")
-        ),
+        marker={
+            "size": 12,
+            "color": interactive_marker_color,
+            "line": {"width": 2, "color": "black"},
+        },
     )
     return interactive_marker
 
@@ -106,7 +108,7 @@ def create_reference_lines_for_plotly(reference_data, reference_line_color):
         hoverinfo="text",
         hovertext=reference_data["text"].values.tolist(),
         name="reference_line",
-        line=dict(width=2, color=reference_line_color, dash="dot"),
+        line={"width": 2, "color": reference_line_color, "dash": "dot"},
         showlegend=False,
     )
     return reference_lines
