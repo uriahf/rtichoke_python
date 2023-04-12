@@ -1,3 +1,7 @@
+"""
+A module for Performance Data
+"""
+
 from typing import Dict, List
 from pandas.core.frame import DataFrame
 import pandas as pd

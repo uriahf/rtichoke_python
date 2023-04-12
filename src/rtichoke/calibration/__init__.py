@@ -1,2 +1,3 @@
-""" Module for creating Calibration Curve
+"""
+Subpackage for Calibration
 """

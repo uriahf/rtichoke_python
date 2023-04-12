@@ -1,3 +1,7 @@
+"""
+A module for sending post requests to rtichoke r api
+"""
+
 import requests
 import pandas as pd
 from rtichoke.helpers.exported_functions import create_plotly_curve
@@ -156,7 +160,7 @@ def plot_rtichoke_curve(
             "#D1603D",
             "#585123",
         ]
-    r = send_requests_to_rtichoke_r(
+    rtichoke_response = send_requests_to_rtichoke_r(
         dictionary_to_send={
             "performance_data": performance_data.to_json(orient="records"),
             "curve": curve,
@@ -169,7 +173,7 @@ def plot_rtichoke_curve(
         endpoint="plot_rtichoke_curve_list",
     )
 
-    rtichoke_curve_list = r.json()
+    rtichoke_curve_list = rtichoke_response.json()
 
     if rtichoke_curve_list["size"][0] is None:
         rtichoke_curve_list["size"] = [[None]]

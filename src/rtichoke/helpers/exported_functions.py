@@ -1,3 +1,7 @@
+"""
+A module for Creating Plotly Curves from rtichoke curve dictionaries
+"""
+
 import plotly.graph_objects as go
 
 from rtichoke.helpers.plotly_helper_functions import (

@@ -1,3 +1,7 @@
+"""
+A module for ROC Curves
+"""
+
 from typing import Dict, List, Optional
 from plotly.graph_objs._figure import Figure
 from pandas.core.frame import DataFrame

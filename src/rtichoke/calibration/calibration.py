@@ -1,3 +1,7 @@
+"""
+A module for Calibration Curves
+"""
+
 from typing import Any, Dict, List, Optional
 import pandas as pd
 import plotly.graph_objects as go

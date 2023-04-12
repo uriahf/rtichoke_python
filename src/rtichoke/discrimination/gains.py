@@ -1,3 +1,6 @@
+"""
+A module for Gains Curves
+"""
 from typing import Dict, List, Optional
 from pandas.core.frame import DataFrame
 from plotly.graph_objs._figure import Figure

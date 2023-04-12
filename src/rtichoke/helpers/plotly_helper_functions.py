@@ -1,3 +1,7 @@
+"""
+A module for helpers related to plotly
+"""
+
 import plotly.graph_objects as go
 
 

@@ -1,3 +1,6 @@
+"""
+A module for Precision Recall Curves
+"""
 from typing import Dict, List, Optional
 from plotly.graph_objs._figure import Figure
 from pandas.core.frame import DataFrame
