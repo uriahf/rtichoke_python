@@ -1,5 +1,8 @@
-# read version from installed package
+"""rtichoke is a package for interactive vizualization of performance metrics
+"""
+
 from importlib.metadata import version
+
 __version__ = version("rtichoke")
 
 from rtichoke.discrimination.roc import create_roc_curve
