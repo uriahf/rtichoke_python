@@ -6,9 +6,9 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u"rtichoke"
-copyright = u"2023, Uriah Finkel"
-author = u"Uriah Finkel"
+project = "rtichoke"
+copyright = "2023, Uriah Finkel"
+author = "Uriah Finkel"
 
 # -- General configuration ---------------------------------------------------
 

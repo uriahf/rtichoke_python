@@ -3,9 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from plotly.graph_objs._figure import Figure
-from rtichoke.helpers.send_post_request_to_r_rtichoke import (
-    send_requests_to_rtichoke_r,
-)
+from rtichoke.helpers.send_post_request_to_r_rtichoke import send_requests_to_rtichoke_r
 
 
 def create_calibration_curve(
