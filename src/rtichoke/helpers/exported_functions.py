@@ -52,17 +52,17 @@ def create_plotly_curve(rtichoke_curve_dict):
         "height": rtichoke_curve_dict["size"][0][0],
         "width": rtichoke_curve_dict["size"][0][0],
         "updatemenus": [
-            dict(
-                type="buttons",
-                buttons=[
-                    dict(
-                        label="Play",
-                        method="animate",
-                        visible=False,
-                        args=[None, {"frame": {"duration": 500, "redraw": False}}],
-                    )
+            {
+                "type": "buttons",
+                "buttons": [
+                    {
+                        "label": "Play",
+                        "method": "animate",
+                        "visible": False,
+                        "args": [None, {"frame": {"duration": 500, "redraw": False}}],
+                    }
                 ],
-            )
+            }
         ],
     }
 
@@ -76,7 +76,7 @@ def create_plotly_curve(rtichoke_curve_dict):
             interactive_marker_color = rtichoke_curve_dict["group_colors_vec"][
                 reference_group
             ][0]
-        if not (rtichoke_curve_dict["reference_data"].empty):
+        if not rtichoke_curve_dict["reference_data"].empty:
             if any(
                 rtichoke_curve_dict["reference_data"]["reference_group"]
                 == reference_group
@@ -88,7 +88,6 @@ def create_plotly_curve(rtichoke_curve_dict):
                             == reference_group
                         ],
                         rtichoke_curve_dict["group_colors_vec"][reference_group][0],
-                        reference_group,
                     )
                 )
         if any(
@@ -225,7 +224,7 @@ def create_plotly_curve(rtichoke_curve_dict):
         zerolinewidth=1,
         zerolinecolor="black",
         fixedrange=True,
-        title=dict(text=rtichoke_curve_dict["axes_labels"]["xaxis"][0]),
+        title={"text": rtichoke_curve_dict["axes_labels"]["xaxis"][0]},
     )
     fig.update_yaxes(
         zeroline=True,
@@ -233,6 +232,6 @@ def create_plotly_curve(rtichoke_curve_dict):
         zerolinewidth=1,
         zerolinecolor="black",
         fixedrange=True,
-        title=dict(text=rtichoke_curve_dict["axes_labels"]["yaxis"][0]),
+        title={"text": rtichoke_curve_dict["axes_labels"]["yaxis"][0]},
     )
     return fig
