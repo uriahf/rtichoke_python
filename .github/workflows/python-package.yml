@@ -38,3 +38,6 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+    - name: pypi-publish
+      uses: pypa/gh-action-pypi-publish@v1.8.5
+

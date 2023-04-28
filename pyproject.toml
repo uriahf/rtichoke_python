@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rtichoke"
-version = "0.1.0"
+version = "0.1.1"
 description = "interactive visualizations for performance of predictive models"
 authors = ["Uriah Finkel"]
 license = "MIT"
