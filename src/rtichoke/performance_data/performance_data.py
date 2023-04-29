@@ -34,7 +34,7 @@ def prepare_performance_data(
         url_api=url_api,
         endpoint="prepare_performance_data",
     )
-    print(rtichoke_response.json()[0].keys())
+
     performance_data = pd.DataFrame(
         rtichoke_response.json(), columns=list(rtichoke_response.json()[0].keys())
     )
