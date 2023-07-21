@@ -92,14 +92,17 @@ def prepare_performance_table(self, probs, reals, by, stratified_by, pop_name="p
 
     # if ppcr is required, adjust probability threholds accordingly.
     if stratified_by == "ppcr":
+        ppcr = np.append(np.arange(0, 1, by), 1)
         prob_thresholds = np.array([np.quantile(probs, p) for p in prob_thresholds])
         prob_thresholds[0] = 0.0
+    else:
+        ppcr = []
 
     # define performance table
     performance_table = {
         "Population": [],
         "probability_threshold": prob_thresholds,
-        "ppcr": [],
+        "ppcr": ppcr,
         "predicted_positives": [],
         "TP": [],
         "FP": [],
@@ -112,7 +115,8 @@ def prepare_performance_table(self, probs, reals, by, stratified_by, pop_name="p
         prob_thresholds, desc="Calculating performance data", leave=False, delay=0.5
     ):
         preds = (probs > p).astype(int)
-        performance_table["ppcr"].append(preds.mean())
+        if stratified_by == "probability_threshold":
+            performance_table["ppcr"].append(preds.mean())
         performance_table["predicted_positives"].append(preds.sum())
 
         tn, fp, fn, tp = confusion_matrix(reals, preds).ravel()
