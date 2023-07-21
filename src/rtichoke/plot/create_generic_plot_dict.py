@@ -28,7 +28,17 @@ plot_dicts = {
         "ylabel": "Recall",
         "hover_info": [
             "Precision",
-            "recall",
+            "Recall",
+        ],
+    },
+    "NB": {
+        "x": "probability_threshold",
+        "y": "Net_benefit",
+        "reference": {"x": [0, 0], "y": [0, 0]},
+        "xlabel": "Prob. threshold",
+        "ylabel": "Net Benefit",
+        "hover_info": [
+            "Net_benefit",
         ],
     },
 }
