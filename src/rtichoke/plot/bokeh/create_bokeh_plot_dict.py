@@ -30,10 +30,15 @@ def create_JS_code(x, y, stratification):
     return js_code
 
 
-_legend_positions = {"ROC": "bottom_right", "LIFT": "top_right", "PR": "top_right"}
+_legend_positions = {
+    "ROC": "bottom_right",
+    "LIFT": "top_right",
+    "PR": "top_right",
+    "NB": "bottom_left",
+}
 _generic_hover = [
     ("Dataset", "@Population"),
-    ("probability_threshold", "@probability_threshold{0.000}"),
+    ("Prob. threshold", "@probability_threshold{0.000}"),
     ("PPCR", "@ppcr{0.000}"),
     ("Predicted positive", "@predicted_positives"),
 ]

@@ -4,9 +4,12 @@ from bokeh.models import (
     Slider,
     CustomJS,
     HoverTool,
+    CDSView,
+    GroupFilter,
 )
-from bokeh.plotting import figure, output_file, save
-from collections import OrderedDict
+from bokeh.plotting import figure, output_file, save, show
+
+# from collections import OrderedDict
 from .create_bokeh_plot_dict import *
 
 
@@ -20,37 +23,59 @@ def plot_bokeh(self, generic_plot_dict, filename=None):
     df = self.select_data_table(x=x, y=y, stratification=stratification)
     pops, colors, color_map = create_pops_and_colors(df)
 
-    lines_source = ColumnDataSource(
-        OrderedDict(
-            Population=[df[df["Population"] == pop]["Population"] for pop in pops],
-            xs=[df[df["Population"] == pop][x] for pop in pops],
-            ys=[df[df["Population"] == pop][y] for pop in pops],
-            colors=colors,
-            legend_labels=pops,
-        )
-    )
-
     # Create plots and widgets
     if filename:
         output_file(filename)
 
-    plot = figure(title=f"{curve_type} curve", tools="box_zoom")
-    plot.multi_line(
-        "xs",
-        "ys",
-        source=lines_source,
-        line_width=3,
-        line_alpha=0.5,
-        line_color="colors",
-        legend_field="legend_labels",
+    plot = figure(
+        title=f"{curve_type} curve",
+        tools="box_zoom",
     )
+
+    lines_source = []
+    lines = []
+    for j, pop in enumerate(pops):
+        lines_source.append(ColumnDataSource(data=df[df["Population"] == pop]))
+
+        lines.append(
+            plot.line(
+                x=x,
+                y=y,
+                line_color=colors[j],
+                legend_label=pop,
+                name=pop,
+                line_width=3,
+                line_alpha=0.5,
+                source=lines_source[j],
+            )
+        )
+
+        plot.circle(
+            x=x,
+            y=y,
+            size=3,
+            color=colors[j],
+            fill_alpha=0.25,
+            source=lines_source[j],
+            legend_label=pop,
+        )
+
     plot.legend.location = graph_meta["legend"]
+    plot.legend.click_policy = "hide"
+
+    # add hover data
+    hover = HoverTool(
+        renderers=lines,
+        tooltips=graph_meta["hover_info"],
+    )
+    plot.add_tools(hover)
+
     plot.line(
         graph_meta["reference"]["x"],
         graph_meta["reference"]["y"],
         line_width=1,
         color="gray",
-    )  # reference line
+    )
 
     # Create Slider object
     slider = Slider(
@@ -58,7 +83,9 @@ def plot_bokeh(self, generic_plot_dict, filename=None):
         end=1,
         value=df.dropna()[stratification].min(),
         step=self.by,
-        title=stratification,
+        title="Prob. threshold"
+        if stratification == "probability_threshold"
+        else "PPCR",
     )
 
     # add scatter
@@ -66,22 +93,21 @@ def plot_bokeh(self, generic_plot_dict, filename=None):
         True if th == slider.value else False for th in df[stratification]
     ]
     scatter_source = ColumnDataSource(data=df.loc[filtered_scatter])
-    scatter = plot.scatter(
-        x=x,
-        y=y,
-        source=scatter_source,
-        size=11,
-        fill_alpha=0.85,
-        line_color="black",
-        color={"field": "Population", "transform": color_map},
-    )
 
-    # add hover data
-    hover = HoverTool(
-        renderers=[scatter],
-        tooltips=graph_meta["hover_info"],
-    )
-    plot.add_tools(hover)
+    for j, pop in enumerate(pops):
+        view = CDSView(filter=GroupFilter(column_name="Population", group=pop))
+
+        plot.circle(
+            x=x,
+            y=y,
+            source=scatter_source,
+            size=11,
+            fill_alpha=0.85,
+            line_color="black",
+            color={"field": "Population", "transform": color_map},
+            view=view,
+            legend_label=pop,
+        )
 
     # Adding callback code
     source = ColumnDataSource(data=df.set_index("Population"))
@@ -100,4 +126,4 @@ def plot_bokeh(self, generic_plot_dict, filename=None):
     if filename:
         save(layout)
     else:
-        return layout
+        show(layout)
