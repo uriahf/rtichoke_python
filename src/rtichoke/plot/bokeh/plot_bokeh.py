@@ -5,15 +5,18 @@ from bokeh.models import (
     CustomJS,
     HoverTool,
 )
-from bokeh.plotting import figure, show, output_file, save
+from bokeh.plotting import figure, output_file, save
 from collections import OrderedDict
-from ._plot_helpers import *
+from .create_bokeh_plot_dict import *
 
 
-def plot(self, curve_type, stratification="probability_threshold", filename=None):
-    self.validate_plot_inputs(curve_type, stratification)
+def plot_bokeh(self, generic_plot_dict, filename=None):
+    curve_type = generic_plot_dict["curve_type"]
+    stratification = generic_plot_dict["stratification"]
 
-    x, y, graph_meta = create_plot_dict(curve_type, stratification)
+    graph_meta = create_bokeh_plot_dict(generic_plot_dict)
+    x = graph_meta["x"]
+    y = graph_meta["y"]
     df = self.select_data_table(x=x, y=y, stratification=stratification)
     pops, colors, color_map = create_pops_and_colors(df)
 

@@ -28,11 +28,9 @@ reals = {"population1": y_test, "population2": y_train}
 
 
 r = Rtichoke(probs, reals, by=0.1)
-# display(r.performance_table_ppcr)
-
-r.plot("ROC", 
-       "probability_threshold", 
-       filename="temp.html")
 
 
-##
+r.plot("LIFT", "probability_threshold", filename="temp.html")
+
+
+# ##
