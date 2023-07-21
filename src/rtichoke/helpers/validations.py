@@ -87,7 +87,7 @@ def check_by(self):
         Boolean: True when validation passed (else raise exception)
     """
     if not (isinstance(self.by, float) and (self.by > 0) and (self.by <= 0.5)):
-        raise Exception(f"Argument `by` must be a float,  0 > by <= 0.5")
+        raise Exception(f"Argument `by` must be a float,  0 > `by` <= 0.5")
     pass
 
 
@@ -97,7 +97,7 @@ def validate_plot_inputs(self, curve_type, stratification):
 
 
 def check_plot_curve_type(curve_type):
-    available_plots = ["ROC", "LIFT", "PR"]
+    available_plots = ["ROC", "LIFT", "PR", "NB"]
     if curve_type not in available_plots:
         raise Exception(
             f"curve_type {curve_type} not recognized. Supported curves :{available_plots}"
