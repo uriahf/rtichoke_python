@@ -1,5 +1,6 @@
 from bokeh.palettes import Spectral11 as palette
 from bokeh.models import CategoricalColorMapper
+from bokeh.models import CustomJS
 
 
 def create_JS_code(x, y, stratification):
@@ -35,6 +36,7 @@ _legend_positions = {
     "LIFT": "top_right",
     "PR": "top_right",
     "NB": "bottom_left",
+    "calibration": "top_left",
 }
 _generic_hover = [
     ("Dataset", "@Population"),
@@ -48,11 +50,18 @@ def create_bokeh_plot_dict(bokeh_plot_dict):
     curve_type = bokeh_plot_dict["curve_type"]
 
     bokeh_plot_dict["legend"] = _legend_positions[curve_type]
-    specific_hover_info = [
-        (l, "@" + l + "{0.000}") for l in bokeh_plot_dict["hover_info"]
-    ]
-    bokeh_plot_dict["hover_info"] = _generic_hover + specific_hover_info
 
+    if curve_type != "calibration":
+        specific_hover_info = [
+            (l, "@" + l + "{0.000}") for l in bokeh_plot_dict["hover_info"]
+        ]
+        bokeh_plot_dict["hover_info"] = _generic_hover + specific_hover_info
+    else:
+        bokeh_plot_dict["hover_info"] = [
+            ("Dataset", "@Population"),
+            ("Predicted", "@prob_pred{0.000} (@pred_pos / @total_cases)"),
+            ("Observed", "@prob_true{0.000} (@actual_pos / @total_cases)"),
+        ]
     return bokeh_plot_dict
 
 
@@ -62,3 +71,20 @@ def create_pops_and_colors(df):
     color_map = CategoricalColorMapper(factors=pops, palette=palette)
 
     return pops, colors, color_map
+
+
+def link_legend_glyphs(ref_fig, target_figs):
+    cb = CustomJS(
+        args={"target_figs": target_figs},
+        code="""
+            const glyph_name = cb_obj.name;
+            for (const element of target_figs) {
+              const r = element.select(name = glyph_name)[0];
+              //r.muted = cb_obj.muted;
+              r.visible = cb_obj.visible;
+            }
+        """,
+    )
+    for i in ref_fig.legend[0].items:
+        r = i.renderers[0]
+        r.js_on_change("visible", cb)
