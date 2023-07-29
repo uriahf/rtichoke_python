@@ -27,8 +27,8 @@ plot_dicts = {
         "xlabel": "Precision",
         "ylabel": "Recall",
         "hover_info": [
-            "Precision",
-            "Recall",
+            "PPV",
+            "Sensitivity",
         ],
     },
     "NB": {
@@ -40,6 +40,13 @@ plot_dicts = {
         "hover_info": [
             "Net_benefit",
         ],
+    },
+    "calibration": {
+        "x": "prob_pred",
+        "y": "prob_true",
+        "reference": {"x": [0, 1], "y": [0, 1]},
+        "xlabel": "Predicted",
+        "ylabel": "Observed",
     },
 }
 
