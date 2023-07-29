@@ -97,7 +97,7 @@ def validate_plot_inputs(self, curve_type, stratification):
 
 
 def check_plot_curve_type(curve_type):
-    available_plots = ["ROC", "LIFT", "PR", "NB"]
+    available_plots = ["ROC", "LIFT", "PR", "NB", "calibration"]
     if curve_type not in available_plots:
         raise Exception(
             f"curve_type {curve_type} not recognized. Supported curves :{available_plots}"
