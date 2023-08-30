@@ -3,25 +3,56 @@
 
 from importlib.metadata import version
 
-__version__ = version("rtichoke")
+# __version__ = version("rtichoke")
 
-from rtichoke.discrimination.roc import create_roc_curve
-from rtichoke.discrimination.roc import plot_roc_curve
+from .helpers.helper_functions import *
 
-from rtichoke.discrimination.lift import create_lift_curve
-from rtichoke.discrimination.lift import plot_lift_curve
 
-from rtichoke.discrimination.precision_recall import create_precision_recall_curve
-from rtichoke.discrimination.precision_recall import plot_precision_recall_curve
+class Rtichoke:
+    # import methods
+    from .performance_data.prepare_performance_data import (
+        prepare_performance_data,
+        prepare_performance_table,
+    )
+    from .performance_data.prepare_calibration_data import (
+        prepare_calibration_data,
+        prepare_calibration_table,
+    )
 
-from rtichoke.discrimination.gains import create_gains_curve
-from rtichoke.discrimination.gains import plot_gains_curve
+    from .helpers.validations import validate_inputs, validate_plot_inputs, check_by
+    from .helpers.helper_functions import (
+        select_data_table,
+        modified_calibration_curve,
+    )
+    from .plot.plotting import plot
 
-from rtichoke.calibration.calibration import create_calibration_curve
+    def __init__(
+        self, probs=None, reals=None, by=0.01, cal_n_bins=10, cal_strategy="quantile"
+    ):
+        super().__init__()
 
-from rtichoke.utility.decision import create_decision_curve
-from rtichoke.utility.decision import plot_decision_curve
+        self.probs = probs
+        self.reals = reals
+        self.by = by
+        self.performance_table_pt = None
+        self.performance_table_ppcr = None
+        self.calibration_table = None
+        self.prevalence = {}
+        self.N = {}
 
-from rtichoke.performance_data.performance_data import prepare_performance_data
+        self.check_by()
 
-from rtichoke.summary_report.summary_report import create_summary_report
+        tprint("Calculating performance table stratified by probability threshold")
+        self.performance_table_pt = self.prepare_performance_data(
+            stratified_by="probability_threshold"
+        )
+
+        tprint("Calculating performance table stratified by ppcr")
+        self.performance_table_ppcr = self.prepare_performance_data(
+            stratified_by="ppcr"
+        )
+
+        tprint("Calculating calibration data")
+        self.calibration_table = self.prepare_calibration_data(
+            n_bins=cal_n_bins, strategy=cal_strategy
+        )
