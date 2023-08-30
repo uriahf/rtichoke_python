@@ -6,8 +6,7 @@ from bokeh.models import (
     HoverTool,
     CDSView,
     GroupFilter,
-    BoxZoomTool,
-    Range1d,
+    BoxZoomTool,    
 )
 from bokeh.plotting import figure, output_file, save, show
 import numpy as np
@@ -189,7 +188,7 @@ def plot_bokeh_calibration(self, generic_plot_dict, filename=None):
         )
 
         probs = self.probs[pop] if pop in self.probs.keys() else self.probs
-        hist, edges = np.histogram(probs, bins="auto")
+        hist, edges = np.histogram(probs, bins=np.linspace(0, 1, 101))
 
         histograms.append(
             histogram.quad(

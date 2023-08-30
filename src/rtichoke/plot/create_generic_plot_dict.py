@@ -20,6 +20,16 @@ plot_dicts = {
             "lift",
         ],
     },
+    "gains": {
+        "x": "ppcr",
+        "y": "Sensitivity",
+        "reference": {"x": [0, 1], "y": [1, 1]},
+        "xlabel": "ppcr",
+        "ylabel": "Sensitivity",
+        "hover_info": [
+            "Sensitivity",
+        ],
+    },
     "PR": {
         "x": "PPV",
         "y": "Sensitivity",

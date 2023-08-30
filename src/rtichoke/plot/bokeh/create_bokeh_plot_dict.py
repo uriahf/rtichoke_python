@@ -34,6 +34,7 @@ def create_JS_code(x, y, stratification):
 _legend_positions = {
     "ROC": "bottom_right",
     "LIFT": "top_right",
+    "gains": "top_right",
     "PR": "top_right",
     "NB": "bottom_left",
     "calibration": "top_left",
