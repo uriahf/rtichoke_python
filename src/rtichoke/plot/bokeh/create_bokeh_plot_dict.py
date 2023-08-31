@@ -1,11 +1,12 @@
+"""Helper functions for Bokeh plotting"""
 from bokeh.palettes import Spectral11 as palette
 from bokeh.models import CategoricalColorMapper
 from bokeh.models import CustomJS
 
 
 def create_JS_code(x, y, stratification):
-    js_code = f"""    
-    const source_data = source.data;
+    """A method to return JS code to bokeh's plots"""
+    js_code = f"""const source_data = source.data;
     const pop = source_data.Population;
     const x = source_data.{x};
     const y = source_data.{y};
@@ -48,6 +49,14 @@ _generic_hover = [
 
 
 def create_bokeh_plot_dict(bokeh_plot_dict):
+    """Function to turn generic_plot_dict into bokeh_plot_dict
+
+    Args:
+        bokeh_plot_dict (dict): generic plot dict
+
+    Returns:
+        dict: plot dict for Bokeh's interface
+    """
     curve_type = bokeh_plot_dict["curve_type"]
 
     bokeh_plot_dict["legend"] = _legend_positions[curve_type]
@@ -67,6 +76,16 @@ def create_bokeh_plot_dict(bokeh_plot_dict):
 
 
 def create_pops_and_colors(df):
+    """Function to provide each population in the performance data table a unique color
+
+    Args:
+        df (pd.DataFrame): Performance data table
+
+    Returns:
+        pops: array of populations names
+        colors: list of colors
+        color_map: Bokeh's color map
+    """
     pops = df.Population.unique()
     colors = palette[0 : len(pops)]
     color_map = CategoricalColorMapper(factors=pops, palette=palette)
@@ -75,6 +94,7 @@ def create_pops_and_colors(df):
 
 
 def link_legend_glyphs(ref_fig, target_figs):
+    """Function to link legends in Bokeh"""
     cb = CustomJS(
         args={"target_figs": target_figs},
         code="""

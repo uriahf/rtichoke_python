@@ -1,3 +1,5 @@
+"""Functions to create data for calibration plots"""
+
 import numpy as np
 import pandas as pd
 
@@ -5,11 +7,14 @@ import pandas as pd
 def prepare_calibration_data(self, n_bins, strategy):
     """
     User's function to produce performance data table for probs/reals.
-    probs/reals may represent one probs vs. one reals, several probs vs. one real, or several probs vs. several reals.
+    probs/reals may represent one probs vs. one reals, several probs vs. one real,
+    or several probs vs. several reals.
 
     Args:
-        probs (list, np.array, pd.Series, or dict): an array of probabilities or a dictionary {'pop_name': array of probabilities}
-        reals (list, np.array, pd.Series, or dict): an array of binary results or a dictionary {'pop_name': arary of binary results}
+        probs (list, np.array, pd.Series, or dict):
+            an array of probabilities or a dictionary {'pop_name': array of probabilities}
+        reals (list, np.array, pd.Series, or dict):
+            an array of binary results or a dictionary {'pop_name': arary of binary results}
 
     Returns:
         pd.DataFrame: a dataframe with performance metrics
@@ -58,7 +63,7 @@ def prepare_calibration_data(self, n_bins, strategy):
             strategy=strategy,
         )
 
-    raise Exception(f"Wrong inputs provided for probs and reals")
+    raise ValueError("Wrong inputs provided for probs and reals")
 
 
 def prepare_calibration_table(self, probs, reals, n_bins, strategy, pop_name="pop1"):
@@ -67,7 +72,9 @@ def prepare_calibration_table(self, probs, reals, n_bins, strategy, pop_name="po
     Args:
         probs (list, np.array, pd.Series): an array of probabilities
         reals (list, np.array, pd.Series): an array of true values (0's or 1's)
-        pop_name (str, optional): A population name, when asking for performance metrics for several populations. Defaults to 'pop1'.
+        pop_name (str, optional): A population name, when asking for performance
+                                  metrics for several populations.
+                                  Defaults to 'pop1'.
 
     Returns:
         pd.DataFrame: a dataframe with calibration data

@@ -1,4 +1,7 @@
-def validate_inputs(self, probs, reals):
+"""script for validating inputs to rtichoke methods"""
+
+
+def validate_inputs(_, probs, reals):
     """A mother-function to run all other validation functions
 
     Args:
@@ -20,7 +23,7 @@ def check_probs(probs):
         probs (np.array): an array of probabilities
 
     Raises:
-        Exception: when validation fails
+        ValueError: when validation fails
 
     Returns:
         Boolean: True when validation passed (else raise exception)
@@ -40,7 +43,7 @@ def check_probs_vs_reals(probs, reals):
         reals (np.array): an array of true values (0's or 1's)
 
     Raises:
-        Exception: when either validation fails
+        ValueError: when either validation fails
 
     Returns:
         Boolean: True when validation passed (else raise exception)
@@ -61,7 +64,7 @@ def check_reals(reals):
         reals (np.array): an array of true values (0's or 1's)
 
     Raises:
-        Exception: when validation fails
+        ValueError: when validation fails
 
     Returns:
         Boolean: True when validation passed (else raise exception)
@@ -78,7 +81,7 @@ def check_by(self):
         by (float): argument to set the distance between explored threshold probabilities
 
     Raises:
-        Exception: when validation fails
+        ValueError: when validation fails
 
     Returns:
         Boolean: True when validation passed (else raise exception)
@@ -87,7 +90,7 @@ def check_by(self):
         raise ValueError("Argument `by` must be a float,  0 > `by` <= 0.5")
 
 
-def validate_plot_inputs(self, curve_type, stratification):
+def validate_plot_inputs(_, curve_type, stratification):
     """This function runs child validation functions to ensure proper plotting inputs
 
     Args:
@@ -106,7 +109,7 @@ def check_plot_curve_type(curve_type):
         curve_type (str): Available plots: "ROC", "LIFT", "PR", "NB", or "calibration"
 
     Raises:
-        Exception: when `curve_type` is not one of the available plots.
+        ValueError: when `curve_type` is not one of the available plots.
     """
     available_plots = ["ROC", "LIFT", "PR", "NB", "calibration"]
     if curve_type not in available_plots:
@@ -122,7 +125,7 @@ def check_plot_stratification(stratification):
         stratification (str, optional): Stratifiction method ("PPCR" or "probability_threshold")
 
     Raises:
-        Exception: when `stratification` is not "PPCR" or "probability_threshold".
+        ValueError: when `stratification` is not "PPCR" or "probability_threshold".
     """
     if stratification not in ["probability_threshold", "ppcr"]:
         raise ValueError(
