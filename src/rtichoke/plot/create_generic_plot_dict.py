@@ -1,3 +1,5 @@
+""" Generic plotting dict"""
+
 plot_dicts = {
     "ROC": {
         "x": "FPR",
@@ -62,6 +64,15 @@ plot_dicts = {
 
 
 def create_generic_plot_dict(curve_type, stratification):
+    """returns a generic plot dict, according to curve_type and stratification method
+
+    Args:
+        curve_type (str): One of the available curve types
+        stratification (str): stratification method
+
+    Returns:
+        dictionary: generic plot dictionary to enable plotting
+    """
     generic_plot_dict = plot_dicts[curve_type]
     generic_plot_dict["curve_type"] = curve_type
     generic_plot_dict["stratification"] = stratification

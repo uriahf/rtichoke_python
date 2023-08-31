@@ -1,3 +1,4 @@
+"""UnitTest class to test performance tables"""
 import unittest
 import numpy as np
 import pandas as pd
@@ -8,12 +9,16 @@ from rtichoke import Rtichoke
 
 
 class TestPreparePerformanceTable(unittest.TestCase):
+    """UnitTest class to test performance tables"""
+
     def setUp(self):
+        """Simulate an Rtichoke object"""
         probs = {"pop1": np.array([0.7, 0.8, 0.9, 0.4, 0.2, 0.6, 0.5])}
         reals = {"pop1": np.array([1, 1, 1, 0, 0, 1, 0])}
         self.r = Rtichoke(probs=probs, reals=reals, by=0.1)
 
     def test_performance_table_type_and_size(self):
+        """Test performance table type and size"""
         self.assertIsInstance(self.r.performance_table_pt, pd.DataFrame)
         self.assertIsInstance(self.r.performance_table_ppcr, pd.DataFrame)
 
@@ -21,6 +26,7 @@ class TestPreparePerformanceTable(unittest.TestCase):
         self.assertEqual(self.r.performance_table_ppcr.shape, (11, 15))
 
     def test_performance_data_contains_expected_columns(self):
+        """Test whether performance table contains expected columns"""
         result_cols_pt = self.r.performance_table_pt.columns
         result_cols_ppcr = self.r.performance_table_ppcr.columns
 
@@ -45,6 +51,7 @@ class TestPreparePerformanceTable(unittest.TestCase):
         self.assertCountEqual(result_cols_ppcr, expected_cols)
 
     def test_performance_data_contains_correct_thresholds(self):
+        """Test thresholds within performance data table"""
         expected_thresholds = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
         result_thresholds_pt = self.r.performance_table_pt["probability_threshold"]
         result_thresholds_ppcr = self.r.performance_table_ppcr["ppcr"][-1::-1]
@@ -53,6 +60,7 @@ class TestPreparePerformanceTable(unittest.TestCase):
         assert_allclose(result_thresholds_ppcr, expected_thresholds)
 
     def test_performance_data_contains_expected_population_name(self):
+        """Test populations within performance data table"""
         expected_pop_name = ["pop1"]
         pt_table_pop_name = self.r.performance_table_pt["Population"].unique()
         ppcr_table_pop_name = self.r.performance_table_ppcr["Population"].unique()
@@ -61,6 +69,7 @@ class TestPreparePerformanceTable(unittest.TestCase):
         self.assertEqual(expected_pop_name, ppcr_table_pop_name)
 
     def test_performance_data_with_two_populations(self):
+        """Test performance data table creation on two populations"""
         probs = {
             "pop1": np.array([0.7, 0.8, 0.9, 0.4, 0.2, 0.6, 0.5]),
             "pop2": np.array([0.7, 0.8, 0.9, 0.4, 0.2, 0.6, 0.5]),

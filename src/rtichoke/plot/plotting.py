@@ -1,3 +1,5 @@
+"""Plotting module for rtichoke"""
+
 from .bokeh.plot_bokeh import plot_bokeh
 from .create_generic_plot_dict import create_generic_plot_dict
 
@@ -5,7 +7,7 @@ from .create_generic_plot_dict import create_generic_plot_dict
 def plot(
     self, curve_type, stratification="probability_threshold", filename=None, api="bokeh"
 ):
-    """_summary_
+    """A method to fetch generic plot dict and call the specific plotting API
 
     Args:
         curve_type (str): Curve type to produce ("ROC", "LIFT", "PR", "NB", or "calibration")
@@ -15,8 +17,7 @@ def plot(
         api (str, optional): Which plotting API to use. Currently only "bokeh" is available.
                             Defaults to "bokeh".
 
-    Returns:
-        _type_: _description_
+    Returns: plot object
     """
     self.validate_plot_inputs(curve_type, stratification)
 

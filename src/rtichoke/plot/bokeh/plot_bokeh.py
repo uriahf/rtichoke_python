@@ -1,3 +1,5 @@
+"""Plotting sub-module for Bokeh interface"""
+
 from bokeh.layouts import column, gridplot
 from bokeh.models import (
     ColumnDataSource,
@@ -6,16 +8,27 @@ from bokeh.models import (
     HoverTool,
     CDSView,
     GroupFilter,
-    BoxZoomTool,    
+    BoxZoomTool,
 )
 from bokeh.plotting import figure, output_file, save, show
 import numpy as np
 
 # from collections import OrderedDict
-from .create_bokeh_plot_dict import *
+from .create_bokeh_plot_dict import (
+    create_JS_code,
+    create_bokeh_plot_dict,
+    create_pops_and_colors,
+    link_legend_glyphs,
+)
 
 
 def plot_bokeh(self, generic_plot_dict, filename=None):
+    """Main method to plot using Bokeh interface
+
+    Args:
+        generic_plot_dict (dict): A generic (all-interface) dict containing plotting data
+        filename (str, optional): Filename to save plot as html. Defaults to None.
+    """
     curve_type = generic_plot_dict["curve_type"]
 
     if curve_type == "calibration":
@@ -137,6 +150,13 @@ def plot_bokeh(self, generic_plot_dict, filename=None):
 
 
 def plot_bokeh_calibration(self, generic_plot_dict, filename=None):
+    """Main method to plot calibration curve using Bokeh
+
+    Args:
+        generic_plot_dict (dict): A generic (all-interface) dict containing plotting data
+        filename (str, optional): Filename to save plot as html. Defaults to None.
+    """
+
     curve_type = "calibration"
     graph_meta = create_bokeh_plot_dict(generic_plot_dict)
     x = graph_meta["x"]

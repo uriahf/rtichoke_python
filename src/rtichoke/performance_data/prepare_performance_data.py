@@ -1,3 +1,5 @@
+"""Functions to create performance data tables"""
+
 import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix
@@ -7,13 +9,18 @@ from tqdm import tqdm
 def prepare_performance_data(self, stratified_by):
     """
     User's function to produce performance data table for probs/reals.
-    probs/reals may represent one probs vs. one reals, several probs vs. one real, or several probs vs. several reals.
+    probs/reals may represent one probs vs. one reals, several probs vs. one real,
+    or several probs vs. several reals.
 
     Args:
-        probs (list, np.array, pd.Series, or dict): an array of probabilities or a dictionary {'pop_name': array of probabilities}
-        reals (list, np.array, pd.Series, or dict): an array of binary results or a dictionary {'pop_name': arary of binary results}
-        by (float, optional): argument to set the distance between explored threshold probabilities. Defaults to 0.01.
-        stratified_by (string, optional): must be either "probability_threshold" or "ppcr". Defaults to "probability_threshold".
+        probs (list, np.array, pd.Series, or dict): an array of probabilities or a dictionary
+                                                    {'pop_name': array of probabilities}
+        reals (list, np.array, pd.Series, or dict): an array of binary results or a dictionary
+                                                    {'pop_name': arary of binary results}
+        by (float, optional): argument to set the distance between explored threshold probabilities.
+                                Defaults to 0.01.
+        stratified_by (string, optional): must be either "probability_threshold" or "ppcr".
+                                Defaults to "probability_threshold".
 
     Returns:
         pd.DataFrame: a dataframe with performance metrics
@@ -59,7 +66,7 @@ def prepare_performance_data(self, stratified_by):
             probs=self.probs, reals=self.reals, by=self.by, stratified_by=stratified_by
         )
 
-    raise Exception(f"Wrong inputs provided for probs and reals")
+    raise ValueError("Wrong inputs provided for probs and reals")
 
 
 def prepare_performance_table(self, probs, reals, by, stratified_by, pop_name="pop1"):
@@ -68,9 +75,12 @@ def prepare_performance_table(self, probs, reals, by, stratified_by, pop_name="p
     Args:
         probs (list, np.array, pd.Series): an array of probabilities
         reals (list, np.array, pd.Series): an array of true values (0's or 1's)
-        by (float, optional): argument to set the distance between explored threshold probabilities. Defaults to 0.01.
-        stratified_by (string, optional): must be either "probability_threshold" or "ppcr". Defaults to "probability_threshold".
-        pop_name (str, optional): A population name, when asking for performance metrics for several populations. Defaults to 'pop1'.
+        by (float, optional): argument to set the distance between explored
+                                        threshold probabilities. Defaults to 0.01.
+        stratified_by (string, optional): must be either "probability_threshold" or "ppcr".
+                                        Defaults to "probability_threshold".
+        pop_name (str, optional): A population name, when asking for performance
+                                    metrics for several populations. Defaults to 'pop1'.
 
     Returns:
         pd.DataFrame: a dataframe with performance metrics

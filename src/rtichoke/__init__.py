@@ -9,6 +9,8 @@ from .helpers.helper_functions import *
 
 
 class Rtichoke:
+    """Main Rtichoke class"""
+
     # import methods
     from .performance_data.prepare_performance_data import (
         prepare_performance_data,

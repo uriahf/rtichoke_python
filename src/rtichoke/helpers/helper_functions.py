@@ -1,34 +1,59 @@
+"""A module with several helper functions for rtichoke"""
+
 from datetime import datetime
 import numpy as np
 
 
 def tprint(string):
+    """prints `string` with preceeding timestamp
+
+    Args:
+        string (str): string to print
+    """
     now = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
     print(now + " - " + string)
 
 
-def select_data_table(self, x, y, stratification="probability_threshold"):
-    df = (
+def select_data_table(self, x_axis, y_axis, stratification="probability_threshold"):
+    """A method to return a dataframe which is a subset of the required performance table/
+
+    Args:
+        x_axis (str): name of x axis column
+        y_axis (str): name of y axis column
+        stratification (str, optional): stratification method. Defaults to "probability_threshold".
+
+    Returns:
+        pd.DataFrame: A subset of the required performance table for plotting.
+    """
+    which_df = (
         self.performance_table_pt
         if stratification == "probability_threshold"
         else self.performance_table_ppcr
     )
     cols = list(
         set(
-            ["Population", "predicted_positives", "probability_threshold", "ppcr", x, y]
+            [
+                "Population",
+                "predicted_positives",
+                "probability_threshold",
+                "ppcr",
+                x_axis,
+                y_axis,
+            ]
         )
     )
-    return df[cols]
+    return which_df[cols]
 
 
 def modified_calibration_curve(
-    self,
+    _,
     reals,
     probs,
     n_bins=10,
     strategy="quantile",
 ):
-    """A modified version of sklearn.calibration.calibration_curve (https://scikit-learn.org/stable/modules/generated/sklearn.calibration.calibration_curve.html),
+    """A modified version of sklearn.calibration.calibration_curve
+    (https://scikit-learn.org/stable/modules/generated/sklearn.calibration.calibration_curve.html),
     to return number over cases in each bin.
 
 
@@ -43,7 +68,8 @@ def modified_calibration_curve(
         quantile: The bins have the same number of samples and depend on probs (Default).
 
     Returns:
-        prob_true: The proportion of samples whose class is the positive class, in each bin (fraction of positives).
+        prob_true: The proportion of samples whose class is the positive class,
+                   in each bin (fraction of positives).
         prob_pred: The mean predicted probability in each bin.
         bin_sums: number of cases predicted as positive in each bin.
         bin_true: number of actual positive in each bin.
