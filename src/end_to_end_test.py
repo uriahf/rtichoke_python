@@ -1,14 +1,15 @@
-from IPython.display import display
-from rtichoke import Rtichoke
+"""end-to-end testing + example"""
+
+
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import fetch_california_housing
+
+from rtichoke import Rtichoke
 
 # create fake data
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.datasets import fetch_california_housing
-import pandas as pd
 
 data = fetch_california_housing()
 X = pd.DataFrame(data["data"], columns=data["feature_names"])
