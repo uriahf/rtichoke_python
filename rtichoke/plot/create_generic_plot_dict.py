@@ -63,7 +63,7 @@ plot_dicts = {
 }
 
 
-def create_generic_plot_dict(curve_type, stratification):
+def create_generic_plot_dict(curve_type: str, stratification: str) -> dict[str:dict]:
     """returns a generic plot dict, according to curve_type and stratification method
 
     Args:

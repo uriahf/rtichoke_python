@@ -5,7 +5,11 @@ from .create_generic_plot_dict import create_generic_plot_dict
 
 
 def plot(
-    self, curve_type, stratification="probability_threshold", filename=None, api="bokeh"
+    self: object,
+    curve_type: str,
+    stratification: str = "probability_threshold",
+    filename: str = None,
+    api: str = "bokeh",
 ):
     """A method to fetch generic plot dict and call the specific plotting API
 
