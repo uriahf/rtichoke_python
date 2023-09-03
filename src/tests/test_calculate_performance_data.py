@@ -5,11 +5,11 @@ import pandas as pd
 from numpy.testing import assert_allclose
 import .rtichoke
 
-# UnitTests created with ChatGPT! :-)
-
 
 class TestPreparePerformanceTable(unittest.TestCase):
-    """UnitTest class to test performance tables"""
+    """UnitTest class to test performance tables
+       Tests were created with ChatGPT :-)
+    """
 
     def setUp(self):
         """Simulate an Rtichoke object"""
