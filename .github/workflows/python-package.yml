@@ -41,7 +41,7 @@ jobs:
        
     - name: Test with unittest
       run: |
-        python -m unittest discover -s ./test  -p 'test_*.py'  
+        python -m unittest discover -s ./src/tests  -p 'test_*.py'  
   # pypi-publish:
   #   name: Upload release to PyPI
   #   runs-on: ubuntu-latest
