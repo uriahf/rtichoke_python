@@ -4,4 +4,4 @@ from importlib.metadata import version
 
 # __version__ = version("rtichoke")
 
-from .rtichoke import Rtichoke
+from rtichoke import Rtichoke
