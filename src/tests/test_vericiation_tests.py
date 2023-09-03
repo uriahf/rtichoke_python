@@ -1,8 +1,8 @@
 """Sub-module to test Rtichoke validations"""
 import unittest
 import numpy as np
-from .rtichoke.helpers.validations import check_probs, check_probs_vs_reals, check_reals
-import .rtichoke
+from rtichoke.helpers.validations import check_probs, check_probs_vs_reals, check_reals
+from rtichoke import rtichoke
 
 
 class TestCheckProbs(unittest.TestCase):
