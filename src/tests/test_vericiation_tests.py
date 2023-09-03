@@ -2,7 +2,7 @@
 import unittest
 import numpy as np
 from rtichoke.helpers.validations import check_probs, check_probs_vs_reals, check_reals
-from rtichoke.rtichoke import Rtichoke
+from rtichoke import Rtichoke
 
 
 class TestCheckProbs(unittest.TestCase):
