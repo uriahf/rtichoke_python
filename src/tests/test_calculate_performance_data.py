@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 from numpy.testing import assert_allclose
-import rtichoke
+import rtichoke.rtichoke
 
 
 class TestPreparePerformanceTable(unittest.TestCase):
