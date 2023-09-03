@@ -80,9 +80,9 @@ class TestPreparePerformanceTable(unittest.TestCase):
         }
         r = rtichoke.Rtichoke(probs=probs, reals=reals, by=0.1)
 
-        expected_pop_name = ["pop1", "pop2"]
-        pt_table_pop_name = r.performance_table_pt["Population"].unique()
-        ppcr_table_pop_name = r.performance_table_ppcr["Population"].unique()
+        expected_pop_name = {"pop1", "pop2"}
+        pt_table_pop_name = set(r.performance_table_pt["Population"].unique())
+        ppcr_table_pop_name = set(r.performance_table_ppcr["Population"].unique())
 
         self.assertEqual(expected_pop_name, pt_table_pop_name)
         self.assertEqual(expected_pop_name, ppcr_table_pop_name)
