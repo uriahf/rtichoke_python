@@ -48,8 +48,8 @@ class Rtichoke:
 
         super().__init__()
 
-        self.probs = probs
-        self.reals = reals
+        self.probs = np.array(probs)
+        self.reals = np.array(reals)
         self.by = by
         self.performance_table_pt = None
         self.performance_table_ppcr = None

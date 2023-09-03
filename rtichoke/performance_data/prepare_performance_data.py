@@ -71,8 +71,8 @@ def prepare_performance_data(self: object, stratified_by: float):
 
 def prepare_performance_table(
     self: object,
-    probs: tuple[list, np.ndarray],
-    reals: tuple[list, np.ndarray],
+    probs: np.ndarray,
+    reals: np.ndarray,
     by: float,
     stratified_by: str,
     pop_name: str = "pop1",
