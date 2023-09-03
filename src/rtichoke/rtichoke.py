@@ -1,5 +1,6 @@
 """rtichoke is a package for interactive vizualization of performance metrics
 """
+from .helpers.helper_functions import *
 
 class Rtichoke:
     """Main Rtichoke class"""
