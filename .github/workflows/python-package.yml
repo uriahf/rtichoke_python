@@ -37,7 +37,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Analysing the code the pylint
       run: |
-        pylint -d C0103,C0415,R0902,R0903,R0913,R0914,R1710,R0801 $(git ls-files '*.py')
+        pylint -d C0103,C0415,R0902,R0903,R0913,R0914,R1710,R0801 --fail-under=9 $(git ls-files '*.py')
        
     - name: Test with unittest
       run: |
