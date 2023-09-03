@@ -87,8 +87,8 @@ class TestPreparePerformanceTable(unittest.TestCase):
         self.assertEqual(expected_pop_name, pt_table_pop_name)
         self.assertEqual(expected_pop_name, ppcr_table_pop_name)
 
-        self.assertEqual(r.performance_table_pt.shape, (15, 22))
-        self.assertEqual(r.performance_table_ppcr.shape, (15, 22))
+        self.assertEqual(r.performance_table_pt.shape, (22, 15))
+        self.assertEqual(r.performance_table_ppcr.shape, (22, 15))
 
 
 if __name__ == "__main__":
