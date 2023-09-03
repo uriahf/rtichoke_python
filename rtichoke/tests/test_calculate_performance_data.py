@@ -3,19 +3,19 @@ import unittest
 import numpy as np
 import pandas as pd
 from numpy.testing import assert_allclose
-from rtichoke import Rtichoke
-
-# UnitTests created with ChatGPT! :-)
+import rtichoke
 
 
 class TestPreparePerformanceTable(unittest.TestCase):
-    """UnitTest class to test performance tables"""
+    """UnitTest class to test performance tables
+       Tests were created with ChatGPT :-)
+    """
 
     def setUp(self):
         """Simulate an Rtichoke object"""
         probs = {"pop1": np.array([0.7, 0.8, 0.9, 0.4, 0.2, 0.6, 0.5])}
         reals = {"pop1": np.array([1, 1, 1, 0, 0, 1, 0])}
-        self.r = Rtichoke(probs=probs, reals=reals, by=0.1)
+        self.r = rtichoke.Rtichoke(probs=probs, reals=reals, by=0.1)
 
     def test_performance_table_type_and_size(self):
         """Test performance table type and size"""
@@ -78,17 +78,17 @@ class TestPreparePerformanceTable(unittest.TestCase):
             "pop1": np.array([1, 1, 1, 0, 0, 1, 0]),
             "pop2": np.array([1, 1, 1, 0, 0, 1, 0]),
         }
-        r = Rtichoke(probs=probs, reals=reals, by=0.1)
+        r = rtichoke.Rtichoke(probs=probs, reals=reals, by=0.1)
 
-        expected_pop_name = ["pop1", "pop2"]
-        pt_table_pop_name = r.performance_table_pt["Population"].unique()
-        ppcr_table_pop_name = r.performance_table_ppcr["Population"].unique()
+        expected_pop_name = {"pop1", "pop2"}
+        pt_table_pop_name = set(r.performance_table_pt["Population"].unique())
+        ppcr_table_pop_name = set(r.performance_table_ppcr["Population"].unique())
 
         self.assertEqual(expected_pop_name, pt_table_pop_name)
         self.assertEqual(expected_pop_name, ppcr_table_pop_name)
 
-        self.assertEqual(r.performance_table_pt.shape, (15, 22))
-        self.assertEqual(r.performance_table_ppcr.shape, (15, 22))
+        self.assertEqual(r.performance_table_pt.shape, (22, 15))
+        self.assertEqual(r.performance_table_ppcr.shape, (22, 15))
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+"""docs file"""
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -7,7 +8,7 @@
 # -- Project information -----------------------------------------------------
 
 project = "rtichoke"
-copyright = "2023, Uriah Finkel"
+copyrights = "2023, Uriah Finkel"
 author = "Uriah Finkel"
 
 # -- General configuration ---------------------------------------------------

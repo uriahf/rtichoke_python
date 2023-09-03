@@ -109,9 +109,7 @@ def plot_bokeh(self, generic_plot_dict, filename=None):
     )
 
     # add scatter
-    filtered_scatter = [
-        True if th == slider.value else False for th in df[stratification]
-    ]
+    filtered_scatter = [th == slider.value for th in df[stratification]]
     scatter_source = ColumnDataSource(data=df.loc[filtered_scatter])
 
     for j, pop in enumerate(pops):
@@ -132,7 +130,7 @@ def plot_bokeh(self, generic_plot_dict, filename=None):
     # Adding callback code
     source = ColumnDataSource(data=df.set_index("Population"))
     callback = CustomJS(
-        args=dict(source=source, scatter_source=scatter_source, val=slider),
+        args={"source": source, "scatter_source": scatter_source, "val": slider},
         code=create_JS_code(x=x, y=y, stratification=stratification),
     )
 

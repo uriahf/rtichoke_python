@@ -1,16 +1,9 @@
 """rtichoke is a package for interactive vizualization of performance metrics
 """
-
-from importlib.metadata import version
-
-# __version__ = version("rtichoke")
-
-from .helpers.helper_functions import *
-
+from .helpers.helper_functions import tprint
 
 class Rtichoke:
     """Main Rtichoke class"""
-
     # import methods
     from .performance_data.prepare_performance_data import (
         prepare_performance_data,
@@ -20,7 +13,6 @@ class Rtichoke:
         prepare_calibration_data,
         prepare_calibration_table,
     )
-
     from .helpers.validations import validate_inputs, validate_plot_inputs, check_by
     from .helpers.helper_functions import (
         select_data_table,

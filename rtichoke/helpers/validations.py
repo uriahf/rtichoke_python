@@ -52,7 +52,7 @@ def check_probs_vs_reals(probs, reals):
         raise ValueError(
             f"Probs and reals shapes are inconsistent ({probs.shape} and {reals.shape})"
         )
-    elif len(probs) < 2:
+    if len(probs) < 2:
         raise ValueError("At least two entries should be included reals and probs")
 
 
