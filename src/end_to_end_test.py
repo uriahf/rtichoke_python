@@ -7,7 +7,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import fetch_california_housing
 
-from rtichoke import Rtichoke
+from rtichoke.rtichoke import Rtichoke
 
 # create fake data
 
