@@ -1,7 +1,7 @@
 """rtichoke is a package for interactive vizualization of performance metrics
 """
-import numpy as np
 from typing import Union
+import numpy as np
 from .helpers.helper_functions import tprint
 
 
@@ -26,8 +26,8 @@ class Rtichoke:
 
     def __init__(
         self,
-        probs: Union[list, np.ndarray],
-        reals: Union[list, np.ndarray],
+        probs: Union[list, np.ndarray, dict],
+        reals: Union[list, np.ndarray, dict],
         by: float = 0.01,
         cal_n_bins: int = 100,
         cal_strategy: str = "quantile",
@@ -49,8 +49,8 @@ class Rtichoke:
 
         super().__init__()
 
-        self.probs = np.array(probs)
-        self.reals = np.array(reals)
+        self.probs = probs
+        self.reals = reals
         self.by = by
         self.performance_table_pt = None
         self.performance_table_ppcr = None

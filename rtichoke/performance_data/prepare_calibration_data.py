@@ -1,5 +1,6 @@
 """Functions to create data for calibration plots"""
 
+from typing import Union
 import numpy as np
 import pandas as pd
 
@@ -68,8 +69,8 @@ def prepare_calibration_data(self: object, n_bins: int, strategy: str):
 
 def prepare_calibration_table(
     self: object,
-    probs: np.ndarray,
-    reals: np.ndarray,
+    probs: Union[list, np.ndarray, dict],
+    reals: Union[list, np.ndarray, dict],
     n_bins: int,
     strategy: str,
     pop_name="pop1",

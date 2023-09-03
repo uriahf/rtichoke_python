@@ -1,5 +1,6 @@
 """Functions to create performance data tables"""
 
+from typing import Union
 import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix
@@ -71,8 +72,8 @@ def prepare_performance_data(self: object, stratified_by: float):
 
 def prepare_performance_table(
     self: object,
-    probs: np.ndarray,
-    reals: np.ndarray,
+    probs: Union[list, np.ndarray, dict],
+    reals: Union[list, np.ndarray, dict],
     by: float,
     stratified_by: str,
     pop_name: str = "pop1",
