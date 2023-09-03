@@ -68,8 +68,8 @@ def prepare_calibration_data(self: object, n_bins: int, strategy: str):
 
 def prepare_calibration_table(
     self: object,
-    probs: [list | np.array],
-    reals: [list | np.array],
+    probs: [list | np.ndarray],
+    reals: [list | np.ndarray],
     n_bins: int,
     strategy: str,
     pop_name="pop1",

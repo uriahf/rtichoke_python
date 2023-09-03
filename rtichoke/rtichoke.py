@@ -25,8 +25,8 @@ class Rtichoke:
 
     def __init__(
         self,
-        probs: tuple[list | np.array],
-        reals: tuple[list | np.array],
+        probs: tuple[list | np.ndarray],
+        reals: tuple[list | np.ndarray],
         by: float = 0.01,
         cal_n_bins: int = 100,
         cal_strategy: str = "quantile",
