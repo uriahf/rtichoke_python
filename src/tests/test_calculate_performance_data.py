@@ -15,7 +15,7 @@ class TestPreparePerformanceTable(unittest.TestCase):
         """Simulate an Rtichoke object"""
         probs = {"pop1": np.array([0.7, 0.8, 0.9, 0.4, 0.2, 0.6, 0.5])}
         reals = {"pop1": np.array([1, 1, 1, 0, 0, 1, 0])}
-        self.r = rtichoke.Rtichoke(probs=probs, reals=reals, by=0.1)
+        self.r = Rtichoke(probs=probs, reals=reals, by=0.1)
 
     def test_performance_table_type_and_size(self):
         """Test performance table type and size"""
@@ -78,7 +78,7 @@ class TestPreparePerformanceTable(unittest.TestCase):
             "pop1": np.array([1, 1, 1, 0, 0, 1, 0]),
             "pop2": np.array([1, 1, 1, 0, 0, 1, 0]),
         }
-        r = rtichoke.Rtichoke(probs=probs, reals=reals, by=0.1)
+        r = Rtichoke(probs=probs, reals=reals, by=0.1)
 
         expected_pop_name = ["pop1", "pop2"]
         pt_table_pop_name = r.performance_table_pt["Population"].unique()
