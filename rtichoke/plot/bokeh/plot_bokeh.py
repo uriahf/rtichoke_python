@@ -22,7 +22,7 @@ from .create_bokeh_plot_dict import (
 )
 
 
-def plot_bokeh(self, generic_plot_dict, filename=None):
+def plot_bokeh(self: object, generic_plot_dict: dict, filename: str = None):
     """Main method to plot using Bokeh interface
 
     Args:
@@ -147,7 +147,7 @@ def plot_bokeh(self, generic_plot_dict, filename=None):
         show(layout)
 
 
-def plot_bokeh_calibration(self, generic_plot_dict, filename=None):
+def plot_bokeh_calibration(self: object, generic_plot_dict: dict, filename: str = None):
     """Main method to plot calibration curve using Bokeh
 
     Args:
