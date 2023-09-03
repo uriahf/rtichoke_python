@@ -1,8 +1,8 @@
 """Sub-module to test Rtichoke validations"""
 import unittest
 import numpy as np
-from rtichoke.helpers.validations import check_probs, check_probs_vs_reals, check_reals
-from rtichoke.rtichoke import Rtichoke
+from .rtichoke.helpers.validations import check_probs, check_probs_vs_reals, check_reals
+from .rtichoke.rtichoke import Rtichoke
 
 
 class TestCheckProbs(unittest.TestCase):
@@ -95,13 +95,13 @@ class TestCheckBy(unittest.TestCase):
 
     def test_valid_by_value(self):
         """Test check_by: valid value"""
-        Rtichoke(probs=np.array([0.1, 0.5, 0.9]), reals=np.array([0, 1, 0]), by=0.25)
+        rtichoke.Rtichoke(probs=np.array([0.1, 0.5, 0.9]), reals=np.array([0, 1, 0]), by=0.25)
 
     def test_by_not_a_float(self):
         """Test check_by: `by` argument not a float"""
         # Test that an exception is raised when the input is not a float
         with self.assertRaises(ValueError) as e:
-            Rtichoke(
+            rtichoke.Rtichoke(
                 probs=np.array([0.1, 0.5, 0.9]), reals=np.array([0, 1, 0]), by="0.25"
             )
         self.assertEqual(
@@ -112,7 +112,7 @@ class TestCheckBy(unittest.TestCase):
         """Test check_by: `by` argument out of range"""
         # Test that an exception is raised when the input is out of range
         with self.assertRaises(ValueError) as e:
-            Rtichoke(
+            rtichoke.Rtichoke(
                 probs=np.array([0.1, 0.5, 0.9]), reals=np.array([0, 1, 0]), by="0.6"
             )
         self.assertEqual(
@@ -125,7 +125,7 @@ class TestValidateInputs(unittest.TestCase):
 
     def test_validate_inputs(self):
         """End-to-end test with valid inputs"""
-        r = Rtichoke(probs=np.array([0.1, 0.5, 0.9]), reals=np.array([0, 1, 0]), by=0.2)
+        r = rtichoke.Rtichoke(probs=np.array([0.1, 0.5, 0.9]), reals=np.array([0, 1, 0]), by=0.2)
 
         # test for valid input
         probs = np.array([0.1, 0.5, 0.9])
