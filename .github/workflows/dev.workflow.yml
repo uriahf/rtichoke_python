@@ -1,16 +1,14 @@
 # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: Python package
+name: Dev Workflow - PyLint & UnitTest, upload to TestPyPi
 
 on:
   push:
-    branches:
-      - main
+    branches:      
       - dev      
   pull_request:
-    branches:
-      - main
+    branches:      
       - dev      
 
 jobs:
@@ -36,10 +34,11 @@ jobs:
         python -m pip install poetry==1.6.1
         python -m pip install pylint
         poetry install        
+    
     - name: Analysing the code the pylint
       run: |
         poetry run pylint -d C0103,C0415,R0902,R0903,R0913,R0914,R1710,R0801 --fail-under=9 $(git ls-files '*.py')
        
     - name: Test with unittest
-      run: |
+      run: poetry run python -m unittest discover -s /.rtichoke/tests -p 'test_*.py'
         poetry run python -m unittest discover -s ./rtichoke/tests  -p 'test_*.py'  
