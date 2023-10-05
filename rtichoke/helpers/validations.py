@@ -1,7 +1,11 @@
 """script for validating inputs to rtichoke methods"""
+from typing import Union
+import numpy as np
 
 
-def validate_inputs(_, probs, reals):
+def validate_inputs(
+    _, probs: Union[list, np.ndarray], reals: Union[list, np.ndarray]
+) -> None:
     """A mother-function to run all other validation functions
 
     Args:
@@ -15,7 +19,7 @@ def validate_inputs(_, probs, reals):
     check_reals(reals)
 
 
-def check_probs(probs):
+def check_probs(probs: Union[list, np.ndarray]) -> None:
     """
     Validate probs by ensuring all values are between [0, 1]
 
@@ -32,7 +36,9 @@ def check_probs(probs):
         raise ValueError("Probs must be within [0, 1]")
 
 
-def check_probs_vs_reals(probs, reals):
+def check_probs_vs_reals(
+    probs: Union[list, np.ndarray], reals: Union[list, np.ndarray]
+) -> None:
     """
     Validate probs vs. reals:
     1. probs and reals must have the same shape
@@ -56,7 +62,7 @@ def check_probs_vs_reals(probs, reals):
         raise ValueError("At least two entries should be included reals and probs")
 
 
-def check_reals(reals):
+def check_reals(reals: Union[list, np.ndarray]) -> None:
     """
     Validate reals consist of only 0's and 1's, including positive and negative examples
 
@@ -73,7 +79,7 @@ def check_reals(reals):
         raise ValueError("Reals must include only 0's and 1's")
 
 
-def check_by(self):
+def check_by(self: object) -> None:
     """
     Validate `by` argument is between 0 and 0.5
 
@@ -90,7 +96,7 @@ def check_by(self):
         raise ValueError("Argument `by` must be a float,  0 > `by` <= 0.5")
 
 
-def validate_plot_inputs(_, curve_type, stratification):
+def validate_plot_inputs(_, curve_type: object, stratification: str) -> None:
     """This function runs child validation functions to ensure proper plotting inputs
 
     Args:
@@ -102,7 +108,7 @@ def validate_plot_inputs(_, curve_type, stratification):
     check_plot_stratification(stratification)
 
 
-def check_plot_curve_type(curve_type):
+def check_plot_curve_type(curve_type: str) -> None:
     """A method to verify requested curve_type is available.
 
     Args:
@@ -118,7 +124,7 @@ def check_plot_curve_type(curve_type):
         )
 
 
-def check_plot_stratification(stratification):
+def check_plot_stratification(stratification: str) -> None:
     """A method to verify stratification method
 
     Args:

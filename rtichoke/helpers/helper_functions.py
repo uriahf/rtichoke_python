@@ -1,10 +1,12 @@
 """A module with several helper functions for rtichoke"""
 
+from typing import Union, Tuple
 from datetime import datetime
 import numpy as np
+import pandas as pd
 
 
-def tprint(string):
+def tprint(string: str) -> None:
     """prints `string` with preceeding timestamp
 
     Args:
@@ -14,7 +16,12 @@ def tprint(string):
     print(now + " - " + string)
 
 
-def select_data_table(self, x_axis, y_axis, stratification="probability_threshold"):
+def select_data_table(
+    self: object,
+    x_axis: str,
+    y_axis: str,
+    stratification: str = "probability_threshold",
+) -> pd.DataFrame:
     """A method to return a dataframe which is a subset of the required performance table/
 
     Args:
@@ -47,11 +54,11 @@ def select_data_table(self, x_axis, y_axis, stratification="probability_threshol
 
 def modified_calibration_curve(
     _,
-    reals,
-    probs,
-    n_bins=10,
-    strategy="quantile",
-):
+    reals: Union[list, np.ndarray],
+    probs: Union[list, np.ndarray],
+    n_bins: int = 100,
+    strategy: str = "quantile",
+) -> Tuple[np.ndarray, np.ndarray, int, int, int]:
     """A modified version of sklearn.calibration.calibration_curve
     (https://scikit-learn.org/stable/modules/generated/sklearn.calibration.calibration_curve.html),
     to return number over cases in each bin.

@@ -1,12 +1,13 @@
 """Functions to create performance data tables"""
 
+from typing import Union
 import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix
 from tqdm import tqdm
 
 
-def prepare_performance_data(self, stratified_by):
+def prepare_performance_data(self: object, stratified_by: float):
     """
     User's function to produce performance data table for probs/reals.
     probs/reals may represent one probs vs. one reals, several probs vs. one real,
@@ -69,7 +70,14 @@ def prepare_performance_data(self, stratified_by):
     raise ValueError("Wrong inputs provided for probs and reals")
 
 
-def prepare_performance_table(self, probs, reals, by, stratified_by, pop_name="pop1"):
+def prepare_performance_table(
+    self: object,
+    probs: Union[list, np.ndarray, dict],
+    reals: Union[list, np.ndarray, dict],
+    by: float,
+    stratified_by: str,
+    pop_name: str = "pop1",
+):
     """Generate performance table for a single set of probs and reals.
 
     Args:

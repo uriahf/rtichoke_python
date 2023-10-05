@@ -1,9 +1,13 @@
 """rtichoke is a package for interactive vizualization of performance metrics
 """
+from typing import Union
+import numpy as np
 from .helpers.helper_functions import tprint
+
 
 class Rtichoke:
     """Main Rtichoke class"""
+
     # import methods
     from .performance_data.prepare_performance_data import (
         prepare_performance_data,
@@ -21,8 +25,28 @@ class Rtichoke:
     from .plot.plotting import plot
 
     def __init__(
-        self, probs=None, reals=None, by=0.01, cal_n_bins=10, cal_strategy="quantile"
+        self,
+        probs: Union[list, np.ndarray, dict],
+        reals: Union[list, np.ndarray, dict],
+        by: float = 0.01,
+        cal_n_bins: int = 100,
+        cal_strategy: str = "quantile",
     ):
+        """Rtichoke init method to generate an Rtichoke object
+
+        Args:
+            probs (tuple[list  |  np.array]): list or array of probabilities
+            reals (tuple[list  |  np.array]): list or array of true outcomes (0's or 1's)
+            by (float, optional): a float number indicating the spacing between
+                                  probability thresholds. Defaults to 0.01.
+            cal_n_bins (int, optional): define how many bins to have in calibration histogram.
+                                  Defaults to 100.
+            cal_strategy (str, optional): calibration binning method. Defaults to "quantile".
+
+        For details about cal_n_bins and cal_strategy see:
+        https://scikit-learn.org/stable/modules/generated/sklearn.calibration.calibration_curve.html
+        """
+
         super().__init__()
 
         self.probs = probs

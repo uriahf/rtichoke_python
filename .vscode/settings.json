@@ -6,7 +6,7 @@
     "python.testing.unittestArgs": [
         "-v",
         "-s",
-        "./src",
+        "./rtichoke",
         "-p",
         "test_*.py"
     ],

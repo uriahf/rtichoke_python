@@ -1,10 +1,11 @@
 """Functions to create data for calibration plots"""
 
+from typing import Union
 import numpy as np
 import pandas as pd
 
 
-def prepare_calibration_data(self, n_bins, strategy):
+def prepare_calibration_data(self: object, n_bins: int, strategy: str):
     """
     User's function to produce performance data table for probs/reals.
     probs/reals may represent one probs vs. one reals, several probs vs. one real,
@@ -66,7 +67,14 @@ def prepare_calibration_data(self, n_bins, strategy):
     raise ValueError("Wrong inputs provided for probs and reals")
 
 
-def prepare_calibration_table(self, probs, reals, n_bins, strategy, pop_name="pop1"):
+def prepare_calibration_table(
+    self: object,
+    probs: Union[list, np.ndarray, dict],
+    reals: Union[list, np.ndarray, dict],
+    n_bins: int,
+    strategy: str,
+    pop_name="pop1",
+) -> pd.DataFrame:
     """Generate calibration data table for a single set of probs and reals.
 
     Args:
