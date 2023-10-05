@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "rtichoke_python"
+name = "rtichoke"
 version = "0.14"
 description = "First fully Pythonic version"
 authors = ["urigott <urigott@gmail.com>"]
