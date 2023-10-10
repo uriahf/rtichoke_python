@@ -55,7 +55,7 @@ jobs:
       # retrieve your distributions here
       - name: build dist
         run: |
-          poetry build
+          python -m build
           
       - name: Publish package distributions to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
