@@ -64,13 +64,15 @@ jobs:
         pip install poetry
         poetry build
 
-    - name: Publish package with Poetry
+    - name: Set repository and username for TestPyPi
       run: |        
-        poetry config pypi.testpypi.org.token ${{secrets.TESTPYPI_API_TOKEN}}
-        poetry publish --build -n
+        poetry config pypi.testpypi.org.user urigott
+        poetry config pypi.testpypi.org.password ${{secrets.TESTPYPI_API_TOKEN}}
+        poetry config pypi.testpypi.org.repository-url: https://test.pypi.org/legacy/
+    
+    - name: Build and publish with Poetry
+      run: poetry publish --build -n
 
-env:
-  POETRY_PYPI_TOKEN: ${{secrets.TESTPYPI_API_TOKEN}}
 
   # testpypi-publish:
   #     needs: lint-and-test
