@@ -47,7 +47,7 @@ jobs:
     needs: lint-and-test 
     runs-on: ubuntu-latest
     permissions:
-    id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
 
     steps:
     - name: Checkout code
