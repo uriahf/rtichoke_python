@@ -58,17 +58,18 @@ jobs:
       with:
         python-version: "3.10"
 
-    - name: Install dependencies
-      run: pip install -r requirements.txt
-
-    - name: Build package with Poetry
+    - name: Install dependencies and build package
       run: |
-        pip install poetry
+        python -m pip install --upgrade pip
+        python -m pip install poetry==1.6.1
+        python -m pip install pylint
+        poetry install 
         poetry build
     
     - name: Publish package distributions to TestPyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:        
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
 
     # - name: Set repository and publish
