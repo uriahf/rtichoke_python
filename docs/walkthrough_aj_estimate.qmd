@@ -1,6 +1,9 @@
 ---
 title: "Hello, Quarto"
 format: html
+echo: false
+message: false
+warning: false
 ---
 
 ## Markdown
@@ -16,9 +19,11 @@ Markdown is an easy to read and write text format:
 Here is a Python code cell:
 
 ```{python}
-
+from lifelines import AalenJohansenFitter
 import numpy as np
 from itertools import product
+import itertools
+
 import pandas as pd
 from lifelines import CoxPHFitter
 
@@ -34,6 +39,8 @@ def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
     pd.DataFrame: DataFrame with Aalen-Johansen estimates
     """
     import numpy as np
+
+    # print(f"data_to_adjust: {data_to_adjust}")
     
     # Ensure 'strata' column exists
     if 'strata' not in data_to_adjust.columns:
@@ -144,31 +151,48 @@ def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
 
 def extract_crude_estimate(data_to_adjust):
     """
-    Calculate crude estimates for each group in the data.
-
-    Parameters:
-    data_to_adjust (pd.DataFrame): DataFrame containing the data to adjust with columns 'strata', 'reals', and 'fixed_time_horizon'.
-
+    Computes the crude estimate by counting occurrences of 'reals' within 
+    each combination of 'strata' and 'fixed_time_horizon'.
+    
+    Args:
+        data_to_adjust (pd.DataFrame): Data containing 'strata', 'reals', and 'fixed_time_horizon'.
+        
     Returns:
-    pd.DataFrame: DataFrame with crude estimates for each group.
+        pd.DataFrame: Aggregated counts with missing combinations filled with zero.
     """
-    # Count occurrences of each group
-    grouped = (
+    # Group by strata, reals, and fixed_time_horizon, then count occurrences
+    
+    # print('data_to_adjust')
+    # print(data_to_adjust)
+    
+    crude_estimate = (
         data_to_adjust
-        .groupby(["strata", "reals", "fixed_time_horizon"])
+        .groupby(["strata", "reals", "fixed_time_horizon"], dropna=False)
         .size()
-        .reset_index(name="reals_estimate")  # Equivalent to dplyr::summarise(n())
+        .reset_index(name="reals_estimate")
     )
 
-    # Create a complete grid of all possible combinations
-    strata_values = data_to_adjust["strata"].unique()
-    reals_values = data_to_adjust["reals"].unique()
-    fixed_time_horizon_values = data_to_adjust["fixed_time_horizon"].unique()
+    unique_strata = data_to_adjust["strata"].unique()
+    unique_time_horizons = data_to_adjust["fixed_time_horizon"].unique()
+    unique_reals = data_to_adjust["reals"].unique()
 
-    complete_grid = pd.DataFrame(
-        list(product(strata_values, reals_values, fixed_time_horizon_values)),
+    # return crude_estimate
+
+    # Create all possible combinations to ensure completeness
+    all_combinations = pd.DataFrame(
+        list(itertools.product(unique_strata, unique_reals, unique_time_horizons)),
         columns=["strata", "reals", "fixed_time_horizon"]
     )
+
+
+    # Ensure all possible combinations are present and fill missing values with 0
+    crude_estimate = (
+        all_combinations
+        .merge(crude_estimate, on=["strata", "reals", "fixed_time_horizon"], how="left")
+        .fillna({"reals_estimate": 0})
+    )
+
+    return crude_estimate
 
 def add_cutoff_strata(data, by):
     data["strata_probability_threshold"] = pd.cut(
@@ -176,16 +200,11 @@ def add_cutoff_strata(data, by):
         bins=create_breaks_values(data["probs"], "probability_threshold", by),
         include_lowest=True
     )
-    data["strata_ppcr"] = pd.qcut(-data["probs"], q=int(1/by), labels=False) + 1
+    data["strata_ppcr"] = (pd.qcut(-data["probs"], q=int(1/by), labels=False) + 1) / (1 / by)
     data["strata_ppcr"] = data["strata_ppcr"].astype(str)
     return data
 
-def create_breaks_values(probs_vec, stratified_by, by):
-    if stratified_by != "probability_threshold":
-        breaks = np.quantile(probs_vec, np.linspace(1, 0, int(1/by) + 1))
-    else:
-        breaks = np.round(np.arange(0, 1 + by, by), decimals=len(str(by).split(".")[-1]))
-    return breaks
+
 
 def create_strata_combinations(stratified_by, by):
     if stratified_by == "probability_threshold":
@@ -195,7 +214,7 @@ def create_strata_combinations(stratified_by, by):
         mid_point = upper_bound - by / 2
         include_lower_bound = lower_bound == 0
         include_upper_bound = upper_bound != 0
-        strata = [f"{'[' if lb else '('}{l},{u}{']' if ub else ')'}" for lb, l, u, ub in zip(include_lower_bound, lower_bound, upper_bound, include_upper_bound)]
+        strata = [f"{'[' if lb else '('}{l}, {u}{']' if ub else ')'}" for lb, l, u, ub in zip(include_lower_bound, lower_bound, upper_bound, include_upper_bound)]
         chosen_cutoff = upper_bound
     elif stratified_by == "ppcr":
         strata = create_breaks_values(None, "probability_threshold", by)[1:]
@@ -288,7 +307,6 @@ stratified_by = ["probability_threshold", "ppcr"]
 # Placeholder for create_aj_data_combinations
 aj_data_combinations = create_aj_data_combinations(list(probs_cox.keys()), fixed_time_horizons, stratified_by, 0.01)
 
-aj_data_combinations
 
 # Create reference groups
 data_to_adjust = pd.DataFrame({
@@ -300,6 +318,24 @@ data_to_adjust = pd.DataFrame({
 
 # # Placeholder for add_cutoff_strata function
 data_to_adjust = add_cutoff_strata(data_to_adjust, by=0.01)
+
+def pivot_longer_strata(data):
+    data = data.copy()  # Ensure we are not modifying the original DataFrame
+    
+    # Melt the DataFrame, converting multiple 'strata_*' columns into long format
+    data_long = data.melt(
+        id_vars=[col for col in data.columns if not col.startswith("strata_")],  # Keep all non-strata columns
+        value_vars=[col for col in data.columns if col.startswith("strata_")],  # Melt only strata columns
+        var_name="stratified_by", 
+        value_name="strata"
+    )
+
+    # Remove "strata_" prefix from stratified_by column (equivalent to `names_prefix = "strata_"` in R)
+    data_long["stratified_by"] = data_long["stratified_by"].str.replace("strata_", "")
+
+    return data_long
+
+data_to_adjust = pivot_longer_strata(data_to_adjust)
 
 data_to_adjust["reals"] = data_to_adjust["reals"].replace({
     0: "real_negatives",
@@ -313,11 +349,11 @@ list_data_to_adjust = {k: v for k, v in data_to_adjust.groupby("reference_group"
 
 # # Define assumption sets
 assumption_sets = [
-    {"competing": "excluded", "censored": "excluded"},
-    {"competing": "adjusted_as_negative", "censored": "adjusted"},
-    {"competing": "adjusted_as_censored", "censored": "adjusted"},
-    {"competing": "excluded", "censored": "adjusted"},
-    {"competing": "adjusted_as_negative", "censored": "excluded"}
+    {"competing": "excluded", "censored": "excluded"}#,
+    # {"competing": "adjusted_as_negative", "censored": "adjusted"},
+    # {"competing": "adjusted_as_censored", "censored": "adjusted"},
+    # {"competing": "excluded", "censored": "adjusted"},
+    # {"competing": "adjusted_as_negative", "censored": "excluded"}
 ]
 
 def update_administrative_censoring(data_to_adjust):
@@ -340,7 +376,17 @@ def update_administrative_censoring(data_to_adjust):
 def extract_aj_estimate_by_assumptions(data_to_adjust, fixed_time_horizons, 
                                        censoring_assumption="excluded", 
                                        competing_assumption="excluded"):
+    
+    # print('censoring_assumption')
+    # print(censoring_assumption)
+
+    # print('competing assumption')
+    # print(competing_assumption)
+
+    
     if censoring_assumption == "excluded" and competing_assumption == "excluded":
+
+        
         aj_estimate_data = (
             data_to_adjust
             .assign(fixed_time_horizon=lambda df: df.apply(lambda x: fixed_time_horizons, axis=1))
@@ -348,6 +394,9 @@ def extract_aj_estimate_by_assumptions(data_to_adjust, fixed_time_horizons,
             .pipe(update_administrative_censoring)
             .pipe(extract_crude_estimate)
         )
+
+        # print('aj_estimate-data')
+        # print(aj_estimate_data)
     
     elif censoring_assumption == "excluded" and competing_assumption == "adjusted_as_negative":
         aj_estimate_data_excluded = (
@@ -435,3 +484,152 @@ list_data_to_adjust
 ```
 
 
+```{python}
+
+list_data_to_adjust
+
+# Adjust data based on assumptions
+adjusted_data_list = []
+for reference_group, group_data in list_data_to_adjust.items():
+    for assumptions in assumption_sets:
+        # print(f"Processing assumptions: {assumptions}")
+        # print(f"group_data: {group_data}")
+        # adjusted_data = extract_aj_estimate_by_assumptions(
+        #     group_data,
+        #     fixed_time_horizons=fixed_time_horizons,
+        #     censoring_assumption="excluded",
+        #     competing_assumption="excluded"
+        # )
+        adjusted_data = extract_aj_estimate_by_assumptions(
+            group_data,
+            fixed_time_horizons=fixed_time_horizons,
+            censoring_assumption=assumptions["censored"],
+            competing_assumption=assumptions["competing"]
+        )
+        adjusted_data["reference_group"] = reference_group
+        adjusted_data_list.append(adjusted_data)
+
+# Combine all adjusted data
+final_adjusted_data = pd.concat(adjusted_data_list, ignore_index=True)
+
+aj_data_combinations['strata'] = aj_data_combinations['strata'].astype(str)
+
+final_adjusted_data['strata'] = final_adjusted_data['strata'].astype(str)
+
+aj_data_combinations['reals'] = aj_data_combinations['reals'].astype(str)
+
+final_adjusted_data['reals'] = final_adjusted_data['reals'].astype(str)
+
+categories = ["real_negatives", "real_positives", "real_competing", "real_censored"]
+aj_data_combinations['reals'] = pd.Categorical(aj_data_combinations['reals'], categories=categories, ordered=True)
+final_adjusted_data['reals'] = pd.Categorical(final_adjusted_data['reals'], categories=categories, ordered=True)
+
+combined_adjusted_data = aj_data_combinations.merge(final_adjusted_data, on=["reference_group", "fixed_time_horizon", "censoring_assumption", "competing_assumption", "reals", "strata"], how='left')
+
+```
+
+```{python}
+
+ojs_define(reference_groups_data = ["thin", "full"])
+
+ojs_define(data = combined_adjusted_data)
+
+```
+
+```{ojs}
+
+//| panel: input
+
+viewof time_horizon = Inputs.range(
+  [1, 5], 
+  {value: 3, step: 2, label: "Time Horizon:"}
+)
+
+viewof reference_group = Inputs.radio(
+  reference_groups_data, {label: "Reference Group"}
+)
+
+viewof stratified_by = Inputs.radio(
+  ["probability_threshold", "ppcr"], {value: "probability_threshold", label: "Stratified By"}
+)
+
+viewof censored_assumption = Inputs.radio(
+  ["excluded", "adjusted"], {value: "excluded", label: "Censored Assumption"}
+)
+
+viewof competing_assumption = Inputs.radio(
+  ["excluded", "adjusted_as_negative", "adjusted_as_censored", "reals"], {value: "excluded", label: "Competing Assumption"}
+)
+
+```
+
+```{ojs}
+
+//cumulative_aj_data_filtered = transpose(cumulative_aj_data).filter(function(subset) {
+//
+//  return time_horizon == subset.fixed_time_horizon &&
+//         censored_assumption == subset.censored_assumption &&
+//         competing_assumption == subset.competing_assumption &&
+//         stratified_by == subset.stratified_by && 
+//         reference_group === subset.reference_group;
+//})
+
+filtered = transpose(data).filter(function(subset) {
+
+  return time_horizon == subset.fixed_time_horizon &&
+         censored_assumption == subset.censoring_assumption &&
+         competing_assumption == subset.competing_assumption &&
+         stratified_by === subset.stratified_by && 
+         reference_group === subset.reference_group;
+})
+
+filtered
+
+
+```
+
+```{ojs}
+
+  
+Plot.plot({
+  marks: [
+    Plot.barY(filtered, { 
+      x: "strata", 
+      y: "reals_estimate", 
+      fill: "reals", 
+      tip: true 
+    })
+  ],
+  color: {
+    domain: ["real_positives", "real_competing", "real_negatives", "real_censored"], 
+    range: ["#009e73", "#9DB4C0", "#FAC8CD", "#E3F09B"],
+    legend: true
+  }
+})
+
+``` 
+
+```{python}
+
+# combined_adjusted_data.dropna(subset=['reals_estimate'])
+# # 
+
+# Perform left join between aj_data_combinations and final_adjusted_data on 'strata' and 'reals_estimate'
+# only when stratified_by == 'probability_threshold' for aj_data_combinations
+
+aj_data_combinations_prob_threshold = aj_data_combinations[aj_data_combinations['stratified_by'] == 'probability_threshold']
+
+# Convert 'strata' columns to strings
+aj_data_combinations_prob_threshold['strata'] = aj_data_combinations_prob_threshold['strata'].astype(str)
+final_adjusted_data['strata'] = final_adjusted_data['strata'].astype(str)
+
+combined_adjusted_data = aj_data_combinations_prob_threshold.merge(
+    final_adjusted_data[['strata', 'reals', 'reals_estimate']],
+    on=['strata', 'reals'],
+    how='left'
+)
+
+
+aj_data_combinations_prob_threshold[['strata']]
+final_adjusted_data[['strata']]
+```
