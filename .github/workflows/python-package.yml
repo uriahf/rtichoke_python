@@ -50,9 +50,6 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: '3.x'
-    - name: Build package
-      run: |
-        poetry build
     - name: Publish package
       env:
         TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
