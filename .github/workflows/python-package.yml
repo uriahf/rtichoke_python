@@ -31,6 +31,9 @@ jobs:
     - name: Set up Python
       run: uv python install
 
+    - name: Install the project
+      run: uv sync --all-extras --dev
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
