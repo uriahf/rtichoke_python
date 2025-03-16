@@ -36,6 +36,3 @@ jobs:
 
     - name: Run tests
       run: uv run pytest tests
-    
-    - name: Publish package
-      run: uv publish
