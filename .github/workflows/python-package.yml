@@ -36,3 +36,9 @@ jobs:
 
     - name: Run tests
       run: uv run pytest tests
+
+    - name: Show package version
+      run: grep -r "version" pyproject.toml || grep -r "__version__" rtichoke/ || python -c "import rtichoke; print(rtichoke.__version__)"
+    
+    - name: Publish package
+      run: uv publish
