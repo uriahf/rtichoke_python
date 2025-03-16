@@ -41,4 +41,5 @@ jobs:
       run: grep -r "version" pyproject.toml || grep -r "__version__" rtichoke/ || python -c "import rtichoke; print(rtichoke.__version__)"
     
     - name: Publish package
+      if: github.ref == 'refs/heads/main' && matrix.python-version == '3.10'
       run: uv publish

@@ -14,7 +14,7 @@ dependencies = [
     "importlib>=1.0.4",
 ]
 name = "rtichoke"
-version = "0.1.9"
+version = "0.1.10"
 description = "interactive visualizations for performance of predictive models"
 readme = "README.md"
 
