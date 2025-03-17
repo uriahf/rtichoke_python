@@ -21,32 +21,26 @@
     "text": "Code Cell\nHere is a Python code cell:\n\n\n\n\n\n\n\n\n\nviewof time_horizon = Inputs.range(\n  [1, 5], \n  {value: 3, step: 2, label: \"Time Horizon:\"}\n)\n\nviewof reference_group = Inputs.radio(\n  reference_groups_data, {label: \"Reference Group\"}\n)\n\nviewof stratified_by = Inputs.radio(\n  [\"probability_threshold\", \"ppcr\"], {value: \"probability_threshold\", label: \"Stratified By\"}\n)\n\nviewof censored_assumption = Inputs.radio(\n  [\"excluded\", \"adjusted\"], {value: \"excluded\", label: \"Censored Assumption\"}\n)\n\nviewof competing_assumption = Inputs.radio(\n  [\"excluded\", \"adjusted_as_negative\", \"adjusted_as_censored\", \"reals\"], {value: \"excluded\", label: \"Competing Assumption\"}\n)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nfiltered = transpose(data).filter(function(subset) {\n\n  return time_horizon == subset.fixed_time_horizon &&\n         censored_assumption == subset.censoring_assumption &&\n         competing_assumption == subset.competing_assumption &&\n         stratified_by === subset.stratified_by && \n         reference_group === subset.reference_group;\n})\n\nfiltered\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPlot.plot({\n  marks: [\n    Plot.barY(filtered, { \n      x: \"strata\", \n      y: \"reals_estimate\", \n      fill: \"reals\", \n      tip: true \n    })\n  ],\n  color: {\n    domain: [\"real_positives\", \"real_competing\", \"real_negatives\", \"real_censored\"], \n    range: [\"#009e73\", \"#9DB4C0\", \"#FAC8CD\", \"#E3F09B\"],\n    legend: true\n  }\n})\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nstrata\n\n\n\n\n0\n(0.99, 1.0]\n\n\n1\n(0.99, 1.0]\n\n\n2\n(0.99, 1.0]\n\n\n3\n(0.99, 1.0]\n\n\n4\n(0.99, 1.0]\n\n\n...\n...\n\n\n3943\n0.93\n\n\n3944\n0.93\n\n\n3945\n0.93\n\n\n3946\n0.93\n\n\n3947\n0.93\n\n\n\n\n3948 rows × 1 columns"
   },
   {
-    "objectID": "reference/create_calibration_curve.html",
-    "href": "reference/create_calibration_curve.html",
-    "title": "create_calibration_curve",
+    "objectID": "reference/plot_precision_recall_curve.html",
+    "href": "reference/plot_precision_recall_curve.html",
+    "title": "plot_precision_recall_curve",
     "section": "",
-    "text": "create_calibration_curve\ncreate_calibration_curve(\n    probs,\n    reals,\n    calibration_type='discrete',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreates Calibration Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description calibration_type (str, optional): description. Defaults to “discrete”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description"
+    "text": "plot_precision_recall_curve\nplot_precision_recall_curve(\n    performance_data,\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nPlot Precision Recall Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Discrimination",
+      "plot_precision_recall_curve"
+    ]
   },
   {
-    "objectID": "contributing.html",
-    "href": "contributing.html",
-    "title": "",
+    "objectID": "reference/create_gains_curve.html",
+    "href": "reference/create_gains_curve.html",
+    "title": "create_gains_curve",
     "section": "",
-    "text": "qlwcoxhtd ../CONTRIBUTING.md"
-  },
-  {
-    "objectID": "changelog.html",
-    "href": "changelog.html",
-    "title": "",
-    "section": "",
-    "text": "dycxzqlpa ../CHANGELOG.md"
-  },
-  {
-    "objectID": "conduct.html",
-    "href": "conduct.html",
-    "title": "",
-    "section": "",
-    "text": "xoarobsav ../CONDUCT.md"
+    "text": "create_gains_curve\ncreate_gains_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreate Gains Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Discrimination",
+      "create_gains_curve"
+    ]
   },
   {
     "objectID": "example.html",
@@ -56,17 +50,72 @@
     "text": "To use rtichoke in a project:\n\nimport rtichoke\n\nprint(rtichoke.__version__)\n\n\n---------------------------------------------------------------------------\nModuleNotFoundError                       Traceback (most recent call last)\nCell In[2], line 1\n----&gt; 1 import rtichoke\n      3 print(rtichoke.__version__)\n\nModuleNotFoundError: No module named 'rtichoke'\n\n\n\n\nimport pandas as pd\nimport json\nimport requests\nfrom sklearn.datasets import make_classification\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LogisticRegression\nimport numpy as np\n\nlr = LogisticRegression()\nx = np.arange(10).reshape(-1, 1)\ny = np.array([0, 1, 0, 0, 1, 1, 1, 0, 0, 1])\n\nx_test = np.arange(7).reshape(-1, 1)\ny_test = np.array([1, 0, 1, 0, 1, 0, 0])\n\nmodel = LogisticRegression(solver=\"liblinear\", random_state=0)\nlasso = LogisticRegression(solver=\"liblinear\", penalty=\"l1\", random_state=0)\n\nmodel.fit(x, y)\nlasso.fit(x_test, y_test)\n\nprobs_dict_for_examples = {\n    \"One Model\": {\"Logistic Regression\": model.predict_proba(x)[:, 1].tolist()},\n    \"Multiple Models\": {\n        \"Logistic Regression\": model.predict_proba(x)[:, 1].tolist(),\n        \"Lasso\": lasso.predict_proba(x)[:, 1].tolist(),\n    },\n    \"Multiple Populations\": {\n        \"Train\": model.predict_proba(x)[:, 1].tolist(),\n        \"Test\": model.predict_proba(x_test)[:, 1].tolist(),\n    },\n}\n\nreals_dict_for_examples = {\n    \"One Model\": {\"Logistic Regression\": y.tolist()},\n    \"Multiple Models\": {\"Reals\": y.tolist()},\n    \"Multiple Populations\": {\"Train\": y.tolist(), \"Test\": y_test.tolist()},\n}\n\n\n\nperformance_datas = [\n    rtichoke.prepare_performance_data(\n        probs=probs_dict_for_examples[x],\n        reals=reals_dict_for_examples[x],\n        stratified_by=stratified_by,\n        url_api=\"http://127.0.0.1:7644/\",\n    )\n    for x in probs_dict_for_examples.keys()\n    for stratified_by in [\"probability_threshold\", \"ppcr\"]\n]\n\nperformance_datas[0]\n\ndict_keys(['probability_threshold', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives', 'NB', 'ppcr'])\ndict_keys(['probability_threshold', 'ppcr', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives'])\ndict_keys(['model', 'probability_threshold', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives', 'NB', 'ppcr'])\ndict_keys(['model', 'probability_threshold', 'ppcr', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives'])\ndict_keys(['population', 'probability_threshold', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives', 'NB', 'ppcr'])\ndict_keys(['population', 'probability_threshold', 'ppcr', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives'])\n\n\n\n\n\n\n\n\n\nprobability_threshold\nTP\nTN\nFN\nFP\nsensitivity\nFPR\nspecificity\nPPV\nNPV\nlift\npredicted_positives\nNB\nppcr\n\n\n\n\n0\n0.00\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.5000\n1.0\n\n\n1\n0.01\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.4949\n1.0\n\n\n2\n0.02\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.4898\n1.0\n\n\n3\n0.03\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.4845\n1.0\n\n\n4\n0.04\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.4792\n1.0\n\n\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n\n\n96\n0.96\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\n0.0000\n0.0\n\n\n97\n0.97\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\n0.0000\n0.0\n\n\n98\n0.98\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\n0.0000\n0.0\n\n\n99\n0.99\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\n0.0000\n0.0\n\n\n100\n1.00\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\nNaN\n0.0\n\n\n\n\n101 rows × 14 columns\n\n\n\n\nroc_curves = [\n    rtichoke.create_roc_curve(\n        probs=probs_dict_for_examples[x],\n        reals=reals_dict_for_examples[x],\n        size=600,\n        stratified_by=stratified_by,\n        url_api=\"http://127.0.0.1:7644/\",\n    )\n    for x in probs_dict_for_examples.keys()\n    for stratified_by in [\"probability_threshold\", \"ppcr\"]\n]\n\n# roc_curves[0].show(config={'displayModeBar': False})\n# roc_curves[1].show(config={'displayModeBar': False})\n# roc_curves[2].show(config={'displayModeBar': False})\n# roc_curves[3].show(config={'displayModeBar': False})\nroc_curves[4].show(config={'displayModeBar': False})\n# roc_curves[5].show(config={'displayModeBar': False})"
   },
   {
+    "objectID": "conduct.html",
+    "href": "conduct.html",
+    "title": "My Documentation Site",
+    "section": "",
+    "text": "vdyqprhbu ../CONDUCT.md"
+  },
+  {
+    "objectID": "changelog.html",
+    "href": "changelog.html",
+    "title": "My Documentation Site",
+    "section": "",
+    "text": "cpixtrytk ../CHANGELOG.md"
+  },
+  {
+    "objectID": "contributing.html",
+    "href": "contributing.html",
+    "title": "My Documentation Site",
+    "section": "",
+    "text": "orcuyzium ../CONTRIBUTING.md"
+  },
+  {
+    "objectID": "reference/create_calibration_curve.html",
+    "href": "reference/create_calibration_curve.html",
+    "title": "create_calibration_curve",
+    "section": "",
+    "text": "create_calibration_curve\ncreate_calibration_curve(\n    probs,\n    reals,\n    calibration_type='discrete',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreates Calibration Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description calibration_type (str, optional): description. Defaults to “discrete”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Calibration",
+      "create_calibration_curve"
+    ]
+  },
+  {
     "objectID": "reference/index.html",
     "href": "reference/index.html",
     "title": "Function reference",
     "section": "",
-    "text": "Functions to inspect docstrings.\n\n\n\ncreate_calibration_curve\nCreates Calibration Curve"
+    "text": "Functions to inspect docstrings.\n\n\n\ncreate_calibration_curve\nCreates Calibration Curve\n\n\n\n\n\n\nFunctions to inspect docstrings.\n\n\n\ncreate_gains_curve\nCreate Gains Curve\n\n\nplot_precision_recall_curve\nPlot Precision Recall Curve",
+    "crumbs": [
+      "Function reference"
+    ]
   },
   {
-    "objectID": "reference/index.html#some-functions",
-    "href": "reference/index.html#some-functions",
+    "objectID": "reference/index.html#calibration",
+    "href": "reference/index.html#calibration",
     "title": "Function reference",
     "section": "",
-    "text": "Functions to inspect docstrings.\n\n\n\ncreate_calibration_curve\nCreates Calibration Curve"
+    "text": "Functions to inspect docstrings.\n\n\n\ncreate_calibration_curve\nCreates Calibration Curve",
+    "crumbs": [
+      "Function reference"
+    ]
+  },
+  {
+    "objectID": "reference/index.html#discrimination",
+    "href": "reference/index.html#discrimination",
+    "title": "Function reference",
+    "section": "",
+    "text": "Functions to inspect docstrings.\n\n\n\ncreate_gains_curve\nCreate Gains Curve\n\n\nplot_precision_recall_curve\nPlot Precision Recall Curve",
+    "crumbs": [
+      "Function reference"
+    ]
+  },
+  {
+    "objectID": "reference/rtichoke.html",
+    "href": "reference/rtichoke.html",
+    "title": "rtichoke",
+    "section": "",
+    "text": "rtichoke\nrtichoke"
   }
 ]
