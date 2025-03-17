@@ -1,0 +1,13 @@
+website:
+  sidebar:
+  - contents:
+    - reference/index.qmd
+    - contents:
+      - reference/create_calibration_curve.qmd
+      section: Calibration
+    - contents:
+      - reference/create_gains_curve.qmd
+      - reference/plot_precision_recall_curve.qmd
+      section: Discrimination
+    id: reference
+  - id: dummy-sidebar

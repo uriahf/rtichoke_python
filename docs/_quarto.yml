@@ -1,0 +1,31 @@
+project:
+  type: website
+
+metadata-files:
+  - _sidebar.yml
+
+website:
+  title: "My Documentation Site"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: about.qmd
+        text: About
+      - href: walkthrough_aj_estimate.qmd
+        text: Example
+
+quartodoc:
+  # the name used to import the package you want to create reference docs for
+  package: rtichoke
+  sidebar: "_sidebar.yml"
+  sections:
+    - title: Calibration
+      desc: Functions to inspect docstrings.
+      contents:
+        - create_calibration_curve
+    - title: Discrimination
+      desc: Functions to inspect docstrings.
+      contents:
+        - create_gains_curve
+        - plot_precision_recall_curve

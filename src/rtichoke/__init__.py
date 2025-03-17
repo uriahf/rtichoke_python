@@ -1,5 +1,4 @@
-"""rtichoke is a package for interactive vizualization of performance metrics
-"""
+"""rtichoke is a package for interactive vizualization of performance metrics"""
 
 from importlib.metadata import version
 

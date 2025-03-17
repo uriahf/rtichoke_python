@@ -479,7 +479,6 @@ def extract_aj_estimate_by_assumptions(data_to_adjust, fixed_time_horizons,
 # # Combine all adjusted data
 # final_adjusted_data = pd.concat(adjusted_data_list, ignore_index=True)
 
-list_data_to_adjust
 
 ```
 
@@ -546,7 +545,7 @@ viewof time_horizon = Inputs.range(
 )
 
 viewof reference_group = Inputs.radio(
-  reference_groups_data, {label: "Reference Group"}
+  reference_groups_data, {label: "Reference Group"}, {value: 'thin'}
 )
 
 viewof stratified_by = Inputs.radio(

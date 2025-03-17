@@ -103,10 +103,10 @@ def create_rtichoke_curve(
     rtichoke_curve_list["performance_data_ready_for_curve"] = pd.DataFrame.from_dict(
         rtichoke_curve_list["performance_data_ready_for_curve"]
     )
-    rtichoke_curve_list[
-        "performance_data_for_interactive_marker"
-    ] = pd.DataFrame.from_dict(
-        rtichoke_curve_list["performance_data_for_interactive_marker"]
+    rtichoke_curve_list["performance_data_for_interactive_marker"] = (
+        pd.DataFrame.from_dict(
+            rtichoke_curve_list["performance_data_for_interactive_marker"]
+        )
     )
 
     fig = create_plotly_curve(rtichoke_curve_list)
@@ -184,10 +184,10 @@ def plot_rtichoke_curve(
     rtichoke_curve_list["performance_data_ready_for_curve"] = pd.DataFrame.from_dict(
         rtichoke_curve_list["performance_data_ready_for_curve"]
     )
-    rtichoke_curve_list[
-        "performance_data_for_interactive_marker"
-    ] = pd.DataFrame.from_dict(
-        rtichoke_curve_list["performance_data_for_interactive_marker"]
+    rtichoke_curve_list["performance_data_for_interactive_marker"] = (
+        pd.DataFrame.from_dict(
+            rtichoke_curve_list["performance_data_for_interactive_marker"]
+        )
     )
 
     fig = create_plotly_curve(rtichoke_curve_list)

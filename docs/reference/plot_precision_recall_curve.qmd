@@ -1,0 +1,21 @@
+# plot_precision_recall_curve { #rtichoke.plot_precision_recall_curve }
+
+```python
+plot_precision_recall_curve(
+    performance_data,
+    size=None,
+    color_values=None,
+    url_api='http://localhost:4242/',
+)
+```
+
+Plot Precision Recall Curve
+
+Args:
+    performance_data (DataFrame): _description_
+    size (Optional[int], optional): _description_. Defaults to None.
+    color_values (List[str], optional): _description_. Defaults to None.
+    url_api (_type_, optional): _description_. Defaults to "http://localhost:4242/".
+
+Returns:
+    Figure: _description_

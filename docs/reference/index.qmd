@@ -1,0 +1,18 @@
+# Function reference {.doc .doc-index}
+
+## Calibration
+
+Functions to inspect docstrings.
+
+| | |
+| --- | --- |
+| [create_calibration_curve](create_calibration_curve.qmd#rtichoke.create_calibration_curve) | Creates Calibration Curve |
+
+## Discrimination
+
+Functions to inspect docstrings.
+
+| | |
+| --- | --- |
+| [create_gains_curve](create_gains_curve.qmd#rtichoke.create_gains_curve) | Create Gains Curve |
+| [plot_precision_recall_curve](plot_precision_recall_curve.qmd#rtichoke.plot_precision_recall_curve) | Plot Precision Recall Curve |
