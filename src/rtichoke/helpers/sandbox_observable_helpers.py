@@ -171,17 +171,50 @@ def extract_crude_estimate(data_to_adjust):
 
     return crude_estimate
 
+# def add_cutoff_strata(data, by):
+#     data["strata_probability_threshold"] = pd.cut(
+#         data["probs"],
+#         bins=create_breaks_values(data["probs"], "probability_threshold", by),
+#         include_lowest=True
+#     )
+#     data["strata_ppcr"] = (pd.qcut(-data["probs"], q=int(1/by), labels=False) + 1) / (1 / by)
+#     data["strata_ppcr"] = data["strata_ppcr"].astype(str)
+#     return data
+
 def add_cutoff_strata(data, by):
-    data["strata_probability_threshold"] = pd.cut(
-        data["probs"],
-        bins=create_breaks_values(data["probs"], "probability_threshold", by),
-        include_lowest=True
-    )
-    data["strata_ppcr"] = (pd.qcut(-data["probs"], q=int(1/by), labels=False) + 1) / (1 / by)
-    data["strata_ppcr"] = data["strata_ppcr"].astype(str)
-    return data
-
-
+    # Group by reference_group and apply transformations
+    result = data.copy()
+    
+    # Group and apply operations
+    grouped = result.groupby("reference_group")
+    
+    # Apply the transformations to each group
+    def transform_group(group):
+        group["strata_probability_threshold"] = pd.cut(
+            group["probs"],
+            bins=create_breaks_values(group["probs"], "probability_threshold", by),
+            include_lowest=True
+        )
+        
+        # Equivalent to ntile(desc(probs)) in R
+        group["strata_ppcr"] = pd.qcut(
+            -group["probs"],  # Descending order by using negative
+            q=int(1/by),
+            labels=False
+        ) + 1
+        
+        # Convert to factor-like representation
+        group["strata_ppcr"] = (group["strata_ppcr"] / (1 / by)).astype(str)
+        
+        return group
+    
+    # Apply transformation to each group and combine results
+    result = grouped.apply(transform_group)
+    
+    # Reset the index to remove grouping
+    result = result.reset_index(drop=True)
+    
+    return result
 
 def create_strata_combinations(stratified_by, by):
     if stratified_by == "probability_threshold":
