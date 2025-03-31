@@ -1,3 +1,4 @@
+from lifelines import AalenJohansenFitter
 import pandas as pd
 import numpy as np
 import itertools
@@ -13,7 +14,6 @@ def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
     Returns:
     pd.DataFrame: DataFrame with Aalen-Johansen estimates
     """
-    import numpy as np
 
     # print(f"data_to_adjust: {data_to_adjust}")
     
@@ -200,7 +200,8 @@ def add_cutoff_strata(data, by):
         group["strata_ppcr"] = pd.qcut(
             -group["probs"],  # Descending order by using negative
             q=int(1/by),
-            labels=False
+            labels=False,
+            duplicates="drop"
         ) + 1
         
         # Convert to factor-like representation
@@ -224,7 +225,13 @@ def create_strata_combinations(stratified_by, by):
         mid_point = upper_bound - by / 2
         include_lower_bound = lower_bound == 0
         include_upper_bound = upper_bound != 0
-        strata = [f"{'[' if lb else '('}{l}, {u}{']' if ub else ')'}" for lb, l, u, ub in zip(include_lower_bound, lower_bound, upper_bound, include_upper_bound)]
+        # Create the strata strings by combining bounds and their inclusion/exclusion indicators
+        strata = [
+            f"{'[' if include_lower else '('}{lower}, {upper}{']' if include_upper else ')'}"
+            for include_lower, lower, upper, include_upper in zip(
+                include_lower_bound, lower_bound, upper_bound, include_upper_bound
+            )
+        ]
         chosen_cutoff = upper_bound
     elif stratified_by == "ppcr":
         strata = create_breaks_values(None, "probability_threshold", by)[1:]
