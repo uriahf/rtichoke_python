@@ -73,11 +73,15 @@ new_data = df_time_to_cancer_dx.copy()
 new_data['ttcancer'] = 1.5
 
 # Ensure preds_aft is in the same format as pred_1_5 and pred_thin
-preds_aft = np.squeeze(1 - aft_model.predict_survival_function(new_data, times=[1.5]).iloc[-1].values)
+preds_aft = 1 - np.exp(-aft_model.predict_expectation(new_data))
+print(f"preds_aft: type={type(preds_aft)}, dimensions={preds_aft.ndim if hasattr(preds_aft, 'ndim') else 'N/A'}")
 
 # Predict risks at time 1.5
 pred_1_5 = 1 - np.exp(-cox_model.predict_expectation(new_data))
+print(f"pred_1_5: type={type(pred_1_5)}, dimensions={pred_1_5.ndim if hasattr(pred_1_5, 'ndim') else 'N/A'}")
+
 pred_thin = 1 - np.exp(-thin_model.predict_expectation(new_data))
+print(f"pred_thin: type={type(pred_thin)}, dimensions={pred_thin.ndim if hasattr(pred_thin, 'ndim') else 'N/A'}")
 
 print('preds_aft')
 print(preds_aft)
@@ -85,11 +89,9 @@ print(preds_aft)
 print('pred_thin')
 print(pred_thin)
 
-# Check if preds_aft and pred_thin are identical
-if np.array_equal(preds_aft, pred_thin):
-    print("preds_aft and pred_thin are identical in form.")
-else:
-    print("preds_aft and pred_thin are not identical in form.")
+
+
+
 
 # Store probabilities
 probs_cox = {
@@ -112,6 +114,25 @@ data_to_adjust = pd.DataFrame({
     "reals": np.concatenate([df_time_to_cancer_dx['reals'], df_time_to_cancer_dx['reals']]),
     "times": np.concatenate([df_time_to_cancer_dx['ttcancer'], df_time_to_cancer_dx['ttcancer']])
 })
+
+# data_to_adjust = pd.DataFrame({
+#     "reference_group": (
+#         ["thin"] * len(probs_cox["thin"]) +
+#         ["full"] * len(probs_cox["full"]) +
+#         ["aft"] * len(probs_cox["aft"])
+#     ),
+#     "probs": np.concatenate([probs_cox["thin"], probs_cox["full"], probs_cox["aft"]]),
+#     "reals": np.concatenate([
+#         df_time_to_cancer_dx['reals'],
+#         df_time_to_cancer_dx['reals'],
+#         df_time_to_cancer_dx['reals']
+#     ]),
+#     "times": np.concatenate([
+#         df_time_to_cancer_dx['ttcancer'],
+#         df_time_to_cancer_dx['ttcancer'],
+#         df_time_to_cancer_dx['ttcancer']
+#     ])
+# })
 
 # # Placeholder for add_cutoff_strata function
 data_to_adjust = add_cutoff_strata(data_to_adjust, by=0.01)
@@ -208,7 +229,7 @@ combined_adjusted_data = aj_data_combinations.merge(final_adjusted_data, on=["re
 
 ```{python}
 
-ojs_define(reference_groups_data = ["thin", "full"])
+ojs_define(reference_groups_data = ["thin", "full", "aft"])
 
 ojs_define(data = combined_adjusted_data)
 
