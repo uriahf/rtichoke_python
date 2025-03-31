@@ -32,6 +32,7 @@ dev = [
     "ruff>=0.11.0",
     "ipykernel>=6.29.5",
     "lifelines>=0.30.0",
+    "uv>=0.6.11",
 ]
 
 [tool.uv.workspace]
