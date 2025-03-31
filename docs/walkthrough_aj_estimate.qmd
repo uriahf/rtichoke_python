@@ -45,16 +45,21 @@ df_time_to_cancer_dx = \
     )
 
 df_time_to_cancer_dx
-
+# Initialize models
 cox_model = CoxPHFitter()
 thin_model = CoxPHFitter()
 aft_model = WeibullAFTFitter()
 
+# Define formulas for each model
+cox_formula = 'age + famhistory + marker'
+thin_formula = 'age + marker'
+aft_formula = 'age + marker'
 
 # Fit the models
-cox_model.fit(df_time_to_cancer_dx, duration_col='ttcancer', event_col='cancer', formula='age + famhistory + marker')
-thin_model.fit(df_time_to_cancer_dx, duration_col='ttcancer', event_col='cancer', formula='age + marker')
-aft_model.fit(df_time_to_cancer_dx, duration_col='ttcancer', event_col='cancer', formula='age + marker')
+cox_model.fit(df_time_to_cancer_dx, duration_col='ttcancer', event_col='cancer', formula=cox_formula)
+thin_model.fit(df_time_to_cancer_dx, duration_col='ttcancer', event_col='cancer', formula=thin_formula)
+aft_model.fit(df_time_to_cancer_dx, duration_col='ttcancer', event_col='cancer', formula=aft_formula)
+
 
 reals_mapping = {
     "censor": 0,
@@ -66,13 +71,31 @@ df_time_to_cancer_dx['reals'] = df_time_to_cancer_dx['cancer_cr'].map(reals_mapp
 # Predict risks at time 1.5
 new_data = df_time_to_cancer_dx.copy()
 new_data['ttcancer'] = 1.5
+
+# Ensure preds_aft is in the same format as pred_1_5 and pred_thin
+preds_aft = np.squeeze(1 - aft_model.predict_survival_function(new_data, times=[1.5]).iloc[-1].values)
+
+# Predict risks at time 1.5
 pred_1_5 = 1 - np.exp(-cox_model.predict_expectation(new_data))
 pred_thin = 1 - np.exp(-thin_model.predict_expectation(new_data))
+
+print('preds_aft')
+print(preds_aft)
+
+print('pred_thin')
+print(pred_thin)
+
+# Check if preds_aft and pred_thin are identical
+if np.array_equal(preds_aft, pred_thin):
+    print("preds_aft and pred_thin are identical in form.")
+else:
+    print("preds_aft and pred_thin are not identical in form.")
 
 # Store probabilities
 probs_cox = {
     "thin": pred_thin,
-    "full": pred_1_5
+    "full": pred_1_5,
+    "aft": preds_aft
 }
 # Create Aalen-Johansen data combinations
 fixed_time_horizons = [1, 3, 5]
