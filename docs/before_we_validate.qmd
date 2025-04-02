@@ -1,0 +1,154 @@
+---
+title: "Before we Validate Performance"
+author: "Uriah Finkel"
+format: html
+---
+
+Ideally we would like to keep Performance Validation as agnostic as possible.
+However, the structure of the validation set (`probs`, `reals` and `times`) implies the nature of the related assumptions and the required use case.
+
+So before we validate performance, let us consider the underlying process.
+
+The User Inputs ✍️ 
+
+# ✍️ Declare reference groups
+
+The dimentions of the `probs` and the `real` dictionaries imply the nature of the use case:
+
+TODO: copy from rtichoke r README.
+
+##### One Model, One Population: 
+- Just one reference group: "model".
+
+##### Several Models, One Population:
+
+Compare between different candidate models.
+- Each model stand as a reference groups such as "thin" model, or a "full" model.
+
+##### Several Models, Several Populations
+
+Compare performance over different sub-populations.
+- Internal Validation: "test", "val" and "train".
+- External Validation: "Framingham", "Australia".
+- Fairness: "Male", "Female".
+
+# ✍️ Declare how to stratify predictions: Probability Threshold or PPCR ✂️
+
+The `stratified_by` argument is designed for the user to choose how to stratify predictions for decision-making, each method implies different problem:
+
+##### Probability Threshold: Facing Individual Harm
+
+By choosing Probability Threshold as a cutoff the implied assumption is that you are concerned with individual harm or benefit.
+
+*Regardless* of ranking each prediction is categorised to a bin: 0.32 -> `[0.3, 0.4)`. 
+
+1. Categorise Absolute Risk: 0.32 -> `[0.3, 0.4)`
+
+##### PPCR: Facing Resource Constraint
+
+By choosing PPCR as a cutoff the implied assumption is that you are concerned with resource constraint and assume no individual treatment harm.
+
+*Regarding* the ranking each prediction is categorised to a bin: if the absolute probability 0.32 is the 18th highest predictions out of 100, it will be categorised to the second decile -> `0.18`.
+
+1. Calculate Risk-Quantile from Absolute Risk: 0.32 -> `0.18` 
+
+# ✍️ Declare Fixed Time Horizons 🌅 (📅🤬)
+
+The `fixed_time_horizons` argument is designed for the user to choose the set of time horizons to follow.
+
+Different followups contain different distributions of observed outcomes: Declare fixed time horizons for the prediction model, such as [5, 10] years of prediction for CVD evet.
+
+#### Update Administrative Censorng
+
+For cases with observed time-to-event is shorter than the prediction time horizon, the outcomes might change:
+
+- `Real Positives` 🤢 should be considered as `Real Negatives` 🤨, the outcome of interest did not happen yet.
+- Always included and Encoded as 0.
+
+- `Real Neagtives` 🤨 should be considered as `Real Censored` 🤬, the event of interest could have happened in the gap between the observed time and the fixed time horizon.
+- If adjusted: encoded as 0.
+- If excluded: counted with crude estimate.
+
+# ✍️ Declare Heuristics Regarding Censored Events 📅🤬
+
+The `censored_heuristic` argument is designed for the user to choose how interpret censored events.
+
+Performance Validation in the face of censored observations require assumptions regarding the unobserved followup.
+
+TODO: add link to nan-van-geloven article
+
+##### Exclude Censored Events
+
+All censored events to be excluded.
+
+Underlying Assumption: Small amount of censored events.
+Violation of the assumption leads to: Overestimation of the observed outcomes.
+
+##### Adjust Censored as partially seen Non-Event
+
+Observed outcomes for each strata are estimated using the AJ-estimate (equivalent to CIF and KM): Each censored observation is assumed to be similar to the ones who weren't censored.
+
+TODO: Link to article
+
+Underlying Assumption: Independent Censoring.
+Violation of the assumption leads to: Biased estimate for observed outcomes.
+
+# ✍️ Declare Heuristics Regarding Competing Events 📅💀
+
+The `competing_heuristic` argument is designed for the user to choose how interpret censored events.
+
+Performance Validation in the face of competing observations require assumptions regarding the unobserved followup.
+
+TODO: add link to nan-van-geloven article
+
+##### Exclude Competing Events
+
+All competing events to be excluded.
+
+Underlying Assumption: Small amount of competing events.
+Violation of the assumption leads to: Overestimation of the observed outcomes. A competing event means that the primary event cannot happen.
+
+##### Adjust Competing Events as Censored (partially seen Non-Event)
+
+All competing events to be treated as censored.
+
+Underlying Assumption: We consider a patient experiencing a competing event equivalent to independent censoring.
+Violation of the assumption leads to: Overestimation of the observed outcomes. A competing event means that the primary event cannot happen.
+
+##### Adjust Competing Events as Competing
+
+All competing events to be treated as Competing event to the primary event-of-interest.
+
+In a way, a patient experiencing a competing event is "more" of a "real-negative" than a conventional "real-negative".
+
+This is derived from the assumed state-covention
+
+Beyond the horizon time the following transition is possible:
+`Real Neagtives` 🤨 => `Real Positives` 🤢
+💀 2 
+
+```{mermaid}
+stateDiagram-v2
+    direction LR
+    
+    state "Non Event<br>0 🤨" as S0
+    state "Primary Event<br>1 🤢" as S1
+    state "Competing Event<br>2 💀" as S2
+    
+    S0 --> S1: 
+    S0 --> S2: 
+```
+
+Underlying Assumption: We consider a patient experiencing a competing event as a definite non-event.
+Violation of the assumption leads to Underestimation of the observed outcomes if a competing event can be considered as a different form of the primary event.
+
+# What rtichoke from now on?
+
+## Render Predictions Histogram
+
+### Extract AJ Estimate by Assumptions
+
+For each requried combination of reference_group x predictions_strata x fixed_time_horizons x censored_heuristic x competing_heuristic a separate AJ estimated is calculated for the adjusted `reals` and a Crude estimate is calculated for the excluded `reals`.
+
+The sum of the AJ estimates for each predictions_strata is equal to the overal AJ estimate.
+

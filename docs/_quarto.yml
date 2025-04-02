@@ -14,6 +14,8 @@ website:
         text: About
       - href: walkthrough_aj_estimate.qmd
         text: Example
+      - href: before_we_validate.qmd
+        text: Before we Validate
 
 quartodoc:
   # the name used to import the package you want to create reference docs for

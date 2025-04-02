@@ -54,21 +54,35 @@
     "href": "conduct.html",
     "title": "My Documentation Site",
     "section": "",
-    "text": "cgxovfvxp ../CONDUCT.md"
+    "text": "fpenejals ../CONDUCT.md"
+  },
+  {
+    "objectID": "before_we_validate.html",
+    "href": "before_we_validate.html",
+    "title": "Before we Validate Performance",
+    "section": "",
+    "text": "Ideally we would like to keep Performance Validation as agnostic as possible. However, the structure of the validation set (probs, reals and times) implies the nature of the related assumptions and the required use case.\nSo before we validate performance, let us consider the underlying process.\nThe User Inputs ✍️"
+  },
+  {
+    "objectID": "before_we_validate.html#extract-aj-estimate-by-assumptions",
+    "href": "before_we_validate.html#extract-aj-estimate-by-assumptions",
+    "title": "Before we Validate Performance",
+    "section": "Extract AJ Estimate by Assumptions",
+    "text": "Extract AJ Estimate by Assumptions\nFor each requried combination of reference_group x predictions_strata x fixed_time_horizons x censored_heuristic x competing_heuristic a separate AJ estimated is calculated for the adjusted reals and a Crude estimate is calculated for the excluded reals.\nThe sum of the AJ estimates for each predictions_strata is equal to the overal AJ estimate."
   },
   {
     "objectID": "changelog.html",
     "href": "changelog.html",
     "title": "My Documentation Site",
     "section": "",
-    "text": "rmyhlfvls ../CHANGELOG.md"
+    "text": "rvhqcyccv ../CHANGELOG.md"
   },
   {
     "objectID": "contributing.html",
     "href": "contributing.html",
     "title": "My Documentation Site",
     "section": "",
-    "text": "vatljuhjv ../CONTRIBUTING.md"
+    "text": "zrpofvmbc ../CONTRIBUTING.md"
   },
   {
     "objectID": "reference/create_calibration_curve.html",
@@ -117,5 +131,12 @@
     "title": "rtichoke",
     "section": "",
     "text": "rtichoke\nrtichoke"
+  },
+  {
+    "objectID": "before_we_validate.html#render-predictions-histogram",
+    "href": "before_we_validate.html#render-predictions-histogram",
+    "title": "Before we Validate Performance",
+    "section": "Render Predictions Histogram",
+    "text": "Render Predictions Histogram\n\nExtract AJ Estimate by Assumptions\nFor each requried combination of reference_group x predictions_strata x fixed_time_horizons x censored_heuristic x competing_heuristic a separate AJ estimated is calculated for the adjusted reals and a Crude estimate is calculated for the excluded reals.\nThe sum of the AJ estimates for each predictions_strata is equal to the overal AJ estimate."
   }
 ]
