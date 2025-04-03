@@ -205,8 +205,66 @@ ul.task-list li input[type="checkbox"] {
 </ul>
 </section>
 </section>
-<section id="declare-heuristics-regarding-censored-events" class="level1">
-<h1>✍️ Declare Heuristics Regarding Censored Events 📅🤬</h1>
+<section id="declare-heuristics-regarding-ambigious-reals" class="level1">
+<h1>Declare Heuristics Regarding ambigious <code>reals</code></h1>
+<section id="declare-heuristics-regarding-censored-events" class="level2">
+<h2 class="anchored" data-anchor-id="declare-heuristics-regarding-censored-events">✍️ Declare Heuristics Regarding Censored Events 📅🤬</h2>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">No Competing Events</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Competing Events Included</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+    S0["Non Event&lt;br&gt;0 🤨"] --&gt;|"?"|S1["Primary Event&lt;br&gt;1 🤢"]
+    
+    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
+    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
+    
+    class S0 nonEvent
+    class S1 primaryEvent
+
+    linkStyle 0 stroke:#333,background:yellow
+    
+
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+    S0["Non Event&lt;br&gt;0 🤨"] --&gt;|"?"|S1["Primary Event&lt;br&gt;1 🤢"]
+    S0["Non Event&lt;br&gt;0 🤨"] --&gt;|"?"|S2["Competing Event&lt;br&gt;2 💀"]
+
+    
+    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
+    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
+    
+    class S0 nonEvent
+    class S1 primaryEvent
+
+    linkStyle 0 stroke:#333,background:yellow
+
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 <p>The <code>censored_heuristic</code> argument is designed for the user to choose how interpret censored events.</p>
 <p>Performance Validation in the face of censored observations require assumptions regarding the unobserved followup.</p>
 <p>TODO: add link to nan-van-geloven article</p>
@@ -220,6 +278,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Observed outcomes for each strata are estimated using the AJ-estimate (equivalent to CIF and KM): Each censored observation is assumed to be similar to the ones who weren’t censored.</p>
 <p>TODO: Link to article</p>
 <p>Underlying Assumption: Independent Censoring. Violation of the assumption leads to: Biased estimate for observed outcomes.</p>
+</section>
 </section>
 </section>
 <section id="declare-heuristics-regarding-competing-events" class="level1">
@@ -251,12 +310,20 @@ ul.task-list li input[type="checkbox"] {
 <pre class="mermaid mermaid-js">stateDiagram-v2
     direction LR
     
+    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
+    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
+    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black
+
     state "Non Event&lt;br&gt;0 🤨" as S0
     state "Primary Event&lt;br&gt;1 🤢" as S1
     state "Competing Event&lt;br&gt;2 💀" as S2
     
     S0 --&gt; S1: 
     S0 --&gt; S2: 
+
+    class S0 nonEvent
+    class S1 primaryEvent
+    class S2 competingEvent
 </pre>
 </div>
 <p></p></figure><p></p>
@@ -268,12 +335,15 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="what-rtichoke-from-now-on" class="level1">
 <h1>What rtichoke from now on?</h1>
-<section id="extract-aj-estimate-by-assumptions" class="level2">
-<h2 class="anchored" data-anchor-id="extract-aj-estimate-by-assumptions">Extract AJ Estimate by Assumptions</h2>
+<section id="render-predictions-histogram" class="level2">
+<h2 class="anchored" data-anchor-id="render-predictions-histogram">Render Predictions Histogram</h2>
+<section id="extract-aj-estimate-by-assumptions" class="level3">
+<h3 class="anchored" data-anchor-id="extract-aj-estimate-by-assumptions">Extract AJ Estimate by Assumptions</h3>
 <p>For each requried combination of reference_group x predictions_strata x fixed_time_horizons x censored_heuristic x competing_heuristic a separate AJ estimated is calculated for the adjusted <code>reals</code> and a Crude estimate is calculated for the excluded <code>reals</code>.</p>
 <p>The sum of the AJ estimates for each predictions_strata is equal to the overal AJ estimate.</p>
 
 
+</section>
 </section>
 </section>
 
