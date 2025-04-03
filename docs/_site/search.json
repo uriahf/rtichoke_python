@@ -54,7 +54,7 @@
     "href": "conduct.html",
     "title": "My Documentation Site",
     "section": "",
-    "text": "fpenejals ../CONDUCT.md"
+    "text": "wzjmbmuph ../CONDUCT.md"
   },
   {
     "objectID": "before_we_validate.html",
@@ -64,25 +64,32 @@
     "text": "Ideally we would like to keep Performance Validation as agnostic as possible. However, the structure of the validation set (probs, reals and times) implies the nature of the related assumptions and the required use case.\nSo before we validate performance, let us consider the underlying process.\nThe User Inputs ✍️"
   },
   {
-    "objectID": "before_we_validate.html#extract-aj-estimate-by-assumptions",
-    "href": "before_we_validate.html#extract-aj-estimate-by-assumptions",
+    "objectID": "before_we_validate.html#declare-heuristics-regarding-censored-events",
+    "href": "before_we_validate.html#declare-heuristics-regarding-censored-events",
     "title": "Before we Validate Performance",
-    "section": "Extract AJ Estimate by Assumptions",
-    "text": "Extract AJ Estimate by Assumptions\nFor each requried combination of reference_group x predictions_strata x fixed_time_horizons x censored_heuristic x competing_heuristic a separate AJ estimated is calculated for the adjusted reals and a Crude estimate is calculated for the excluded reals.\nThe sum of the AJ estimates for each predictions_strata is equal to the overal AJ estimate."
+    "section": "✍️ Declare Heuristics Regarding Censored Events 📅🤬",
+    "text": "✍️ Declare Heuristics Regarding Censored Events 📅🤬\n\n\n\n\n\ngraph LR\n    S0[\"Non Event&lt;br&gt;0 🤨 / 🤬\"] --&gt;|\"?\"|S1[\"Primary Event&lt;br&gt;1 🤢\"]\n    S0--&gt;|\"?\"|S2[\"Competing Event&lt;br&gt;2 💀\"]\n\n    \n    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black\n    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white\n    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black\n    \n    class S0 nonEvent\n    class S1 primaryEvent\n    class S2 competingEvent\n    class S3 censoredEvent\n\n    linkStyle 0 stroke:#333,background:yellow\n\n\n\n\n\n\n\nThe censored_heuristic argument is designed for the user to choose how interpret censored events.\nPerformance Validation in the face of censored observations require assumptions regarding the unobserved followup.\nTODO: add link to nan-van-geloven article\n\nExclude Censored Events\n\n\n\n\n\ngraph LR\n    S0[\"Non Event&lt;br&gt;0 🤨\"] --&gt;S1[\"Primary Event&lt;br&gt;1 🤢\"]\n    S0--&gt;S2[\"Competing Event&lt;br&gt;2 💀\"]\n\n     S3[\"Censored&lt;br&gt;0 🤬\"]\n\n    \n    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black\n    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white\n    classDef censoredEvent fill:#E3F09B,stroke:#333,stroke-width:1px,color:black\n    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black\n    \n    class S0 nonEvent\n    class S1 primaryEvent\n    class S2 competingEvent\n    class S3 censoredEvent\n\n    linkStyle 0 stroke:#333,background:yellow\n\n\n\n\n\n\n\nAll censored events to be excluded.\nUnderlying Assumption: Small amount of censored events. Violation of the assumption leads to: Overestimation of the observed outcomes.\n\n\nAdjust Censored as partially seen Non-Event\nObserved outcomes for each strata are estimated using the AJ-estimate (equivalent to CIF and KM): Each censored observation is assumed to be similar to the ones who weren’t censored.\nTODO: Link to article\nUnderlying Assumption: Independent Censoring. Violation of the assumption leads to: Biased estimate for observed outcomes."
+  },
+  {
+    "objectID": "before_we_validate.html#render-predictions-histogram",
+    "href": "before_we_validate.html#render-predictions-histogram",
+    "title": "Before we Validate Performance",
+    "section": "Render Predictions Histogram",
+    "text": "Render Predictions Histogram\n\nExtract AJ Estimate by Assumptions\nFor each requried combination of reference_group x predictions_strata x fixed_time_horizons x censored_heuristic x competing_heuristic a separate AJ estimated is calculated for the adjusted reals and a Crude estimate is calculated for the excluded reals.\nThe sum of the AJ estimates for each predictions_strata is equal to the overal AJ estimate."
   },
   {
     "objectID": "changelog.html",
     "href": "changelog.html",
     "title": "My Documentation Site",
     "section": "",
-    "text": "rvhqcyccv ../CHANGELOG.md"
+    "text": "yxlqioqft ../CHANGELOG.md"
   },
   {
     "objectID": "contributing.html",
     "href": "contributing.html",
     "title": "My Documentation Site",
     "section": "",
-    "text": "zrpofvmbc ../CONTRIBUTING.md"
+    "text": "sxphjwqgb ../CONTRIBUTING.md"
   },
   {
     "objectID": "reference/create_calibration_curve.html",
@@ -131,12 +138,5 @@
     "title": "rtichoke",
     "section": "",
     "text": "rtichoke\nrtichoke"
-  },
-  {
-    "objectID": "before_we_validate.html#render-predictions-histogram",
-    "href": "before_we_validate.html#render-predictions-histogram",
-    "title": "Before we Validate Performance",
-    "section": "Render Predictions Histogram",
-    "text": "Render Predictions Histogram\n\nExtract AJ Estimate by Assumptions\nFor each requried combination of reference_group x predictions_strata x fixed_time_horizons x censored_heuristic x competing_heuristic a separate AJ estimated is calculated for the adjusted reals and a Crude estimate is calculated for the excluded reals.\nThe sum of the AJ estimates for each predictions_strata is equal to the overal AJ estimate."
   }
 ]

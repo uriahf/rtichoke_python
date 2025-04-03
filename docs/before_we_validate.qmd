@@ -69,7 +69,29 @@ For cases with observed time-to-event is shorter than the prediction time horizo
 - If adjusted: encoded as 0.
 - If excluded: counted with crude estimate.
 
-# ✍️ Declare Heuristics Regarding Censored Events 📅🤬
+# Declare Heuristics Regarding ambigious `reals`
+
+## ✍️ Declare Heuristics Regarding Censored Events 📅🤬
+
+```{mermaid}
+
+graph LR
+    S0["Non Event<br>0 🤨 / 🤬"] -->|"?"|S1["Primary Event<br>1 🤢"]
+    S0-->|"?"|S2["Competing Event<br>2 💀"]
+
+    
+    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
+    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
+    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black
+    
+    class S0 nonEvent
+    class S1 primaryEvent
+    class S2 competingEvent
+    class S3 censoredEvent
+
+    linkStyle 0 stroke:#333,background:yellow
+
+```
 
 The `censored_heuristic` argument is designed for the user to choose how interpret censored events.
 
@@ -78,6 +100,29 @@ Performance Validation in the face of censored observations require assumptions 
 TODO: add link to nan-van-geloven article
 
 ##### Exclude Censored Events
+
+```{mermaid}
+
+graph LR
+    S0["Non Event<br>0 🤨"] -->S1["Primary Event<br>1 🤢"]
+    S0-->S2["Competing Event<br>2 💀"]
+
+     S3["Censored<br>0 🤬"]
+
+    
+    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
+    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
+    classDef censoredEvent fill:#E3F09B,stroke:#333,stroke-width:1px,color:black
+    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black
+    
+    class S0 nonEvent
+    class S1 primaryEvent
+    class S2 competingEvent
+    class S3 censoredEvent
+
+    linkStyle 0 stroke:#333,background:yellow
+
+```
 
 All censored events to be excluded.
 
@@ -103,12 +148,58 @@ TODO: add link to nan-van-geloven article
 
 ##### Exclude Competing Events
 
+```{mermaid}
+
+graph LR
+    subgraph Adjusted for Censoring
+    S0["Non Event<br>0 🤨 / 🤬"] -->S1["Primary Event<br>1 🤢"]    
+    end
+    S0 -->S2["Competing Event<br>2 💀"]
+
+    
+    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
+    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
+    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black
+    
+    class S0 nonEvent
+    class S1 primaryEvent
+    class S2 competingEvent
+
+    linkStyle 0 stroke:#333
+
+```
+
 All competing events to be excluded.
 
 Underlying Assumption: Small amount of competing events.
 Violation of the assumption leads to: Overestimation of the observed outcomes. A competing event means that the primary event cannot happen.
 
 ##### Adjust Competing Events as Censored (partially seen Non-Event)
+
+```{mermaid}
+
+graph LR
+    subgraph Adjusted for Censoring 
+    direction LR
+    S0["Non Event<br>0 🤨"] -->S1["Primary Event<br>1 🤢"]    
+    S0 -->S2["Competing Event<br>2 💀"]
+    S2 --?-->S1
+    end
+
+    
+    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
+    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
+    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black
+    
+    class S0 nonEvent
+    class S1 primaryEvent
+    class S2 competingEvent
+
+
+    linkStyle 0 stroke:#333
+
+```
+
 
 All competing events to be treated as censored.
 
@@ -128,15 +219,25 @@ Beyond the horizon time the following transition is possible:
 💀 2 
 
 ```{mermaid}
-stateDiagram-v2
+
+graph LR
+    subgraph Adjusted for Censoring 
     direction LR
+    S0["Non Event<br>0 🤨"] -->S1["Primary Event<br>1 🤢"]    
+    S0 -->S2["Competing Event<br>2 💀"]
+    end
+
     
-    state "Non Event<br>0 🤨" as S0
-    state "Primary Event<br>1 🤢" as S1
-    state "Competing Event<br>2 💀" as S2
-    
-    S0 --> S1: 
-    S0 --> S2: 
+    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
+    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
+    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black
+
+    class S0 nonEvent
+    class S1 primaryEvent
+    class S2 competingEvent
+
+    linkStyle 0 stroke:#333
+
 ```
 
 Underlying Assumption: We consider a patient experiencing a competing event as a definite non-event.
