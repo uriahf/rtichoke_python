@@ -209,59 +209,30 @@ ul.task-list li input[type="checkbox"] {
 <h1>Declare Heuristics Regarding ambigious <code>reals</code></h1>
 <section id="declare-heuristics-regarding-censored-events" class="level2">
 <h2 class="anchored" data-anchor-id="declare-heuristics-regarding-censored-events">✍️ Declare Heuristics Regarding Censored Events 📅🤬</h2>
-<div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">No Competing Events</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Competing Events Included</a></li></ul>
-<div class="tab-content">
-<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
 <pre class="mermaid mermaid-js">graph LR
-    S0["Non Event&lt;br&gt;0 🤨"] --&gt;|"?"|S1["Primary Event&lt;br&gt;1 🤢"]
-    
-    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
-    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
-    
-    class S0 nonEvent
-    class S1 primaryEvent
-
-    linkStyle 0 stroke:#333,background:yellow
-    
-
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-</div>
-<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
-<div class="cell" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class="figure"><p></p>
-<div>
-<pre class="mermaid mermaid-js">graph LR
-    S0["Non Event&lt;br&gt;0 🤨"] --&gt;|"?"|S1["Primary Event&lt;br&gt;1 🤢"]
-    S0["Non Event&lt;br&gt;0 🤨"] --&gt;|"?"|S2["Competing Event&lt;br&gt;2 💀"]
+    S0["Non Event&lt;br&gt;0 🤨 / 🤬"] --&gt;|"?"|S1["Primary Event&lt;br&gt;1 🤢"]
+    S0--&gt;|"?"|S2["Competing Event&lt;br&gt;2 💀"]
 
     
     classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
     classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
+    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black
     
     class S0 nonEvent
     class S1 primaryEvent
+    class S2 competingEvent
+    class S3 censoredEvent
 
     linkStyle 0 stroke:#333,background:yellow
 
 </pre>
 </div>
 <p></p></figure><p></p>
-</div>
-</div>
-</div>
 </div>
 </div>
 </div>
@@ -270,6 +241,36 @@ ul.task-list li input[type="checkbox"] {
 <p>TODO: add link to nan-van-geloven article</p>
 <section id="exclude-censored-events" class="level5">
 <h5 class="anchored" data-anchor-id="exclude-censored-events">Exclude Censored Events</h5>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+    S0["Non Event&lt;br&gt;0 🤨"] --&gt;S1["Primary Event&lt;br&gt;1 🤢"]
+    S0--&gt;S2["Competing Event&lt;br&gt;2 💀"]
+
+     S3["Censored&lt;br&gt;0 🤬"]
+
+    
+    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
+    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
+    classDef censoredEvent fill:#E3F09B,stroke:#333,stroke-width:1px,color:black
+    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black
+    
+    class S0 nonEvent
+    class S1 primaryEvent
+    class S2 competingEvent
+    class S3 censoredEvent
+
+    linkStyle 0 stroke:#333,background:yellow
+
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
 <p>All censored events to be excluded.</p>
 <p>Underlying Assumption: Small amount of censored events. Violation of the assumption leads to: Overestimation of the observed outcomes.</p>
 </section>
@@ -288,11 +289,70 @@ ul.task-list li input[type="checkbox"] {
 <p>TODO: add link to nan-van-geloven article</p>
 <section id="exclude-competing-events" class="level5">
 <h5 class="anchored" data-anchor-id="exclude-competing-events">Exclude Competing Events</h5>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+    subgraph Adjusted for Censoring
+    S0["Non Event&lt;br&gt;0 🤨 / 🤬"] --&gt;S1["Primary Event&lt;br&gt;1 🤢"]    
+    end
+    S0 --&gt;S2["Competing Event&lt;br&gt;2 💀"]
+
+    
+    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
+    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
+    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black
+    
+    class S0 nonEvent
+    class S1 primaryEvent
+    class S2 competingEvent
+
+    linkStyle 0 stroke:#333
+
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
 <p>All competing events to be excluded.</p>
 <p>Underlying Assumption: Small amount of competing events. Violation of the assumption leads to: Overestimation of the observed outcomes. A competing event means that the primary event cannot happen.</p>
 </section>
 <section id="adjust-competing-events-as-censored-partially-seen-non-event" class="level5">
 <h5 class="anchored" data-anchor-id="adjust-competing-events-as-censored-partially-seen-non-event">Adjust Competing Events as Censored (partially seen Non-Event)</h5>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+    subgraph Adjusted for Censoring 
+    direction LR
+    S0["Non Event&lt;br&gt;0 🤨"] --&gt;S1["Primary Event&lt;br&gt;1 🤢"]    
+    S0 --&gt;S2["Competing Event&lt;br&gt;2 💀"]
+    S2 --?--&gt;S1
+    end
+
+    
+    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
+    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
+    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black
+    
+    class S0 nonEvent
+    class S1 primaryEvent
+    class S2 competingEvent
+
+
+    linkStyle 0 stroke:#333
+
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
 <p>All competing events to be treated as censored.</p>
 <p>Underlying Assumption: We consider a patient experiencing a competing event equivalent to independent censoring. Violation of the assumption leads to: Overestimation of the observed outcomes. A competing event means that the primary event cannot happen.</p>
 </section>
@@ -307,23 +367,24 @@ ul.task-list li input[type="checkbox"] {
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
-<pre class="mermaid mermaid-js">stateDiagram-v2
+<pre class="mermaid mermaid-js">graph LR
+    subgraph Adjusted for Censoring 
     direction LR
+    S0["Non Event&lt;br&gt;0 🤨"] --&gt;S1["Primary Event&lt;br&gt;1 🤢"]    
+    S0 --&gt;S2["Competing Event&lt;br&gt;2 💀"]
+    end
+
     
     classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
     classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
     classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black
 
-    state "Non Event&lt;br&gt;0 🤨" as S0
-    state "Primary Event&lt;br&gt;1 🤢" as S1
-    state "Competing Event&lt;br&gt;2 💀" as S2
-    
-    S0 --&gt; S1: 
-    S0 --&gt; S2: 
-
     class S0 nonEvent
     class S1 primaryEvent
     class S2 competingEvent
+
+    linkStyle 0 stroke:#333
+
 </pre>
 </div>
 <p></p></figure><p></p>
