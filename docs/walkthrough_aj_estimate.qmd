@@ -6,15 +6,6 @@ message: false
 warning: false
 ---
 
-## Markdown
-
-Markdown is an easy to read and write text format:
-
-- It's _plain text_ so works well with version control
-- It can be **rendered** into HTML, PDF, and more
-- Learn more at: <https://quarto.org/docs/authoring/>
-
-## Code Cell
 
 ```{python}
 
@@ -44,7 +35,7 @@ df_time_to_cancer_dx = \
         "https://raw.githubusercontent.com/ddsjoberg/dca-tutorial/main/data/df_time_to_cancer_dx.csv"
     )
 
-df_time_to_cancer_dx
+
 # Initialize models
 cox_model = CoxPHFitter()
 thin_model = CoxPHFitter()
@@ -66,6 +57,7 @@ reals_mapping = {
     "diagnosed with cancer": 1,
     "dead other causes": 2
 }
+
 df_time_to_cancer_dx['reals'] = df_time_to_cancer_dx['cancer_cr'].map(reals_mapping)
 
 # Predict risks at time 1.5
@@ -89,10 +81,10 @@ print(preds_aft)
 print('pred_thin')
 print(pred_thin)
 
+```
 
 
-
-
+```{python}
 # Store probabilities
 probs_cox = {
     "thin": pred_thin,
@@ -106,7 +98,11 @@ stratified_by = ["probability_threshold", "ppcr"]
 # Placeholder for create_aj_data_combinations
 aj_data_combinations = create_aj_data_combinations(list(probs_cox.keys()), fixed_time_horizons, stratified_by, 0.01)
 
+```
 
+
+
+```{python}
 # Create reference groups
 data_to_adjust = pd.DataFrame({
     "reference_group": ["thin"] * len(probs_cox["thin"]) + ["aft"] * len(probs_cox["thin"]) + ["full"] * len(probs_cox["thin"]),
@@ -118,8 +114,11 @@ data_to_adjust = pd.DataFrame({
 # # Placeholder for add_cutoff_strata function
 data_to_adjust = add_cutoff_strata(data_to_adjust, by=0.01)
 
+```
 
 
+
+```{python}
 data_to_adjust = pivot_longer_strata(data_to_adjust)
 
 data_to_adjust["reals"] = data_to_adjust["reals"].replace({
@@ -127,17 +126,21 @@ data_to_adjust["reals"] = data_to_adjust["reals"].replace({
     2: "real_competing",
     1: "real_positives"
 })
+
+
 data_to_adjust["reals"] = pd.Categorical(data_to_adjust["reals"], categories=["real_negatives", "real_competing", "real_positives"], ordered=True)
 
 # Splitting data by reference group
 list_data_to_adjust = {k: v for k, v in data_to_adjust.groupby("reference_group")}
 
+list_data_to_adjust['aft']
+
 # # Define assumption sets
 assumption_sets = [
-    {"competing": "excluded", "censored": "excluded"}#,
+    {"competing": "excluded", "censored": "excluded"},
     # {"competing": "adjusted_as_negative", "censored": "adjusted"},
     # {"competing": "adjusted_as_censored", "censored": "adjusted"},
-    # {"competing": "excluded", "censored": "adjusted"},
+    {"competing": "excluded", "censored": "adjusted"}#,
     # {"competing": "adjusted_as_negative", "censored": "excluded"}
 ]
 
@@ -188,6 +191,7 @@ for reference_group, group_data in list_data_to_adjust.items():
         )
         adjusted_data["reference_group"] = reference_group
         adjusted_data_list.append(adjusted_data)
+
 
 # Combine all adjusted data
 final_adjusted_data = pd.concat(adjusted_data_list, ignore_index=True)

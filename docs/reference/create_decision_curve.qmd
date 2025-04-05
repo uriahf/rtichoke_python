@@ -1,0 +1,33 @@
+# create_decision_curve { #rtichoke.create_decision_curve }
+
+```python
+create_decision_curve(
+    probs,
+    reals,
+    decision_type='conventional',
+    min_p_threshold=0,
+    max_p_threshold=1,
+    by=0.01,
+    stratified_by='probability_threshold',
+    size=None,
+    color_values=None,
+    url_api='http://localhost:4242/',
+)
+```
+
+Create Decision Curve
+
+Args:
+    probs (Dict[str, List[float]]): _description_
+    reals (Dict[str, List[int]]): _description_
+    decision_type (str, optional): _description_. Defaults to "conventional".
+    min_p_threshold (float, optional): _description_. Defaults to 0.
+    max_p_threshold (float, optional): _description_. Defaults to 1.
+    by (float, optional): _description_. Defaults to 0.01.
+    stratified_by (str, optional): _description_. Defaults to "probability_threshold".
+    size (Optional[int], optional): _description_. Defaults to None.
+    color_values (List[str], optional): _description_. Defaults to None.
+    url_api (_type_, optional): _description_. Defaults to "http://localhost:4242/".
+
+Returns:
+    Figure: _description_

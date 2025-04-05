@@ -1,0 +1,27 @@
+# plot_decision_curve { #rtichoke.plot_decision_curve }
+
+```python
+plot_decision_curve(
+    performance_data,
+    decision_type,
+    min_p_threshold=0,
+    max_p_threshold=1,
+    size=None,
+    color_values=None,
+    url_api='http://localhost:4242/',
+)
+```
+
+Plot Decision Curve
+
+Args:
+    performance_data (DataFrame): _description_
+    decision_type (str): _description_
+    min_p_threshold (int, optional): _description_. Defaults to 0.
+    max_p_threshold (int, optional): _description_. Defaults to 1.
+    size (Optional[int], optional): _description_. Defaults to None.
+    color_values (List[str], optional): _description_. Defaults to None.
+    url_api (_type_, optional): _description_. Defaults to "http://localhost:4242/".
+
+Returns:
+    Figure: _description_

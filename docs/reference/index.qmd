@@ -2,7 +2,7 @@
 
 ## Calibration
 
-Functions to inspect docstrings.
+Functions for Calibration.
 
 | | |
 | --- | --- |
@@ -10,9 +10,24 @@ Functions to inspect docstrings.
 
 ## Discrimination
 
-Functions to inspect docstrings.
+Functions for Discrimination.
 
 | | |
 | --- | --- |
+| [create_roc_curve](create_roc_curve.qmd#rtichoke.create_roc_curve) | Create ROC Curve |
+| [create_precision_recall_curve](create_precision_recall_curve.qmd#rtichoke.create_precision_recall_curve) | Create Precision Recall Curve |
 | [create_gains_curve](create_gains_curve.qmd#rtichoke.create_gains_curve) | Create Gains Curve |
+| [create_lift_curve](create_lift_curve.qmd#rtichoke.create_lift_curve) | Create Lift Curve |
+| [plot_roc_curve](plot_roc_curve.qmd#rtichoke.plot_roc_curve) | Plot ROC Curve |
 | [plot_precision_recall_curve](plot_precision_recall_curve.qmd#rtichoke.plot_precision_recall_curve) | Plot Precision Recall Curve |
+| [plot_gains_curve](plot_gains_curve.qmd#rtichoke.plot_gains_curve) | Plot Gains Curve |
+| [plot_lift_curve](plot_lift_curve.qmd#rtichoke.plot_lift_curve) | Plot Lift Curve |
+
+## Utility
+
+Functions for Utility.
+
+| | |
+| --- | --- |
+| [create_decision_curve](create_decision_curve.qmd#rtichoke.create_decision_curve) | Create Decision Curve |
+| [plot_decision_curve](plot_decision_curve.qmd#rtichoke.plot_decision_curve) | Plot Decision Curve |

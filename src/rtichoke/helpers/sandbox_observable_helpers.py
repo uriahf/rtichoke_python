@@ -65,14 +65,24 @@ def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
             event_of_interest=1
         )
         
+        # Precompute counts for each event type and time horizon
+        precomputed_counts = {
+            t: {
+                "real_competing_count": stratum_data[(stratum_data['event_code'] == 2) & (stratum_data['times'] <= t)].shape[0],
+                "real_censored_count": stratum_data[(stratum_data['event_code'] == 0) & (stratum_data['times'] <= t)].shape[0]
+            }
+            for t in fixed_time_horizons
+        }
+        
         # Calculate cumulative incidence at fixed time horizons
         for t in fixed_time_horizons:
             # Get cumulative incidence at time t
             # Handle case where t is beyond the data
-            try:
-                ci_at_t = ajf.cumulative_density_at_times(t)[0]
-            except IndexError:
-                ci_at_t = ajf.cumulative_density_.iloc[-1] if len(ajf.cumulative_density_) > 0 else 0
+            ci_at_t = ajf.cumulative_density_.loc[ajf.cumulative_density_.index <= t].iloc[-1] if not ajf.cumulative_density_.empty else 0
+            if ci_at_t.empty:
+                ci_at_t = ajf.cumulative_density_.iloc[-1] if hasattr(ajf, 'cumulative_density_') and len(ajf.cumulative_density_) > 0 else 0
+            else:
+                ci_at_t = ci_at_t.iloc[0]
             
             # Calculate counts for each state
             n = len(stratum_data)
@@ -83,15 +93,13 @@ def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
             # For real_negatives: use 1 - cumulative incidence
             real_negatives_est = 1 - ci_at_t
             
-            # For real_competing: would be obtained from a competing risks model
-            # Here we'll use the count of competing events before time t
-            real_competing_count = stratum_data[(stratum_data['event_code'] == 2) & 
-                                               (stratum_data['times'] <= t)].shape[0]
+            # For real_competing: use precomputed count
+            real_competing_count = precomputed_counts[t]["real_competing_count"]
             real_competing_est = real_competing_count / n if n > 0 else 0
             
-            # For real_censored: would be the proportion of censored before time t
-            real_censored_count = stratum_data[(stratum_data['event_code'] == 0) & 
-                                              (stratum_data['times'] <= t)].shape[0]
+            # For real_censored: use precomputed count
+            real_censored_count = precomputed_counts[t]["real_censored_count"]
+            real_censored_est = real_censored_count / n if n > 0 else 0
             real_censored_est = real_censored_count / n if n > 0 else 0
             
             # Adjust estimates to ensure they sum to 1

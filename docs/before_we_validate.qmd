@@ -151,7 +151,7 @@ TODO: add link to nan-van-geloven article
 ```{mermaid}
 
 graph LR
-    subgraph Adjusted for Censoring
+    subgraph adj[Adjusted for Censoring]
     S0["Non Event<br>0 🤨 / 🤬"] -->S1["Primary Event<br>1 🤢"]    
     end
     S0 -->S2["Competing Event<br>2 💀"]
@@ -166,6 +166,9 @@ graph LR
     class S2 competingEvent
 
     linkStyle 0 stroke:#333
+    
+    style adj fill:#E3F09B,color:black
+
 
 ```
 
@@ -176,14 +179,14 @@ Violation of the assumption leads to: Overestimation of the observed outcomes. A
 
 ##### Adjust Competing Events as Censored (partially seen Non-Event)
 
+Check
+
 ```{mermaid}
 
 graph LR
-    subgraph Adjusted for Censoring 
+    subgraph adj[Adjusted for Censoring]
     direction LR
-    S0["Non Event<br>0 🤨"] -->S1["Primary Event<br>1 🤢"]    
-    S0 -->S2["Competing Event<br>2 💀"]
-    S2 --?-->S1
+    S0["Non Event<br>0 🤨 / 🤬<br><br> Competing Event<br>2 💀"] -->S1["Primary Event<br>1 🤢"]    
     end
 
     
@@ -194,6 +197,8 @@ graph LR
     class S0 nonEvent
     class S1 primaryEvent
     class S2 competingEvent
+
+    style adj fill:#E3F09B,color:black
 
 
     linkStyle 0 stroke:#333
@@ -221,7 +226,7 @@ Beyond the horizon time the following transition is possible:
 ```{mermaid}
 
 graph LR
-    subgraph Adjusted for Censoring 
+subgraph adj[Adjusted for Censoring]
     direction LR
     S0["Non Event<br>0 🤨"] -->S1["Primary Event<br>1 🤢"]    
     S0 -->S2["Competing Event<br>2 💀"]
@@ -237,6 +242,7 @@ graph LR
     class S2 competingEvent
 
     linkStyle 0 stroke:#333
+    style adj fill:#E3F09B,color:black
 
 ```
 
