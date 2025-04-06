@@ -68,51 +68,37 @@ def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
         # Precompute counts for each event type and time horizon
         precomputed_counts = {
             t: {
-                "real_competing_count": stratum_data[(stratum_data['event_code'] == 2) & (stratum_data['times'] <= t)].shape[0],
-                "real_censored_count": stratum_data[(stratum_data['event_code'] == 0) & (stratum_data['times'] <= t)].shape[0]
+                "real_competing_count": stratum_data[(stratum_data['event_code'] == 2) & (stratum_data['times'] <= t)].shape[0]
             }
             for t in fixed_time_horizons
         }
         
         # Calculate cumulative incidence at fixed time horizons
         for t in fixed_time_horizons:
-            # Get cumulative incidence at time t
-            # Handle case where t is beyond the data
-            ci_at_t = ajf.cumulative_density_.loc[ajf.cumulative_density_.index <= t].iloc[-1] if not ajf.cumulative_density_.empty else 0
-            if ci_at_t.empty:
-                ci_at_t = ajf.cumulative_density_.iloc[-1] if hasattr(ajf, 'cumulative_density_') and len(ajf.cumulative_density_) > 0 else 0
-            else:
-                ci_at_t = ci_at_t.iloc[0]
-            
             # Calculate counts for each state
             n = len(stratum_data)
             
             # For real_positives: use the cumulative incidence
-            real_positives_est = ci_at_t
-            
+            # real_positives_est = ci_at_t
+            real_positives_est = ajf.predict(t)
+
             # For real_negatives: use 1 - cumulative incidence
-            real_negatives_est = 1 - ci_at_t
+            real_negatives_est = 1 - real_positives_est
             
             # For real_competing: use precomputed count
             real_competing_count = precomputed_counts[t]["real_competing_count"]
             real_competing_est = real_competing_count / n if n > 0 else 0
             
-            # For real_censored: use precomputed count
-            real_censored_count = precomputed_counts[t]["real_censored_count"]
-            real_censored_est = real_censored_count / n if n > 0 else 0
-            real_censored_est = real_censored_count / n if n > 0 else 0
-            
             # Adjust estimates to ensure they sum to 1
-            total_est = real_positives_est + real_negatives_est + real_competing_est + real_censored_est
+            total_est = real_positives_est + real_negatives_est + real_competing_est 
             if total_est > 0:
                 real_positives_est /= total_est
                 real_negatives_est /= total_est
                 real_competing_est /= total_est
-                real_censored_est /= total_est
             
             # Create entries for each real state
-            states = ["real_negatives", "real_positives", "real_competing", "real_censored"]
-            estimates = [real_negatives_est, real_positives_est, real_competing_est, real_censored_est]
+            states = ["real_negatives", "real_positives", "real_competing"]
+            estimates = [real_negatives_est, real_positives_est, real_competing_est]
             
             for state, estimate in zip(states, estimates):
                 results.append({

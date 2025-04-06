@@ -144,26 +144,6 @@ assumption_sets = [
     # {"competing": "adjusted_as_negative", "censored": "excluded"}
 ]
 
-
-
-# # Adjust data based on assumptions
-# adjusted_data_list = []
-# for reference_group, group_data in list_data_to_adjust.items():
-#     for assumptions in assumption_sets:
-#         print(f"Processing assumptions: {assumptions}")
-#         adjusted_data = extract_aj_estimate_by_assumptions(
-#             group_data,
-#             fixed_time_horizons=fixed_time_horizons,
-#             censoring_assumption=assumptions["censored"],
-#             competing_assumption=assumptions["competing"]
-#         )
-#         adjusted_data["reference_group"] = reference_group
-#         adjusted_data_list.append(adjusted_data)
-
-# # Combine all adjusted data
-# final_adjusted_data = pd.concat(adjusted_data_list, ignore_index=True)
-
-
 ```
 
 
