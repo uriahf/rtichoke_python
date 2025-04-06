@@ -15,12 +15,6 @@ def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
     pd.DataFrame: DataFrame with Aalen-Johansen estimates
     """
 
-    # print(f"data_to_adjust: {data_to_adjust}")
-    
-    # Ensure 'strata' column exists
-    if 'strata' not in data_to_adjust.columns:
-        data_to_adjust['strata'] = 'default'
-
     # Ensure fixed_time_horizons is a list
     if not isinstance(fixed_time_horizons, list):
         fixed_time_horizons = [fixed_time_horizons]
