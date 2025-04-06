@@ -4,35 +4,140 @@
     "href": "walkthrough_aj_estimate.html",
     "title": "Hello, Quarto",
     "section": "",
-    "text": "&lt;function rtichoke.helpers.sandbox_observable_helpers.create_aj_data_combinations(reference_groups, fixed_time_horizons, stratified_by, by)&gt;\n\n\nHere is a Python code cell:\n\n\npreds_aft: type=&lt;class 'pandas.core.series.Series'&gt;, dimensions=1\npred_1_5: type=&lt;class 'pandas.core.series.Series'&gt;, dimensions=1\npred_thin: type=&lt;class 'pandas.core.series.Series'&gt;, dimensions=1\npreds_aft\n0      1.000000\n1      0.526737\n2      1.000000\n3      1.000000\n4      1.000000\n         ...   \n745    0.999975\n746    0.999789\n747    0.997182\n748    1.000000\n749    1.000000\nLength: 750, dtype: float64\npred_thin\n0      0.988965\n1      0.524577\n2      0.991665\n3      0.994338\n4      0.992105\n         ...   \n745    0.984451\n746    0.980313\n747    0.967938\n748    0.992703\n749    0.993183\nLength: 750, dtype: float64\n\n\n\n\n\n\n\n\n\n\n\nviewof time_horizon = Inputs.range(\n  [1, 5], \n  {value: 3, step: 2, label: \"Time Horizon:\"}\n)\n\nviewof reference_group = Inputs.radio(\n  reference_groups_data, {label: \"Reference Group\"}, {value: 'thin'}\n)\n\nviewof stratified_by = Inputs.radio(\n  [\"probability_threshold\", \"ppcr\"], {value: \"probability_threshold\", label: \"Stratified By\"}\n)\n\nviewof censored_assumption = Inputs.radio(\n  [\"excluded\", \"adjusted\"], {value: \"excluded\", label: \"Censored Assumption\"}\n)\n\nviewof competing_assumption = Inputs.radio(\n  [\"excluded\", \"adjusted_as_negative\", \"adjusted_as_censored\", \"reals\"], {value: \"excluded\", label: \"Competing Assumption\"}\n)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nfiltered = transpose(data).filter(function(subset) {\n\n  return time_horizon == subset.fixed_time_horizon &&\n         censored_assumption == subset.censoring_assumption &&\n         competing_assumption == subset.competing_assumption &&\n         stratified_by === subset.stratified_by && \n         reference_group === subset.reference_group;\n})\n\nfiltered\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPlot.plot({\n  marks: [\n    Plot.barY(filtered, { \n      x: \"strata\", \n      y: \"reals_estimate\", \n      fill: \"reals\", \n      tip: true \n    })\n  ],\n  color: {\n    domain: [\"real_positives\", \"real_competing\", \"real_negatives\", \"real_censored\"], \n    range: [\"#009e73\", \"#9DB4C0\", \"#FAC8CD\", \"#E3F09B\"],\n    legend: true\n  }\n})\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nstrata\n\n\n\n\n0\n(0.99, 1.0]\n\n\n1\n(0.99, 1.0]\n\n\n2\n(0.99, 1.0]\n\n\n3\n(0.99, 1.0]\n\n\n4\n(0.99, 1.0]\n\n\n...\n...\n\n\n11851\n0.57\n\n\n11852\n0.73\n\n\n11853\n0.73\n\n\n11854\n0.73\n\n\n11855\n0.73\n\n\n\n\n11856 rows × 1 columns"
+    "text": "&lt;function rtichoke.helpers.sandbox_observable_helpers.create_aj_data_combinations(reference_groups, fixed_time_horizons, stratified_by, by)&gt;\n\n\nHere is a Python code cell:\n\n\npreds_aft: type=&lt;class 'pandas.core.series.Series'&gt;, dimensions=1\npred_1_5: type=&lt;class 'pandas.core.series.Series'&gt;, dimensions=1\npred_thin: type=&lt;class 'pandas.core.series.Series'&gt;, dimensions=1\npreds_aft\n0      1.000000\n1      0.526737\n2      1.000000\n3      1.000000\n4      1.000000\n         ...   \n745    0.999975\n746    0.999789\n747    0.997182\n748    1.000000\n749    1.000000\nLength: 750, dtype: float64\npred_thin\n0      0.988965\n1      0.524577\n2      0.991665\n3      0.994338\n4      0.992105\n         ...   \n745    0.984451\n746    0.980313\n747    0.967938\n748    0.992703\n749    0.993183\nLength: 750, dtype: float64\n\n\n\n\n\n\n\n\n\n\n\nviewof time_horizon = Inputs.range(\n  [1, 5], \n  {value: 3, step: 2, label: \"Time Horizon:\"}\n)\n\nviewof reference_group = Inputs.radio(\n  reference_groups_data, {label: \"Reference Group\"}, {value: 'thin'}\n)\n\nviewof stratified_by = Inputs.radio(\n  [\"probability_threshold\", \"ppcr\"], {value: \"probability_threshold\", label: \"Stratified By\"}\n)\n\nviewof censored_assumption = Inputs.radio(\n  [\"excluded\", \"adjusted\"], {value: \"excluded\", label: \"Censored Assumption\"}\n)\n\nviewof competing_assumption = Inputs.radio(\n  [\"excluded\", \"adjusted_as_negative\", \"adjusted_as_censored\", \"reals\"], {value: \"excluded\", label: \"Competing Assumption\"}\n)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nfiltered = transpose(data).filter(function(subset) {\n\n  return time_horizon == subset.fixed_time_horizon &&\n         censored_assumption == subset.censoring_assumption &&\n         competing_assumption == subset.competing_assumption &&\n         stratified_by === subset.stratified_by && \n         reference_group === subset.reference_group;\n})\n\nfiltered\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPlot.plot({\n  marks: [\n    Plot.barY(filtered, { \n      x: \"strata\", \n      y: \"reals_estimate\", \n      fill: \"reals\", \n      tip: true \n    })\n  ],\n  color: {\n    domain: [\"real_positives\", \"real_competing\", \"real_negatives\", \"real_censored\"], \n    range: [\"#009e73\", \"#9DB4C0\", \"#FAC8CD\", \"#E3F09B\"],\n    legend: true\n  }\n})\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nstrata\n\n\n\n\n0\n(0.99, 1.0]\n\n\n1\n(0.99, 1.0]\n\n\n2\n(0.99, 1.0]\n\n\n3\n(0.99, 1.0]\n\n\n4\n(0.99, 1.0]\n\n\n...\n...\n\n\n10429\n0.57\n\n\n10430\n0.57\n\n\n10431\n0.73\n\n\n10432\n0.73\n\n\n10433\n0.73\n\n\n\n\n10434 rows × 1 columns"
   },
   {
-    "objectID": "reference/rtichoke.html",
-    "href": "reference/rtichoke.html",
-    "title": "rtichoke",
+    "objectID": "reference/plot_roc_curve.html",
+    "href": "reference/plot_roc_curve.html",
+    "title": "plot_roc_curve",
     "section": "",
-    "text": "rtichoke\nrtichoke"
-  },
-  {
-    "objectID": "reference/plot_precision_recall_curve.html",
-    "href": "reference/plot_precision_recall_curve.html",
-    "title": "plot_precision_recall_curve",
-    "section": "",
-    "text": "plot_precision_recall_curve\nplot_precision_recall_curve(\n    performance_data,\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nPlot Precision Recall Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "text": "plot_roc_curve\nplot_roc_curve(\n    performance_data,\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nPlot ROC Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
     "crumbs": [
       "Discrimination",
-      "plot_precision_recall_curve"
+      "plot_roc_curve"
     ]
   },
   {
-    "objectID": "reference/plot_gains_curve.html",
-    "href": "reference/plot_gains_curve.html",
-    "title": "plot_gains_curve",
+    "objectID": "reference/plot_lift_curve.html",
+    "href": "reference/plot_lift_curve.html",
+    "title": "plot_lift_curve",
     "section": "",
-    "text": "plot_gains_curve\nplot_gains_curve(\n    performance_data,\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nPlot Gains Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "text": "plot_lift_curve\nplot_lift_curve(\n    performance_data,\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nPlot Lift Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
     "crumbs": [
       "Discrimination",
-      "plot_gains_curve"
+      "plot_lift_curve"
+    ]
+  },
+  {
+    "objectID": "reference/plot_decision_curve.html",
+    "href": "reference/plot_decision_curve.html",
+    "title": "plot_decision_curve",
+    "section": "",
+    "text": "plot_decision_curve\nplot_decision_curve(\n    performance_data,\n    decision_type,\n    min_p_threshold=0,\n    max_p_threshold=1,\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nPlot Decision Curve\nArgs: performance_data (DataFrame): description decision_type (str): description min_p_threshold (int, optional): description. Defaults to 0. max_p_threshold (int, optional): description. Defaults to 1. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Utility",
+      "plot_decision_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_roc_curve.html",
+    "href": "reference/create_roc_curve.html",
+    "title": "create_roc_curve",
+    "section": "",
+    "text": "create_roc_curve\ncreate_roc_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreate ROC Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Discrimination",
+      "create_roc_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_lift_curve.html",
+    "href": "reference/create_lift_curve.html",
+    "title": "create_lift_curve",
+    "section": "",
+    "text": "create_lift_curve\ncreate_lift_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreate Lift Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Discrimination",
+      "create_lift_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_decision_curve.html",
+    "href": "reference/create_decision_curve.html",
+    "title": "create_decision_curve",
+    "section": "",
+    "text": "create_decision_curve\ncreate_decision_curve(\n    probs,\n    reals,\n    decision_type='conventional',\n    min_p_threshold=0,\n    max_p_threshold=1,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreate Decision Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description decision_type (str, optional): description. Defaults to “conventional”. min_p_threshold (float, optional): description. Defaults to 0. max_p_threshold (float, optional): description. Defaults to 1. by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Utility",
+      "create_decision_curve"
+    ]
+  },
+  {
+    "objectID": "example.html",
+    "href": "example.html",
+    "title": "Example usage",
+    "section": "",
+    "text": "To use rtichoke in a project:\n\nimport rtichoke\n\nprint(rtichoke.__version__)\n\n\n---------------------------------------------------------------------------\nModuleNotFoundError                       Traceback (most recent call last)\nCell In[2], line 1\n----&gt; 1 import rtichoke\n      3 print(rtichoke.__version__)\n\nModuleNotFoundError: No module named 'rtichoke'\n\n\n\n\nfrom sklearn.linear_model import LogisticRegression\nimport numpy as np\n\nlr = LogisticRegression()\nx = np.arange(10).reshape(-1, 1)\ny = np.array([0, 1, 0, 0, 1, 1, 1, 0, 0, 1])\n\nx_test = np.arange(7).reshape(-1, 1)\ny_test = np.array([1, 0, 1, 0, 1, 0, 0])\n\nmodel = LogisticRegression(solver=\"liblinear\", random_state=0)\nlasso = LogisticRegression(solver=\"liblinear\", penalty=\"l1\", random_state=0)\n\nmodel.fit(x, y)\nlasso.fit(x_test, y_test)\n\nprobs_dict_for_examples = {\n    \"One Model\": {\"Logistic Regression\": model.predict_proba(x)[:, 1].tolist()},\n    \"Multiple Models\": {\n        \"Logistic Regression\": model.predict_proba(x)[:, 1].tolist(),\n        \"Lasso\": lasso.predict_proba(x)[:, 1].tolist(),\n    },\n    \"Multiple Populations\": {\n        \"Train\": model.predict_proba(x)[:, 1].tolist(),\n        \"Test\": model.predict_proba(x_test)[:, 1].tolist(),\n    },\n}\n\nreals_dict_for_examples = {\n    \"One Model\": {\"Logistic Regression\": y.tolist()},\n    \"Multiple Models\": {\"Reals\": y.tolist()},\n    \"Multiple Populations\": {\"Train\": y.tolist(), \"Test\": y_test.tolist()},\n}\n\n\nperformance_datas = [\n    rtichoke.prepare_performance_data(\n        probs=probs_dict_for_examples[x],\n        reals=reals_dict_for_examples[x],\n        stratified_by=stratified_by,\n        url_api=\"http://127.0.0.1:7644/\",\n    )\n    for x in probs_dict_for_examples.keys()\n    for stratified_by in [\"probability_threshold\", \"ppcr\"]\n]\n\nperformance_datas[0]\n\ndict_keys(['probability_threshold', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives', 'NB', 'ppcr'])\ndict_keys(['probability_threshold', 'ppcr', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives'])\ndict_keys(['model', 'probability_threshold', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives', 'NB', 'ppcr'])\ndict_keys(['model', 'probability_threshold', 'ppcr', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives'])\ndict_keys(['population', 'probability_threshold', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives', 'NB', 'ppcr'])\ndict_keys(['population', 'probability_threshold', 'ppcr', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives'])\n\n\n\n\n\n\n\n\n\nprobability_threshold\nTP\nTN\nFN\nFP\nsensitivity\nFPR\nspecificity\nPPV\nNPV\nlift\npredicted_positives\nNB\nppcr\n\n\n\n\n0\n0.00\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.5000\n1.0\n\n\n1\n0.01\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.4949\n1.0\n\n\n2\n0.02\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.4898\n1.0\n\n\n3\n0.03\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.4845\n1.0\n\n\n4\n0.04\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.4792\n1.0\n\n\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n\n\n96\n0.96\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\n0.0000\n0.0\n\n\n97\n0.97\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\n0.0000\n0.0\n\n\n98\n0.98\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\n0.0000\n0.0\n\n\n99\n0.99\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\n0.0000\n0.0\n\n\n100\n1.00\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\nNaN\n0.0\n\n\n\n\n101 rows × 14 columns\n\n\n\n\nroc_curves = [\n    rtichoke.create_roc_curve(\n        probs=probs_dict_for_examples[x],\n        reals=reals_dict_for_examples[x],\n        size=600,\n        stratified_by=stratified_by,\n        url_api=\"http://127.0.0.1:7644/\",\n    )\n    for x in probs_dict_for_examples.keys()\n    for stratified_by in [\"probability_threshold\", \"ppcr\"]\n]\n\n# roc_curves[0].show(config={'displayModeBar': False})\n# roc_curves[1].show(config={'displayModeBar': False})\n# roc_curves[2].show(config={'displayModeBar': False})\n# roc_curves[3].show(config={'displayModeBar': False})\nroc_curves[4].show(config={\"displayModeBar\": False})\n# roc_curves[5].show(config={'displayModeBar': False})"
+  },
+  {
+    "objectID": "before_we_validate.html",
+    "href": "before_we_validate.html",
+    "title": "Before we Validate Performance",
+    "section": "",
+    "text": "Ideally we would like to keep Performance Validation as agnostic as possible. However, the structure of the validation set (probs, reals and times) implies the nature of the related assumptions and the required use case.\nSo before we validate performance, let us consider the underlying process.\nThe User Inputs ✍️"
+  },
+  {
+    "objectID": "before_we_validate.html#declare-heuristics-regarding-censored-events",
+    "href": "before_we_validate.html#declare-heuristics-regarding-censored-events",
+    "title": "Before we Validate Performance",
+    "section": "✍️ Declare Heuristics Regarding Censored Events 📅🤬",
+    "text": "✍️ Declare Heuristics Regarding Censored Events 📅🤬\n\n\n\n\n\ngraph LR\n    S0[\"Non Event&lt;br&gt;0 🤨 / 🤬\"] --&gt;|\"?\"|S1[\"Primary Event&lt;br&gt;1 🤢\"]\n    S0--&gt;|\"?\"|S2[\"Competing Event&lt;br&gt;2 💀\"]\n\n    \n    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black\n    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white\n    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black\n    \n    class S0 nonEvent\n    class S1 primaryEvent\n    class S2 competingEvent\n    class S3 censoredEvent\n\n    linkStyle 0 stroke:#333,background:yellow\n\n\n\n\n\n\n\nThe censored_heuristic argument is designed for the user to choose how interpret censored events.\nPerformance Validation in the face of censored observations require assumptions regarding the unobserved followup.\nTODO: add link to nan-van-geloven article\n\nExclude Censored Events\n\n\n\n\n\ngraph LR\n    S0[\"Non Event&lt;br&gt;0 🤨\"] --&gt;S1[\"Primary Event&lt;br&gt;1 🤢\"]\n    S0--&gt;S2[\"Competing Event&lt;br&gt;2 💀\"]\n\n     S3[\"Censored&lt;br&gt;0 🤬\"]\n\n    \n    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black\n    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white\n    classDef censoredEvent fill:#E3F09B,stroke:#333,stroke-width:1px,color:black\n    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black\n    \n    class S0 nonEvent\n    class S1 primaryEvent\n    class S2 competingEvent\n    class S3 censoredEvent\n\n    linkStyle 0 stroke:#333,background:yellow\n\n\n\n\n\n\n\nAll censored events to be excluded.\nUnderlying Assumption: Small amount of censored events. Violation of the assumption leads to: Overestimation of the observed outcomes.\n\n\nAdjust Censored as partially seen Non-Event\nObserved outcomes for each strata are estimated using the AJ-estimate (equivalent to CIF and KM): Each censored observation is assumed to be similar to the ones who weren’t censored.\nTODO: Link to article\nUnderlying Assumption: Independent Censoring. Violation of the assumption leads to: Biased estimate for observed outcomes."
+  },
+  {
+    "objectID": "before_we_validate.html#render-predictions-histogram",
+    "href": "before_we_validate.html#render-predictions-histogram",
+    "title": "Before we Validate Performance",
+    "section": "Render Predictions Histogram",
+    "text": "Render Predictions Histogram\n\nExtract AJ Estimate by Assumptions\nFor each requried combination of reference_group x predictions_strata x fixed_time_horizons x censored_heuristic x competing_heuristic a separate AJ estimated is calculated for the adjusted reals and a Crude estimate is calculated for the excluded reals.\nThe sum of the AJ estimates for each predictions_strata is equal to the overal AJ estimate."
+  },
+  {
+    "objectID": "contributing.html",
+    "href": "contributing.html",
+    "title": "rtichoke",
+    "section": "",
+    "text": "wrlrwrjuz ../CONTRIBUTING.md"
+  },
+  {
+    "objectID": "reference/create_calibration_curve.html",
+    "href": "reference/create_calibration_curve.html",
+    "title": "create_calibration_curve",
+    "section": "",
+    "text": "create_calibration_curve\ncreate_calibration_curve(\n    probs,\n    reals,\n    calibration_type='discrete',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreates Calibration Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description calibration_type (str, optional): description. Defaults to “discrete”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Calibration",
+      "create_calibration_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_gains_curve.html",
+    "href": "reference/create_gains_curve.html",
+    "title": "create_gains_curve",
+    "section": "",
+    "text": "create_gains_curve\ncreate_gains_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreate Gains Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Discrimination",
+      "create_gains_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_precision_recall_curve.html",
+    "href": "reference/create_precision_recall_curve.html",
+    "title": "create_precision_recall_curve",
+    "section": "",
+    "text": "create_precision_recall_curve\ncreate_precision_recall_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreate Precision Recall Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Discrimination",
+      "create_precision_recall_curve"
     ]
   },
   {
@@ -76,151 +181,32 @@
     ]
   },
   {
-    "objectID": "reference/create_precision_recall_curve.html",
-    "href": "reference/create_precision_recall_curve.html",
-    "title": "create_precision_recall_curve",
+    "objectID": "reference/plot_gains_curve.html",
+    "href": "reference/plot_gains_curve.html",
+    "title": "plot_gains_curve",
     "section": "",
-    "text": "create_precision_recall_curve\ncreate_precision_recall_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreate Precision Recall Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "text": "plot_gains_curve\nplot_gains_curve(\n    performance_data,\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nPlot Gains Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
     "crumbs": [
       "Discrimination",
-      "create_precision_recall_curve"
+      "plot_gains_curve"
     ]
   },
   {
-    "objectID": "reference/create_gains_curve.html",
-    "href": "reference/create_gains_curve.html",
-    "title": "create_gains_curve",
+    "objectID": "reference/plot_precision_recall_curve.html",
+    "href": "reference/plot_precision_recall_curve.html",
+    "title": "plot_precision_recall_curve",
     "section": "",
-    "text": "create_gains_curve\ncreate_gains_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreate Gains Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "text": "plot_precision_recall_curve\nplot_precision_recall_curve(\n    performance_data,\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nPlot Precision Recall Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
     "crumbs": [
       "Discrimination",
-      "create_gains_curve"
+      "plot_precision_recall_curve"
     ]
   },
   {
-    "objectID": "reference/create_calibration_curve.html",
-    "href": "reference/create_calibration_curve.html",
-    "title": "create_calibration_curve",
-    "section": "",
-    "text": "create_calibration_curve\ncreate_calibration_curve(\n    probs,\n    reals,\n    calibration_type='discrete',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreates Calibration Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description calibration_type (str, optional): description. Defaults to “discrete”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
-    "crumbs": [
-      "Calibration",
-      "create_calibration_curve"
-    ]
-  },
-  {
-    "objectID": "contributing.html",
-    "href": "contributing.html",
+    "objectID": "reference/rtichoke.html",
+    "href": "reference/rtichoke.html",
     "title": "rtichoke",
     "section": "",
-    "text": "vkunzgbwv ../CONTRIBUTING.md"
-  },
-  {
-    "objectID": "before_we_validate.html",
-    "href": "before_we_validate.html",
-    "title": "Before we Validate Performance",
-    "section": "",
-    "text": "Ideally we would like to keep Performance Validation as agnostic as possible. However, the structure of the validation set (probs, reals and times) implies the nature of the related assumptions and the required use case.\nSo before we validate performance, let us consider the underlying process.\nThe User Inputs ✍️"
-  },
-  {
-    "objectID": "before_we_validate.html#declare-heuristics-regarding-censored-events",
-    "href": "before_we_validate.html#declare-heuristics-regarding-censored-events",
-    "title": "Before we Validate Performance",
-    "section": "✍️ Declare Heuristics Regarding Censored Events 📅🤬",
-    "text": "✍️ Declare Heuristics Regarding Censored Events 📅🤬\n\n\n\n\n\ngraph LR\n    S0[\"Non Event&lt;br&gt;0 🤨 / 🤬\"] --&gt;|\"?\"|S1[\"Primary Event&lt;br&gt;1 🤢\"]\n    S0--&gt;|\"?\"|S2[\"Competing Event&lt;br&gt;2 💀\"]\n\n    \n    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black\n    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white\n    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black\n    \n    class S0 nonEvent\n    class S1 primaryEvent\n    class S2 competingEvent\n    class S3 censoredEvent\n\n    linkStyle 0 stroke:#333,background:yellow\n\n\n\n\n\n\n\nThe censored_heuristic argument is designed for the user to choose how interpret censored events.\nPerformance Validation in the face of censored observations require assumptions regarding the unobserved followup.\nTODO: add link to nan-van-geloven article\n\nExclude Censored Events\n\n\n\n\n\ngraph LR\n    S0[\"Non Event&lt;br&gt;0 🤨\"] --&gt;S1[\"Primary Event&lt;br&gt;1 🤢\"]\n    S0--&gt;S2[\"Competing Event&lt;br&gt;2 💀\"]\n\n     S3[\"Censored&lt;br&gt;0 🤬\"]\n\n    \n    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black\n    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white\n    classDef censoredEvent fill:#E3F09B,stroke:#333,stroke-width:1px,color:black\n    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black\n    \n    class S0 nonEvent\n    class S1 primaryEvent\n    class S2 competingEvent\n    class S3 censoredEvent\n\n    linkStyle 0 stroke:#333,background:yellow\n\n\n\n\n\n\n\nAll censored events to be excluded.\nUnderlying Assumption: Small amount of censored events. Violation of the assumption leads to: Overestimation of the observed outcomes.\n\n\nAdjust Censored as partially seen Non-Event\nObserved outcomes for each strata are estimated using the AJ-estimate (equivalent to CIF and KM): Each censored observation is assumed to be similar to the ones who weren’t censored.\nTODO: Link to article\nUnderlying Assumption: Independent Censoring. Violation of the assumption leads to: Biased estimate for observed outcomes."
-  },
-  {
-    "objectID": "before_we_validate.html#render-predictions-histogram",
-    "href": "before_we_validate.html#render-predictions-histogram",
-    "title": "Before we Validate Performance",
-    "section": "Render Predictions Histogram",
-    "text": "Render Predictions Histogram\n\nExtract AJ Estimate by Assumptions\nFor each requried combination of reference_group x predictions_strata x fixed_time_horizons x censored_heuristic x competing_heuristic a separate AJ estimated is calculated for the adjusted reals and a Crude estimate is calculated for the excluded reals.\nThe sum of the AJ estimates for each predictions_strata is equal to the overal AJ estimate."
-  },
-  {
-    "objectID": "example.html",
-    "href": "example.html",
-    "title": "Example usage",
-    "section": "",
-    "text": "To use rtichoke in a project:\n\nimport rtichoke\n\nprint(rtichoke.__version__)\n\n\n---------------------------------------------------------------------------\nModuleNotFoundError                       Traceback (most recent call last)\nCell In[2], line 1\n----&gt; 1 import rtichoke\n      3 print(rtichoke.__version__)\n\nModuleNotFoundError: No module named 'rtichoke'\n\n\n\n\nfrom sklearn.linear_model import LogisticRegression\nimport numpy as np\n\nlr = LogisticRegression()\nx = np.arange(10).reshape(-1, 1)\ny = np.array([0, 1, 0, 0, 1, 1, 1, 0, 0, 1])\n\nx_test = np.arange(7).reshape(-1, 1)\ny_test = np.array([1, 0, 1, 0, 1, 0, 0])\n\nmodel = LogisticRegression(solver=\"liblinear\", random_state=0)\nlasso = LogisticRegression(solver=\"liblinear\", penalty=\"l1\", random_state=0)\n\nmodel.fit(x, y)\nlasso.fit(x_test, y_test)\n\nprobs_dict_for_examples = {\n    \"One Model\": {\"Logistic Regression\": model.predict_proba(x)[:, 1].tolist()},\n    \"Multiple Models\": {\n        \"Logistic Regression\": model.predict_proba(x)[:, 1].tolist(),\n        \"Lasso\": lasso.predict_proba(x)[:, 1].tolist(),\n    },\n    \"Multiple Populations\": {\n        \"Train\": model.predict_proba(x)[:, 1].tolist(),\n        \"Test\": model.predict_proba(x_test)[:, 1].tolist(),\n    },\n}\n\nreals_dict_for_examples = {\n    \"One Model\": {\"Logistic Regression\": y.tolist()},\n    \"Multiple Models\": {\"Reals\": y.tolist()},\n    \"Multiple Populations\": {\"Train\": y.tolist(), \"Test\": y_test.tolist()},\n}\n\n\nperformance_datas = [\n    rtichoke.prepare_performance_data(\n        probs=probs_dict_for_examples[x],\n        reals=reals_dict_for_examples[x],\n        stratified_by=stratified_by,\n        url_api=\"http://127.0.0.1:7644/\",\n    )\n    for x in probs_dict_for_examples.keys()\n    for stratified_by in [\"probability_threshold\", \"ppcr\"]\n]\n\nperformance_datas[0]\n\ndict_keys(['probability_threshold', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives', 'NB', 'ppcr'])\ndict_keys(['probability_threshold', 'ppcr', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives'])\ndict_keys(['model', 'probability_threshold', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives', 'NB', 'ppcr'])\ndict_keys(['model', 'probability_threshold', 'ppcr', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives'])\ndict_keys(['population', 'probability_threshold', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives', 'NB', 'ppcr'])\ndict_keys(['population', 'probability_threshold', 'ppcr', 'TP', 'TN', 'FN', 'FP', 'sensitivity', 'FPR', 'specificity', 'PPV', 'NPV', 'lift', 'predicted_positives'])\n\n\n\n\n\n\n\n\n\nprobability_threshold\nTP\nTN\nFN\nFP\nsensitivity\nFPR\nspecificity\nPPV\nNPV\nlift\npredicted_positives\nNB\nppcr\n\n\n\n\n0\n0.00\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.5000\n1.0\n\n\n1\n0.01\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.4949\n1.0\n\n\n2\n0.02\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.4898\n1.0\n\n\n3\n0.03\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.4845\n1.0\n\n\n4\n0.04\n5\n0\n0\n5\n1.0\n1.0\n0.0\n0.5\nNaN\n1.0\n10\n0.4792\n1.0\n\n\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n...\n\n\n96\n0.96\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\n0.0000\n0.0\n\n\n97\n0.97\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\n0.0000\n0.0\n\n\n98\n0.98\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\n0.0000\n0.0\n\n\n99\n0.99\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\n0.0000\n0.0\n\n\n100\n1.00\n0\n5\n5\n0\n0.0\n0.0\n1.0\nNaN\n0.5\nNaN\n0\nNaN\n0.0\n\n\n\n\n101 rows × 14 columns\n\n\n\n\nroc_curves = [\n    rtichoke.create_roc_curve(\n        probs=probs_dict_for_examples[x],\n        reals=reals_dict_for_examples[x],\n        size=600,\n        stratified_by=stratified_by,\n        url_api=\"http://127.0.0.1:7644/\",\n    )\n    for x in probs_dict_for_examples.keys()\n    for stratified_by in [\"probability_threshold\", \"ppcr\"]\n]\n\n# roc_curves[0].show(config={'displayModeBar': False})\n# roc_curves[1].show(config={'displayModeBar': False})\n# roc_curves[2].show(config={'displayModeBar': False})\n# roc_curves[3].show(config={'displayModeBar': False})\nroc_curves[4].show(config={\"displayModeBar\": False})\n# roc_curves[5].show(config={'displayModeBar': False})"
-  },
-  {
-    "objectID": "reference/create_decision_curve.html",
-    "href": "reference/create_decision_curve.html",
-    "title": "create_decision_curve",
-    "section": "",
-    "text": "create_decision_curve\ncreate_decision_curve(\n    probs,\n    reals,\n    decision_type='conventional',\n    min_p_threshold=0,\n    max_p_threshold=1,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreate Decision Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description decision_type (str, optional): description. Defaults to “conventional”. min_p_threshold (float, optional): description. Defaults to 0. max_p_threshold (float, optional): description. Defaults to 1. by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
-    "crumbs": [
-      "Utility",
-      "create_decision_curve"
-    ]
-  },
-  {
-    "objectID": "reference/create_lift_curve.html",
-    "href": "reference/create_lift_curve.html",
-    "title": "create_lift_curve",
-    "section": "",
-    "text": "create_lift_curve\ncreate_lift_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreate Lift Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
-    "crumbs": [
-      "Discrimination",
-      "create_lift_curve"
-    ]
-  },
-  {
-    "objectID": "reference/create_roc_curve.html",
-    "href": "reference/create_roc_curve.html",
-    "title": "create_roc_curve",
-    "section": "",
-    "text": "create_roc_curve\ncreate_roc_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreate ROC Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
-    "crumbs": [
-      "Discrimination",
-      "create_roc_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_decision_curve.html",
-    "href": "reference/plot_decision_curve.html",
-    "title": "plot_decision_curve",
-    "section": "",
-    "text": "plot_decision_curve\nplot_decision_curve(\n    performance_data,\n    decision_type,\n    min_p_threshold=0,\n    max_p_threshold=1,\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nPlot Decision Curve\nArgs: performance_data (DataFrame): description decision_type (str): description min_p_threshold (int, optional): description. Defaults to 0. max_p_threshold (int, optional): description. Defaults to 1. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
-    "crumbs": [
-      "Utility",
-      "plot_decision_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_lift_curve.html",
-    "href": "reference/plot_lift_curve.html",
-    "title": "plot_lift_curve",
-    "section": "",
-    "text": "plot_lift_curve\nplot_lift_curve(\n    performance_data,\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nPlot Lift Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
-    "crumbs": [
-      "Discrimination",
-      "plot_lift_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_roc_curve.html",
-    "href": "reference/plot_roc_curve.html",
-    "title": "plot_roc_curve",
-    "section": "",
-    "text": "plot_roc_curve\nplot_roc_curve(\n    performance_data,\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nPlot ROC Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
-    "crumbs": [
-      "Discrimination",
-      "plot_roc_curve"
-    ]
-  },
-  {
-    "objectID": "sandbox.html",
-    "href": "sandbox.html",
-    "title": "Cumulative Incidence with Competing Risks",
-    "section": "",
-    "text": "This document demonstrates the estimation of cumulative incidence functions under competing risks using both Python (lifelines) and R (cmprsk). The event of interest is diagnosis with cancer, with death from other causes as a competing event, and censoring as non-event.\n\nPython\n\n\n\nimport pandas as pd\nimport matplotlib.pyplot as plt\nfrom lifelines import AalenJohansenFitter\n\ndf_time_to_cancer_dx = pd.read_csv(\n    \"https://raw.githubusercontent.com/ddsjoberg/dca-tutorial/main/data/df_time_to_cancer_dx.csv\"\n)\n\nreals_mapping = {\n    \"censor\": 0,\n    \"diagnosed with cancer\": 1,\n    \"dead other causes\": 2\n}\ndf_time_to_cancer_dx['reals'] = df_time_to_cancer_dx['cancer_cr'].map(reals_mapping)\n\najf_primary = AalenJohansenFitter()\najf_primary.fit(\n    durations=df_time_to_cancer_dx['ttcancer'],\n    event_observed=df_time_to_cancer_dx['reals'],\n    event_of_interest=1\n)\n\najf_competing = AalenJohansenFitter()\najf_competing.fit(\n    durations=df_time_to_cancer_dx['ttcancer'],\n    event_observed=df_time_to_cancer_dx['reals'],\n    event_of_interest=2\n)\n\nplt.figure(figsize=(10, 6))\najf_primary.plot(label='Diagnosed with cancer')\najf_competing.plot(label='Dead from other causes')\nplt.title(\"Aalen-Johansen Estimate of Cumulative Incidence (Python)\")\nplt.xlabel(\"Time to event\")\nplt.ylabel(\"Cumulative incidence\")\nplt.legend()\nplt.grid(True)\nplt.tight_layout()\nplt.show()"
-  },
-  {
-    "objectID": "sandbox.html#overview",
-    "href": "sandbox.html#overview",
-    "title": "Cumulative Incidence with Competing Risks",
-    "section": "",
-    "text": "This document demonstrates the estimation of cumulative incidence functions under competing risks using both Python (lifelines) and R (cmprsk). The event of interest is diagnosis with cancer, with death from other causes as a competing event, and censoring as non-event.\n\nPython\n\n\n\nimport pandas as pd\nimport matplotlib.pyplot as plt\nfrom lifelines import AalenJohansenFitter\n\ndf_time_to_cancer_dx = pd.read_csv(\n    \"https://raw.githubusercontent.com/ddsjoberg/dca-tutorial/main/data/df_time_to_cancer_dx.csv\"\n)\n\nreals_mapping = {\n    \"censor\": 0,\n    \"diagnosed with cancer\": 1,\n    \"dead other causes\": 2\n}\ndf_time_to_cancer_dx['reals'] = df_time_to_cancer_dx['cancer_cr'].map(reals_mapping)\n\najf_primary = AalenJohansenFitter()\najf_primary.fit(\n    durations=df_time_to_cancer_dx['ttcancer'],\n    event_observed=df_time_to_cancer_dx['reals'],\n    event_of_interest=1\n)\n\najf_competing = AalenJohansenFitter()\najf_competing.fit(\n    durations=df_time_to_cancer_dx['ttcancer'],\n    event_observed=df_time_to_cancer_dx['reals'],\n    event_of_interest=2\n)\n\nplt.figure(figsize=(10, 6))\najf_primary.plot(label='Diagnosed with cancer')\najf_competing.plot(label='Dead from other causes')\nplt.title(\"Aalen-Johansen Estimate of Cumulative Incidence (Python)\")\nplt.xlabel(\"Time to event\")\nplt.ylabel(\"Cumulative incidence\")\nplt.legend()\nplt.grid(True)\nplt.tight_layout()\nplt.show()"
+    "text": "rtichoke\nrtichoke"
   }
 ]
