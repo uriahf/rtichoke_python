@@ -108,10 +108,6 @@ def extract_crude_estimate(data_to_adjust):
     Returns:
         pd.DataFrame: Aggregated counts with missing combinations filled with zero.
     """
-    # Group by strata, reals, and fixed_time_horizon, then count occurrences
-    
-    # print('data_to_adjust')
-    # print(data_to_adjust)
     
     crude_estimate = (
         data_to_adjust
@@ -124,16 +120,11 @@ def extract_crude_estimate(data_to_adjust):
     unique_time_horizons = data_to_adjust["fixed_time_horizon"].unique()
     unique_reals = data_to_adjust["reals"].unique()
 
-    # return crude_estimate
-
-    # Create all possible combinations to ensure completeness
     all_combinations = pd.DataFrame(
         list(itertools.product(unique_strata, unique_reals, unique_time_horizons)),
         columns=["strata", "reals", "fixed_time_horizon"]
     )
 
-
-    # Ensure all possible combinations are present and fill missing values with 0
     crude_estimate = (
         all_combinations
         .merge(crude_estimate, on=["strata", "reals", "fixed_time_horizon"], how="left")
@@ -142,24 +133,11 @@ def extract_crude_estimate(data_to_adjust):
 
     return crude_estimate
 
-# def add_cutoff_strata(data, by):
-#     data["strata_probability_threshold"] = pd.cut(
-#         data["probs"],
-#         bins=create_breaks_values(data["probs"], "probability_threshold", by),
-#         include_lowest=True
-#     )
-#     data["strata_ppcr"] = (pd.qcut(-data["probs"], q=int(1/by), labels=False) + 1) / (1 / by)
-#     data["strata_ppcr"] = data["strata_ppcr"].astype(str)
-#     return data
-
 def add_cutoff_strata(data, by):
-    # Group by reference_group and apply transformations
     result = data.copy()
     
-    # Group and apply operations
     grouped = result.groupby("reference_group")
     
-    # Apply the transformations to each group
     def transform_group(group):
         group["strata_probability_threshold"] = pd.cut(
             group["probs"],
@@ -167,7 +145,6 @@ def add_cutoff_strata(data, by):
             include_lowest=True
         )
         
-        # Equivalent to ntile(desc(probs)) in R
         group["strata_ppcr"] = pd.qcut(
             -group["probs"],  # Descending order by using negative
             q=int(1/by),
@@ -175,15 +152,12 @@ def add_cutoff_strata(data, by):
             duplicates="drop"
         ) + 1
         
-        # Convert to factor-like representation
         group["strata_ppcr"] = (group["strata_ppcr"] / (1 / by)).astype(str)
         
         return group
     
-    # Apply transformation to each group and combine results
     result = grouped.apply(transform_group)
     
-    # Reset the index to remove grouping
     result = result.reset_index(drop=True)
     
     return result
@@ -196,7 +170,6 @@ def create_strata_combinations(stratified_by, by):
         mid_point = upper_bound - by / 2
         include_lower_bound = lower_bound == 0
         include_upper_bound = upper_bound != 0
-        # Create the strata strings by combining bounds and their inclusion/exclusion indicators
         strata = [
             f"{'[' if include_lower else '('}{lower}, {upper}{']' if include_upper else ')'}"
             for include_lower, lower, upper, include_upper in zip(
@@ -234,7 +207,6 @@ def create_breaks_values(probs_vec, stratified_by, by):
 
 
 def create_aj_data_combinations(reference_groups, fixed_time_horizons, stratified_by, by):
-    # Create strata combinations
     strata_combinations = pd.concat(
         [create_strata_combinations(x, by) for x in stratified_by], ignore_index=True
     )
@@ -293,13 +265,6 @@ def update_administrative_censoring(data_to_adjust):
 def extract_aj_estimate_by_assumptions(data_to_adjust, fixed_time_horizons, 
                                        censoring_assumption="excluded", 
                                        competing_assumption="excluded"):
-    
-    # print('censoring_assumption')
-    # print(censoring_assumption)
-
-    # print('competing assumption')
-    # print(competing_assumption)
-
     
     if censoring_assumption == "excluded" and competing_assumption == "excluded":
 
