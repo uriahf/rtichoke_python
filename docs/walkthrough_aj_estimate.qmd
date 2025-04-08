@@ -6,17 +6,6 @@ message: false
 warning: false
 ---
 
-
-```{python}
-
-from rtichoke.helpers.sandbox_observable_helpers import create_aj_data_combinations
-
-create_aj_data_combinations
-```
-
-
-Here is a Python code cell:
-
 ```{python}
 from lifelines import AalenJohansenFitter
 import numpy as np
@@ -73,13 +62,7 @@ pred_1_5 = 1 - np.exp(-cox_model.predict_expectation(new_data))
 print(f"pred_1_5: type={type(pred_1_5)}, dimensions={pred_1_5.ndim if hasattr(pred_1_5, 'ndim') else 'N/A'}")
 
 pred_thin = 1 - np.exp(-thin_model.predict_expectation(new_data))
-print(f"pred_thin: type={type(pred_thin)}, dimensions={pred_thin.ndim if hasattr(pred_thin, 'ndim') else 'N/A'}")
 
-print('preds_aft')
-print(preds_aft)
-
-print('pred_thin')
-print(pred_thin)
 
 ```
 
@@ -165,6 +148,9 @@ for reference_group, group_data in list_data_to_adjust.items():
         adjusted_data_list.append(adjusted_data)
 
 
+```
+
+```{python}
 # Combine all adjusted data
 final_adjusted_data = pd.concat(adjusted_data_list, ignore_index=True)
 
@@ -185,6 +171,12 @@ combined_adjusted_data = aj_data_combinations.merge(final_adjusted_data, on=["re
 ```
 
 ```{python}
+
+import pandas as pd
+
+# combined_adjusted_data = pd.read_pickle("C:\Users\I\Documents\GitHub\rtichoke_python\docs\combined_adjusted_data.pkl")
+
+# TODO: When I read pickle something is goes wrong
 
 ojs_define(reference_groups_data = ["thin", "full", "aft"])
 
@@ -273,19 +265,19 @@ Plot.plot({
 # Perform left join between aj_data_combinations and final_adjusted_data on 'strata' and 'reals_estimate'
 # only when stratified_by == 'probability_threshold' for aj_data_combinations
 
-aj_data_combinations_prob_threshold = aj_data_combinations[aj_data_combinations['stratified_by'] == 'probability_threshold']
+# aj_data_combinations_prob_threshold = aj_data_combinations[aj_data_combinations['stratified_by'] == 'probability_threshold']
 
-# Convert 'strata' columns to strings
-aj_data_combinations_prob_threshold['strata'] = aj_data_combinations_prob_threshold['strata'].astype(str)
-final_adjusted_data['strata'] = final_adjusted_data['strata'].astype(str)
+# # Convert 'strata' columns to strings
+# aj_data_combinations_prob_threshold['strata'] = aj_data_combinations_prob_threshold['strata'].astype(str)
+# final_adjusted_data['strata'] = final_adjusted_data['strata'].astype(str)
 
-combined_adjusted_data = aj_data_combinations_prob_threshold.merge(
-    final_adjusted_data[['strata', 'reals', 'reals_estimate']],
-    on=['strata', 'reals'],
-    how='left'
-)
+# combined_adjusted_data = aj_data_combinations_prob_threshold.merge(
+#     final_adjusted_data[['strata', 'reals', 'reals_estimate']],
+#     on=['strata', 'reals'],
+#     how='left'
+# )
 
 
-aj_data_combinations_prob_threshold[['strata']]
-final_adjusted_data[['strata']]
+# aj_data_combinations_prob_threshold[['strata']]
+# final_adjusted_data[['strata']]
 ```
