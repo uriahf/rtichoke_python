@@ -13,6 +13,7 @@ dependencies = [
     "pandas<3.0.0,>=2.0.0",
     "importlib>=1.0.4",
     "quartodoc>=0.9.1",
+    "papermill>=2.6.0",
 ]
 name = "rtichoke"
 version = "0.1.10"
