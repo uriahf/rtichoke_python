@@ -25,47 +25,13 @@ df_time_to_cancer_dx = \
         "https://raw.githubusercontent.com/ddsjoberg/dca-tutorial/main/data/df_time_to_cancer_dx.csv"
     )
 
-
-# # Initialize models
-# cox_model = CoxPHFitter()
-# thin_model = CoxPHFitter()
-# aft_model = WeibullAFTFitter()
-
-# # Define formulas for each model
-# cox_formula = 'age + famhistory + marker'
-# thin_formula = 'age + marker'
-# aft_formula = 'age + marker'
-
-# # Fit the models
-# cox_model.fit(df_time_to_cancer_dx, duration_col='ttcancer', event_col='cancer', formula=cox_formula)
-# thin_model.fit(df_time_to_cancer_dx, duration_col='ttcancer', event_col='cancer', formula=thin_formula)
-# aft_model.fit(df_time_to_cancer_dx, duration_col='ttcancer', event_col='cancer', formula=aft_formula)
-
-
-reals_mapping = {
-    "censor": 0,
-    "diagnosed with cancer": 1,
-    "dead other causes": 2
-}
-
-df_time_to_cancer_dx['reals'] = df_time_to_cancer_dx['cancer_cr'].map(reals_mapping)
-
-# # Predict risks at time 1.5
-# new_data = df_time_to_cancer_dx.copy()
-# new_data['ttcancer'] = 1.5
-
-# # Ensure preds_aft is in the same format as pred_1_5 and pred_thin
-# preds_aft = 1 - np.exp(-aft_model.predict_expectation(new_data))
-# print(f"preds_aft: type={type(preds_aft)}, dimensions={preds_aft.ndim if hasattr(preds_aft, 'ndim') else 'N/A'}")
-
-# # Predict risks at time 1.5
-# pred_1_5 = 1 - np.exp(-cox_model.predict_expectation(new_data))
-# print(f"pred_1_5: type={type(pred_1_5)}, dimensions={pred_1_5.ndim if hasattr(pred_1_5, 'ndim') else 'N/A'}")
-
-# pred_thin = 1 - np.exp(-thin_model.predict_expectation(new_data))
-
 with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\probs_dict.pkl', 'rb') as file:
     probs_dict = pickle.load(file)
+
+with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\reals_dict.pkl', 'rb') as file:
+    reals_dict = pickle.load(file)
+
+
 ```
 
 
@@ -92,7 +58,7 @@ aj_data_combinations = create_aj_data_combinations(list(probs_dict.keys()), fixe
 data_to_adjust = pd.DataFrame({
     "reference_group": ["thin"] * len(probs_dict["thin"]) + ["aft"] * len(probs_dict["thin"]) + ["full"] * len(probs_dict["thin"]),
     "probs": np.concatenate([probs_dict["thin"], probs_dict["aft"], probs_dict["full"]]),
-    "reals": np.concatenate([df_time_to_cancer_dx['reals'], df_time_to_cancer_dx['reals'], df_time_to_cancer_dx['reals']]),
+    "reals": np.concatenate([reals_dict, reals_dict, reals_dict]),
     "times": np.concatenate([df_time_to_cancer_dx['ttcancer'], df_time_to_cancer_dx['ttcancer'], df_time_to_cancer_dx['ttcancer']])
 })
 
