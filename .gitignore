@@ -140,6 +140,7 @@ dmypy.json
 
 # MacOS
 .DS_Store
+*.html
 docs/walkthrough_aj_estimate.html
 docs/_site/walkthrough_aj_estimate.html
 docs/_site/walkthrough_aj_estimate.html
