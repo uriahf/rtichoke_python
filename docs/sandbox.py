@@ -32,6 +32,7 @@ reals_mapping = {
 
 df_time_to_cancer_dx['reals'] = df_time_to_cancer_dx['cancer_cr'].map(reals_mapping)
 
+
 new_data = df_time_to_cancer_dx.copy()
 new_data['ttcancer'] = 1.5
 
@@ -39,13 +40,25 @@ preds_aft = 1 - np.exp(-aft_model.predict_expectation(new_data))
 pred_1_5 = 1 - np.exp(-cox_model.predict_expectation(new_data))
 pred_thin = 1 - np.exp(-thin_model.predict_expectation(new_data))
 
-probs_cox = {
+probs_dict = {
     "thin": pred_thin,
     "full": pred_1_5,
     "aft": preds_aft
 }
 
 
+import pickle 
+
+with open('probs_dict.pkl', 'wb') as file:
+    pickle.dump(probs_dict, file)
+        
+with open('reals_dict.pkl', 'wb') as file:
+    pickle.dump(df_time_to_cancer_dx['reals']
+, file)
+
+with open('times_dict.pkl', 'wb') as file:
+    pickle.dump(df_time_to_cancer_dx['ttcancer']
+, file)
 
 fixed_time_horizons = [1, 3, 5]
 stratified_by = ["probability_threshold", "ppcr"]

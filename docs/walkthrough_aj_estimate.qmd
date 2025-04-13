@@ -16,14 +16,7 @@ from lifelines import CoxPHFitter
 from lifelines import WeibullAFTFitter
 
 import pandas as pd
-import pickle  # Ensure pickle is imported
-
-
-
-df_time_to_cancer_dx = \
-    pd.read_csv(
-        "https://raw.githubusercontent.com/ddsjoberg/dca-tutorial/main/data/df_time_to_cancer_dx.csv"
-    )
+import pickle  
 
 with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\probs_dict.pkl', 'rb') as file:
     probs_dict = pickle.load(file)
@@ -31,22 +24,18 @@ with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\probs_dict.pkl', 'rb') a
 with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\reals_dict.pkl', 'rb') as file:
     reals_dict = pickle.load(file)
 
+with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\times_dict.pkl', 'rb') as file:
+    times_dict = pickle.load(file)
+
 
 ```
 
 
 ```{python}
-# Store probabilities
-# probs_dict = {
-#     "thin": pred_thin,
-#     "full": pred_1_5,
-#     "aft": preds_aft
-# }
-# Create Aalen-Johansen data combinations
+
 fixed_time_horizons = [1, 3, 5]
 stratified_by = ["probability_threshold", "ppcr"]
 
-# Placeholder for create_aj_data_combinations
 aj_data_combinations = create_aj_data_combinations(list(probs_dict.keys()), fixed_time_horizons, stratified_by, 0.1)
 
 ```
@@ -59,7 +48,7 @@ data_to_adjust = pd.DataFrame({
     "reference_group": ["thin"] * len(probs_dict["thin"]) + ["aft"] * len(probs_dict["thin"]) + ["full"] * len(probs_dict["thin"]),
     "probs": np.concatenate([probs_dict["thin"], probs_dict["aft"], probs_dict["full"]]),
     "reals": np.concatenate([reals_dict, reals_dict, reals_dict]),
-    "times": np.concatenate([df_time_to_cancer_dx['ttcancer'], df_time_to_cancer_dx['ttcancer'], df_time_to_cancer_dx['ttcancer']])
+    "times": np.concatenate([times_dict, times_dict, times_dict])
 })
 
 # # Placeholder for add_cutoff_strata function
