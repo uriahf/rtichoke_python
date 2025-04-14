@@ -44,11 +44,12 @@ aj_data_combinations = create_aj_data_combinations(list(probs_dict.keys()), fixe
 
 ```{python}
 # Create reference groups
+reference_groups = list(probs_dict.keys())
 data_to_adjust = pd.DataFrame({
-    "reference_group": ["thin"] * len(probs_dict["thin"]) + ["aft"] * len(probs_dict["thin"]) + ["full"] * len(probs_dict["thin"]),
-    "probs": np.concatenate([probs_dict["thin"], probs_dict["aft"], probs_dict["full"]]),
-    "reals": np.concatenate([reals_dict, reals_dict, reals_dict]),
-    "times": np.concatenate([times_dict, times_dict, times_dict])
+  "reference_group": np.repeat(reference_groups, len(reals_dict)),
+  "probs": np.concatenate([probs_dict[group] for group in reference_groups]),
+  "reals": np.tile(reals_dict, len(reference_groups)),
+  "times": np.tile(times_dict, len(reference_groups))
 })
 
 # # Placeholder for add_cutoff_strata function
@@ -135,7 +136,7 @@ import pandas as pd
 
 # TODO: When I read pickle something is goes wrong
 
-ojs_define(reference_groups_data = ["thin", "full", "aft"])
+ojs_define(reference_groups_data = reference_groups)
 
 ojs_define(data = combined_adjusted_data)
 
