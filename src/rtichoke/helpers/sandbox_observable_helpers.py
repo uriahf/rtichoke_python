@@ -280,25 +280,25 @@ def extract_aj_estimate_by_assumptions(data_to_adjust, fixed_time_horizons,
                                        censoring_assumption="excluded", 
                                        competing_assumption="excluded"):
     
+    def assign_and_explode(data):
+        return (
+            data.assign(fixed_time_horizon=[fixed_time_horizons] * len(data))
+              .explode("fixed_time_horizon")
+        )
+
     if censoring_assumption == "excluded" and competing_assumption == "excluded":
 
-        
         aj_estimate_data = (
-            data_to_adjust
-            .assign(fixed_time_horizon=lambda df: df.apply(lambda x: fixed_time_horizons, axis=1))
-            .explode("fixed_time_horizon")
+            assign_and_explode(data_to_adjust)
             .pipe(update_administrative_censoring)
             .pipe(extract_crude_estimate)
         )
 
-        # print('aj_estimate-data')
-        # print(aj_estimate_data)
-    
     elif censoring_assumption == "excluded" and competing_assumption == "adjusted_as_negative":
+        exploded_data = assign_and_explode(data_to_adjust).pipe(update_administrative_censoring)
+        
         aj_estimate_data_excluded = (
-            data_to_adjust
-            .assign(fixed_time_horizon=lambda df: df.apply(lambda x: fixed_time_horizons, axis=1))
-            .explode("fixed_time_horizon")
+            exploded_data
             .pipe(update_administrative_censoring)
             .query("reals == 'real_censored'")
             .pipe(extract_crude_estimate)
@@ -320,11 +320,10 @@ def extract_aj_estimate_by_assumptions(data_to_adjust, fixed_time_horizons,
         aj_estimate_data = pd.concat([aj_estimate_data_excluded, aj_estimate_data_adjusted], ignore_index=True)
     
     elif censoring_assumption == "adjusted" and competing_assumption == "excluded":
+        exploded_data = assign_and_explode(data_to_adjust).pipe(update_administrative_censoring)
+        
         aj_estimate_data_excluded = (
-            data_to_adjust
-            .assign(fixed_time_horizon=lambda df: df.apply(lambda x: fixed_time_horizons, axis=1))
-            .explode("fixed_time_horizon")
-            .pipe(update_administrative_censoring)
+            exploded_data
             .query("reals == 'real_competing'")
             .pipe(extract_crude_estimate)
         )
