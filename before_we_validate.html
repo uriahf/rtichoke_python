@@ -168,22 +168,64 @@ ul.task-list li input[type="checkbox"] {
 <section id="declare-how-to-stratify-predictions-probability-threshold-or-ppcr" class="level1">
 <h1>✍️ Declare how to stratify predictions: Probability Threshold or PPCR ✂️</h1>
 <p>The <code>stratified_by</code> argument is designed for the user to choose how to stratify predictions for decision-making, each method implies different problem:</p>
-<section id="probability-threshold-facing-individual-harm" class="level5">
-<h5 class="anchored" data-anchor-id="probability-threshold-facing-individual-harm">Probability Threshold: Facing Individual Harm</h5>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">Probability Threshold</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">PPCR</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
 <p>By choosing Probability Threshold as a cutoff the implied assumption is that you are concerned with individual harm or benefit.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+    
+
+    subgraph trt[Treatment Decision]
+        linkStyle default stroke:#000
+        A("😷") --&gt;|"Treatment 💊"|B("&lt;B&gt;Predicted&lt;br&gt;Positive&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;😷")
+        A --&gt;|"No Treatment"|C("&lt;B&gt;Predicted&lt;br&gt;Negative&lt;/B&gt;&lt;br&gt;😷")    
+    end
+
+    subgraph ut[Utility of the Decision]
+        B --&gt;|"Disease 🤢"| D["&lt;B&gt;TP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤢"]
+        B --&gt;|"No Disease 🤨"| E["&lt;B&gt;FP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤨"]
+        C --&gt;|"Disease 🤢"| F["&lt;B&gt;FN&lt;/B&gt;&lt;br&gt;🤢"]
+        C --&gt;|"No Disease 🤨"| G["&lt;B&gt;TN&lt;/B&gt;&lt;br&gt;🤨"]  
+    end
+
+
+
+    style A fill:#B6DCFE, stroke:black,color:black
+    style B fill:#B6DCFE, stroke:black,color:black
+    style C fill:#B6DCFE, stroke:black,color:black
+    style D fill:#C0FFC0,stroke:black,color:black
+    style E fill:#FFCCE0,stroke:black,color:black
+    style F fill:#FFCCE0,stroke:black,color:black
+    style G fill:#C0FFC0,stroke:black,color:black
+
+    classDef subgraphStyle fill:#FAF6EC,stroke:#333,stroke-width:1px
+    class trt,ut subgraphStyle
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
 <p><em>Regardless</em> of ranking each prediction is categorised to a bin: 0.32 -&gt; <code>[0.3, 0.4)</code>.</p>
 <ol type="1">
 <li>Categorise Absolute Risk: 0.32 -&gt; <code>[0.3, 0.4)</code></li>
 </ol>
-</section>
-<section id="ppcr-facing-resource-constraint" class="level5">
-<h5 class="anchored" data-anchor-id="ppcr-facing-resource-constraint">PPCR: Facing Resource Constraint</h5>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
 <p>By choosing PPCR as a cutoff the implied assumption is that you are concerned with resource constraint and assume no individual treatment harm.</p>
 <p><em>Regarding</em> the ranking each prediction is categorised to a bin: if the absolute probability 0.32 is the 18th highest predictions out of 100, it will be categorised to the second decile -&gt; <code>0.18</code>.</p>
 <ol type="1">
 <li>Calculate Risk-Quantile from Absolute Risk: 0.32 -&gt; <code>0.18</code></li>
 </ol>
-</section>
+</div>
+</div>
+</div>
 </section>
 <section id="declare-fixed-time-horizons" class="level1">
 <h1>✍️ Declare Fixed Time Horizons 🌅 (📅🤬)</h1>
