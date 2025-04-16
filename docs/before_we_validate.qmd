@@ -83,6 +83,8 @@ Pauker SG, Kassirer JP. Therapeutic decision making: a cost-benefit analysis. N 
 
 ##### PPCR
 
+![](line_ppcr_04.svg)
+
 By choosing PPCR as a cutoff the implied assumption is that you are concerned with resource constraint and assume no individual treatment harm.
 
 *Regarding* the ranking each prediction is categorised to a bin: if the absolute probability 0.32 is the 18th highest predictions out of 100, it will be categorised to the second decile -> `0.18`.
