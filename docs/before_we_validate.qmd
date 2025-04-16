@@ -36,21 +36,56 @@ Compare performance over different sub-populations.
 
 The `stratified_by` argument is designed for the user to choose how to stratify predictions for decision-making, each method implies different problem:
 
-##### Probability Threshold: Facing Individual Harm
+::: {.panel-tabset}
+
+##### Probability Threshold
 
 By choosing Probability Threshold as a cutoff the implied assumption is that you are concerned with individual harm or benefit.
+
+```{mermaid}
+graph LR
+    
+
+    subgraph trt[Treatment Decision]
+        linkStyle default stroke:#000
+        A("😷") -->|"Treatment 💊"|B("<B>Predicted<br>Positive</B><br>💊<br>😷")
+        A -->|"No Treatment"|C("<B>Predicted<br>Negative</B><br>😷")    
+    end
+
+    subgraph ut[Utility of the Decision]
+        B -->|"Disease 🤢"| D["<B>TP</B><br>💊<br>🤢"]
+        B -->|"No Disease 🤨"| E["<B>FP</B><br>💊<br>🤨"]
+        C -->|"Disease 🤢"| F["<B>FN</B><br>🤢"]
+        C -->|"No Disease 🤨"| G["<B>TN</B><br>🤨"]  
+    end
+
+
+
+    style A fill:#B6DCFE, stroke:black,color:black
+    style B fill:#B6DCFE, stroke:black,color:black
+    style C fill:#B6DCFE, stroke:black,color:black
+    style D fill:#C0FFC0,stroke:black,color:black
+    style E fill:#FFCCE0,stroke:black,color:black
+    style F fill:#FFCCE0,stroke:black,color:black
+    style G fill:#C0FFC0,stroke:black,color:black
+
+    classDef subgraphStyle fill:#FAF6EC,stroke:#333,stroke-width:1px
+    class trt,ut subgraphStyle
+```
 
 *Regardless* of ranking each prediction is categorised to a bin: 0.32 -> `[0.3, 0.4)`. 
 
 1. Categorise Absolute Risk: 0.32 -> `[0.3, 0.4)`
 
-##### PPCR: Facing Resource Constraint
+##### PPCR
 
 By choosing PPCR as a cutoff the implied assumption is that you are concerned with resource constraint and assume no individual treatment harm.
 
 *Regarding* the ranking each prediction is categorised to a bin: if the absolute probability 0.32 is the 18th highest predictions out of 100, it will be categorised to the second decile -> `0.18`.
 
 1. Calculate Risk-Quantile from Absolute Risk: 0.32 -> `0.18` 
+
+:::
 
 # ✍️ Declare Fixed Time Horizons 🌅 (📅🤬)
 

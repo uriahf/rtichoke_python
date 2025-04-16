@@ -74,7 +74,6 @@ data_to_adjust["reals"] = pd.Categorical(data_to_adjust["reals"], categories=["r
 # Splitting data by reference group
 list_data_to_adjust = {k: v for k, v in data_to_adjust.groupby("reference_group")}
 
-list_data_to_adjust['aft']
 
 # # Define assumption sets
 assumption_sets = [
