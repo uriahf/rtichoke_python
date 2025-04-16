@@ -61,9 +61,9 @@ graph LR
 
 
 
-    style A fill:#B6DCFE, stroke:black,color:black
-    style B fill:#B6DCFE, stroke:black,color:black
-    style C fill:#B6DCFE, stroke:black,color:black
+    style A fill:#E8F4FF, stroke:black,color:black
+    style B fill:#E8F4FF, stroke:black,color:black
+    style C fill:#E8F4FF, stroke:black,color:black
     style D fill:#C0FFC0,stroke:black,color:black
     style E fill:#FFCCE0,stroke:black,color:black
     style F fill:#FFCCE0,stroke:black,color:black
