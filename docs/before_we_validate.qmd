@@ -77,6 +77,10 @@ graph LR
 
 1. Categorise Absolute Risk: 0.32 -> `[0.3, 0.4)`
 
+
+References:
+Pauker SG, Kassirer JP. Therapeutic decision making: a cost-benefit analysis. N Engl J Med. 1975;293(5):229-234. doi:10.1056/NEJM197507312930505
+
 ##### PPCR
 
 By choosing PPCR as a cutoff the implied assumption is that you are concerned with resource constraint and assume no individual treatment harm.
@@ -84,6 +88,9 @@ By choosing PPCR as a cutoff the implied assumption is that you are concerned wi
 *Regarding* the ranking each prediction is categorised to a bin: if the absolute probability 0.32 is the 18th highest predictions out of 100, it will be categorised to the second decile -> `0.18`.
 
 1. Calculate Risk-Quantile from Absolute Risk: 0.32 -> `0.18` 
+
+References:
+https://en.wikipedia.org/wiki/Precision_and_recall
 
 :::
 
