@@ -262,6 +262,20 @@ def update_administrative_censoring(data_to_adjust):
     return data_to_adjust
 
 
+def create_adjusted_data_list(list_data_to_adjust, fixed_time_horizons, assumption_sets):
+  adjusted_data_list = []
+  for reference_group, group_data in list_data_to_adjust.items():
+    for assumptions in assumption_sets:
+      adjusted_data = extract_aj_estimate_by_assumptions(
+        group_data,
+        fixed_time_horizons=fixed_time_horizons,
+        censoring_assumption=assumptions["censored"],
+        competing_assumption=assumptions["competing"]
+      )
+      adjusted_data["reference_group"] = reference_group
+      adjusted_data_list.append(adjusted_data)
+  return adjusted_data_list
+
 def extract_aj_estimate_by_assumptions(data_to_adjust, fixed_time_horizons, 
                                        censoring_assumption="excluded", 
                                        competing_assumption="excluded"):

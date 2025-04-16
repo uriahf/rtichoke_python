@@ -89,20 +89,11 @@ assumption_sets = [
 
 ```{python}
 
-list_data_to_adjust
-
-# Adjust data based on assumptions
-adjusted_data_list = []
-for reference_group, group_data in list_data_to_adjust.items():
-    for assumptions in assumption_sets:
-        adjusted_data = extract_aj_estimate_by_assumptions(
-            group_data,
-            fixed_time_horizons=fixed_time_horizons,
-            censoring_assumption=assumptions["censored"],
-            competing_assumption=assumptions["competing"]
-        )
-        adjusted_data["reference_group"] = reference_group
-        adjusted_data_list.append(adjusted_data)
+adjusted_data_list = create_adjusted_data_list(
+  list_data_to_adjust=list_data_to_adjust,
+  fixed_time_horizons=fixed_time_horizons,
+  assumption_sets=assumption_sets
+)
 
 
 ```
