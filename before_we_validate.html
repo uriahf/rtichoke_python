@@ -74,7 +74,7 @@ ul.task-list li input[type="checkbox"] {
 
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -114,7 +114,36 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#declare-reference-groups" id="toc-declare-reference-groups" class="nav-link active" data-scroll-target="#declare-reference-groups">✍️ Declare reference groups</a></li>
+  <li><a href="#declare-how-to-stratify-predictions-probability-threshold-or-ppcr" id="toc-declare-how-to-stratify-predictions-probability-threshold-or-ppcr" class="nav-link" data-scroll-target="#declare-how-to-stratify-predictions-probability-threshold-or-ppcr">✍️ Declare how to stratify predictions: Probability Threshold or PPCR ✂️</a>
+  <ul class="collapse">
+  <li><a href="#probability-threshold" id="toc-probability-threshold" class="nav-link" data-scroll-target="#probability-threshold">Probability Threshold</a>
+  <ul class="collapse">
+  <li><a href="#baseline-strategy-treat-none" id="toc-baseline-strategy-treat-none" class="nav-link" data-scroll-target="#baseline-strategy-treat-none">Baseline Strategy: Treat None</a></li>
+  </ul></li>
+  <li><a href="#baseline-strategy-treat-all" id="toc-baseline-strategy-treat-all" class="nav-link" data-scroll-target="#baseline-strategy-treat-all">Baseline Strategy: Treat All</a></li>
+  </ul></li>
+  <li><a href="#declare-fixed-time-horizons" id="toc-declare-fixed-time-horizons" class="nav-link" data-scroll-target="#declare-fixed-time-horizons">✍️ Declare Fixed Time Horizons 🌅 (📅🤬)</a></li>
+  <li><a href="#declare-heuristics-regarding-ambigious-reals" id="toc-declare-heuristics-regarding-ambigious-reals" class="nav-link" data-scroll-target="#declare-heuristics-regarding-ambigious-reals">Declare Heuristics Regarding ambigious <code>reals</code></a>
+  <ul class="collapse">
+  <li><a href="#declare-heuristics-regarding-censored-events" id="toc-declare-heuristics-regarding-censored-events" class="nav-link" data-scroll-target="#declare-heuristics-regarding-censored-events">✍️ Declare Heuristics Regarding Censored Events 📅🤬</a></li>
+  </ul></li>
+  <li><a href="#declare-heuristics-regarding-competing-events" id="toc-declare-heuristics-regarding-competing-events" class="nav-link" data-scroll-target="#declare-heuristics-regarding-competing-events">✍️ Declare Heuristics Regarding Competing Events 📅💀</a></li>
+  <li><a href="#what-rtichoke-from-now-on" id="toc-what-rtichoke-from-now-on" class="nav-link" data-scroll-target="#what-rtichoke-from-now-on">What rtichoke from now on?</a>
+  <ul class="collapse">
+  <li><a href="#render-predictions-histogram" id="toc-render-predictions-histogram" class="nav-link" data-scroll-target="#render-predictions-histogram">Render Predictions Histogram</a>
+  <ul class="collapse">
+  <li><a href="#extract-aj-estimate-by-assumptions" id="toc-extract-aj-estimate-by-assumptions" class="nav-link" data-scroll-target="#extract-aj-estimate-by-assumptions">Extract AJ Estimate by Assumptions</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -168,19 +197,17 @@ ul.task-list li input[type="checkbox"] {
 <section id="declare-how-to-stratify-predictions-probability-threshold-or-ppcr" class="level1">
 <h1>✍️ Declare how to stratify predictions: Probability Threshold or PPCR ✂️</h1>
 <p>The <code>stratified_by</code> argument is designed for the user to choose how to stratify predictions for decision-making, each method implies different problem:</p>
-<div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">Probability Threshold</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">PPCR</a></li></ul>
-<div class="tab-content">
-<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<section id="probability-threshold" class="level2">
+<h2 class="anchored" data-anchor-id="probability-threshold">Probability Threshold</h2>
 <p>By choosing Probability Threshold as a cutoff the implied assumption is that you are concerned with individual harm or benefit.</p>
+<section id="baseline-strategy-treat-none" class="level3">
+<h3 class="anchored" data-anchor-id="baseline-strategy-treat-none">Baseline Strategy: Treat None</h3>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
 <pre class="mermaid mermaid-js">graph LR
-    
-
     subgraph trt[Treatment Decision]
         linkStyle default stroke:#000
         A("😷") --&gt;|"Treatment 💊"|B("&lt;B&gt;Predicted&lt;br&gt;Positive&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;😷")
@@ -188,10 +215,166 @@ ul.task-list li input[type="checkbox"] {
     end
 
     subgraph ut[Utility of the Decision]
-        B --&gt;|"Disease 🤢"| D["&lt;B&gt;TP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤢"]
-        B --&gt;|"No Disease 🤨"| E["&lt;B&gt;FP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤨"]
-        C --&gt;|"Disease 🤢"| F["&lt;B&gt;FN&lt;/B&gt;&lt;br&gt;🤢"]
-        C --&gt;|"No Disease 🤨"| G["&lt;B&gt;TN&lt;/B&gt;&lt;br&gt;🤨"]  
+        subgraph pred[Prediction Model]
+            B --&gt;|"Disease 🤢"| D["&lt;B&gt;TP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤢"]
+            B --&gt;|"No Disease 🤨"| E["&lt;B&gt;FP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤨"]
+            C --&gt;|"Disease 🤢"| F["&lt;B&gt;FN&lt;/B&gt;&lt;br&gt;🤢"]
+            C --&gt;|"No Disease 🤨"| G["&lt;B&gt;TN&lt;/B&gt;&lt;br&gt;🤨"]
+        end
+        subgraph baselinestrategy[Baseline Strategy: Treat None]
+            Dnone["&lt;B&gt;FN&lt;/B&gt;&lt;br&gt;🤢"]
+            Enone["&lt;B&gt;TN&lt;/B&gt;&lt;br&gt;🤨"]
+            Fnone["&lt;B&gt;FN&lt;/B&gt;&lt;br&gt;🤢"]
+            Gnone["&lt;B&gt;TN&lt;/B&gt;&lt;br&gt;🤨"]
+        
+            D---Dnone
+            E---Enone
+            F---Fnone
+            G---Gnone
+        end
+        subgraph nb[Net Benefit]
+            Dnb[1]
+            Enb["pt / (1-pt)"]
+            Fnb[0]
+            Gnb[0]
+        Dnone---Dnb
+        Enone---Enb
+        Fnone---Fnb
+        Gnone---Gnb
+        end
+    end
+
+
+
+    style A fill:#E8F4FF, stroke:black,color:black
+    style B fill:#E8F4FF, stroke:black,color:black
+    style C fill:#E8F4FF, stroke:black,color:black
+    style D fill:#C0FFC0,stroke:black,color:black
+    style Dnone fill:#FFCCE0,stroke:black,color:black
+    style Dnb fill: #C0FFC0,stroke:black,color:black
+    style E fill: #FFCCE0,stroke:black,color:black
+    style Enone fill: #C0FFC0,stroke:black,color:black
+    style Enb fill: #FFCCE0,stroke:black,color:black
+    style F fill:#FFCCE0,stroke:black,color:black
+    style Fnone fill: #FFCCE0,stroke:black,color:black
+    style Fnb fill: #E8F4FF,stroke:black,color:black
+    style G fill: #C0FFC0,stroke:black,color:black
+    style Gnone fill: #C0FFC0,stroke:black,color:black
+    style Gnb fill: #E8F4FF,stroke:black,color:black
+    style nb fill: #E8F4FF,stroke:black,color:black 
+    style pred fill: #E8F4FF,stroke:black,color:black
+    style baselinestrategy fill: #E8F4FF,stroke:black,color:black
+
+    classDef subgraphStyle fill:#FAF6EC,stroke:#333,stroke-width:1px
+    class trt,ut subgraphStyle
+
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="baseline-strategy-treat-all" class="level2">
+<h2 class="anchored" data-anchor-id="baseline-strategy-treat-all">Baseline Strategy: Treat All</h2>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+    subgraph trt[Treatment Decision]
+        linkStyle default stroke:#000
+        A("😷") --&gt;|"Treatment 💊"|B("&lt;B&gt;Predicted&lt;br&gt;Positive&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;😷")
+        A --&gt;|"No Treatment"|C("&lt;B&gt;Predicted&lt;br&gt;Negative&lt;/B&gt;&lt;br&gt;😷")    
+    end
+
+    subgraph ut[Utility of the Decision]
+        subgraph pred[Prediction Model]
+            B --&gt;|"Disease 🤢"| D["&lt;B&gt;TP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤢"]
+            B --&gt;|"No Disease 🤨"| E["&lt;B&gt;FP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤨"]
+            C --&gt;|"Disease 🤢"| F["&lt;B&gt;FN&lt;/B&gt;&lt;br&gt;🤢"]
+            C --&gt;|"No Disease 🤨"| G["&lt;B&gt;TN&lt;/B&gt;&lt;br&gt;🤨"]
+        end
+        subgraph baselinestrategy[Baseline Strategy: Treat All]
+            Dall["&lt;B&gt;TP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤢"]
+            Eall["&lt;B&gt;FP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤨"]
+            Fall["&lt;B&gt;TP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤢"]
+            Gall["&lt;B&gt;FP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤨"]
+        
+            D---Dall
+            E---Eall
+            F---Fall
+            G---Gall
+        end
+        subgraph nb[Net Benefit]
+            Dnb[0]
+            Enb[0]
+            Fnb[1]
+            Gnb["(1-pt) / pt"]
+        Dall---Dnb
+        Eall---Enb
+        Fall---Fnb
+        Gall---Gnb
+        end
+    end
+
+
+
+    style A fill:#E8F4FF, stroke:black,color:black
+    style B fill:#E8F4FF, stroke:black,color:black
+    style C fill:#E8F4FF, stroke:black,color:black
+    style D fill:#C0FFC0,stroke:black,color:black
+    style Dall fill:#C0FFC0,stroke:black,color:black
+    style Dnb fill:#E8F4FF,stroke:black,color:black
+    style E fill:#FFCCE0,stroke:black,color:black
+    style Eall fill:#FFCCE0,stroke:black,color:black
+    style Enb fill:#E8F4FF,stroke:black,color:black
+    style F fill:#FFCCE0,stroke:black,color:black
+    style Fall fill:#C0FFC0,stroke:black,color:black
+    style Fnb fill:#C0FFC0,stroke:black,color:black
+    style G fill:#C0FFC0,stroke:black,color:black
+    style Gall fill:#FFCCE0,stroke:black,color:black
+    style Gnb fill:#FFCCE0,stroke:black,color:black
+    style nb fill: #E8F4FF,stroke:black,color:black 
+    style pred fill: #E8F4FF,stroke:black,color:black
+    style baselinestrategy fill: #E8F4FF,stroke:black,color:black
+
+    classDef subgraphStyle fill:#FAF6EC,stroke:#333,stroke-width:1px
+    class trt,ut subgraphStyle
+
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p><em>Regardless</em> of ranking each prediction is categorised to a bin: 0.32 -&gt; <code>[0.3, 0.4)</code>.</p>
+<ol type="1">
+<li>Categorise Absolute Risk: 0.32 -&gt; <code>[0.3, 0.4)</code></li>
+</ol>
+<p>References: Pauker SG, Kassirer JP. Therapeutic decision making: a cost-benefit analysis. N Engl J Med. 1975;293(5):229-234. doi:10.1056/NEJM197507312930505</p>
+<section id="ppcr" class="level5">
+<h5 class="anchored" data-anchor-id="ppcr">PPCR</h5>
+<p><img src="line_ppcr_04.svg" class="img-fluid"></p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+    subgraph trt[Treatment Allocation Decision]
+        linkStyle default stroke:#000
+        A("😷&lt;br&gt;😷&lt;br&gt;😷&lt;br&gt;😷&lt;br&gt;😷&lt;br&gt;😷&lt;br&gt;😷&lt;br&gt;😷&lt;br&gt;😷&lt;br&gt;😷") --&gt;|"Treatment 💊💊💊💊"|B("&lt;B&gt;Σ Predicted&lt;br&gt;Positives&lt;/B&gt;&lt;br&gt;💊💊💊💊&lt;br&gt;😷😷😷😷")
+        A --&gt;|"No Treatment"|C("&lt;B&gt;Σ Predicted&lt;br&gt;Negatives&lt;/B&gt;&lt;br&gt;😷😷😷😷😷😷")    
+    end
+
+    subgraph ut[Utility of the Decision]
+        B --&gt;|"Disease 🤢🤢🤢"| D["&lt;B&gt;Σ TP&lt;/B&gt;&lt;br&gt;💊💊💊&lt;br&gt;🤢🤢🤢"]
+        B --&gt;|"No Disease 🤨"| E["&lt;B&gt;Σ FP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤨"]
+        C --&gt;|"Disease 🤢"| F["&lt;B&gt;Σ FN&lt;/B&gt;&lt;br&gt;🤢"]
+        C --&gt;|"No Disease 🤨🤨🤨🤨🤨"| G["&lt;B&gt;Σ TN&lt;/B&gt;&lt;br&gt;🤨🤨🤨🤨🤨"]  
     end
 
 
@@ -206,29 +389,28 @@ ul.task-list li input[type="checkbox"] {
 
     classDef subgraphStyle fill:#FAF6EC,stroke:#333,stroke-width:1px
     class trt,ut subgraphStyle
+
 </pre>
 </div>
 <p></p></figure><p></p>
 </div>
 </div>
 </div>
-<p><em>Regardless</em> of ranking each prediction is categorised to a bin: 0.32 -&gt; <code>[0.3, 0.4)</code>.</p>
-<ol type="1">
-<li>Categorise Absolute Risk: 0.32 -&gt; <code>[0.3, 0.4)</code></li>
-</ol>
-<p>References: Pauker SG, Kassirer JP. Therapeutic decision making: a cost-benefit analysis. N Engl J Med. 1975;293(5):229-234. doi:10.1056/NEJM197507312930505</p>
-</div>
-<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
-<p><img src="line_ppcr_04.svg" class="img-fluid"></p>
 <p>By choosing PPCR as a cutoff the implied assumption is that you are concerned with resource constraint and assume no individual treatment harm.</p>
 <p><em>Regarding</em> the ranking each prediction is categorised to a bin: if the absolute probability 0.32 is the 18th highest predictions out of 100, it will be categorised to the second decile -&gt; <code>0.18</code>.</p>
 <ol type="1">
 <li>Calculate Risk-Quantile from Absolute Risk: 0.32 -&gt; <code>0.18</code></li>
 </ol>
 <p>References: https://en.wikipedia.org/wiki/Precision_and_recall</p>
-</div>
-</div>
-</div>
+<!-- ::: -->
+<p><em>Regardless</em> of ranking each prediction is categorised to a bin: 0.32 -&gt; <code>[0.3, 0.4)</code>.</p>
+<ol type="1">
+<li>Categorise Absolute Risk: 0.32 -&gt; <code>[0.3, 0.4)</code></li>
+</ol>
+<p>References: Pauker SG, Kassirer JP. Therapeutic decision making: a cost-benefit analysis. N Engl J Med. 1975;293(5):229-234. doi:10.1056/NEJM197507312930505</p>
+<!-- ::: -->
+</section>
+</section>
 </section>
 <section id="declare-fixed-time-horizons" class="level1">
 <h1>✍️ Declare Fixed Time Horizons 🌅 (📅🤬)</h1>
