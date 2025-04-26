@@ -35,8 +35,9 @@ with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\times_dict.pkl', 'rb') a
 
 fixed_time_horizons = [1, 3, 5]
 stratified_by = ["probability_threshold", "ppcr"]
+by=0.1
 
-aj_data_combinations = create_aj_data_combinations(list(probs_dict.keys()), fixed_time_horizons, stratified_by, 0.1)
+aj_data_combinations = create_aj_data_combinations(list(probs_dict.keys()), fixed_time_horizons, stratified_by, by)
 
 ```
 
@@ -44,36 +45,38 @@ aj_data_combinations = create_aj_data_combinations(list(probs_dict.keys()), fixe
 
 ```{python}
 # Create reference groups
-reference_groups = list(probs_dict.keys())
-data_to_adjust = pd.DataFrame({
-  "reference_group": np.repeat(reference_groups, len(reals_dict)),
-  "probs": np.concatenate([probs_dict[group] for group in reference_groups]),
-  "reals": np.tile(reals_dict, len(reference_groups)),
-  "times": np.tile(times_dict, len(reference_groups))
-})
+# data_to_adjust = pd.DataFrame({
+#   "reference_group": np.repeat(reference_groups, len(reals_dict)),
+#   "probs": np.concatenate([probs_dict[group] for group in reference_groups]),
+#   "reals": np.tile(reals_dict, len(reference_groups)),
+#   "times": np.tile(times_dict, len(reference_groups))
+# })
 
-# # Placeholder for add_cutoff_strata function
-data_to_adjust = add_cutoff_strata(data_to_adjust, by=0.1)
+# # # Placeholder for add_cutoff_strata function
+# data_to_adjust = add_cutoff_strata(data_to_adjust, by=0.1)
 
-```
-
+# ```
 
 
-```{python}
-data_to_adjust = pivot_longer_strata(data_to_adjust)
 
-data_to_adjust["reals"] = data_to_adjust["reals"].replace({
-    0: "real_negatives",
-    2: "real_competing",
-    1: "real_positives"
-})
+# ```{python}
+# data_to_adjust = pivot_longer_strata(data_to_adjust)
+
+# data_to_adjust["reals"] = data_to_adjust["reals"].replace({
+#     0: "real_negatives",
+#     2: "real_competing",
+#     1: "real_positives"
+# })
 
 
-data_to_adjust["reals"] = pd.Categorical(data_to_adjust["reals"], categories=["real_negatives", "real_competing", "real_positives"], ordered=True)
+# data_to_adjust["reals"] = pd.Categorical(data_to_adjust["reals"], categories=["real_negatives", "real_competing", "real_positives"], ordered=True)
 
-# Splitting data by reference group
-list_data_to_adjust = {k: v for k, v in data_to_adjust.groupby("reference_group")}
+# # Splitting data by reference group
+# list_data_to_adjust = {k: v for k, v in data_to_adjust.groupby("reference_group")}
 
+list_data_to_adjust = create_list_data_to_adjust(
+  probs_dict, reals_dict, times_dict, stratified_by=stratified_by, by=by
+)
 
 # # Define assumption sets
 assumption_sets = [
@@ -125,6 +128,9 @@ import pandas as pd
 # combined_adjusted_data = pd.read_pickle("C:\Users\I\Documents\GitHub\rtichoke_python\docs\combined_adjusted_data.pkl")
 
 # TODO: When I read pickle something is goes wrong
+
+reference_groups = list(probs_dict.keys())
+
 
 ojs_define(reference_groups_data = reference_groups)
 

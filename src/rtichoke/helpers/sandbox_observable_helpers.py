@@ -354,3 +354,24 @@ def extract_aj_estimate_by_assumptions(data_to_adjust, fixed_time_horizons,
         censoring_assumption=censoring_assumption,
         competing_assumption=competing_assumption
     )
+
+
+def create_list_data_to_adjust(probs_dict, reals_dict, times_dict, stratified_by, by):
+    reference_groups = list(probs_dict.keys())
+    data_to_adjust = pd.DataFrame({
+        "reference_group": np.repeat(reference_groups, len(reals_dict)),
+        "probs": np.concatenate([probs_dict[group] for group in reference_groups]),
+        "reals": np.tile(reals_dict, len(reference_groups)),
+        "times": np.tile(times_dict, len(reference_groups))
+    })
+    data_to_adjust = add_cutoff_strata(data_to_adjust, by=by)
+    data_to_adjust = pivot_longer_strata(data_to_adjust)
+    data_to_adjust["reals"] = data_to_adjust["reals"].replace({
+        0: "real_negatives",
+        2: "real_competing",
+        1: "real_positives"
+    })
+    data_to_adjust["reals"] = pd.Categorical(data_to_adjust["reals"], categories=["real_negatives", "real_competing", "real_positives"], ordered=True)
+    list_data_to_adjust = {k: v for k, v in data_to_adjust.groupby("reference_group")}
+    return list_data_to_adjust
+
