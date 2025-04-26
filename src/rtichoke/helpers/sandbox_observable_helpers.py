@@ -20,38 +20,36 @@ def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
         fixed_time_horizons = [fixed_time_horizons]
     
     # Create a categorical version of reals for stratification
-    data_to_adjust = data_to_adjust.copy()
-    data_to_adjust['reals_cat'] = pd.Categorical(
-        data_to_adjust['reals'], 
+    data = data_to_adjust.copy()
+    data['reals_cat'] = pd.Categorical(
+        data['reals'], 
         categories=["real_negatives", "real_positives", "real_competing", "real_censored"],
         ordered=True
     )
     
     # Get unique strata values
-    strata_values = data_to_adjust['strata'].unique()
+    strata_values = data['strata'].unique()
     
+    event_map = {
+            "real_negatives": 0,  # Treat as censored
+            "real_positives": 1,  # Event of interest
+            "real_competing": 2,  # Competing risk
+            "real_censored": 0    # Censored
+    }
+        
+    data['event_code'] = data['reals'].map(event_map)
+
     # Initialize result dataframes
     results = []
     
     # For each stratum, fit Aalen-Johansen model
     for stratum in strata_values:
         # Filter data for current stratum
-        stratum_data = data_to_adjust[data_to_adjust['strata'] == stratum].copy()
+        stratum_data = data.loc[data['strata'] == stratum]
         
         # Initialize Aalen-Johansen fitter
         ajf = AalenJohansenFitter()
         ajf_competing = AalenJohansenFitter()
-
-        # Convert reals to numeric for lifelines
-        # In lifelines: 0=censored, 1=event of interest, 2=competing event
-        event_map = {
-            "real_negatives": 0,  # Treat as censored
-            "real_positives": 1,  # Event of interest
-            "real_competing": 2,  # Competing risk
-            "real_censored": 0    # Censored
-        }
-        
-        stratum_data['event_code'] = stratum_data['reals'].map(event_map)
         
         # Fit the model
         ajf.fit(

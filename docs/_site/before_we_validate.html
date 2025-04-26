@@ -21,6 +21,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -67,6 +101,8 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script type="module" src="site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
 <script src="site_libs/quarto-diagram/mermaid.min.js"></script>
 <script src="site_libs/quarto-diagram/mermaid-init.js"></script>
 <link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
@@ -74,7 +110,7 @@ ul.task-list li input[type="checkbox"] {
 
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -114,7 +150,40 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#declare-reference-groups" id="toc-declare-reference-groups" class="nav-link active" data-scroll-target="#declare-reference-groups">✍️ Declare reference groups</a></li>
+  <li><a href="#declare-how-to-stratify-predictions" id="toc-declare-how-to-stratify-predictions" class="nav-link" data-scroll-target="#declare-how-to-stratify-predictions">✍️ Declare how to stratify predictions ✂️</a>
+  <ul class="collapse">
+  <li><a href="#probability-threshold" id="toc-probability-threshold" class="nav-link" data-scroll-target="#probability-threshold">Probability Threshold</a>
+  <ul class="collapse">
+  <li><a href="#baseline-strategy-treat-none" id="toc-baseline-strategy-treat-none" class="nav-link" data-scroll-target="#baseline-strategy-treat-none">Baseline Strategy: Treat None</a></li>
+  <li><a href="#baseline-strategy-treat-all" id="toc-baseline-strategy-treat-all" class="nav-link" data-scroll-target="#baseline-strategy-treat-all">Baseline Strategy: Treat All</a></li>
+  </ul></li>
+  <li><a href="#ppcr" id="toc-ppcr" class="nav-link" data-scroll-target="#ppcr">PPCR</a></li>
+  </ul></li>
+  <li><a href="#declare-fixed-time-horizons" id="toc-declare-fixed-time-horizons" class="nav-link" data-scroll-target="#declare-fixed-time-horizons">✍️ Declare Fixed Time Horizons 🌅 (📅🤬)</a>
+  <ul class="collapse">
+  <li><a href="#update-administrative-censorng" id="toc-update-administrative-censorng" class="nav-link" data-scroll-target="#update-administrative-censorng">🪛 Update Administrative Censorng</a></li>
+  </ul></li>
+  <li><a href="#declare-heuristics-regarding-ambigious-reals" id="toc-declare-heuristics-regarding-ambigious-reals" class="nav-link" data-scroll-target="#declare-heuristics-regarding-ambigious-reals">Declare Heuristics Regarding ambigious <code>reals</code></a>
+  <ul class="collapse">
+  <li><a href="#declare-heuristics-regarding-censored-events" id="toc-declare-heuristics-regarding-censored-events" class="nav-link" data-scroll-target="#declare-heuristics-regarding-censored-events">✍️ Declare Heuristics Regarding Censored Events 📅🤬</a></li>
+  </ul></li>
+  <li><a href="#declare-heuristics-regarding-competing-events" id="toc-declare-heuristics-regarding-competing-events" class="nav-link" data-scroll-target="#declare-heuristics-regarding-competing-events">✍️ Declare Heuristics Regarding Competing Events 📅💀</a></li>
+  <li><a href="#what-rtichoke-from-now-on" id="toc-what-rtichoke-from-now-on" class="nav-link" data-scroll-target="#what-rtichoke-from-now-on">What rtichoke from now on?</a>
+  <ul class="collapse">
+  <li><a href="#render-predictions-histogram" id="toc-render-predictions-histogram" class="nav-link" data-scroll-target="#render-predictions-histogram">Render Predictions Histogram</a>
+  <ul class="collapse">
+  <li><a href="#extract-aj-estimate-by-assumptions" id="toc-extract-aj-estimate-by-assumptions" class="nav-link" data-scroll-target="#extract-aj-estimate-by-assumptions">Extract AJ Estimate by Assumptions</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -145,7 +214,8 @@ ul.task-list li input[type="checkbox"] {
 
 <p>Ideally we would like to keep Performance Validation as agnostic as possible. However, the structure of the validation set (<code>probs</code>, <code>reals</code> and <code>times</code>) implies the nature of the related assumptions and the required use case.</p>
 <p>So before we validate performance, let us consider the underlying process.</p>
-<p>The User Inputs ✍️</p>
+<p>✍️ The User Inputs<br>
+🪛 Internal Function</p>
 <section id="declare-reference-groups" class="level1">
 <h1>✍️ Declare reference groups</h1>
 <p>The dimentions of the <code>probs</code> and the <code>real</code> dictionaries imply the nature of the use case:</p>
@@ -165,22 +235,20 @@ ul.task-list li input[type="checkbox"] {
 <p>Compare performance over different sub-populations. - Internal Validation: “test”, “val” and “train”. - External Validation: “Framingham”, “Australia”. - Fairness: “Male”, “Female”.</p>
 </section>
 </section>
-<section id="declare-how-to-stratify-predictions-probability-threshold-or-ppcr" class="level1">
-<h1>✍️ Declare how to stratify predictions: Probability Threshold or PPCR ✂️</h1>
+<section id="declare-how-to-stratify-predictions" class="level1">
+<h1>✍️ Declare how to stratify predictions ✂️</h1>
 <p>The <code>stratified_by</code> argument is designed for the user to choose how to stratify predictions for decision-making, each method implies different problem:</p>
-<div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">Probability Threshold</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">PPCR</a></li></ul>
-<div class="tab-content">
-<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<section id="probability-threshold" class="level2">
+<h2 class="anchored" data-anchor-id="probability-threshold">Probability Threshold</h2>
 <p>By choosing Probability Threshold as a cutoff the implied assumption is that you are concerned with individual harm or benefit.</p>
+<section id="baseline-strategy-treat-none" class="level3">
+<h3 class="anchored" data-anchor-id="baseline-strategy-treat-none">Baseline Strategy: Treat None</h3>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
 <pre class="mermaid mermaid-js">graph LR
-    
-
     subgraph trt[Treatment Decision]
         linkStyle default stroke:#000
         A("😷") --&gt;|"Treatment 💊"|B("&lt;B&gt;Predicted&lt;br&gt;Positive&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;😷")
@@ -188,10 +256,167 @@ ul.task-list li input[type="checkbox"] {
     end
 
     subgraph ut[Utility of the Decision]
-        B --&gt;|"Disease 🤢"| D["&lt;B&gt;TP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤢"]
-        B --&gt;|"No Disease 🤨"| E["&lt;B&gt;FP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤨"]
-        C --&gt;|"Disease 🤢"| F["&lt;B&gt;FN&lt;/B&gt;&lt;br&gt;🤢"]
-        C --&gt;|"No Disease 🤨"| G["&lt;B&gt;TN&lt;/B&gt;&lt;br&gt;🤨"]  
+        subgraph pred[Prediction Model]
+            B --&gt;|"Disease 🤢"| D["&lt;B&gt;TP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤢"]
+            B --&gt;|"No Disease 🤨"| E["&lt;B&gt;FP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤨"]
+            C --&gt;|"Disease 🤢"| F["&lt;B&gt;FN&lt;/B&gt;&lt;br&gt;🤢"]
+            C --&gt;|"No Disease 🤨"| G["&lt;B&gt;TN&lt;/B&gt;&lt;br&gt;🤨"]
+        end
+        subgraph baselinestrategy[Baseline Strategy: Treat None]
+            Dnone["&lt;B&gt;FN&lt;/B&gt;&lt;br&gt;🤢"]
+            Enone["&lt;B&gt;TN&lt;/B&gt;&lt;br&gt;🤨"]
+            Fnone["&lt;B&gt;FN&lt;/B&gt;&lt;br&gt;🤢"]
+            Gnone["&lt;B&gt;TN&lt;/B&gt;&lt;br&gt;🤨"]
+        
+            D---Dnone
+            E---Enone
+            F---Fnone
+            G---Gnone
+        end
+        subgraph nb[Net Benefit]
+            Dnb[1]
+            Enb["pt / (1-pt)"]
+            Fnb[0]
+            Gnb[0]
+        Dnone---Dnb
+        Enone---Enb
+        Fnone---Fnb
+        Gnone---Gnb
+        end
+    end
+
+
+
+    style A fill:#E8F4FF, stroke:black,color:black
+    style B fill:#E8F4FF, stroke:black,color:black
+    style C fill:#E8F4FF, stroke:black,color:black
+    style D fill:#C0FFC0,stroke:black,color:black
+    style Dnone fill:#FFCCE0,stroke:black,color:black
+    style Dnb fill: #C0FFC0,stroke:black,color:black
+    style E fill: #FFCCE0,stroke:black,color:black
+    style Enone fill: #C0FFC0,stroke:black,color:black
+    style Enb fill: #FFCCE0,stroke:black,color:black
+    style F fill:#FFCCE0,stroke:black,color:black
+    style Fnone fill: #FFCCE0,stroke:black,color:black
+    style Fnb fill: #E8F4FF,stroke:black,color:black
+    style G fill: #C0FFC0,stroke:black,color:black
+    style Gnone fill: #C0FFC0,stroke:black,color:black
+    style Gnb fill: #E8F4FF,stroke:black,color:black
+    style nb fill: #E8F4FF,stroke:black,color:black 
+    style pred fill: #E8F4FF,stroke:black,color:black
+    style baselinestrategy fill: #E8F4FF,stroke:black,color:black
+
+    classDef subgraphStyle fill:#FAF6EC,stroke:#333,stroke-width:1px
+    class trt,ut subgraphStyle
+
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="baseline-strategy-treat-all" class="level3">
+<h3 class="anchored" data-anchor-id="baseline-strategy-treat-all">Baseline Strategy: Treat All</h3>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+    subgraph trt[Treatment Decision]
+        linkStyle default stroke:#000
+        A("😷") --&gt;|"Treatment 💊"|B("&lt;B&gt;Predicted&lt;br&gt;Positive&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;😷")
+        A --&gt;|"No Treatment"|C("&lt;B&gt;Predicted&lt;br&gt;Negative&lt;/B&gt;&lt;br&gt;😷")    
+    end
+
+    subgraph ut[Utility of the Decision]
+        subgraph pred[Prediction Model]
+            B --&gt;|"Disease 🤢"| D["&lt;B&gt;TP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤢"]
+            B --&gt;|"No Disease 🤨"| E["&lt;B&gt;FP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤨"]
+            C --&gt;|"Disease 🤢"| F["&lt;B&gt;FN&lt;/B&gt;&lt;br&gt;🤢"]
+            C --&gt;|"No Disease 🤨"| G["&lt;B&gt;TN&lt;/B&gt;&lt;br&gt;🤨"]
+        end
+        subgraph baselinestrategy[Baseline Strategy: Treat All]
+            Dall["&lt;B&gt;TP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤢"]
+            Eall["&lt;B&gt;FP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤨"]
+            Fall["&lt;B&gt;TP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤢"]
+            Gall["&lt;B&gt;FP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤨"]
+        
+            D---Dall
+            E---Eall
+            F---Fall
+            G---Gall
+        end
+        subgraph nb[Net Benefit]
+            Dnb[0]
+            Enb[0]
+            Fnb[1]
+            Gnb["(1-pt) / pt"]
+        Dall---Dnb
+        Eall---Enb
+        Fall---Fnb
+        Gall---Gnb
+        end
+    end
+
+
+
+    style A fill:#E8F4FF, stroke:black,color:black
+    style B fill:#E8F4FF, stroke:black,color:black
+    style C fill:#E8F4FF, stroke:black,color:black
+    style D fill:#C0FFC0,stroke:black,color:black
+    style Dall fill:#C0FFC0,stroke:black,color:black
+    style Dnb fill:#E8F4FF,stroke:black,color:black
+    style E fill:#FFCCE0,stroke:black,color:black
+    style Eall fill:#FFCCE0,stroke:black,color:black
+    style Enb fill:#E8F4FF,stroke:black,color:black
+    style F fill:#FFCCE0,stroke:black,color:black
+    style Fall fill:#C0FFC0,stroke:black,color:black
+    style Fnb fill:#C0FFC0,stroke:black,color:black
+    style G fill:#C0FFC0,stroke:black,color:black
+    style Gall fill:#FFCCE0,stroke:black,color:black
+    style Gnb fill:#FFCCE0,stroke:black,color:black
+    style nb fill: #E8F4FF,stroke:black,color:black 
+    style pred fill: #E8F4FF,stroke:black,color:black
+    style baselinestrategy fill: #E8F4FF,stroke:black,color:black
+
+    classDef subgraphStyle fill:#FAF6EC,stroke:#333,stroke-width:1px
+    class trt,ut subgraphStyle
+
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p><em>Regardless</em> of ranking each prediction is categorised to a bin: 0.32 -&gt; <code>[0.3, 0.4)</code>.</p>
+<ol type="1">
+<li>Categorise Absolute Risk: 0.32 -&gt; <code>[0.3, 0.4)</code></li>
+</ol>
+<p>References: Pauker SG, Kassirer JP. Therapeutic decision making: a cost-benefit analysis. N Engl J Med. 1975;293(5):229-234. doi:10.1056/NEJM197507312930505</p>
+</section>
+</section>
+<section id="ppcr" class="level2">
+<h2 class="anchored" data-anchor-id="ppcr">PPCR</h2>
+<p><img src="line_ppcr_04.svg" class="img-fluid"></p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+    subgraph trt[Treatment Allocation Decision]
+        linkStyle default stroke:#000
+        A("😷&lt;br&gt;😷&lt;br&gt;😷&lt;br&gt;😷&lt;br&gt;😷&lt;br&gt;😷&lt;br&gt;😷&lt;br&gt;😷&lt;br&gt;😷&lt;br&gt;😷") --&gt;|"Treatment 💊💊💊💊"|B("&lt;B&gt;Σ Predicted&lt;br&gt;Positives&lt;/B&gt;&lt;br&gt;💊💊💊💊&lt;br&gt;😷😷😷😷")
+        A --&gt;|"No Treatment"|C("&lt;B&gt;Σ Predicted&lt;br&gt;Negatives&lt;/B&gt;&lt;br&gt;😷😷😷😷😷😷")    
+    end
+
+    subgraph ut[Utility of the Decision]
+        B --&gt;|"Disease 🤢🤢🤢"| D["&lt;B&gt;Σ TP&lt;/B&gt;&lt;br&gt;💊💊💊&lt;br&gt;🤢🤢🤢"]
+        B --&gt;|"No Disease 🤨"| E["&lt;B&gt;Σ FP&lt;/B&gt;&lt;br&gt;💊&lt;br&gt;🤨"]
+        C --&gt;|"Disease 🤢"| F["&lt;B&gt;Σ FN&lt;/B&gt;&lt;br&gt;🤢"]
+        C --&gt;|"No Disease 🤨🤨🤨🤨🤨"| G["&lt;B&gt;Σ TN&lt;/B&gt;&lt;br&gt;🤨🤨🤨🤨🤨"]  
     end
 
 
@@ -206,35 +431,28 @@ ul.task-list li input[type="checkbox"] {
 
     classDef subgraphStyle fill:#FAF6EC,stroke:#333,stroke-width:1px
     class trt,ut subgraphStyle
+
 </pre>
 </div>
 <p></p></figure><p></p>
 </div>
 </div>
 </div>
-<p><em>Regardless</em> of ranking each prediction is categorised to a bin: 0.32 -&gt; <code>[0.3, 0.4)</code>.</p>
-<ol type="1">
-<li>Categorise Absolute Risk: 0.32 -&gt; <code>[0.3, 0.4)</code></li>
-</ol>
-<p>References: Pauker SG, Kassirer JP. Therapeutic decision making: a cost-benefit analysis. N Engl J Med. 1975;293(5):229-234. doi:10.1056/NEJM197507312930505</p>
-</div>
-<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
 <p>By choosing PPCR as a cutoff the implied assumption is that you are concerned with resource constraint and assume no individual treatment harm.</p>
 <p><em>Regarding</em> the ranking each prediction is categorised to a bin: if the absolute probability 0.32 is the 18th highest predictions out of 100, it will be categorised to the second decile -&gt; <code>0.18</code>.</p>
 <ol type="1">
 <li>Calculate Risk-Quantile from Absolute Risk: 0.32 -&gt; <code>0.18</code></li>
 </ol>
 <p>References: https://en.wikipedia.org/wiki/Precision_and_recall</p>
-</div>
-</div>
-</div>
+<!-- ::: -->
+</section>
 </section>
 <section id="declare-fixed-time-horizons" class="level1">
 <h1>✍️ Declare Fixed Time Horizons 🌅 (📅🤬)</h1>
 <p>The <code>fixed_time_horizons</code> argument is designed for the user to choose the set of time horizons to follow.</p>
 <p>Different followups contain different distributions of observed outcomes: Declare fixed time horizons for the prediction model, such as [5, 10] years of prediction for CVD evet.</p>
-<section id="update-administrative-censorng" class="level4">
-<h4 class="anchored" data-anchor-id="update-administrative-censorng">Update Administrative Censorng</h4>
+<section id="update-administrative-censorng" class="level2">
+<h2 class="anchored" data-anchor-id="update-administrative-censorng">🪛 Update Administrative Censorng</h2>
 <p>For cases with observed time-to-event is shorter than the prediction time horizon, the outcomes might change:</p>
 <ul>
 <li><p><code>Real Positives</code> 🤢 should be considered as <code>Real Negatives</code> 🤨, the outcome of interest did not happen yet.</p></li>
@@ -243,6 +461,107 @@ ul.task-list li input[type="checkbox"] {
 <li><p>If adjusted: encoded as 0.</p></li>
 <li><p>If excluded: counted with crude estimate.</p></li>
 </ul>
+<div class="cell">
+<div class="sourceCode cell-code hidden" id="cb1" data-startfrom="261" data-source-offset="-2"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 260;"><span id="cb1-261"><a href="#cb1-261" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> [</span>
+<span id="cb1-262"><a href="#cb1-262" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">1</span> }<span class="op">,</span></span>
+<span id="cb1-263"><a href="#cb1-263" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">3</span> }<span class="op">,</span></span>
+<span id="cb1-264"><a href="#cb1-264" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">5</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">5</span> }<span class="op">,</span></span>
+<span id="cb1-265"><a href="#cb1-265" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">2</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">1</span> }<span class="op">,</span></span>
+<span id="cb1-266"><a href="#cb1-266" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">2</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">3</span> }<span class="op">,</span></span>
+<span id="cb1-267"><a href="#cb1-267" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">5</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">2</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">5</span> }<span class="op">,</span></span>
+<span id="cb1-268"><a href="#cb1-268" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">1</span> }<span class="op">,</span></span>
+<span id="cb1-269"><a href="#cb1-269" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">3</span> }<span class="op">,</span></span>
+<span id="cb1-270"><a href="#cb1-270" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="fl">4.6</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤬"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">5</span> }<span class="op">,</span></span>
+<span id="cb1-271"><a href="#cb1-271" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">4</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">1</span> }<span class="op">,</span></span>
+<span id="cb1-272"><a href="#cb1-272" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">4</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">3</span> }<span class="op">,</span></span>
+<span id="cb1-273"><a href="#cb1-273" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">5</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">4</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">5</span> }<span class="op">,</span></span>
+<span id="cb1-274"><a href="#cb1-274" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">5</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">1</span> }<span class="op">,</span></span>
+<span id="cb1-275"><a href="#cb1-275" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="fl">2.4</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤢"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">5</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">3</span> }<span class="op">,</span></span>
+<span id="cb1-276"><a href="#cb1-276" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="fl">2.4</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤢"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">5</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">5</span> }<span class="op">,</span></span>
+<span id="cb1-277"><a href="#cb1-277" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">6</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">1</span> }<span class="op">,</span></span>
+<span id="cb1-278"><a href="#cb1-278" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">3</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">6</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">3</span> }<span class="op">,</span></span>
+<span id="cb1-279"><a href="#cb1-279" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="fl">4.4</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤬"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">6</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">5</span> }<span class="op">,</span></span>
+<span id="cb1-280"><a href="#cb1-280" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="fl">0.4</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤢"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">7</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">1</span> }<span class="op">,</span></span>
+<span id="cb1-281"><a href="#cb1-281" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="fl">0.4</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤢"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">7</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">3</span> }<span class="op">,</span></span>
+<span id="cb1-282"><a href="#cb1-282" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="fl">0.4</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤢"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">7</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">5</span> }<span class="op">,</span></span>
+<span id="cb1-283"><a href="#cb1-283" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">8</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">1</span> }<span class="op">,</span></span>
+<span id="cb1-284"><a href="#cb1-284" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="fl">1.6</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"💀"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">8</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">3</span> }<span class="op">,</span></span>
+<span id="cb1-285"><a href="#cb1-285" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="fl">1.6</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"💀"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">8</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">5</span> }<span class="op">,</span></span>
+<span id="cb1-286"><a href="#cb1-286" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="fl">0.8</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤢"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">9</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">1</span> }<span class="op">,</span></span>
+<span id="cb1-287"><a href="#cb1-287" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="fl">0.8</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤢"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">9</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">3</span> }<span class="op">,</span></span>
+<span id="cb1-288"><a href="#cb1-288" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="fl">0.8</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤢"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">9</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">5</span> }<span class="op">,</span></span>
+<span id="cb1-289"><a href="#cb1-289" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="dv">1</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤨"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">10</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">1</span> }<span class="op">,</span></span>
+<span id="cb1-290"><a href="#cb1-290" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="fl">2.9</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤢"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">10</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">3</span> }<span class="op">,</span></span>
+<span id="cb1-291"><a href="#cb1-291" aria-hidden="true" tabindex="-1"></a>  { <span class="dt">time</span><span class="op">:</span> <span class="fl">2.9</span><span class="op">,</span> <span class="dt">real</span><span class="op">:</span> <span class="st">"🤢"</span><span class="op">,</span> <span class="dt">id</span><span class="op">:</span> <span class="dv">10</span><span class="op">,</span> <span class="dt">time_horizon</span><span class="op">:</span> <span class="dv">5</span> }</span>
+<span id="cb1-292"><a href="#cb1-292" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb1-293"><a href="#cb1-293" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-294"><a href="#cb1-294" aria-hidden="true" tabindex="-1"></a>filteredData <span class="op">=</span> data<span class="op">.</span><span class="fu">filter</span>((d) <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">time_horizon</span> <span class="op">==</span> timeHorizon)</span>
+<span id="cb1-295"><a href="#cb1-295" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-296"><a href="#cb1-296" aria-hidden="true" tabindex="-1"></a>viewof timeHorizon <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">1</span><span class="op">,</span> <span class="dv">5</span>]<span class="op">,</span> {</span>
+<span id="cb1-297"><a href="#cb1-297" aria-hidden="true" tabindex="-1"></a>  <span class="dt">step</span><span class="op">:</span> <span class="dv">2</span><span class="op">,</span></span>
+<span id="cb1-298"><a href="#cb1-298" aria-hidden="true" tabindex="-1"></a>  <span class="dt">value</span><span class="op">:</span> <span class="dv">5</span><span class="op">,</span></span>
+<span id="cb1-299"><a href="#cb1-299" aria-hidden="true" tabindex="-1"></a>  <span class="dt">label</span><span class="op">:</span> <span class="st">"Time Horizon"</span></span>
+<span id="cb1-300"><a href="#cb1-300" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb1-301"><a href="#cb1-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-302"><a href="#cb1-302" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb1-303"><a href="#cb1-303" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {</span>
+<span id="cb1-304"><a href="#cb1-304" aria-hidden="true" tabindex="-1"></a>    <span class="dt">domain</span><span class="op">:</span> [<span class="dv">0</span><span class="op">,</span> <span class="dv">5</span>]</span>
+<span id="cb1-305"><a href="#cb1-305" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb1-306"><a href="#cb1-306" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> {</span>
+<span id="cb1-307"><a href="#cb1-307" aria-hidden="true" tabindex="-1"></a>    <span class="dt">domain</span><span class="op">:</span> [<span class="dv">0</span><span class="op">,</span> <span class="dv">11</span>]<span class="op">,</span></span>
+<span id="cb1-308"><a href="#cb1-308" aria-hidden="true" tabindex="-1"></a>    <span class="dt">axis</span><span class="op">:</span> <span class="kw">false</span></span>
+<span id="cb1-309"><a href="#cb1-309" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb1-310"><a href="#cb1-310" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb1-311"><a href="#cb1-311" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">ruleX</span>([timeHorizon]<span class="op">,</span> {</span>
+<span id="cb1-312"><a href="#cb1-312" aria-hidden="true" tabindex="-1"></a>      <span class="dt">stroke</span><span class="op">:</span> <span class="st">"#D9E8A3"</span><span class="op">,</span></span>
+<span id="cb1-313"><a href="#cb1-313" aria-hidden="true" tabindex="-1"></a>      <span class="dt">strokeWidth</span><span class="op">:</span> <span class="dv">6</span><span class="op">,</span></span>
+<span id="cb1-314"><a href="#cb1-314" aria-hidden="true" tabindex="-1"></a>      <span class="dt">strokeDasharray</span><span class="op">:</span> <span class="st">"5,5"</span><span class="op">,</span></span>
+<span id="cb1-315"><a href="#cb1-315" aria-hidden="true" tabindex="-1"></a>      <span class="dt">y1</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb1-316"><a href="#cb1-316" aria-hidden="true" tabindex="-1"></a>      <span class="dt">y2</span><span class="op">:</span> <span class="dv">10</span> <span class="co">// Should match the y-domain max</span></span>
+<span id="cb1-317"><a href="#cb1-317" aria-hidden="true" tabindex="-1"></a>    })<span class="op">,</span></span>
+<span id="cb1-318"><a href="#cb1-318" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">ruleY</span>(filteredData<span class="op">,</span> {</span>
+<span id="cb1-319"><a href="#cb1-319" aria-hidden="true" tabindex="-1"></a>      <span class="dt">x</span><span class="op">:</span> <span class="st">"time"</span><span class="op">,</span></span>
+<span id="cb1-320"><a href="#cb1-320" aria-hidden="true" tabindex="-1"></a>      <span class="dt">y</span><span class="op">:</span> <span class="st">"id"</span><span class="op">,</span></span>
+<span id="cb1-321"><a href="#cb1-321" aria-hidden="true" tabindex="-1"></a>      <span class="dt">strokeWidth</span><span class="op">:</span> <span class="fl">1.5</span></span>
+<span id="cb1-322"><a href="#cb1-322" aria-hidden="true" tabindex="-1"></a>    })<span class="op">,</span></span>
+<span id="cb1-323"><a href="#cb1-323" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">text</span>(filteredData<span class="op">,</span> {</span>
+<span id="cb1-324"><a href="#cb1-324" aria-hidden="true" tabindex="-1"></a>      <span class="dt">x</span><span class="op">:</span> <span class="st">"time"</span><span class="op">,</span></span>
+<span id="cb1-325"><a href="#cb1-325" aria-hidden="true" tabindex="-1"></a>      <span class="dt">y</span><span class="op">:</span> <span class="st">"id"</span><span class="op">,</span></span>
+<span id="cb1-326"><a href="#cb1-326" aria-hidden="true" tabindex="-1"></a>      <span class="dt">text</span><span class="op">:</span> <span class="st">"real"</span><span class="op">,</span></span>
+<span id="cb1-327"><a href="#cb1-327" aria-hidden="true" tabindex="-1"></a>      <span class="dt">tip</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb1-328"><a href="#cb1-328" aria-hidden="true" tabindex="-1"></a>      <span class="dt">fontSize</span><span class="op">:</span> <span class="dv">30</span></span>
+<span id="cb1-329"><a href="#cb1-329" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb1-330"><a href="#cb1-330" aria-hidden="true" tabindex="-1"></a>  ]</span>
+<span id="cb1-331"><a href="#cb1-331" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-4" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+</div>
 </section>
 </section>
 <section id="declare-heuristics-regarding-ambigious-reals" class="level1">
@@ -454,6 +773,17 @@ subgraph adj[Adjusted for Censoring]
 </section>
 
 </main> <!-- /main -->
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6IlxyXG5kYXRhID0gW1xyXG4gIHsgdGltZTogMSwgcmVhbDogXCLwn6SoXCIsIGlkOiAxLCB0aW1lX2hvcml6b246IDEgfSxcclxuICB7IHRpbWU6IDMsIHJlYWw6IFwi8J+kqFwiLCBpZDogMSwgdGltZV9ob3Jpem9uOiAzIH0sXHJcbiAgeyB0aW1lOiA1LCByZWFsOiBcIvCfpKhcIiwgaWQ6IDEsIHRpbWVfaG9yaXpvbjogNSB9LFxyXG4gIHsgdGltZTogMSwgcmVhbDogXCLwn6SoXCIsIGlkOiAyLCB0aW1lX2hvcml6b246IDEgfSxcclxuICB7IHRpbWU6IDMsIHJlYWw6IFwi8J+kqFwiLCBpZDogMiwgdGltZV9ob3Jpem9uOiAzIH0sXHJcbiAgeyB0aW1lOiA1LCByZWFsOiBcIvCfpKhcIiwgaWQ6IDIsIHRpbWVfaG9yaXpvbjogNSB9LFxyXG4gIHsgdGltZTogMSwgcmVhbDogXCLwn6SoXCIsIGlkOiAzLCB0aW1lX2hvcml6b246IDEgfSxcclxuICB7IHRpbWU6IDMsIHJlYWw6IFwi8J+kqFwiLCBpZDogMywgdGltZV9ob3Jpem9uOiAzIH0sXHJcbiAgeyB0aW1lOiA0LjYsIHJlYWw6IFwi8J+krFwiLCBpZDogMywgdGltZV9ob3Jpem9uOiA1IH0sXHJcbiAgeyB0aW1lOiAxLCByZWFsOiBcIvCfpKhcIiwgaWQ6IDQsIHRpbWVfaG9yaXpvbjogMSB9LFxyXG4gIHsgdGltZTogMywgcmVhbDogXCLwn6SoXCIsIGlkOiA0LCB0aW1lX2hvcml6b246IDMgfSxcclxuICB7IHRpbWU6IDUsIHJlYWw6IFwi8J+kqFwiLCBpZDogNCwgdGltZV9ob3Jpem9uOiA1IH0sXHJcbiAgeyB0aW1lOiAxLCByZWFsOiBcIvCfpKhcIiwgaWQ6IDUsIHRpbWVfaG9yaXpvbjogMSB9LFxyXG4gIHsgdGltZTogMi40LCByZWFsOiBcIvCfpKJcIiwgaWQ6IDUsIHRpbWVfaG9yaXpvbjogMyB9LFxyXG4gIHsgdGltZTogMi40LCByZWFsOiBcIvCfpKJcIiwgaWQ6IDUsIHRpbWVfaG9yaXpvbjogNSB9LFxyXG4gIHsgdGltZTogMSwgcmVhbDogXCLwn6SoXCIsIGlkOiA2LCB0aW1lX2hvcml6b246IDEgfSxcclxuICB7IHRpbWU6IDMsIHJlYWw6IFwi8J+kqFwiLCBpZDogNiwgdGltZV9ob3Jpem9uOiAzIH0sXHJcbiAgeyB0aW1lOiA0LjQsIHJlYWw6IFwi8J+krFwiLCBpZDogNiwgdGltZV9ob3Jpem9uOiA1IH0sXHJcbiAgeyB0aW1lOiAwLjQsIHJlYWw6IFwi8J+kolwiLCBpZDogNywgdGltZV9ob3Jpem9uOiAxIH0sXHJcbiAgeyB0aW1lOiAwLjQsIHJlYWw6IFwi8J+kolwiLCBpZDogNywgdGltZV9ob3Jpem9uOiAzIH0sXHJcbiAgeyB0aW1lOiAwLjQsIHJlYWw6IFwi8J+kolwiLCBpZDogNywgdGltZV9ob3Jpem9uOiA1IH0sXHJcbiAgeyB0aW1lOiAxLCByZWFsOiBcIvCfpKhcIiwgaWQ6IDgsIHRpbWVfaG9yaXpvbjogMSB9LFxyXG4gIHsgdGltZTogMS42LCByZWFsOiBcIvCfkoBcIiwgaWQ6IDgsIHRpbWVfaG9yaXpvbjogMyB9LFxyXG4gIHsgdGltZTogMS42LCByZWFsOiBcIvCfkoBcIiwgaWQ6IDgsIHRpbWVfaG9yaXpvbjogNSB9LFxyXG4gIHsgdGltZTogMC44LCByZWFsOiBcIvCfpKJcIiwgaWQ6IDksIHRpbWVfaG9yaXpvbjogMSB9LFxyXG4gIHsgdGltZTogMC44LCByZWFsOiBcIvCfpKJcIiwgaWQ6IDksIHRpbWVfaG9yaXpvbjogMyB9LFxyXG4gIHsgdGltZTogMC44LCByZWFsOiBcIvCfpKJcIiwgaWQ6IDksIHRpbWVfaG9yaXpvbjogNSB9LFxyXG4gIHsgdGltZTogMSwgcmVhbDogXCLwn6SoXCIsIGlkOiAxMCwgdGltZV9ob3Jpem9uOiAxIH0sXHJcbiAgeyB0aW1lOiAyLjksIHJlYWw6IFwi8J+kolwiLCBpZDogMTAsIHRpbWVfaG9yaXpvbjogMyB9LFxyXG4gIHsgdGltZTogMi45LCByZWFsOiBcIvCfpKJcIiwgaWQ6IDEwLCB0aW1lX2hvcml6b246IDUgfVxyXG5dXHJcblxyXG5maWx0ZXJlZERhdGEgPSBkYXRhLmZpbHRlcigoZCkgPT4gZC50aW1lX2hvcml6b24gPT0gdGltZUhvcml6b24pXHJcblxyXG52aWV3b2YgdGltZUhvcml6b24gPSBJbnB1dHMucmFuZ2UoWzEsIDVdLCB7XHJcbiAgc3RlcDogMixcclxuICB2YWx1ZTogNSxcclxuICBsYWJlbDogXCJUaW1lIEhvcml6b25cIlxyXG59KVxyXG5cclxuUGxvdC5wbG90KHtcclxuICB4OiB7XHJcbiAgICBkb21haW46IFswLCA1XVxyXG4gIH0sXHJcbiAgeToge1xyXG4gICAgZG9tYWluOiBbMCwgMTFdLFxyXG4gICAgYXhpczogZmFsc2VcclxuICB9LFxyXG4gIG1hcmtzOiBbXHJcbiAgICBQbG90LnJ1bGVYKFt0aW1lSG9yaXpvbl0sIHtcclxuICAgICAgc3Ryb2tlOiBcIiNEOUU4QTNcIixcclxuICAgICAgc3Ryb2tlV2lkdGg6IDYsXHJcbiAgICAgIHN0cm9rZURhc2hhcnJheTogXCI1LDVcIixcclxuICAgICAgeTE6IDAsXHJcbiAgICAgIHkyOiAxMCAvLyBTaG91bGQgbWF0Y2ggdGhlIHktZG9tYWluIG1heFxyXG4gICAgfSksXHJcbiAgICBQbG90LnJ1bGVZKGZpbHRlcmVkRGF0YSwge1xyXG4gICAgICB4OiBcInRpbWVcIixcclxuICAgICAgeTogXCJpZFwiLFxyXG4gICAgICBzdHJva2VXaWR0aDogMS41XHJcbiAgICB9KSxcclxuICAgIFBsb3QudGV4dChmaWx0ZXJlZERhdGEsIHtcclxuICAgICAgeDogXCJ0aW1lXCIsXHJcbiAgICAgIHk6IFwiaWRcIixcclxuICAgICAgdGV4dDogXCJyZWFsXCIsXHJcbiAgICAgIHRpcDogdHJ1ZSxcclxuICAgICAgZm9udFNpemU6IDMwXHJcbiAgICB9KVxyXG4gIF1cclxufSlcclxuXHJcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgndGltZUhvcml6b24nKSJ9XX0=
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../..";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
