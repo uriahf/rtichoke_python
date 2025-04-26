@@ -1,7 +1,9 @@
 ---
 title: "Before we Validate Performance"
 author: "Uriah Finkel"
-format: html
+format: 
+    html:
+        toc: true
 ---
 
 Ideally we would like to keep Performance Validation as agnostic as possible.
@@ -9,7 +11,8 @@ However, the structure of the validation set (`probs`, `reals` and `times`) impl
 
 So before we validate performance, let us consider the underlying process.
 
-The User Inputs ✍️ 
+✍️ The User Inputs  
+🪛 Internal Function 
 
 # ✍️ Declare reference groups
 
@@ -32,20 +35,20 @@ Compare performance over different sub-populations.
 - External Validation: "Framingham", "Australia".
 - Fairness: "Male", "Female".
 
-# ✍️ Declare how to stratify predictions: Probability Threshold or PPCR ✂️
+# ✍️ Declare how to stratify predictions ✂️
 
 The `stratified_by` argument is designed for the user to choose how to stratify predictions for decision-making, each method implies different problem:
 
-::: {.panel-tabset}
 
-##### Probability Threshold
+## Probability Threshold
 
 By choosing Probability Threshold as a cutoff the implied assumption is that you are concerned with individual harm or benefit.
 
-```{mermaid}
-graph LR
-    
+### Baseline Strategy: Treat None
 
+```{mermaid}
+
+graph LR
     subgraph trt[Treatment Decision]
         linkStyle default stroke:#000
         A("😷") -->|"Treatment 💊"|B("<B>Predicted<br>Positive</B><br>💊<br>😷")
@@ -53,10 +56,156 @@ graph LR
     end
 
     subgraph ut[Utility of the Decision]
-        B -->|"Disease 🤢"| D["<B>TP</B><br>💊<br>🤢"]
-        B -->|"No Disease 🤨"| E["<B>FP</B><br>💊<br>🤨"]
-        C -->|"Disease 🤢"| F["<B>FN</B><br>🤢"]
-        C -->|"No Disease 🤨"| G["<B>TN</B><br>🤨"]  
+        subgraph pred[Prediction Model]
+            B -->|"Disease 🤢"| D["<B>TP</B><br>💊<br>🤢"]
+            B -->|"No Disease 🤨"| E["<B>FP</B><br>💊<br>🤨"]
+            C -->|"Disease 🤢"| F["<B>FN</B><br>🤢"]
+            C -->|"No Disease 🤨"| G["<B>TN</B><br>🤨"]
+        end
+        subgraph baselinestrategy[Baseline Strategy: Treat None]
+            Dnone["<B>FN</B><br>🤢"]
+            Enone["<B>TN</B><br>🤨"]
+            Fnone["<B>FN</B><br>🤢"]
+            Gnone["<B>TN</B><br>🤨"]
+        
+            D---Dnone
+            E---Enone
+            F---Fnone
+            G---Gnone
+        end
+        subgraph nb[Net Benefit]
+            Dnb[1]
+            Enb["pt / (1-pt)"]
+            Fnb[0]
+            Gnb[0]
+        Dnone---Dnb
+        Enone---Enb
+        Fnone---Fnb
+        Gnone---Gnb
+        end
+    end
+
+
+
+    style A fill:#E8F4FF, stroke:black,color:black
+    style B fill:#E8F4FF, stroke:black,color:black
+    style C fill:#E8F4FF, stroke:black,color:black
+    style D fill:#C0FFC0,stroke:black,color:black
+    style Dnone fill:#FFCCE0,stroke:black,color:black
+    style Dnb fill: #C0FFC0,stroke:black,color:black
+    style E fill: #FFCCE0,stroke:black,color:black
+    style Enone fill: #C0FFC0,stroke:black,color:black
+    style Enb fill: #FFCCE0,stroke:black,color:black
+    style F fill:#FFCCE0,stroke:black,color:black
+    style Fnone fill: #FFCCE0,stroke:black,color:black
+    style Fnb fill: #E8F4FF,stroke:black,color:black
+    style G fill: #C0FFC0,stroke:black,color:black
+    style Gnone fill: #C0FFC0,stroke:black,color:black
+    style Gnb fill: #E8F4FF,stroke:black,color:black
+    style nb fill: #E8F4FF,stroke:black,color:black 
+    style pred fill: #E8F4FF,stroke:black,color:black
+    style baselinestrategy fill: #E8F4FF,stroke:black,color:black
+
+    classDef subgraphStyle fill:#FAF6EC,stroke:#333,stroke-width:1px
+    class trt,ut subgraphStyle
+
+```
+
+
+### Baseline Strategy: Treat All
+
+```{mermaid}
+
+graph LR
+    subgraph trt[Treatment Decision]
+        linkStyle default stroke:#000
+        A("😷") -->|"Treatment 💊"|B("<B>Predicted<br>Positive</B><br>💊<br>😷")
+        A -->|"No Treatment"|C("<B>Predicted<br>Negative</B><br>😷")    
+    end
+
+    subgraph ut[Utility of the Decision]
+        subgraph pred[Prediction Model]
+            B -->|"Disease 🤢"| D["<B>TP</B><br>💊<br>🤢"]
+            B -->|"No Disease 🤨"| E["<B>FP</B><br>💊<br>🤨"]
+            C -->|"Disease 🤢"| F["<B>FN</B><br>🤢"]
+            C -->|"No Disease 🤨"| G["<B>TN</B><br>🤨"]
+        end
+        subgraph baselinestrategy[Baseline Strategy: Treat All]
+            Dall["<B>TP</B><br>💊<br>🤢"]
+            Eall["<B>FP</B><br>💊<br>🤨"]
+            Fall["<B>TP</B><br>💊<br>🤢"]
+            Gall["<B>FP</B><br>💊<br>🤨"]
+        
+            D---Dall
+            E---Eall
+            F---Fall
+            G---Gall
+        end
+        subgraph nb[Net Benefit]
+            Dnb[0]
+            Enb[0]
+            Fnb[1]
+            Gnb["(1-pt) / pt"]
+        Dall---Dnb
+        Eall---Enb
+        Fall---Fnb
+        Gall---Gnb
+        end
+    end
+
+
+
+    style A fill:#E8F4FF, stroke:black,color:black
+    style B fill:#E8F4FF, stroke:black,color:black
+    style C fill:#E8F4FF, stroke:black,color:black
+    style D fill:#C0FFC0,stroke:black,color:black
+    style Dall fill:#C0FFC0,stroke:black,color:black
+    style Dnb fill:#E8F4FF,stroke:black,color:black
+    style E fill:#FFCCE0,stroke:black,color:black
+    style Eall fill:#FFCCE0,stroke:black,color:black
+    style Enb fill:#E8F4FF,stroke:black,color:black
+    style F fill:#FFCCE0,stroke:black,color:black
+    style Fall fill:#C0FFC0,stroke:black,color:black
+    style Fnb fill:#C0FFC0,stroke:black,color:black
+    style G fill:#C0FFC0,stroke:black,color:black
+    style Gall fill:#FFCCE0,stroke:black,color:black
+    style Gnb fill:#FFCCE0,stroke:black,color:black
+    style nb fill: #E8F4FF,stroke:black,color:black 
+    style pred fill: #E8F4FF,stroke:black,color:black
+    style baselinestrategy fill: #E8F4FF,stroke:black,color:black
+
+    classDef subgraphStyle fill:#FAF6EC,stroke:#333,stroke-width:1px
+    class trt,ut subgraphStyle
+
+```
+
+
+*Regardless* of ranking each prediction is categorised to a bin: 0.32 -> `[0.3, 0.4)`. 
+
+1. Categorise Absolute Risk: 0.32 -> `[0.3, 0.4)`
+
+
+References:
+Pauker SG, Kassirer JP. Therapeutic decision making: a cost-benefit analysis. N Engl J Med. 1975;293(5):229-234. doi:10.1056/NEJM197507312930505
+
+## PPCR
+
+![](line_ppcr_04.svg)
+
+```{mermaid}
+
+graph LR
+    subgraph trt[Treatment Allocation Decision]
+        linkStyle default stroke:#000
+        A("😷<br>😷<br>😷<br>😷<br>😷<br>😷<br>😷<br>😷<br>😷<br>😷") -->|"Treatment 💊💊💊💊"|B("<B>Σ Predicted<br>Positives</B><br>💊💊💊💊<br>😷😷😷😷")
+        A -->|"No Treatment"|C("<B>Σ Predicted<br>Negatives</B><br>😷😷😷😷😷😷")    
+    end
+
+    subgraph ut[Utility of the Decision]
+        B -->|"Disease 🤢🤢🤢"| D["<B>Σ TP</B><br>💊💊💊<br>🤢🤢🤢"]
+        B -->|"No Disease 🤨"| E["<B>Σ FP</B><br>💊<br>🤨"]
+        C -->|"Disease 🤢"| F["<B>Σ FN</B><br>🤢"]
+        C -->|"No Disease 🤨🤨🤨🤨🤨"| G["<B>Σ TN</B><br>🤨🤨🤨🤨🤨"]  
     end
 
 
@@ -71,19 +220,9 @@ graph LR
 
     classDef subgraphStyle fill:#FAF6EC,stroke:#333,stroke-width:1px
     class trt,ut subgraphStyle
+
 ```
 
-*Regardless* of ranking each prediction is categorised to a bin: 0.32 -> `[0.3, 0.4)`. 
-
-1. Categorise Absolute Risk: 0.32 -> `[0.3, 0.4)`
-
-
-References:
-Pauker SG, Kassirer JP. Therapeutic decision making: a cost-benefit analysis. N Engl J Med. 1975;293(5):229-234. doi:10.1056/NEJM197507312930505
-
-##### PPCR
-
-![](line_ppcr_04.svg)
 
 By choosing PPCR as a cutoff the implied assumption is that you are concerned with resource constraint and assume no individual treatment harm.
 
@@ -94,7 +233,8 @@ By choosing PPCR as a cutoff the implied assumption is that you are concerned wi
 References:
 https://en.wikipedia.org/wiki/Precision_and_recall
 
-:::
+<!-- ::: -->
+
 
 # ✍️ Declare Fixed Time Horizons 🌅 (📅🤬)
 
@@ -102,7 +242,9 @@ The `fixed_time_horizons` argument is designed for the user to choose the set of
 
 Different followups contain different distributions of observed outcomes: Declare fixed time horizons for the prediction model, such as [5, 10] years of prediction for CVD evet.
 
-#### Update Administrative Censorng
+
+
+## 🪛 Update Administrative Censorng
 
 For cases with observed time-to-event is shorter than the prediction time horizon, the outcomes might change:
 
@@ -112,6 +254,84 @@ For cases with observed time-to-event is shorter than the prediction time horizo
 - `Real Neagtives` 🤨 should be considered as `Real Censored` 🤬, the event of interest could have happened in the gap between the observed time and the fixed time horizon.
 - If adjusted: encoded as 0.
 - If excluded: counted with crude estimate.
+
+```{ojs}
+//| echo: false
+
+data = [
+  { time: 1, real: "🤨", id: 1, time_horizon: 1 },
+  { time: 3, real: "🤨", id: 1, time_horizon: 3 },
+  { time: 5, real: "🤨", id: 1, time_horizon: 5 },
+  { time: 1, real: "🤨", id: 2, time_horizon: 1 },
+  { time: 3, real: "🤨", id: 2, time_horizon: 3 },
+  { time: 5, real: "🤨", id: 2, time_horizon: 5 },
+  { time: 1, real: "🤨", id: 3, time_horizon: 1 },
+  { time: 3, real: "🤨", id: 3, time_horizon: 3 },
+  { time: 4.6, real: "🤬", id: 3, time_horizon: 5 },
+  { time: 1, real: "🤨", id: 4, time_horizon: 1 },
+  { time: 3, real: "🤨", id: 4, time_horizon: 3 },
+  { time: 5, real: "🤨", id: 4, time_horizon: 5 },
+  { time: 1, real: "🤨", id: 5, time_horizon: 1 },
+  { time: 2.4, real: "🤢", id: 5, time_horizon: 3 },
+  { time: 2.4, real: "🤢", id: 5, time_horizon: 5 },
+  { time: 1, real: "🤨", id: 6, time_horizon: 1 },
+  { time: 3, real: "🤨", id: 6, time_horizon: 3 },
+  { time: 4.4, real: "🤬", id: 6, time_horizon: 5 },
+  { time: 0.4, real: "🤢", id: 7, time_horizon: 1 },
+  { time: 0.4, real: "🤢", id: 7, time_horizon: 3 },
+  { time: 0.4, real: "🤢", id: 7, time_horizon: 5 },
+  { time: 1, real: "🤨", id: 8, time_horizon: 1 },
+  { time: 1.6, real: "💀", id: 8, time_horizon: 3 },
+  { time: 1.6, real: "💀", id: 8, time_horizon: 5 },
+  { time: 0.8, real: "🤢", id: 9, time_horizon: 1 },
+  { time: 0.8, real: "🤢", id: 9, time_horizon: 3 },
+  { time: 0.8, real: "🤢", id: 9, time_horizon: 5 },
+  { time: 1, real: "🤨", id: 10, time_horizon: 1 },
+  { time: 2.9, real: "🤢", id: 10, time_horizon: 3 },
+  { time: 2.9, real: "🤢", id: 10, time_horizon: 5 }
+]
+
+filteredData = data.filter((d) => d.time_horizon == timeHorizon)
+
+viewof timeHorizon = Inputs.range([1, 5], {
+  step: 2,
+  value: 5,
+  label: "Time Horizon"
+})
+
+Plot.plot({
+  x: {
+    domain: [0, 5]
+  },
+  y: {
+    domain: [0, 11],
+    axis: false
+  },
+  marks: [
+    Plot.ruleX([timeHorizon], {
+      stroke: "#D9E8A3",
+      strokeWidth: 6,
+      strokeDasharray: "5,5",
+      y1: 0,
+      y2: 10 // Should match the y-domain max
+    }),
+    Plot.ruleY(filteredData, {
+      x: "time",
+      y: "id",
+      strokeWidth: 1.5
+    }),
+    Plot.text(filteredData, {
+      x: "time",
+      y: "id",
+      text: "real",
+      tip: true,
+      fontSize: 30
+    })
+  ]
+})
+
+```
+
 
 # Declare Heuristics Regarding ambigious `reals`
 
