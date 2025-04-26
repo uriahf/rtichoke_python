@@ -2791,6 +2791,20 @@ wheels = [
 ]
 
 [[package]]
+name = "polars"
+version = "1.28.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/be/7c/5c0116e6c0a985d580b33f09a97281b621e4719fc759c5c5032652cd1fae/polars-1.28.0.tar.gz", hash = "sha256:5111bb3a3c11750e1cd737fded8105da086ac843390599656b90c36346416235", size = 4560732 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/93/2b/ec47f9b476b3d9f61804d524abd37cfc50c5c00664a0850d26624e979ac7/polars-1.28.0-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:5b081cfcf31adfd84933b67f656c7f3ef6c8dbecef7a927f523ca007cbfc0b6d", size = 34196108 },
+    { url = "https://files.pythonhosted.org/packages/44/e3/8b4938cda03be4ea9763f5dfaade16809b22bd4cfdbbbc1aedece5542013/polars-1.28.0-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:b8ee4fbf8926fd050871b1bf75399a12c57fb333f93745f2307baed7ab9389d7", size = 30949285 },
+    { url = "https://files.pythonhosted.org/packages/c9/59/6320c1a533aaae8cb3b4d9f32c9b9463beb394ac69e0a919dd32b05bcded/polars-1.28.0-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a904dd1dac6dd1f4515d94362f2d573f61c8e001a53922a3ab24f327b455cdad", size = 34801959 },
+    { url = "https://files.pythonhosted.org/packages/8c/c0/c785fe21367fe468c61200c159fde635509d682953bc00b52699391e36a0/polars-1.28.0-cp39-abi3-manylinux_2_24_aarch64.whl", hash = "sha256:f5f5871cc7a28d2fd60c069792e4c982cbf5f9f144ff9d26a6bb46550977f3f9", size = 32035309 },
+    { url = "https://files.pythonhosted.org/packages/cc/28/ba554e5681bd1b0a14191e59ac737dc16c01bdf74781b61fe392b75bc3be/polars-1.28.0-cp39-abi3-win_amd64.whl", hash = "sha256:7e1f528cd97f23c15f22ec673f1b0d59b6e2c27acf7837154084818472fb2881", size = 34954169 },
+    { url = "https://files.pythonhosted.org/packages/25/0f/6ac05533c90988be13c86bc806f896758e04efe5434bf13e55b3cc89a704/polars-1.28.0-cp39-abi3-win_arm64.whl", hash = "sha256:d5bbf7e2bd01b832788a65bc74bc262c6fb3ee7af0483f0eca7c6fb0e7ea1d6d", size = 31259540 },
+]
+
+[[package]]
 name = "prometheus-client"
 version = "0.21.1"
 source = { registry = "https://pypi.org/simple" }
@@ -3538,6 +3552,7 @@ dependencies = [
     { name = "pandas" },
     { name = "papermill" },
     { name = "plotly" },
+    { name = "polars" },
     { name = "quartodoc" },
     { name = "sphinx-autoapi" },
     { name = "sphinx-rtd-theme" },
@@ -3567,6 +3582,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.0.0,<3.0.0" },
     { name = "papermill", specifier = ">=2.6.0" },
     { name = "plotly", specifier = ">=5.13.1,<6.0.0" },
+    { name = "polars", specifier = ">=1.28.0" },
     { name = "quartodoc", specifier = ">=0.9.1" },
     { name = "sphinx-autoapi", specifier = ">=2.1.0,<3.0.0" },
     { name = "sphinx-rtd-theme", specifier = ">=1.2.0,<2.0.0" },
