@@ -15,6 +15,7 @@ dependencies = [
     "quartodoc>=0.9.1",
     "papermill>=2.6.0",
     "polars>=1.28.0",
+    "pyarrow>=20.0.0",
 ]
 name = "rtichoke"
 version = "0.1.10"

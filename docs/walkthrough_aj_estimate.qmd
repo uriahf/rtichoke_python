@@ -14,6 +14,8 @@ import itertools
 from rtichoke.helpers.sandbox_observable_helpers import *
 from lifelines import CoxPHFitter
 from lifelines import WeibullAFTFitter
+import polars as pl
+print("Polars version:", pl.__version__)
 
 import pandas as pd
 import pickle  
@@ -33,6 +35,7 @@ with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\times_dict.pkl', 'rb') a
 
 ```{python}
 
+
 fixed_time_horizons = [1, 3, 5]
 stratified_by = ["probability_threshold", "ppcr"]
 by=0.1
@@ -45,6 +48,8 @@ aj_data_combinations = create_aj_data_combinations(list(probs_dict.keys()), fixe
 
 ```{python}
 
+from rtichoke.helpers.sandbox_observable_helpers import *
+
 list_data_to_adjust = create_list_data_to_adjust(
   probs_dict, reals_dict, times_dict, stratified_by=stratified_by, by=by
 )
@@ -56,6 +61,40 @@ assumption_sets = [
     {"competing": "excluded", "censored": "adjusted"},
     {"competing": "adjusted_as_negative", "censored": "excluded"}
 ]
+
+```
+
+### test chunck update administrative censoring
+
+```{python}
+
+from rtichoke.helpers.sandbox_observable_helpers import *
+
+test_df = pd.DataFrame({
+    "times": [2, 5, 10],
+    "fixed_time_horizon": [3, 3, 3],
+    "reals": ["real_positives", "real_negatives", "real_positives"]
+})
+
+update_administrative_censoring(test_df)
+
+```
+
+
+### test chunck extract_crude_estimate
+
+```{python}
+
+from rtichoke.helpers.sandbox_observable_helpers import *
+
+test_df = pd.DataFrame({
+    "strata": ["A", "A", "B", "B", "B"],
+    "reals": ["real_positives", "real_negatives", "real_positives", "real_negatives", "real_censored"],
+    "fixed_time_horizon": [1, 1, 2, 2, 2]
+})
+
+result = extract_crude_estimate(test_df)
+print(result)
 
 ```
 
@@ -73,6 +112,7 @@ adjusted_data_list = create_adjusted_data_list(
 
 ```{python}
 # Combine all adjusted data
+
 final_adjusted_data = pd.concat(adjusted_data_list, ignore_index=True)
 
 aj_data_combinations['strata'] = aj_data_combinations['strata'].astype(str)
