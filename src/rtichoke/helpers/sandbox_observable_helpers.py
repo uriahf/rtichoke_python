@@ -221,6 +221,41 @@ def extract_crude_estimate(data_to_adjust: pd.DataFrame) -> pd.DataFrame:
 
 #     return crude_estimate
 
+
+
+def add_cutoff_strata_polars(data: pl.DataFrame, by: float) -> pl.DataFrame:
+    def transform_group(group: pl.DataFrame) -> pl.DataFrame:
+        # Convert to NumPy for numeric ops
+        probs = group["probs"].to_numpy()
+        
+        # --- Compute strata_probability_threshold ---
+        breaks = create_breaks_values(probs, "probability_threshold", by)
+        strata_prob = np.digitize(probs, breaks, right=False) - 1
+        # Clamp indices to avoid out-of-bounds error when accessing breaks[i+1]
+        strata_prob = np.clip(strata_prob, 0, len(breaks) - 2)
+        strata_prob_labels = [
+            f"({breaks[i]:.3f}, {breaks[i+1]:.3f}]" for i in strata_prob
+        ]
+
+        # --- Compute strata_ppcr as quantiles on -probs ---
+        try:
+            q = int(1 / by)
+            quantile_edges = np.quantile(-probs, np.linspace(0, 1, q + 1))
+            strata_ppcr = np.digitize(-probs, quantile_edges, right=False)
+            strata_ppcr = (strata_ppcr / (1 / by)).astype(int).astype(str)
+        except ValueError:
+            strata_ppcr = np.array(["1"] * len(probs))  # fallback for small group
+
+        return group.with_columns([
+            pl.Series("strata_probability_threshold", strata_prob_labels),
+            pl.Series("strata_ppcr", strata_ppcr)
+        ])
+
+    # Apply per-group transformation
+    grouped = data.partition_by("reference_group", as_dict=True)
+    transformed_groups = [transform_group(group) for group in grouped.values()]
+    return pl.concat(transformed_groups)
+
 def add_cutoff_strata(data, by):
     result = data.copy()
     
@@ -234,7 +269,7 @@ def add_cutoff_strata(data, by):
         )
         
         group["strata_ppcr"] = pd.qcut(
-            -group["probs"],  # Descending order by using negative
+            -group["probs"], 
             q=int(1/by),
             labels=False,
             duplicates="drop"
@@ -249,6 +284,76 @@ def add_cutoff_strata(data, by):
     result = result.reset_index(drop=True)
     
     return result
+
+
+def create_breaks_values(_, stratified_by, by):
+    # Dummy implementation; replace with your actual logic
+    return np.arange(by, 1 + by, by)  # e.g., [0.1, 0.2, ..., 1.0]
+
+def create_strata_combinations_polars(stratified_by: str, by: float) -> pl.DataFrame:
+    if stratified_by == "probability_threshold":
+        upper_bound = create_breaks_values(None, "probability_threshold", by)
+        lower_bound = np.roll(upper_bound, 1)
+        lower_bound[0] = 0.0
+        mid_point = upper_bound - by / 2
+        include_lower_bound = lower_bound == 0.0
+        include_upper_bound = upper_bound != 0.0
+        chosen_cutoff = upper_bound
+        strata = format_strata_column(
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+            include_lower_bound=include_lower_bound,
+            include_upper_bound=include_upper_bound,
+            decimals=3
+        )
+
+    elif stratified_by == "ppcr":
+        strata_mid = create_breaks_values(None, "probability_threshold", by)[1:]
+        lower_bound = strata_mid - by
+        upper_bound = strata_mid + by
+        mid_point = upper_bound - by 
+        include_lower_bound = np.ones_like(strata_mid, dtype=bool)
+        include_upper_bound = np.zeros_like(strata_mid, dtype=bool)
+        chosen_cutoff = strata_mid
+        strata = np.round(mid_point, 3).astype(str)
+    else:
+        raise ValueError(f"Unsupported stratified_by: {stratified_by}")
+
+
+    return pl.DataFrame({
+        "strata": strata,
+        "lower_bound": lower_bound,
+        "upper_bound": upper_bound,
+        "mid_point": mid_point,
+        "include_lower_bound": include_lower_bound,
+        "include_upper_bound": include_upper_bound,
+        "chosen_cutoff": chosen_cutoff,
+        "stratified_by": [stratified_by] * len(strata)
+    })
+
+
+
+def format_strata_column(
+    lower_bound: list[float],
+    upper_bound: list[float],
+    include_lower_bound: list[bool],
+    include_upper_bound: list[bool],
+    decimals: int = 3
+) -> list[str]:
+    return [
+        f"{'[' if ilb else '('}"
+        f"{round(lb, decimals):.{decimals}f}, "
+        f"{round(ub, decimals):.{decimals}f}"
+        f"{']' if iub else ')'}"
+        for lb, ub, ilb, iub in zip(lower_bound, upper_bound, include_lower_bound, include_upper_bound)
+    ]
+
+
+
+def format_strata_interval(lower: float, upper: float, include_lower: bool, include_upper: bool) -> str:
+    left = "[" if include_lower else "("
+    right = "]" if include_upper else ")"
+    return f"{left}{lower:.3f}, {upper:.3f}{right}"
 
 def create_strata_combinations(stratified_by, by):
     if stratified_by == "probability_threshold":
@@ -286,12 +391,60 @@ def create_strata_combinations(stratified_by, by):
 
 
 
+def create_breaks_values_polars(probs_vec, stratified_by, by):
+    # Ensure probs_vec is a NumPy array (in case it's a Polars Series)
+    if hasattr(probs_vec, "to_numpy"):
+        probs_vec = probs_vec.to_numpy()
+
+    if stratified_by != "probability_threshold":
+        # Quantile-based bin edges (descending)
+        breaks = np.quantile(probs_vec, np.linspace(1, 0, int(1 / by) + 1))
+    else:
+        # Fixed-width bin edges (ascending)
+        decimal_places = len(str(by).split(".")[-1])
+        breaks = np.round(np.arange(0, 1 + by, by), decimals=decimal_places)
+
+    return breaks
+
 def create_breaks_values(probs_vec, stratified_by, by):
     if stratified_by != "probability_threshold":
         breaks = np.quantile(probs_vec, np.linspace(1, 0, int(1/by) + 1))
     else:
         breaks = np.round(np.arange(0, 1 + by, by), decimals=len(str(by).split(".")[-1]))
     return breaks
+
+def create_aj_data_combinations_polars(reference_groups, fixed_time_horizons, stratified_by, by):
+    # Create strata combinations using Polars
+    strata_combinations_list = [create_strata_combinations_polars(x, by) for x in stratified_by]
+    strata_combinations = pl.concat(strata_combinations_list, how="vertical")
+
+    # Define values for Cartesian product
+    reals = ["real_negatives", "real_positives", "real_competing", "real_censored"]
+    censoring_assumptions = ["excluded", "adjusted"]
+    competing_assumptions = ["excluded", "adjusted_as_negative", "adjusted_as_censored"]
+
+    # Create all combinations
+    combinations = list(itertools.product(
+        reference_groups, fixed_time_horizons, reals,
+        censoring_assumptions, competing_assumptions
+    ))
+
+    df_combinations = pl.DataFrame(combinations, schema=[
+        "reference_group",               # str
+        "fixed_time_horizon",           # cast to Float64
+        "reals",                        # cast to String (for join)
+        "censoring_assumption",         # str
+        "competing_assumption"          # str
+    ]).with_columns([
+        pl.col("fixed_time_horizon").cast(pl.Float64),
+        pl.col("reals").cast(pl.Categorical),
+        pl.col("censoring_assumption").cast(pl.String),
+        pl.col("competing_assumption").cast(pl.String),
+        pl.col("reference_group").cast(pl.String)
+    ])
+
+    # Cross join (cartesian product) with strata_combinations
+    return df_combinations.join(strata_combinations, how="cross")
 
 
 def create_aj_data_combinations(reference_groups, fixed_time_horizons, stratified_by, by):
@@ -316,6 +469,26 @@ def create_aj_data_combinations(reference_groups, fixed_time_horizons, stratifie
     
     return df_combinations.merge(strata_combinations, how="cross")
 
+
+def pivot_longer_strata_polars(data: pl.DataFrame) -> pl.DataFrame:
+    # Identify id_vars and value_vars
+    id_vars = [col for col in data.columns if not col.startswith("strata_")]
+    value_vars = [col for col in data.columns if col.startswith("strata_")]
+
+    # Perform the melt (equivalent to pandas.melt)
+    data_long = data.melt(
+        id_vars=id_vars,
+        value_vars=value_vars,
+        variable_name="stratified_by",
+        value_name="strata"
+    )
+
+    # Remove "strata_" prefix from the 'stratified_by' column
+    data_long = data_long.with_columns(
+        pl.col("stratified_by").str.replace("^strata_", "")
+    )
+
+    return data_long
 
 def pivot_longer_strata(data):
     data = data.copy()  # Ensure we are not modifying the original DataFrame
@@ -359,6 +532,57 @@ def update_administrative_censoring(data_to_adjust: pd.DataFrame) -> pd.DataFram
     return pl_data.to_pandas()
 
 
+def map_reals_to_labels_polars(data: pl.DataFrame) -> pl.DataFrame:
+    return data.with_columns([
+        pl.when(pl.col("reals") == 0).then("real_negatives")
+         .when(pl.col("reals") == 1).then("real_positives")
+         .when(pl.col("reals") == 2).then("real_competing")
+         .otherwise("real_censored")
+         .alias("reals")
+    ])
+
+
+
+def update_administrative_censoring_polars(data: pl.DataFrame) -> pl.DataFrame:
+
+    data = data.with_columns([
+        pl.when(
+            (pl.col("times") > pl.col("fixed_time_horizon")) & (pl.col("reals") == "real_positives")
+        ).then(pl.lit("real_negatives"))
+         .when(
+            (pl.col("times") < pl.col("fixed_time_horizon")) & (pl.col("reals") == "real_negatives")
+        ).then(pl.lit("real_censored"))
+            .otherwise(pl.col("reals"))
+         .alias("reals")
+    ])
+
+    return data
+
+
+
+
+def extract_crude_estimate_polars(data: pl.DataFrame) -> pl.DataFrame:
+    all_combinations = (
+        data.select(["strata", "reals", "fixed_time_horizon"])
+        .unique()
+    )
+
+    counts = (
+        data.group_by(["strata", "reals", "fixed_time_horizon"])
+        .agg(pl.count().alias("reals_estimate"))
+    )
+
+    return (
+        all_combinations
+        .join(counts, on=["strata", "reals", "fixed_time_horizon"], how="left")
+        .with_columns([
+            pl.col("reals_estimate").fill_null(0).cast(pl.Int64)
+        ])
+    )
+
+
+
+
 # def update_administrative_censoring(data_to_adjust: pd.DataFrame) -> pd.DataFrame:
 #     pl_df = pl.from_pandas(data_to_adjust)
     
@@ -383,6 +607,27 @@ def update_administrative_censoring(data_to_adjust: pd.DataFrame) -> pd.DataFram
 #     result_pandas = pl_result.to_pandas()
     
 #     return result_pandas
+
+
+def create_adjusted_data_list_polars(list_data_to_adjust, fixed_time_horizons, assumption_sets):
+    adjusted_data_list = []
+
+    for reference_group, group_data_polars in list_data_to_adjust.items():
+        for assumptions in assumption_sets:
+            adjusted_data = extract_aj_estimate_by_assumptions_polars(
+                group_data_polars,
+                fixed_time_horizons=fixed_time_horizons,
+                censoring_assumption=assumptions["censored"],
+                competing_assumption=assumptions["competing"]
+            )
+
+            adjusted_data = adjusted_data.with_columns(
+                pl.lit(reference_group).alias("reference_group")
+            )
+            adjusted_data_list.append(adjusted_data)
+
+    return adjusted_data_list
+
 
 
 def create_adjusted_data_list(list_data_to_adjust, fixed_time_horizons, assumption_sets):
@@ -423,6 +668,61 @@ def assign_and_explode(data: pd.DataFrame, fixed_time_horizons) -> pd.DataFrame:
     ).explode("fixed_time_horizon")
 
     return df.to_pandas()
+
+def assign_and_explode_polars(data: pl.DataFrame, fixed_time_horizons: list[float]) -> pl.DataFrame:
+    return (
+        data.with_columns(
+            pl.lit(fixed_time_horizons).alias("fixed_time_horizon")
+        )
+        .explode("fixed_time_horizon")
+        .with_columns(
+            pl.col("fixed_time_horizon").cast(pl.Float64)
+        )
+    )
+
+# def extract_aj_estimate_by_assumptions_polars(
+#     data_to_adjust: pl.DataFrame,
+#     fixed_time_horizons: list[float],
+#     censoring_assumption: str = "excluded",
+#     competing_assumption: str = "excluded"
+# ) -> pl.DataFrame:
+
+#     if censoring_assumption == "excluded" and competing_assumption == "excluded":
+#         print("🪵 Step 1: Input columns:", data_to_adjust.columns)
+
+#         aj = assign_and_explode_polars(data_to_adjust, fixed_time_horizons)
+#         print("🪵 Step 2: After assign_and_explode columns:", aj.columns)
+#         print("🪵 Schema:", aj.schema)
+#         print("🪵 Sample rows:")
+#         print(aj.head(3))
+
+#         aj = update_administrative_censoring_polars(aj)
+#         print("🪵 Step 3: After update_administrative_censoring:", aj.columns)
+
+#         return aj.with_columns([
+#             pl.lit(censoring_assumption).alias("censoring_assumption"),
+#             pl.lit(competing_assumption).alias("competing_assumption")
+#         ])
+
+
+def extract_aj_estimate_by_assumptions_polars(
+    data_to_adjust: pl.DataFrame,
+    fixed_time_horizons: list[float],
+    censoring_assumption="excluded",
+    competing_assumption="excluded"
+) -> pl.DataFrame:
+
+    if censoring_assumption == "excluded" and competing_assumption == "excluded":
+        aj_estimate_data = (
+            assign_and_explode_polars(data_to_adjust, fixed_time_horizons)
+            .pipe(update_administrative_censoring_polars)
+            .pipe(extract_crude_estimate_polars)
+        )
+
+    return aj_estimate_data.with_columns([
+        pl.lit(censoring_assumption).alias("censoring_assumption"),
+        pl.lit(competing_assumption).alias("competing_assumption")
+    ])
 
 
 def extract_aj_estimate_by_assumptions(
@@ -610,6 +910,54 @@ def extract_aj_estimate_by_assumptions(
 #         censoring_assumption=censoring_assumption,
 #         competing_assumption=competing_assumption
 #     )
+
+
+
+def create_list_data_to_adjust_polars(probs_dict, reals_dict, times_dict, stratified_by, by):
+    reference_groups = list(probs_dict.keys())
+    num_reals = len(reals_dict)
+
+    # Flatten and ensure list format
+    data_to_adjust = pl.DataFrame({
+        "reference_group": sum([[group] * num_reals for group in reference_groups], []),
+        "probs": sum([probs_dict[group].tolist() for group in reference_groups], []),
+        "reals": list(reals_dict) * len(reference_groups),
+        "times": list(times_dict) * len(reference_groups)
+    })
+
+    # Apply strata
+    data_to_adjust = add_cutoff_strata_polars(data_to_adjust, by=by)
+    data_to_adjust = pivot_longer_strata_polars(data_to_adjust)
+
+    # Map reals values to strings
+    reals_map = {
+        0: "real_negatives",
+        2: "real_competing",
+        1: "real_positives"
+    }
+    data_to_adjust = data_to_adjust.with_columns(
+        pl.col("reals").map_elements(lambda x: reals_map.get(x, None)).alias("reals")
+    )
+
+    # Optional: cast to categorical for sorting/grouping behavior
+    data_to_adjust = data_to_adjust.with_columns(
+        pl.col("reals").cast(pl.Categorical)
+    )
+
+    # Optional: emulate ordering with a manual rank column
+    desired_order = ["real_negatives", "real_competing", "real_positives"]
+    order_map = {label: i for i, label in enumerate(desired_order)}
+    data_to_adjust = data_to_adjust.with_columns(
+        pl.col("reals").map_elements(lambda x: order_map.get(x, -1)).alias("reals_rank")
+    )
+
+    # Partition by reference_group
+    list_data_to_adjust = {
+        group[0]: df for group, df in data_to_adjust.partition_by("reference_group", as_dict=True).items()
+    }
+
+    return list_data_to_adjust
+
 
 
 def create_list_data_to_adjust(probs_dict, reals_dict, times_dict, stratified_by, by):

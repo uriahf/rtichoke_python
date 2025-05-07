@@ -5,7 +5,7 @@ echo: false
 message: false
 warning: false
 ---
-
+<!-- 
 ```{python}
 from lifelines import AalenJohansenFitter
 import numpy as np
@@ -31,81 +31,161 @@ with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\times_dict.pkl', 'rb') a
 
 
 ```
+ -->
 
+## polars
+
+
+```{python}
+
+from rtichoke.helpers.sandbox_observable_helpers import *
+
+
+create_strata_combinations_polars("probability_threshold", 0.1)
+create_strata_combinations_polars("ppcr", 0.1)
+
+
+```
 
 ```{python}
 
 
 fixed_time_horizons = [1, 3, 5]
 stratified_by = ["probability_threshold", "ppcr"]
-by=0.1
+by=0.2
 
-aj_data_combinations = create_aj_data_combinations(list(probs_dict.keys()), fixed_time_horizons, stratified_by, by)
+aj_data_combinations = create_aj_data_combinations_polars(list(probs_dict.keys()), fixed_time_horizons, stratified_by, by)
+
+```
+
+```{python}
+
+# from rtichoke.helpers.sandbox_observable_helpers import *
+
+# list_data_to_adjust = create_list_data_to_adjust(
+#   probs_dict, reals_dict, times_dict, stratified_by=stratified_by, by=by
+# )
+
+
+
+# assumption_sets = [
+#     {"competing": "excluded", "censored": "excluded"},
+#     {"competing": "adjusted_as_negative", "censored": "adjusted"},
+#     {"competing": "adjusted_as_censored", "censored": "adjusted"},
+#     {"competing": "excluded", "censored": "adjusted"},
+#     {"competing": "adjusted_as_negative", "censored": "excluded"}
+# ]
 
 ```
 
 
+# try polars
+
+## create list data to adjust polars
 
 ```{python}
 
 from rtichoke.helpers.sandbox_observable_helpers import *
 
-list_data_to_adjust = create_list_data_to_adjust(
+list_data_to_adjust_polars = create_list_data_to_adjust_polars(
   probs_dict, reals_dict, times_dict, stratified_by=stratified_by, by=by
 )
 
+
+
+```
+
+
+## create adjusted data list polars
+
+```{python}
+
 assumption_sets = [
-    {"competing": "excluded", "censored": "excluded"},
-    {"competing": "adjusted_as_negative", "censored": "adjusted"},
-    {"competing": "adjusted_as_censored", "censored": "adjusted"},
-    {"competing": "excluded", "censored": "adjusted"},
-    {"competing": "adjusted_as_negative", "censored": "excluded"}
+    {"competing": "excluded", "censored": "excluded"}#,
+    # {"competing": "adjusted_as_negative", "censored": "adjusted"},
+    # {"competing": "adjusted_as_censored", "censored": "adjusted"},
+    # {"competing": "excluded", "censored": "adjusted"},
+    # {"competing": "adjusted_as_negative", "censored": "excluded"}
 ]
 
-```
-
-### test chunck update administrative censoring
-
-```{python}
-
-from rtichoke.helpers.sandbox_observable_helpers import *
-
-test_df = pd.DataFrame({
-    "times": [2, 5, 10],
-    "fixed_time_horizon": [3, 3, 3],
-    "reals": ["real_positives", "real_negatives", "real_positives"]
-})
-
-update_administrative_censoring(test_df)
-
-```
-
-
-### test chunck extract_crude_estimate
-
-```{python}
-
-from rtichoke.helpers.sandbox_observable_helpers import *
-
-test_df = pd.DataFrame({
-    "strata": ["A", "A", "B", "B", "B"],
-    "reals": ["real_positives", "real_negatives", "real_positives", "real_negatives", "real_censored"],
-    "fixed_time_horizon": [1, 1, 2, 2, 2]
-})
-
-result = extract_crude_estimate(test_df)
-print(result)
-
-```
-
-
-```{python}
-
-adjusted_data_list = create_adjusted_data_list(
-  list_data_to_adjust=list_data_to_adjust,
+adjusted_data_list_polars = create_adjusted_data_list_polars(
+  list_data_to_adjust=list_data_to_adjust_polars,
   fixed_time_horizons=fixed_time_horizons,
   assumption_sets=assumption_sets
 )
+
+```
+
+
+
+
+
+```{python}
+
+# adjusted_data_list = create_adjusted_data_list(
+#   list_data_to_adjust=list_data_to_adjust,
+#   fixed_time_horizons=fixed_time_horizons,
+#   assumption_sets=assumption_sets
+# )
+
+
+```
+
+
+## polars
+
+```{python}
+# Combine all adjusted data
+
+# final_adjusted_data = pd.concat(adjusted_data_list, ignore_index=True)
+
+# aj_data_combinations['strata'] = aj_data_combinations['strata'].astype(str)
+
+# final_adjusted_data['strata'] = final_adjusted_data['strata'].astype(str)
+
+# aj_data_combinations['reals'] = aj_data_combinations['reals'].astype(str)
+
+# final_adjusted_data['reals'] = final_adjusted_data['reals'].astype(str)
+
+# categories = ["real_negatives", "real_positives", "real_competing", "real_censored"]
+# aj_data_combinations['reals'] = pd.Categorical(aj_data_combinations['reals'], categories=categories, ordered=True)
+# final_adjusted_data['reals'] = pd.Categorical(final_adjusted_data['reals'], categories=categories, ordered=True)
+
+
+final_adjusted_data_polars = pl.concat(adjusted_data_list_polars, how="vertical")
+
+
+```
+
+```{python}
+
+print(aj_data_combinations.schema)
+print(final_adjusted_data_polars.schema)
+
+
+combined_adjusted_data = aj_data_combinations.join(
+    final_adjusted_data_polars,
+    on=["reference_group", "fixed_time_horizon", "censoring_assumption", "competing_assumption", "reals", "strata"],
+    how="left"
+)
+
+print(combined_adjusted_data)
+
+
+print(aj_data_combinations.select("strata").unique().sort("strata"))
+print(final_adjusted_data_polars.select("strata").unique().sort("strata"))
+
+
+# aj_data_combinations.select(pl.col("strata")).join(
+#   final_adjusted_data_polars.select(pl.col("strata")),
+#   on=["strata"]
+# )
+
+aj_data_combinations.select(pl.col("strata")).unique().join(
+  final_adjusted_data_polars.select(pl.col("strata")).unique(),
+  on=["strata"]
+)
+
 
 
 ```
@@ -113,25 +193,22 @@ adjusted_data_list = create_adjusted_data_list(
 ```{python}
 # Combine all adjusted data
 
-final_adjusted_data = pd.concat(adjusted_data_list, ignore_index=True)
+# final_adjusted_data = pd.concat(adjusted_data_list, ignore_index=True)
 
-aj_data_combinations['strata'] = aj_data_combinations['strata'].astype(str)
+# aj_data_combinations['strata'] = aj_data_combinations['strata'].astype(str)
 
-final_adjusted_data['strata'] = final_adjusted_data['strata'].astype(str)
+# final_adjusted_data['strata'] = final_adjusted_data['strata'].astype(str)
 
-aj_data_combinations['reals'] = aj_data_combinations['reals'].astype(str)
+# aj_data_combinations['reals'] = aj_data_combinations['reals'].astype(str)
 
-final_adjusted_data['reals'] = final_adjusted_data['reals'].astype(str)
+# final_adjusted_data['reals'] = final_adjusted_data['reals'].astype(str)
 
-categories = ["real_negatives", "real_positives", "real_competing", "real_censored"]
-aj_data_combinations['reals'] = pd.Categorical(aj_data_combinations['reals'], categories=categories, ordered=True)
-final_adjusted_data['reals'] = pd.Categorical(final_adjusted_data['reals'], categories=categories, ordered=True)
+# categories = ["real_negatives", "real_positives", "real_competing", "real_censored"]
+# aj_data_combinations['reals'] = pd.Categorical(aj_data_combinations['reals'], categories=categories, ordered=True)
+# final_adjusted_data['reals'] = pd.Categorical(final_adjusted_data['reals'], categories=categories, ordered=True)
 
-combined_adjusted_data = aj_data_combinations.merge(final_adjusted_data, on=["reference_group", "fixed_time_horizon", "censoring_assumption", "competing_assumption", "reals", "strata"], how='left')
+# combined_adjusted_data = aj_data_combinations.merge(final_adjusted_data, on=["reference_group", "fixed_time_horizon", "censoring_assumption", "competing_assumption", "reals", "strata"], how='left')
 
-```
-
-```{python}
 
 import pandas as pd
 
@@ -144,12 +221,13 @@ reference_groups = list(probs_dict.keys())
 
 ojs_define(reference_groups_data = reference_groups)
 
-ojs_define(data = combined_adjusted_data)
+ojs_define(data = combined_adjusted_data.to_pandas())
 
 ```
 
-```{ojs}
+## Observable stuff
 
+```{ojs}
 //| panel: input
 
 viewof time_horizon = Inputs.range(
@@ -219,7 +297,7 @@ Plot.plot({
   }
 })
 
-``` 
+```
 
 ```{python}
 
