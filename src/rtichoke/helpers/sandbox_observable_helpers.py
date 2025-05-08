@@ -145,8 +145,6 @@ def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
                     'strata': stratum,
                     'fixed_time_horizon': t,
                     'reals': state,
-                    'n': n,
-                    'estimate': estimate,
                     'reals_estimate': estimate * n
                 })
     
@@ -321,7 +319,7 @@ def create_strata_combinations_polars(stratified_by: str, by: float) -> pl.DataF
 
 
     return pl.DataFrame({
-        "strata": strata,
+        "strata": pl.Series(strata).cast(pl.Categorical),
         "lower_bound": lower_bound,
         "upper_bound": upper_bound,
         "mid_point": mid_point,
@@ -711,6 +709,9 @@ def extract_aj_estimate_by_assumptions_polars(
     censoring_assumption="excluded",
     competing_assumption="excluded"
 ) -> pl.DataFrame:
+    
+    def to_pd(df): return df.to_pandas()
+    def to_pl(df): return pl.from_pandas(df)
 
     if censoring_assumption == "excluded" and competing_assumption == "excluded":
         aj_estimate_data = (
@@ -718,6 +719,30 @@ def extract_aj_estimate_by_assumptions_polars(
             .pipe(update_administrative_censoring_polars)
             .pipe(extract_crude_estimate_polars)
         )
+
+    if censoring_assumption == "adjusted" and competing_assumption == "excluded":
+        exploded = assign_and_explode_polars(data_to_adjust, fixed_time_horizons)
+        exploded = update_administrative_censoring_polars(exploded)
+
+        # Separate "real_competing" for crude estimation
+        real_competing_data = exploded.filter(pl.col("reals") == "real_competing")
+        non_competing_data = exploded.filter(pl.col("reals") != "real_competing")
+
+        # Crude estimate for "real_competing" using Polars
+        aj_estimate_competing = extract_crude_estimate_polars(real_competing_data)
+
+        # Aalen-Johansen estimate for non-competing using Lifelines (pandas)
+        aj_estimate_adjusted_list = [
+            extract_aj_estimate(
+                to_pd(non_competing_data.filter(pl.col("fixed_time_horizon") == h)), 
+                fixed_time_horizons=[h]
+            )
+            for h in fixed_time_horizons
+        ]
+
+        # Combine results
+        aj_estimate_adjusted = to_pl(pd.concat(aj_estimate_adjusted_list, ignore_index=True))
+        aj_estimate_data = pl.concat([aj_estimate_competing, aj_estimate_adjusted])
 
     return aj_estimate_data.with_columns([
         pl.lit(censoring_assumption).alias("censoring_assumption"),
@@ -942,6 +967,11 @@ def create_list_data_to_adjust_polars(probs_dict, reals_dict, times_dict, strati
     # Optional: cast to categorical for sorting/grouping behavior
     data_to_adjust = data_to_adjust.with_columns(
         pl.col("reals").cast(pl.Categorical)
+    )
+
+    # Cast 'strata' column to categorical
+    data_to_adjust = data_to_adjust.with_columns(
+        pl.col("strata").cast(pl.Categorical)
     )
 
     # Optional: emulate ordering with a manual rank column

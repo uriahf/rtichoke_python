@@ -88,13 +88,67 @@ list_data_to_adjust_polars = create_list_data_to_adjust_polars(
 
 ## create adjusted data list polars
 
+### Debug excluded-adjusted
+
+```{python}
+
+# extract_aj_estimate_by_assumptions_polars(
+#                 list_data_to_adjust_polars.get('full'),
+#                 fixed_time_horizons=[1, 3, 5],
+#                 censoring_assumption="excluded",
+#                 competing_assumption="excluded"
+#             )
+
+
+# extract_aj_estimate_by_assumptions_polars(
+#                 list_data_to_adjust_polars.get('full'),
+#                 fixed_time_horizons=[1, 3, 5],
+#                 censoring_assumption="adjusted",
+#                 competing_assumption="excluded"
+#             )
+
+
+exploded = assign_and_explode_polars(list_data_to_adjust_polars.get('full'), [1, 3, 5])
+exploded = update_administrative_censoring_polars(exploded)
+
+real_competing_data = exploded.filter(pl.col("reals") == "real_competing")
+non_competing_data = exploded.filter(pl.col("reals") != "real_competing")
+
+aj_estimate_competing = extract_crude_estimate_polars(real_competing_data)
+
+def to_pd(df): return df.to_pandas()
+
+aj_estimate_adjusted_list = [
+            extract_aj_estimate(
+                to_pd(non_competing_data.filter(pl.col("fixed_time_horizon") == h)), 
+                fixed_time_horizons=[h]
+            )
+            for h in fixed_time_horizons
+        ]
+
+def to_pl(df): return pl.from_pandas(df)
+
+aj_estimate_adjusted = to_pl(pd.concat(aj_estimate_adjusted_list, ignore_index=True))
+
+aj_estimate_adjusted = aj_estimate_adjusted.with_columns(
+    pl.col("reals").cast(pl.Categorical)
+)
+
+aj_estimate_data = pl.concat([aj_estimate_competing, aj_estimate_adjusted])
+
+
+```
+
+## As a list
+
+
 ```{python}
 
 assumption_sets = [
-    {"competing": "excluded", "censored": "excluded"}#,
+    {"competing": "excluded", "censored": "excluded"},
     # {"competing": "adjusted_as_negative", "censored": "adjusted"},
     # {"competing": "adjusted_as_censored", "censored": "adjusted"},
-    # {"competing": "excluded", "censored": "adjusted"},
+    {"competing": "excluded", "censored": "adjusted"}#,
     # {"competing": "adjusted_as_negative", "censored": "excluded"}
 ]
 
