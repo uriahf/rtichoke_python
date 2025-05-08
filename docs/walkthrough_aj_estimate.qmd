@@ -5,7 +5,7 @@ echo: false
 message: false
 warning: false
 ---
-<!-- 
+
 ```{python}
 from lifelines import AalenJohansenFitter
 import numpy as np
@@ -31,28 +31,18 @@ with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\times_dict.pkl', 'rb') a
 
 
 ```
- -->
+
 
 ## polars
 
 
 ```{python}
 
-from rtichoke.helpers.sandbox_observable_helpers import *
-
-
-create_strata_combinations_polars("probability_threshold", 0.1)
-create_strata_combinations_polars("ppcr", 0.1)
-
-
-```
-
-```{python}
 
 
 fixed_time_horizons = [1, 3, 5]
 stratified_by = ["probability_threshold", "ppcr"]
-by=0.2
+by=0.01
 
 aj_data_combinations = create_aj_data_combinations_polars(list(probs_dict.keys()), fixed_time_horizons, stratified_by, by)
 
