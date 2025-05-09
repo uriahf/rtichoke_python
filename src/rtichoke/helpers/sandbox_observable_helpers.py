@@ -143,8 +143,8 @@ def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
             for state, estimate in zip(states, estimates):
                 results.append({
                     'strata': stratum,
-                    'fixed_time_horizon': t,
                     'reals': state,
+                    'fixed_time_horizon': t,
                     'reals_estimate': estimate * n
                 })
     

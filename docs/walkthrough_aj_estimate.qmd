@@ -137,13 +137,20 @@ aj_estimate_adjusted = aj_estimate_adjusted.with_columns(
     pl.col("reals").cast(reals_enum).alias("reals")
 )
 
+aj_estimate_competing = aj_estimate_competing.with_columns(
+    pl.col("strata").cast(pl.Categorical).alias("strata")
+)
+
+aj_estimate_competing = aj_estimate_competing.with_columns(
+    pl.col("fixed_time_horizon").cast(pl.Int64).alias("fixed_time_horizon")
+)
+
+aj_estimate_competing = aj_estimate_competing.with_columns(
+    pl.col("reals_estimate").cast(pl.Float64).alias("reals_estimate")
+)
 
 # doesn't work
 aj_estimate_data = pl.concat([aj_estimate_competing, aj_estimate_adjusted])
-
-# works for now
-aj_estimate_data = pl.concat([aj_estimate_competing.select(pl.col("reals")), aj_estimate_adjusted.select(pl.col("reals"))])
-
 
 
 ```
