@@ -130,11 +130,20 @@ def to_pl(df): return pl.from_pandas(df)
 
 aj_estimate_adjusted = to_pl(pd.concat(aj_estimate_adjusted_list, ignore_index=True))
 
+reals_labels = ["real_negatives", "real_positives", "real_competing", "real_censored"]
+reals_enum = pl.Enum(reals_labels)
+
 aj_estimate_adjusted = aj_estimate_adjusted.with_columns(
-    pl.col("reals").cast(pl.Categorical)
+    pl.col("reals").cast(reals_enum).alias("reals")
 )
 
+
+# doesn't work
 aj_estimate_data = pl.concat([aj_estimate_competing, aj_estimate_adjusted])
+
+# works for now
+aj_estimate_data = pl.concat([aj_estimate_competing.select(pl.col("reals")), aj_estimate_adjusted.select(pl.col("reals"))])
+
 
 
 ```

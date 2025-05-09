@@ -417,32 +417,33 @@ def create_aj_data_combinations_polars(reference_groups, fixed_time_horizons, st
     strata_combinations = pl.concat(strata_combinations_list, how="vertical")
 
     # Define values for Cartesian product
-    reals = ["real_negatives", "real_positives", "real_competing", "real_censored"]
+    reals_labels = ["real_negatives", "real_positives", "real_competing", "real_censored"]
+    reals_enum = pl.Enum(reals_labels)
+    df_reals = pl.DataFrame({"reals": pl.Series(reals_labels, dtype=reals_enum)})
+
     censoring_assumptions = ["excluded", "adjusted"]
     competing_assumptions = ["excluded", "adjusted_as_negative", "adjusted_as_censored"]
 
     # Create all combinations
     combinations = list(itertools.product(
-        reference_groups, fixed_time_horizons, reals,
+        reference_groups, fixed_time_horizons,
         censoring_assumptions, competing_assumptions
     ))
 
     df_combinations = pl.DataFrame(combinations, schema=[
         "reference_group",               # str
         "fixed_time_horizon",           # cast to Float64
-        "reals",                        # cast to String (for join)
         "censoring_assumption",         # str
         "competing_assumption"          # str
     ]).with_columns([
         pl.col("fixed_time_horizon").cast(pl.Float64),
-        pl.col("reals").cast(pl.Categorical),
         pl.col("censoring_assumption").cast(pl.String),
         pl.col("competing_assumption").cast(pl.String),
         pl.col("reference_group").cast(pl.String)
     ])
 
     # Cross join (cartesian product) with strata_combinations
-    return df_combinations.join(strata_combinations, how="cross")
+    return df_combinations.join(strata_combinations, how="cross").join(df_reals, how = "cross")
 
 
 def create_aj_data_combinations(reference_groups, fixed_time_horizons, stratified_by, by):
@@ -954,31 +955,20 @@ def create_list_data_to_adjust_polars(probs_dict, reals_dict, times_dict, strati
     data_to_adjust = add_cutoff_strata_polars(data_to_adjust, by=by)
     data_to_adjust = pivot_longer_strata_polars(data_to_adjust)
 
+
+    reals_labels = ["real_negatives", "real_positives", "real_competing", "real_censored"]
+    reals_enum = pl.Enum(reals_labels)
+
     # Map reals values to strings
     reals_map = {
         0: "real_negatives",
         2: "real_competing",
         1: "real_positives"
     }
-    data_to_adjust = data_to_adjust.with_columns(
-        pl.col("reals").map_elements(lambda x: reals_map.get(x, None)).alias("reals")
-    )
 
-    # Optional: cast to categorical for sorting/grouping behavior
     data_to_adjust = data_to_adjust.with_columns(
-        pl.col("reals").cast(pl.Categorical)
-    )
-
-    # Cast 'strata' column to categorical
-    data_to_adjust = data_to_adjust.with_columns(
-        pl.col("strata").cast(pl.Categorical)
-    )
-
-    # Optional: emulate ordering with a manual rank column
-    desired_order = ["real_negatives", "real_competing", "real_positives"]
-    order_map = {label: i for i, label in enumerate(desired_order)}
-    data_to_adjust = data_to_adjust.with_columns(
-        pl.col("reals").map_elements(lambda x: order_map.get(x, -1)).alias("reals_rank")
+        pl.col("reals").replace_strict(
+            reals_map, return_dtype=reals_enum).alias("reals")
     )
 
     # Partition by reference_group
