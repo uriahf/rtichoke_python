@@ -436,7 +436,7 @@ def create_aj_data_combinations_polars(reference_groups, fixed_time_horizons, st
         "censoring_assumption",         # str
         "competing_assumption"          # str
     ]).with_columns([
-        pl.col("fixed_time_horizon").cast(pl.Float64),
+        pl.col("fixed_time_horizon").cast(pl.Int64),
         pl.col("censoring_assumption").cast(pl.String),
         pl.col("competing_assumption").cast(pl.String),
         pl.col("reference_group").cast(pl.String)
@@ -721,6 +721,19 @@ def extract_aj_estimate_by_assumptions_polars(
             .pipe(extract_crude_estimate_polars)
         )
 
+        aj_estimate_data = aj_estimate_data.with_columns(
+            pl.col("reals_estimate").cast(pl.Float64).alias("reals_estimate")
+        )
+
+        aj_estimate_data = aj_estimate_data.with_columns(
+            pl.col("strata").cast(pl.Categorical).alias("strata")
+        )
+
+        aj_estimate_data = aj_estimate_data.with_columns(
+            pl.col("fixed_time_horizon").cast(pl.Int64).alias("fixed_time_horizon")
+        )
+
+
     if censoring_assumption == "adjusted" and competing_assumption == "excluded":
         exploded = assign_and_explode_polars(data_to_adjust, fixed_time_horizons)
         exploded = update_administrative_censoring_polars(exploded)
@@ -731,6 +744,19 @@ def extract_aj_estimate_by_assumptions_polars(
 
         # Crude estimate for "real_competing" using Polars
         aj_estimate_competing = extract_crude_estimate_polars(real_competing_data)
+
+        aj_estimate_competing = aj_estimate_competing.with_columns(
+            pl.col("strata").cast(pl.Categorical).alias("strata")
+        )
+
+        aj_estimate_competing = aj_estimate_competing.with_columns(
+            pl.col("fixed_time_horizon").cast(pl.Int64).alias("fixed_time_horizon")
+        )
+
+        aj_estimate_competing = aj_estimate_competing.with_columns(
+            pl.col("reals_estimate").cast(pl.Float64).alias("reals_estimate")
+        )
+
 
         # Aalen-Johansen estimate for non-competing using Lifelines (pandas)
         aj_estimate_adjusted_list = [
@@ -743,6 +769,14 @@ def extract_aj_estimate_by_assumptions_polars(
 
         # Combine results
         aj_estimate_adjusted = to_pl(pd.concat(aj_estimate_adjusted_list, ignore_index=True))
+
+        reals_labels = ["real_negatives", "real_positives", "real_competing", "real_censored"]
+        reals_enum = pl.Enum(reals_labels)
+
+        aj_estimate_adjusted = aj_estimate_adjusted.with_columns(
+            pl.col("reals").cast(reals_enum).alias("reals")
+        )
+
         aj_estimate_data = pl.concat([aj_estimate_competing, aj_estimate_adjusted])
 
     return aj_estimate_data.with_columns([
