@@ -304,6 +304,8 @@ aj_estimates_data = pl.concat(
 
 reals_enum_dtype = aj_data_combinations.schema["reals_labels"]
 censoring_assumptions_enum_dtype = aj_data_combinations.schema["censoring_assumption"]
+competing_assumptions_enum_dtype = aj_data_combinations.schema["competing_assumption"]
+
 
 aj_estimates_data = aj_estimates_data.with_columns([
     pl.col("strata").cast(pl.Categorical)
@@ -311,6 +313,8 @@ aj_estimates_data = aj_estimates_data.with_columns([
     pl.col("reals_labels").str.replace(r"_est$", "").cast(reals_enum_dtype)
 ).with_columns(
   pl.col("censoring_assumption").cast(censoring_assumptions_enum_dtype)
+).with_columns(
+  pl.col("competing_assumption").cast(competing_assumptions_enum_dtype)
 )
 
 ```
