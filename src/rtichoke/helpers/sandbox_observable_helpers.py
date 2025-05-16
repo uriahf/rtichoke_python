@@ -425,25 +425,28 @@ def create_aj_data_combinations_polars(reference_groups, fixed_time_horizons, st
     df_reals = pl.DataFrame({"reals_labels": pl.Series(reals_labels, dtype=reals_enum)})
     df_reference_groups = pl.DataFrame({"reference_group": pl.Series(reference_groups, dtype=pl.Enum(reference_groups))})
     
+    censoring_assumptions_labels = ["excluded", "adjusted"]
+    censoring_assumptions_enum = pl.Enum(censoring_assumptions_labels)
+    df_censoring_assumptions = pl.DataFrame({"censoring_assumption": pl.Series(censoring_assumptions_labels, dtype=censoring_assumptions_enum)})
 
-    censoring_assumptions = ["excluded", "adjusted"]
     competing_assumptions = ["excluded", "adjusted_as_negative", "adjusted_as_censored"]
 
     # Create all combinations
     combinations = list(itertools.product(
         # reference_groups, 
         fixed_time_horizons,
-        censoring_assumptions, competing_assumptions
+        # censoring_assumptions, 
+        competing_assumptions
     ))
 
     df_combinations = pl.DataFrame(combinations, schema=[
         # "reference_group",               # str
         "fixed_time_horizon",           # cast to Float64
-        "censoring_assumption",         # str
+        # "censoring_assumption",         # str
         "competing_assumption"          # str
     ]).with_columns([
         pl.col("fixed_time_horizon").cast(pl.Int64),
-        pl.col("censoring_assumption").cast(pl.String),
+        # pl.col("censoring_assumption").cast(pl.String),
         pl.col("competing_assumption").cast(pl.String),
         # pl.col("reference_group").cast(pl.String)
     ])
@@ -452,6 +455,7 @@ def create_aj_data_combinations_polars(reference_groups, fixed_time_horizons, st
     return (
         df_reference_groups
         .join(df_combinations, how="cross")
+        .join(df_censoring_assumptions, how="cross")
         .join(strata_combinations, how="cross")
         .join(df_reals, how="cross")
     )
