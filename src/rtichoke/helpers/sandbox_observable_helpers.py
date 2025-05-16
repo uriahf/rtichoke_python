@@ -423,18 +423,21 @@ def create_aj_data_combinations_polars(reference_groups, fixed_time_horizons, st
     reals_labels = ["real_negatives", "real_positives", "real_competing", "real_censored"]
     reals_enum = pl.Enum(reals_labels)
     df_reals = pl.DataFrame({"reals_labels": pl.Series(reals_labels, dtype=reals_enum)})
+    df_reference_groups = pl.DataFrame({"reference_group": pl.Series(reference_groups, dtype=pl.Enum(reference_groups))})
+    
 
     censoring_assumptions = ["excluded", "adjusted"]
     competing_assumptions = ["excluded", "adjusted_as_negative", "adjusted_as_censored"]
 
     # Create all combinations
     combinations = list(itertools.product(
-        reference_groups, fixed_time_horizons,
+        # reference_groups, 
+        fixed_time_horizons,
         censoring_assumptions, competing_assumptions
     ))
 
     df_combinations = pl.DataFrame(combinations, schema=[
-        "reference_group",               # str
+        # "reference_group",               # str
         "fixed_time_horizon",           # cast to Float64
         "censoring_assumption",         # str
         "competing_assumption"          # str
@@ -442,11 +445,16 @@ def create_aj_data_combinations_polars(reference_groups, fixed_time_horizons, st
         pl.col("fixed_time_horizon").cast(pl.Int64),
         pl.col("censoring_assumption").cast(pl.String),
         pl.col("competing_assumption").cast(pl.String),
-        pl.col("reference_group").cast(pl.String)
+        # pl.col("reference_group").cast(pl.String)
     ])
 
     # Cross join (cartesian product) with strata_combinations
-    return df_combinations.join(strata_combinations, how="cross").join(df_reals, how = "cross")
+    return (
+        df_reference_groups
+        .join(df_combinations, how="cross")
+        .join(strata_combinations, how="cross")
+        .join(df_reals, how="cross")
+    )
 
 
 def create_aj_data_combinations(reference_groups, fixed_time_horizons, stratified_by, by):
