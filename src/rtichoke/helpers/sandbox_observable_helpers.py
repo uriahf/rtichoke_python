@@ -68,6 +68,9 @@ print("Polars version:", pl.__version__)
 #     return result_df
 
 
+def extract_aj_estimate_polars(data_to_adjust, fixed_time_horizons):
+    pass
+
 def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
     """
     Python implementation of the R extract_aj_estimate function for Aalen-Johansen estimation.
@@ -87,7 +90,7 @@ def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
     # Create a categorical version of reals for stratification
     data = data_to_adjust.copy()
     data['reals_cat'] = pd.Categorical(
-        data['reals'], 
+        data['reals_labels'], 
         categories=["real_negatives", "real_positives", "real_competing", "real_censored"],
         ordered=True
     )
@@ -102,7 +105,7 @@ def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
             "real_censored": 0    # Censored
     }
         
-    data['event_code'] = data['reals'].map(event_map)
+    data['event_code'] = data['reals_labels'].map(event_map)
 
     # Initialize result dataframes
     results = []
@@ -419,7 +422,7 @@ def create_aj_data_combinations_polars(reference_groups, fixed_time_horizons, st
     # Define values for Cartesian product
     reals_labels = ["real_negatives", "real_positives", "real_competing", "real_censored"]
     reals_enum = pl.Enum(reals_labels)
-    df_reals = pl.DataFrame({"reals": pl.Series(reals_labels, dtype=reals_enum)})
+    df_reals = pl.DataFrame({"reals_labels": pl.Series(reals_labels, dtype=reals_enum)})
 
     censoring_assumptions = ["excluded", "adjusted"]
     competing_assumptions = ["excluded", "adjusted_as_negative", "adjusted_as_censored"]
@@ -546,13 +549,13 @@ def update_administrative_censoring_polars(data: pl.DataFrame) -> pl.DataFrame:
 
     data = data.with_columns([
         pl.when(
-            (pl.col("times") > pl.col("fixed_time_horizon")) & (pl.col("reals") == "real_positives")
+            (pl.col("times") > pl.col("fixed_time_horizon")) & (pl.col("reals_labels") == "real_positives")
         ).then(pl.lit("real_negatives"))
          .when(
-            (pl.col("times") < pl.col("fixed_time_horizon")) & (pl.col("reals") == "real_negatives")
+            (pl.col("times") < pl.col("fixed_time_horizon")) & (pl.col("reals_labels") == "real_negatives")
         ).then(pl.lit("real_censored"))
-            .otherwise(pl.col("reals"))
-         .alias("reals")
+            .otherwise(pl.col("reals_labels"))
+         .alias("reals_labels")
     ])
 
     return data
@@ -739,8 +742,8 @@ def extract_aj_estimate_by_assumptions_polars(
         exploded = update_administrative_censoring_polars(exploded)
 
         # Separate "real_competing" for crude estimation
-        real_competing_data = exploded.filter(pl.col("reals") == "real_competing")
-        non_competing_data = exploded.filter(pl.col("reals") != "real_competing")
+        real_competing_data = exploded.filter(pl.col("reals_labels") == "real_competing")
+        non_competing_data = exploded.filter(pl.col("reals_labels") != "real_competing")
 
         # Crude estimate for "real_competing" using Polars
         aj_estimate_competing = extract_crude_estimate_polars(real_competing_data)
@@ -1002,7 +1005,7 @@ def create_list_data_to_adjust_polars(probs_dict, reals_dict, times_dict, strati
 
     data_to_adjust = data_to_adjust.with_columns(
         pl.col("reals").replace_strict(
-            reals_map, return_dtype=reals_enum).alias("reals")
+            reals_map, return_dtype=reals_enum).alias("reals_labels")
     )
 
     # Partition by reference_group
