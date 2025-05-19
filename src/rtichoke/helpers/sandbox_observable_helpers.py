@@ -259,7 +259,7 @@ def add_cutoff_strata_polars(data: pl.DataFrame, by: float) -> pl.DataFrame:
         # --- Compute strata_ppcr as quantiles on -probs ---
         try:
             q = int(1 / by)
-            quantile_edges = np.quantile(-probs, np.linspace(0, 1, q + 1))
+            quantile_edges = np.quantile(-probs, np.linspace(0, 1, q))
             strata_ppcr = np.digitize(-probs, quantile_edges, right=False)
             strata_ppcr = (strata_ppcr / (1 / by)).astype(str)
         except ValueError:
