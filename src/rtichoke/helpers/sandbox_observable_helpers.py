@@ -231,12 +231,30 @@ def add_cutoff_strata_polars(data: pl.DataFrame, by: float) -> pl.DataFrame:
         
         # --- Compute strata_probability_threshold ---
         breaks = create_breaks_values(probs, "probability_threshold", by)
-        strata_prob = np.digitize(probs, breaks, right=False) - 1
+        # strata_prob = np.digitize(probs, breaks, right=False) - 1
         # Clamp indices to avoid out-of-bounds error when accessing breaks[i+1]
-        strata_prob = np.clip(strata_prob, 0, len(breaks) - 2)
-        strata_prob_labels = [
-            f"({breaks[i]:.3f}, {breaks[i+1]:.3f}]" for i in strata_prob
-        ]
+        # strata_prob = np.clip(strata_prob, 0, len(breaks) - 2)
+        # strata_prob_labels = [
+        #     f"({breaks[i]:.3f}, {breaks[i+1]:.3f}]" for i in strata_prob
+        # ]
+
+        last_bin_index = len(breaks) - 2
+        
+        bin_indices = np.digitize(probs, bins=breaks, right=False) - 1
+        bin_indices = np.where(probs == 1.0, last_bin_index, bin_indices)
+
+        lower_bounds = breaks[bin_indices]
+        upper_bounds = breaks[bin_indices + 1]
+
+
+        include_upper_bounds = bin_indices == last_bin_index
+
+        strata_prob_labels = np.where(
+            include_upper_bounds,
+            [f"[{lo:.2f}, {hi:.2f}]" for lo, hi in zip(lower_bounds, upper_bounds)],
+            [f"[{lo:.2f}, {hi:.2f})" for lo, hi in zip(lower_bounds, upper_bounds)]
+        )
+
 
         # --- Compute strata_ppcr as quantiles on -probs ---
         try:
@@ -293,19 +311,21 @@ def create_breaks_values(_, stratified_by, by):
 
 def create_strata_combinations_polars(stratified_by: str, by: float) -> pl.DataFrame:
     if stratified_by == "probability_threshold":
-        upper_bound = create_breaks_values(None, "probability_threshold", by)
-        lower_bound = np.roll(upper_bound, 1)
-        lower_bound[0] = 0.0
+        breaks = create_breaks_values(None, "probability_threshold", by)
+        
+        upper_bound = breaks[1:]#breaks
+        lower_bound = breaks[:-1]# np.roll(upper_bound, 1)
+        # lower_bound[0] = 0.0
         mid_point = upper_bound - by / 2
-        include_lower_bound = lower_bound == 0.0
-        include_upper_bound = upper_bound != 0.0
+        include_lower_bound = lower_bound > -0.1
+        include_upper_bound = upper_bound == 1.0 # upper_bound != 0.0
         chosen_cutoff = upper_bound
         strata = format_strata_column(
             lower_bound=lower_bound,
             upper_bound=upper_bound,
             include_lower_bound=include_lower_bound,
             include_upper_bound=include_upper_bound,
-            decimals=3
+            decimals=2
         )
 
     elif stratified_by == "ppcr":
@@ -322,7 +342,7 @@ def create_strata_combinations_polars(stratified_by: str, by: float) -> pl.DataF
 
 
     return pl.DataFrame({
-        "strata": pl.Series(strata).cast(pl.Categorical),
+        "strata": pl.Series(strata),
         "lower_bound": lower_bound,
         "upper_bound": upper_bound,
         "mid_point": mid_point,
@@ -418,6 +438,15 @@ def create_aj_data_combinations_polars(reference_groups, fixed_time_horizons, st
     # Create strata combinations using Polars
     strata_combinations_list = [create_strata_combinations_polars(x, by) for x in stratified_by]
     strata_combinations = pl.concat(strata_combinations_list, how="vertical")
+    
+
+
+    strata_labels = strata_combinations["strata"]
+    strata_enum = pl.Enum(strata_labels)
+
+    strata_combinations = strata_combinations.with_columns([
+        pl.col("strata").cast(strata_enum)
+    ])
 
     # Define values for Cartesian product
     reals_labels = ["real_negatives", "real_positives", "real_competing", "real_censored"]
@@ -433,7 +462,6 @@ def create_aj_data_combinations_polars(reference_groups, fixed_time_horizons, st
     competing_assumptions_enum = pl.Enum(competing_assumptions_labels)
     df_competing_assumptions = pl.DataFrame({"competing_assumption": pl.Series(competing_assumptions_labels, dtype=competing_assumptions_enum)})
 
-    competing_assumptions = ["excluded", "adjusted_as_negative", "adjusted_as_censored"]
 
     # Create all combinations
     combinations = list(itertools.product(

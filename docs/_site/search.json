@@ -284,6 +284,6 @@
     "href": "walkthrough_aj_estimate.html#aj-estimates-per-assumptions",
     "title": "Hello, Quarto",
     "section": "AJ estimates per assumptions",
-    "text": "AJ estimates per assumptions\n\nCast varibles with hacks"
+    "text": "AJ estimates per assumptions\n\nCheck strata values\n\n\nshape: (4_536, 2)\n┌──────────────┬───────────┐\n│ strata       ┆ is_in_df2 │\n│ ---          ┆ ---       │\n│ str          ┆ bool      │\n╞══════════════╪═══════════╡\n│ [0.00, 0.00) ┆ false     │\n│ [0.00, 0.00) ┆ false     │\n│ [0.00, 0.00) ┆ false     │\n│ [0.00, 0.00) ┆ false     │\n│ [0.00, 0.10) ┆ true      │\n│ …            ┆ …         │\n│ 0.9          ┆ true      │\n│ 1.0          ┆ true      │\n│ 1.0          ┆ true      │\n│ 1.0          ┆ true      │\n│ 1.0          ┆ true      │\n└──────────────┴───────────┘\nshape: (24, 2)\n┌────────┬───────────┐\n│ strata ┆ is_in_df2 │\n│ ---    ┆ ---       │\n│ str    ┆ bool      │\n╞════════╪═══════════╡\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n│ …      ┆ …         │\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n└────────┴───────────┘\n\n\n\n\nCast varibles with hacks"
   }
 ]

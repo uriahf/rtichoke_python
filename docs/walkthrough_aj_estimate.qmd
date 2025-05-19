@@ -45,6 +45,9 @@ by=0.1
 
 aj_data_combinations = create_aj_data_combinations_polars(list(probs_dict.keys()), fixed_time_horizons, stratified_by, by)
 
+
+
+print(aj_data_combinations['strata'])
 ```
 
 # try polars
@@ -298,6 +301,37 @@ aj_estimates_data = pl.concat(
 
 ```
 
+### Check strata values
+
+```{python}
+
+aj_data_combinations.select(pl.col('strata')).with_columns(
+  pl.col("strata").cast(str)
+).join(
+  aj_estimates_data.select(pl.col('strata')).unique(),
+  on = 'strata'
+)
+  
+result = aj_data_combinations.select(pl.col('strata')).with_columns(
+  pl.col("strata").cast(str)
+).with_columns(
+    pl.col("strata").is_in(aj_estimates_data["strata"]).alias("is_in_df2")
+)
+
+print(result)
+
+
+result = aj_estimates_data.select(pl.col('strata')).with_columns(
+  pl.col("strata")
+).with_columns(
+    pl.col("strata").is_in(aj_data_combinations["strata"].cast(str)).alias("is_in_df2")
+)
+
+print(result.filter(pl.col("is_in_df2") == False))
+
+
+```
+
 ### Cast varibles with hacks
 
 ```{python}
@@ -305,6 +339,8 @@ aj_estimates_data = pl.concat(
 reals_enum_dtype = aj_data_combinations.schema["reals_labels"]
 censoring_assumptions_enum_dtype = aj_data_combinations.schema["censoring_assumption"]
 competing_assumptions_enum_dtype = aj_data_combinations.schema["competing_assumption"]
+
+strata_enum_dtype = aj_data_combinations.schema["strata"]
 
 
 aj_estimates_data = aj_estimates_data.with_columns([
@@ -315,6 +351,8 @@ aj_estimates_data = aj_estimates_data.with_columns([
   pl.col("censoring_assumption").cast(censoring_assumptions_enum_dtype)
 ).with_columns(
   pl.col("competing_assumption").cast(competing_assumptions_enum_dtype)
+).with_columns(
+  pl.col("strata").cast(str)#.cast(strata_enum_dtype)
 )
 
 ```
@@ -322,7 +360,9 @@ aj_estimates_data = aj_estimates_data.with_columns([
 ```{python}
 
 
-final_adjusted_data_polars = aj_data_combinations.join(
+final_adjusted_data_polars = aj_data_combinations.with_columns([
+    pl.col("strata").cast(str)
+]).join(
   aj_estimates_data, 
   on = ['strata', 'fixed_time_horizon', 'censoring_assumption', 'competing_assumption', 'reals_labels'],
   how = 'left'
