@@ -439,8 +439,6 @@ def create_aj_data_combinations_polars(reference_groups, fixed_time_horizons, st
     strata_combinations_list = [create_strata_combinations_polars(x, by) for x in stratified_by]
     strata_combinations = pl.concat(strata_combinations_list, how="vertical")
     
-
-
     strata_labels = strata_combinations["strata"]
     strata_enum = pl.Enum(strata_labels)
 

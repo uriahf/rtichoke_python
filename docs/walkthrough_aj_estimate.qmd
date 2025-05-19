@@ -344,7 +344,7 @@ strata_enum_dtype = aj_data_combinations.schema["strata"]
 
 
 aj_estimates_data = aj_estimates_data.with_columns([
-    pl.col("strata").cast(pl.Categorical)
+    pl.col("strata")
 ]).with_columns(
     pl.col("reals_labels").str.replace(r"_est$", "").cast(reals_enum_dtype)
 ).with_columns(
@@ -352,7 +352,7 @@ aj_estimates_data = aj_estimates_data.with_columns([
 ).with_columns(
   pl.col("competing_assumption").cast(competing_assumptions_enum_dtype)
 ).with_columns(
-  pl.col("strata").cast(str)#.cast(strata_enum_dtype)
+  pl.col("strata").cast(strata_enum_dtype)
 )
 
 ```
@@ -361,7 +361,7 @@ aj_estimates_data = aj_estimates_data.with_columns([
 
 
 final_adjusted_data_polars = aj_data_combinations.with_columns([
-    pl.col("strata").cast(str)
+    pl.col("strata")
 ]).join(
   aj_estimates_data, 
   on = ['strata', 'fixed_time_horizon', 'censoring_assumption', 'competing_assumption', 'reals_labels'],
