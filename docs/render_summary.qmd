@@ -1,0 +1,31 @@
+---
+title: "Summary Report"
+format: html
+author: "Your Name"
+date: "`r Sys.Date()`"
+---
+
+# Introduction
+
+This is a summary report generated with Quarto.
+
+
+```{python}
+
+import subprocess
+
+def render_summary_report():
+    subprocess.run(["quarto", "render", "aj_estimate_summary_report.qmd"])
+
+render_summary_report()
+
+
+```
+
+## Section 1
+
+Add your content here.
+
+## Section 2
+
+Add more content or code here.

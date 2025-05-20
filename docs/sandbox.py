@@ -3,6 +3,7 @@ from lifelines import WeibullAFTFitter
 import pandas as pd
 import numpy as np
 import pickle
+import subprocess
 
 df_time_to_cancer_dx = \
     pd.read_csv(
@@ -58,3 +59,9 @@ with open('reals_dict.pkl', 'wb') as file:
 with open('times_dict.pkl', 'wb') as file:
     pickle.dump(df_time_to_cancer_dx['ttcancer']
 , file)
+
+
+
+
+subprocess.run(["quarto", "preview", "aj_estimate_summary_report.qmd"])
+

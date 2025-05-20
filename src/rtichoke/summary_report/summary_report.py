@@ -45,10 +45,15 @@ def render_summary_report(probs, reals, times):
 
     # Prepare the command to render the Quarto document
     command = [
-        "quarto", "render", template_path,
-        "--to", "html",
-        "--output", output_path,
-        "--execute-params", f"probs={probs},reals={reals},times={times}"
+        "quarto",
+        "render",
+        template_path,
+        "--to",
+        "html",
+        "--output",
+        output_path,
+        "--execute-params",
+        f"probs={probs},reals={reals},times={times}",
     ]
 
     # Execute the command

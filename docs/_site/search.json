@@ -256,7 +256,7 @@
     "href": "walkthrough_aj_estimate.html#polars",
     "title": "Hello, Quarto",
     "section": "polars",
-    "text": "polars"
+    "text": "polars\n\n\nshape: (4_320,)\nSeries: 'strata' [enum]\n[\n    \"[0.00, 0.10)\"\n    \"[0.00, 0.10)\"\n    \"[0.00, 0.10)\"\n    \"[0.00, 0.10)\"\n    \"[0.10, 0.20)\"\n    …\n    \"0.9\"\n    \"1.0\"\n    \"1.0\"\n    \"1.0\"\n    \"1.0\"\n]"
   },
   {
     "objectID": "walkthrough_aj_estimate.html#polars-1",
@@ -284,6 +284,34 @@
     "href": "walkthrough_aj_estimate.html#aj-estimates-per-assumptions",
     "title": "Hello, Quarto",
     "section": "AJ estimates per assumptions",
-    "text": "AJ estimates per assumptions\n\nCheck strata values\n\n\nshape: (4_536, 2)\n┌──────────────┬───────────┐\n│ strata       ┆ is_in_df2 │\n│ ---          ┆ ---       │\n│ str          ┆ bool      │\n╞══════════════╪═══════════╡\n│ [0.00, 0.00) ┆ false     │\n│ [0.00, 0.00) ┆ false     │\n│ [0.00, 0.00) ┆ false     │\n│ [0.00, 0.00) ┆ false     │\n│ [0.00, 0.10) ┆ true      │\n│ …            ┆ …         │\n│ 0.9          ┆ true      │\n│ 1.0          ┆ true      │\n│ 1.0          ┆ true      │\n│ 1.0          ┆ true      │\n│ 1.0          ┆ true      │\n└──────────────┴───────────┘\nshape: (24, 2)\n┌────────┬───────────┐\n│ strata ┆ is_in_df2 │\n│ ---    ┆ ---       │\n│ str    ┆ bool      │\n╞════════╪═══════════╡\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n│ …      ┆ …         │\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n│ 1.1    ┆ false     │\n└────────┴───────────┘\n\n\n\n\nCast varibles with hacks"
+    "text": "AJ estimates per assumptions\n\nCheck strata values\n\n\nshape: (4_320, 2)\n┌──────────────┬───────────┐\n│ strata       ┆ is_in_df2 │\n│ ---          ┆ ---       │\n│ str          ┆ bool      │\n╞══════════════╪═══════════╡\n│ [0.00, 0.10) ┆ true      │\n│ [0.00, 0.10) ┆ true      │\n│ [0.00, 0.10) ┆ true      │\n│ [0.00, 0.10) ┆ true      │\n│ [0.10, 0.20) ┆ true      │\n│ …            ┆ …         │\n│ 0.9          ┆ true      │\n│ 1.0          ┆ true      │\n│ 1.0          ┆ true      │\n│ 1.0          ┆ true      │\n│ 1.0          ┆ true      │\n└──────────────┴───────────┘\nshape: (0, 2)\n┌────────┬───────────┐\n│ strata ┆ is_in_df2 │\n│ ---    ┆ ---       │\n│ str    ┆ bool      │\n╞════════╪═══════════╡\n└────────┴───────────┘\n\n\n\n\nCast varibles with hacks"
+  },
+  {
+    "objectID": "aj_estimate_summary_report.html",
+    "href": "aj_estimate_summary_report.html",
+    "title": "Summary Report",
+    "section": "",
+    "text": "Polars version: 1.28.0\nPolars version: 1.28.0\n4"
+  },
+  {
+    "objectID": "render_summary.html",
+    "href": "render_summary.html",
+    "title": "Summary Report",
+    "section": "",
+    "text": "This is a summary report generated with Quarto.\n\n\nAdd your content here.\n\n\n\nAdd more content or code here."
+  },
+  {
+    "objectID": "render_summary.html#section-1",
+    "href": "render_summary.html#section-1",
+    "title": "Summary Report",
+    "section": "",
+    "text": "Add your content here."
+  },
+  {
+    "objectID": "render_summary.html#section-2",
+    "href": "render_summary.html#section-2",
+    "title": "Summary Report",
+    "section": "",
+    "text": "Add more content or code here."
   }
 ]
