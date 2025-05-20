@@ -3,6 +3,7 @@ A module for Summary Report
 """
 
 from rtichoke.helpers.send_post_request_to_r_rtichoke import send_requests_to_rtichoke_r
+from rtichoke.helpers.sandbox_observable_helpers import create_aj_data_combinations_polars, create_list_data_to_adjust_polars
 import subprocess
 
 
@@ -22,7 +23,7 @@ def create_summary_report(probs, reals, url_api="http://localhost:4242/"):
     print(rtichoke_response.json()[0].keys())
 
 
-def render_summary_report(probs, reals, times):
+def render_summary_report():
     """
     Render the rtichoke Summary Report using Quarto.
 
@@ -40,7 +41,7 @@ def render_summary_report(probs, reals, times):
     This will generate a `summary_report.html` file based on the `summary_report_template.qmd`.
     """
     # Define the path to the template and output file
-    template_path = "summary_report_template.qmd"
+    template_path = "aj_estimate_summary_report.qmd"
     output_path = "summary_report.html"
 
     # Prepare the command to render the Quarto document
@@ -51,10 +52,25 @@ def render_summary_report(probs, reals, times):
         "--to",
         "html",
         "--output",
-        output_path,
-        "--execute-params",
-        f"probs={probs},reals={reals},times={times}",
+        output_path#,
+        # "--execute-params",
+        # f"probs={probs},reals={reals},times={times}",
     ]
 
     # Execute the command
     subprocess.run(command, check=True)
+
+def create_data_for_summary_report(probs, reals, times):
+    fixed_time_horizons = [1, 3, 5]
+    stratified_by = ["probability_threshold", "ppcr"]
+    by=0.1
+
+    # Assuming probs is a dictionary, otherwise adjust accordingly
+    aj_data_combinations = create_aj_data_combinations_polars(list(probs.keys()), fixed_time_horizons, stratified_by, by)
+
+    list_data_to_adjust_polars = create_list_data_to_adjust_polars(
+          probs, reals, times, stratified_by=stratified_by, by=by
+    )
+
+
+    return list_data_to_adjust_polars

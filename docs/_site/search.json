@@ -291,14 +291,14 @@
     "href": "aj_estimate_summary_report.html",
     "title": "Summary Report",
     "section": "",
-    "text": "Polars version: 1.28.0\nPolars version: 1.28.0\n4"
+    "text": "alpha: 0.2\nratio: 0.12313\n\n\n\n\nPolars version: 1.28.0\nPolars version: 1.28.0\n4"
   },
   {
     "objectID": "render_summary.html",
     "href": "render_summary.html",
     "title": "Summary Report",
     "section": "",
-    "text": "This is a summary report generated with Quarto.\n\n\nAdd your content here.\n\n\n\nAdd more content or code here."
+    "text": "This is a summary report generated with Quarto.\n\nimport subprocess\n\ndef render_summary_report():\n    subprocess.run([\"quarto\", \"render\", \"aj_estimate_summary_report.qmd\"])\n\nrender_summary_report()\n\n\n\nAdd your content here.\n\n\n\nAdd more content or code here."
   },
   {
     "objectID": "render_summary.html#section-1",
@@ -313,5 +313,12 @@
     "title": "Summary Report",
     "section": "",
     "text": "Add more content or code here."
+  },
+  {
+    "objectID": "summary_report.html",
+    "href": "summary_report.html",
+    "title": "Summary Report",
+    "section": "",
+    "text": "alpha: 0.1\nratio: 0.1\n\n\n\n\nPolars version: 1.28.0\nPolars version: 1.28.0\n4"
   }
 ]

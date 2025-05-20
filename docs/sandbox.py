@@ -5,6 +5,8 @@ import numpy as np
 import pickle
 import subprocess
 
+from rtichoke.summary_report.summary_report import create_data_for_summary_report
+
 df_time_to_cancer_dx = \
     pd.read_csv(
         "https://raw.githubusercontent.com/ddsjoberg/dca-tutorial/main/data/df_time_to_cancer_dx.csv"
@@ -47,10 +49,8 @@ probs_dict = {
     "aft": preds_aft
 }
 
-# The import statement has been moved to the top of the file.
 
-with open('probs_dict.pkl', 'wb') as file:
-    pickle.dump(probs_dict, file)
+# The import statement has been moved to the top of the file.
         
 with open('reals_dict.pkl', 'wb') as file:
     pickle.dump(df_time_to_cancer_dx['reals']
@@ -60,7 +60,15 @@ with open('times_dict.pkl', 'wb') as file:
     pickle.dump(df_time_to_cancer_dx['ttcancer']
 , file)
 
+with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\reals_dict.pkl', 'rb') as file:
+    reals_dict = pickle.load(file)
 
+with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\times_dict.pkl', 'rb') as file:
+    times_dict = pickle.load(file)
+
+
+
+create_data_for_summary_report(probs_dict, reals_dict, times_dict)
 
 
 subprocess.run(["quarto", "preview", "aj_estimate_summary_report.qmd"])

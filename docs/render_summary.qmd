@@ -12,19 +12,30 @@ This is a summary report generated with Quarto.
 
 ```{python}
 
-import subprocess
+import pickle  
 
-def render_summary_report():
-    subprocess.run(["quarto", "render", "aj_estimate_summary_report.qmd"])
 
-render_summary_report()
+with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\probs_dict.pkl', 'rb') as file:
+    probs_dict = pickle.load(file)
 
+with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\reals_dict.pkl', 'rb') as file:
+    reals_dict = pickle.load(file)
+
+with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\times_dict.pkl', 'rb') as file:
+    times_dict = pickle.load(file)
+
+from rtichoke.summary_report.summary_report import * 
+
+create_data_for_summary_report()
 
 ```
 
-## Section 1
+```{python}
+from rtichoke.summary_report.summary_report import * 
 
-Add your content here.
+render_summary_report(  )
+```
+
 
 ## Section 2
 

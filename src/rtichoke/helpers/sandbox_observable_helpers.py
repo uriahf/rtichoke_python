@@ -684,6 +684,40 @@ def update_administrative_censoring_polars(data: pl.DataFrame) -> pl.DataFrame:
     return data
 
 
+def extract_aj_estimate_for_strata(
+  data_to_adjust, 
+  fixed_time_horizons_for_aj):
+  
+  ajf_primary = AalenJohansenFitter()
+  ajf_competing = AalenJohansenFitter()
+
+  ajf_primary.fit(
+    data_to_adjust['times'].to_pandas(),
+    data_to_adjust['reals'].to_pandas(),
+    event_of_interest=1
+  )
+
+  ajf_competing.fit(
+    data_to_adjust['times'].to_pandas(),
+    data_to_adjust['reals'].to_pandas(),
+    event_of_interest=2
+  )
+
+  n = data_to_adjust.height
+
+  real_positives_est = ajf_primary.predict(fixed_time_horizons_for_aj)
+  real_competing_est = ajf_competing.predict(fixed_time_horizons_for_aj)
+  real_negatives_est = 1 - real_positives_est - real_competing_est
+
+  return pl.DataFrame({
+    "strata": data_to_adjust['strata'][0],
+    "fixed_time_horizon": fixed_time_horizons_for_aj,
+    "real_negatives_est": real_negatives_est*n,
+    "real_positives_est": real_positives_est*n,
+    "real_competing_est": real_competing_est*n
+  })
+
+
 def extract_crude_estimate_polars(data: pl.DataFrame) -> pl.DataFrame:
     all_combinations = data.select(["strata", "reals", "fixed_time_horizon"]).unique()
 
@@ -721,6 +755,39 @@ def extract_crude_estimate_polars(data: pl.DataFrame) -> pl.DataFrame:
 
 #     return result_pandas
 
+
+def extract_aj_estimate_for_strata(
+  data_to_adjust, 
+  fixed_time_horizons_for_aj):
+  
+  ajf_primary = AalenJohansenFitter()
+  ajf_competing = AalenJohansenFitter()
+
+  ajf_primary.fit(
+    data_to_adjust['times'].to_pandas(),
+    data_to_adjust['reals'].to_pandas(),
+    event_of_interest=1
+  )
+
+  ajf_competing.fit(
+    data_to_adjust['times'].to_pandas(),
+    data_to_adjust['reals'].to_pandas(),
+    event_of_interest=2
+  )
+
+  n = data_to_adjust.height
+
+  real_positives_est = ajf_primary.predict(fixed_time_horizons_for_aj)
+  real_competing_est = ajf_competing.predict(fixed_time_horizons_for_aj)
+  real_negatives_est = 1 - real_positives_est - real_competing_est
+
+  return pl.DataFrame({
+    "strata": data_to_adjust['strata'][0],
+    "fixed_time_horizon": fixed_time_horizons_for_aj,
+    "real_negatives_est": real_negatives_est*n,
+    "real_positives_est": real_positives_est*n,
+    "real_competing_est": real_competing_est*n
+  })
 
 def create_adjusted_data_list_polars(
     list_data_to_adjust, fixed_time_horizons, assumption_sets

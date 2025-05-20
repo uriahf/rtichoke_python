@@ -7,6 +7,22 @@ warning: false
 ---
 
 ```{python}
+#| tags: [parameters]
+
+alpha = 0.1
+ratio = 0.1
+
+
+```
+
+```{python}
+
+print(f"alpha: {alpha}")
+print(f"ratio: {ratio}")
+```
+
+
+```{python}
 from lifelines import AalenJohansenFitter
 import numpy as np
 from itertools import product
