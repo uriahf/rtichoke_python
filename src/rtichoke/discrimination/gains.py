@@ -3,7 +3,7 @@ A module for Gains Curves
 """
 
 from typing import Dict, List, Optional
-from pandas.core.frame import DataFrame
+from pandas import DataFrame
 from plotly.graph_objs._figure import Figure
 from rtichoke.helpers.send_post_request_to_r_rtichoke import create_rtichoke_curve
 from rtichoke.helpers.send_post_request_to_r_rtichoke import plot_rtichoke_curve
