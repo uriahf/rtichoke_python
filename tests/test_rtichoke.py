@@ -4,7 +4,6 @@ A module for tests
 
 # from rtichoke import rtichoke
 
-
 import pytest
 
 polars = pytest.importorskip("polars")
@@ -12,7 +11,10 @@ lifelines = pytest.importorskip("lifelines")
 
 from polars.testing import assert_frame_equal
 
-from rtichoke.helpers.sandbox_observable_helpers import create_aj_data, extract_aj_estimate_for_strata
+from rtichoke.helpers.sandbox_observable_helpers import (
+    create_aj_data,
+    extract_aj_estimate_for_strata,
+)
 
 
 def test_create_aj_data() -> None:
@@ -50,7 +52,7 @@ def test_create_aj_data() -> None:
     )
 
     assert_frame_equal(result, expected)
-    
+
 
 def test_extract_aj_estimate_for_strata_basic() -> None:
     df = polars.DataFrame(
@@ -62,9 +64,7 @@ def test_extract_aj_estimate_for_strata_basic() -> None:
     )
     horizons = [1, 2, 3]
 
-    result = extract_aj_estimate_for_strata(df, horizons).sort(
-        "fixed_time_horizon"
-    )
+    result = extract_aj_estimate_for_strata(df, horizons).sort("fixed_time_horizon")
 
     expected = polars.DataFrame(
         {
