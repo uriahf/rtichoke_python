@@ -3,7 +3,7 @@ authors = [
     {name = "Uriah Finkel"},
 ]
 license = {text = "MIT"}
-requires-python = "<4.0,>=3.9"
+requires-python = ">=3.13"
 dependencies = [
     "plotly<6.0.0,>=5.13.1",
     "ipython<9.0.0,>=8.11.0",
@@ -38,6 +38,8 @@ dev = [
     "lifelines>=0.30.0",
     "uv>=0.6.11",
     "monkeytype>=23.3.0",
+    "marimo>=0.14.7",
+    "polarstate>=0.1.5",
 ]
 
 [tool.uv.workspace]
