@@ -937,8 +937,10 @@ def create_aj_data_polars(
 
     elif censoring_assumption == "excluded" and competing_assumption == "excluded":
         exploded_data = reference_group_data.with_columns(
-            fixed_time_horizon=pl.lit([1, 3, 5])
+            fixed_time_horizon=pl.lit(fixed_time_horizons)
         ).explode("fixed_time_horizon")
+
+        print("Exploded data:", exploded_data)
 
         aj_estimates_per_strata_censored = (
             exploded_data.filter(
@@ -950,6 +952,8 @@ def create_aj_data_polars(
             .with_columns(pl.col("real_censored_est").cast(pl.Float64))
         )
 
+        print("AJ estimates per strata censored:", aj_estimates_per_strata_censored)
+
         aj_estimates_per_strata_competing = (
             exploded_data.filter(
                 (pl.col("reals") == 2)
@@ -960,6 +964,8 @@ def create_aj_data_polars(
             .rename({"count": "real_competing_est"})
             .with_columns(pl.col("real_competing_est").cast(pl.Float64))
         )
+
+        print("AJ estimates per strata competing:", aj_estimates_per_strata_competing)
 
         non_censored_non_competing_data = exploded_data.filter(
             ((pl.col("times") >= pl.col("fixed_time_horizon")) | pl.col("reals") == 1)
@@ -973,7 +979,7 @@ def create_aj_data_polars(
                 .group_by("strata")
                 .map_groups(
                     lambda group: extract_aj_estimate_for_strata_polars(
-                        group, fixed_time_horizon
+                        group, [fixed_time_horizon]
                     )
                 )
                 for fixed_time_horizon in fixed_time_horizons
@@ -1262,7 +1268,7 @@ def create_aj_data(
 
     elif censoring_assumption == "excluded" and competing_assumption == "excluded":
         exploded_data = reference_group_data.with_columns(
-            fixed_time_horizon=pl.lit([1, 3, 5])
+            fixed_time_horizon=pl.lit(fixed_time_horizons)
         ).explode("fixed_time_horizon")
 
         aj_estimates_per_strata_censored = (
