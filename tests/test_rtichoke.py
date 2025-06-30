@@ -2,23 +2,20 @@
 A module for tests
 """
 
-# from rtichoke import rtichoke
-
-import pytest
-
-polars = pytest.importorskip("polars")
-lifelines = pytest.importorskip("lifelines")
-
-from polars.testing import assert_frame_equal
-
 from rtichoke.helpers.sandbox_observable_helpers import (
     create_aj_data,
     extract_aj_estimate_for_strata,
 )
 
+# from rtichoke import rtichoke
+import polars as pl
+from polars.testing import assert_frame_equal
+
+
+
 
 def test_create_aj_data() -> None:
-    df = polars.DataFrame(
+    df = pl.DataFrame(
         {
             "strata": ["group1"] * 5,
             "reals": [0, 1, 2, 1, 0],
@@ -34,7 +31,7 @@ def test_create_aj_data() -> None:
         fixed_time_horizons=horizons,
     ).sort("fixed_time_horizon")
 
-    expected = polars.DataFrame(
+    expected = pl.DataFrame(
         {
             "strata": ["group1", "group1", "group1"],
             "fixed_time_horizon": [1.0, 2.0, 3.0],
@@ -55,7 +52,7 @@ def test_create_aj_data() -> None:
 
 
 def test_extract_aj_estimate_for_strata_basic() -> None:
-    df = polars.DataFrame(
+    df = pl.DataFrame(
         {
             "strata": ["group1"] * 5,
             "reals": [0, 1, 2, 1, 0],
@@ -66,7 +63,7 @@ def test_extract_aj_estimate_for_strata_basic() -> None:
 
     result = extract_aj_estimate_for_strata(df, horizons).sort("fixed_time_horizon")
 
-    expected = polars.DataFrame(
+    expected = pl.DataFrame(
         {
             "strata": ["group1", "group1", "group1"],
             "fixed_time_horizon": [1.0, 2.0, 3.0],

@@ -302,11 +302,6 @@ def add_cutoff_strata(data, by):
     return result
 
 
-def create_breaks_values(_, stratified_by, by):
-    # Dummy implementation; replace with your actual logic
-    return np.arange(by, 1 + by, by)  # e.g., [0.1, 0.2, ..., 1.0]
-
-
 def create_strata_combinations_polars(stratified_by: str, by: float) -> pl.DataFrame:
     if stratified_by == "probability_threshold":
         breaks = create_breaks_values(None, "probability_threshold", by)
@@ -702,7 +697,7 @@ def create_aj_data(
         aj_estimates_per_strata_adj_adjneg = (
             reference_group_data.group_by("strata")
             .map_groups(
-                lambda group: extract_aj_estimate_for_strata_polars(
+                lambda group: extract_aj_estimate_for_strata(
                     group, fixed_time_horizons
                 )
             )
@@ -749,7 +744,7 @@ def create_aj_data(
                 )
                 .group_by("strata")
                 .map_groups(
-                    lambda group: extract_aj_estimate_for_strata_polars(
+                    lambda group: extract_aj_estimate_for_strata(
                         group, [fixed_time_horizon]
                     )
                 )
@@ -785,7 +780,7 @@ def create_aj_data(
             )
             .group_by("strata")
             .map_groups(
-                lambda group: extract_aj_estimate_for_strata_polars(
+                lambda group: extract_aj_estimate_for_strata(
                     group, fixed_time_horizons
                 )
             )
@@ -838,7 +833,7 @@ def create_aj_data(
                 )
                 .group_by("strata")
                 .map_groups(
-                    lambda group: extract_aj_estimate_for_strata_polars(
+                    lambda group: extract_aj_estimate_for_strata(
                         group, [fixed_time_horizon]
                     )
                 )
@@ -895,7 +890,7 @@ def create_aj_data(
                 )
                 .group_by("strata")
                 .map_groups(
-                    lambda group: extract_aj_estimate_for_strata_polars(
+                    lambda group: extract_aj_estimate_for_strata(
                         group, [fixed_time_horizon]
                     )
                 )
@@ -978,7 +973,7 @@ def create_aj_data(
                 )
                 .group_by("strata")
                 .map_groups(
-                    lambda group: extract_aj_estimate_for_strata_polars(
+                    lambda group: extract_aj_estimate_for_strata(
                         group, [fixed_time_horizon]
                     )
                 )
@@ -1020,38 +1015,6 @@ def create_aj_data(
 
         return aj_estimates_per_strata_excl_excl
 
-def extract_aj_estimate_for_strata(data_to_adjust, fixed_time_horizons_for_aj):
-    ajf_primary = AalenJohansenFitter()
-    ajf_competing = AalenJohansenFitter()
-
-    ajf_primary.fit(
-        data_to_adjust["times"].to_pandas(),
-        data_to_adjust["reals"].to_pandas(),
-        event_of_interest=1,
-    )
-
-    ajf_competing.fit(
-        data_to_adjust["times"].to_pandas(),
-        data_to_adjust["reals"].to_pandas(),
-        event_of_interest=2,
-    )
-
-    n = data_to_adjust.height
-
-    real_positives_est = ajf_primary.predict(fixed_time_horizons_for_aj)
-    real_competing_est = ajf_competing.predict(fixed_time_horizons_for_aj)
-    real_negatives_est = 1 - real_positives_est - real_competing_est
-
-    return pl.DataFrame(
-        {
-            "strata": data_to_adjust["strata"][0],
-            "fixed_time_horizon": fixed_time_horizons_for_aj,
-            "real_negatives_est": real_negatives_est * n,
-            "real_positives_est": real_positives_est * n,
-            "real_competing_est": real_competing_est * n,
-        }
-    )
-
 
 def extract_crude_estimate_polars(data: pl.DataFrame) -> pl.DataFrame:
     all_combinations = data.select(["strata", "reals", "fixed_time_horizon"]).unique()
@@ -1091,7 +1054,7 @@ def extract_crude_estimate_polars(data: pl.DataFrame) -> pl.DataFrame:
 #     return result_pandas
 
 
-def extract_aj_estimate_for_strata_polars(data_to_adjust, horizons):
+def extract_aj_estimate_for_strata(data_to_adjust, horizons):
     n = data_to_adjust.height
     event_table = prepare_event_table(data_to_adjust)
     aj_estimate_for_strata_polars = predict_aj_estimates(
@@ -1120,38 +1083,6 @@ def extract_aj_estimate_for_strata_polars(data_to_adjust, horizons):
         ]
     )
 
-
-def extract_aj_estimate_for_strata(data_to_adjust, fixed_time_horizons_for_aj):
-    ajf_primary = AalenJohansenFitter()
-    ajf_competing = AalenJohansenFitter()
-
-    ajf_primary.fit(
-        data_to_adjust["times"].to_pandas(),
-        data_to_adjust["reals"].to_pandas(),
-        event_of_interest=1,
-    )
-
-    ajf_competing.fit(
-        data_to_adjust["times"].to_pandas(),
-        data_to_adjust["reals"].to_pandas(),
-        event_of_interest=2,
-    )
-
-    n = data_to_adjust.height
-
-    real_positives_est = ajf_primary.predict(fixed_time_horizons_for_aj)
-    real_competing_est = ajf_competing.predict(fixed_time_horizons_for_aj)
-    real_negatives_est = 1 - real_positives_est - real_competing_est
-
-    return pl.DataFrame(
-        {
-            "strata": data_to_adjust["strata"][0],
-            "fixed_time_horizon": fixed_time_horizons_for_aj,
-            "real_negatives_est": real_negatives_est * n,
-            "real_positives_est": real_positives_est * n,
-            "real_competing_est": real_competing_est * n,
-        }
-    )
 
 
 def create_adjusted_data_list_polars(

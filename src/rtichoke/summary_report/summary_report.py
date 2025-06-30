@@ -4,7 +4,6 @@ A module for Summary Report
 
 from rtichoke.helpers.send_post_request_to_r_rtichoke import send_requests_to_rtichoke_r
 from rtichoke.helpers.sandbox_observable_helpers import (
-    create_aj_data_combinations_polars,
     create_list_data_to_adjust_polars,
 )
 import subprocess
@@ -64,15 +63,9 @@ def render_summary_report():
     subprocess.run(command, check=True)
 
 
-def create_data_for_summary_report(probs, reals, times):
-    fixed_time_horizons = [1, 3, 5]
+def create_data_for_summary_report(probs, reals, times, fixed_time_horizons):
     stratified_by = ["probability_threshold", "ppcr"]
     by = 0.1
-
-    # Assuming probs is a dictionary, otherwise adjust accordingly
-    aj_data_combinations = create_aj_data_combinations_polars(
-        list(probs.keys()), fixed_time_horizons, stratified_by, by
-    )
 
     list_data_to_adjust_polars = create_list_data_to_adjust_polars(
         probs, reals, times, stratified_by=stratified_by, by=by
