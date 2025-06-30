@@ -22,10 +22,10 @@ def test_create_aj_data() -> None:
         {
             "strata": ["group1"] * 5,
             "reals": [0, 1, 2, 1, 0],
-            "times": [5, 3, 1, 4, 2],
+            "times": [5.0, 3.0, 1.0, 4.0, 2.0],
         }
     )
-    horizons = [1, 2, 3]
+    horizons = [1.0, 2.0, 3.0]
 
     result = create_aj_data(
         df,
@@ -37,7 +37,7 @@ def test_create_aj_data() -> None:
     expected = polars.DataFrame(
         {
             "strata": ["group1", "group1", "group1"],
-            "fixed_time_horizon": [1, 2, 3],
+            "fixed_time_horizon": [1.0, 2.0, 3.0],
             "real_negatives_est": [4.0, 4.0, 8 / 3],
             "real_positives_est": [0.0, 0.0, 4 / 3],
             "real_competing_est": [1.0, 1.0, 1.0],
@@ -62,14 +62,14 @@ def test_extract_aj_estimate_for_strata_basic() -> None:
             "times": [5, 3, 1, 4, 2],
         }
     )
-    horizons = [1, 2, 3]
+    horizons = [1.0, 2.0, 3.0]
 
     result = extract_aj_estimate_for_strata(df, horizons).sort("fixed_time_horizon")
 
     expected = polars.DataFrame(
         {
             "strata": ["group1", "group1", "group1"],
-            "fixed_time_horizon": [1, 2, 3],
+            "fixed_time_horizon": [1.0, 2.0, 3.0],
             "real_negatives_est": [4.0, 4.0, 8 / 3],
             "real_positives_est": [0.0, 0.0, 4 / 3],
             "real_competing_est": [1.0, 1.0, 1.0],
