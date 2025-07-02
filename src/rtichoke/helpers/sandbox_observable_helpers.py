@@ -513,7 +513,7 @@ def create_aj_data_combinations_polars(
         ],
     ).with_columns(
         [
-            pl.col("fixed_time_horizon").cast(pl.Int64),
+            pl.col("fixed_time_horizon").cast(pl.Float64),
             # pl.col("censoring_assumption").cast(pl.String),
             # pl.col("competing_assumption").cast(pl.String),
             # pl.col("reference_group").cast(pl.String)
