@@ -12,8 +12,6 @@ import polars as pl
 from polars.testing import assert_frame_equal
 
 
-
-
 def test_create_aj_data() -> None:
     df = pl.DataFrame(
         {

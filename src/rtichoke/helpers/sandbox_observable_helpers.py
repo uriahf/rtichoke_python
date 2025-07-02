@@ -697,9 +697,7 @@ def create_aj_data(
         aj_estimates_per_strata_adj_adjneg = (
             reference_group_data.group_by("strata")
             .map_groups(
-                lambda group: extract_aj_estimate_for_strata(
-                    group, fixed_time_horizons
-                )
+                lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizons)
             )
             .join(
                 pl.DataFrame(
@@ -780,9 +778,7 @@ def create_aj_data(
             )
             .group_by("strata")
             .map_groups(
-                lambda group: extract_aj_estimate_for_strata(
-                    group, fixed_time_horizons
-                )
+                lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizons)
             )
             .join(
                 pl.DataFrame(
@@ -1082,7 +1078,6 @@ def extract_aj_estimate_for_strata(data_to_adjust, horizons):
             "real_competing_est",
         ]
     )
-
 
 
 def create_adjusted_data_list_polars(
@@ -1615,19 +1610,30 @@ def extract_aj_estimate_by_assumptions(
         censoring = assumption["censoring_assumption"]
         competing = assumption["competing_assumption"]
 
-        aj_df = create_aj_data(df, censoring, competing, fixed_time_horizons).with_columns([
-            pl.lit(censoring).alias("censoring_assumption"),
-            pl.lit(competing).alias("competing_assumption"),
-        ])
-        print(f"Assumption: censoring={censoring}, competing={competing}, rows={aj_df.height}")
+        aj_df = create_aj_data(
+            df, censoring, competing, fixed_time_horizons
+        ).with_columns(
+            [
+                pl.lit(censoring).alias("censoring_assumption"),
+                pl.lit(competing).alias("competing_assumption"),
+            ]
+        )
+        print(
+            f"Assumption: censoring={censoring}, competing={competing}, rows={aj_df.height}"
+        )
         aj_dfs.append(aj_df)
 
     aj_estimates_data = pl.concat(aj_dfs)
 
     aj_estimates_unpivoted = aj_estimates_data.unpivot(
-        index=["strata", "fixed_time_horizon", "censoring_assumption", "competing_assumption"],
+        index=[
+            "strata",
+            "fixed_time_horizon",
+            "censoring_assumption",
+            "competing_assumption",
+        ],
         variable_name="reals_labels",
-        value_name="reals_estimate"
+        value_name="reals_estimate",
     )
 
     return aj_estimates_unpivoted
