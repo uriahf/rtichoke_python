@@ -1084,6 +1084,7 @@ def create_adjusted_data_list_polars(
     list_data_to_adjust, fixed_time_horizons, assumption_sets
 ):
     adjusted_data_list = []
+    
 
     for reference_group, group_data_polars in list_data_to_adjust.items():
         for assumptions in assumption_sets:
@@ -1477,21 +1478,26 @@ def extract_aj_estimate_by_assumptions_polars(
 def create_list_data_to_adjust_polars(
     probs_dict, reals_dict, times_dict, stratified_by, by
 ):
-    reference_groups = list(probs_dict.keys())
+    # reference_groups = list(probs_dict.keys())
+    reference_group_labels = list(probs_dict.keys())
     num_reals = len(reals_dict)
+
+    reference_group_enum = pl.Enum(reference_group_labels)
 
     # Flatten and ensure list format
     data_to_adjust = pl.DataFrame(
         {
             "reference_group": sum(
-                [[group] * num_reals for group in reference_groups], []
+                [[group] * num_reals for group in reference_group_labels], []
             ),
             "probs": sum(
-                [probs_dict[group].tolist() for group in reference_groups], []
+                [probs_dict[group].tolist() for group in reference_group_labels], []
             ),
-            "reals": list(reals_dict) * len(reference_groups),
-            "times": list(times_dict) * len(reference_groups),
+            "reals": list(reals_dict) * len(reference_group_labels),
+            "times": list(times_dict) * len(reference_group_labels),
         }
+    ).with_columns(
+        pl.col("reference_group").cast(reference_group_enum)
     )
 
     # Apply strata
@@ -1646,6 +1652,9 @@ def create_adjusted_data(
 ) -> pl.DataFrame:
     all_results = []
 
+    reference_groups = list(list_data_to_adjust_polars.keys())
+    reference_group_enum = pl.Enum(reference_groups)
+
     for reference_group, df in list_data_to_adjust_polars.items():
         input_df = df.select(["strata", "reals", "times"])
 
@@ -1656,9 +1665,13 @@ def create_adjusted_data(
         )
 
         aj_result_with_group = aj_result.with_columns(
-            pl.lit(reference_group).alias("reference_group")
+            pl.lit(reference_group)
+            .cast(reference_group_enum)
+            .alias("reference_group")
         )
 
         all_results.append(aj_result_with_group)
 
-    return pl.concat(all_results)
+    return pl.concat(all_results).with_columns(
+        pl.col("reference_group").cast(reference_group_enum)
+    )
