@@ -1637,3 +1637,28 @@ def extract_aj_estimate_by_assumptions(
     )
 
     return aj_estimates_unpivoted
+
+
+def create_adjusted_data(
+    list_data_to_adjust_polars: dict[str, pl.DataFrame],
+    assumption_sets: list[dict[str, str]],
+    fixed_time_horizons: list[float]
+) -> pl.DataFrame:
+    all_results = []
+
+    for reference_group, df in list_data_to_adjust_polars.items():
+        input_df = df.select(["strata", "reals", "times"])
+
+        aj_result = extract_aj_estimate_by_assumptions(
+            input_df,
+            assumption_sets=assumption_sets,
+            fixed_time_horizons=fixed_time_horizons,
+        )
+
+        aj_result_with_group = aj_result.with_columns(
+            pl.lit(reference_group).alias("reference_group")
+        )
+
+        all_results.append(aj_result_with_group)
+
+    return pl.concat(all_results)
