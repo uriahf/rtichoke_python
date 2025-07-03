@@ -54,7 +54,7 @@ def test_extract_aj_estimate_for_strata_basic() -> None:
         {
             "strata": ["group1"] * 5,
             "reals": [0, 1, 2, 1, 0],
-            "times": [5, 3, 1, 4, 2],
+            "times": [5.0, 3.0, 1.0, 4.0, 2.0],
         }
     )
     horizons = [1.0, 2.0, 3.0]
