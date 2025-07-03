@@ -1,0 +1,22 @@
+---
+title: "Summary Report"
+format: html
+---
+
+```{python}
+#| tags: [parameters]
+
+probs = [0.2, 0.3, 0.1]
+reals = [1, 0, 1]
+times = [1, 2, 1]
+
+```
+
+# Print `probs`, `reals` and `times`
+
+```{python}
+print('probs:', probs)
+print('reals:', reals)
+print('times:', times)
+
+```

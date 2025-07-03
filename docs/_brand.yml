@@ -1,0 +1,41 @@
+color:
+  palette:
+    white: "#fff7f5"
+    black: "#000000"
+    navbar-bg: white  # alias
+    navbar-fg: "#c54b29"
+    navbar-hl: "#c54b29"
+    primary: "#FEF0EC"
+    link: "#ce3d15"
+  background: white
+  foreground: black
+  primary: primary
+  light: white
+  dark: black
+  danger: navbar-fg
+  link: link
+
+typography:
+  fonts:
+    - family: Fraunces
+      source: google
+      weight: [400, 700]
+      style: [normal, italic]
+    - family: Commissioner
+      source: google
+      weight: [400, 600]
+      style: [normal, italic]
+  base:
+    family: Commissioner
+    size: 16px
+    weight: 400
+    line-height: 1.5
+  headings:
+    family: Fraunces
+    weight: 700
+    style: normal
+    line-height: 1.2
+  link:
+    color: link
+    weight: 600
+    decoration: underline

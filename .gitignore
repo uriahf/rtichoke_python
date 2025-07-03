@@ -140,4 +140,18 @@ dmypy.json
 
 # MacOS
 .DS_Store
+*.html
 docs/walkthrough_aj_estimate.html
+docs/_site/walkthrough_aj_estimate.html
+docs/_site/walkthrough_aj_estimate.html
+src/rtichoke/summary_report/summary_report_template.html
+docs/_site/walkthrough_aj_estimate.html
+docs/_site/walkthrough_aj_estimate.html
+docs/combined_adjusted_data.pkl
+docs/_site/walkthrough_aj_estimate.html
+probs_dict.pkl
+docs/_site/walkthrough_aj_estimate.html
+reals_dict.pkl
+times_dict.pkl
+docs/_site/example.html
+docs/_site/walkthrough_aj_estimate.html
