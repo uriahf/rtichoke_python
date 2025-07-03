@@ -448,8 +448,14 @@ def create_aj_data_combinations_polars(
     strata_labels = strata_combinations["strata"]
     strata_enum = pl.Enum(strata_labels)
 
+    stratified_by_labels = ["probability_threshold", "ppcr"]
+    stratified_by_enum = pl.Enum(stratified_by_labels)
+
     strata_combinations = strata_combinations.with_columns(
-        [pl.col("strata").cast(strata_enum)]
+        [
+            pl.col("strata").cast(strata_enum),
+            pl.col("stratified_by").cast(stratified_by_enum),
+        ]
     )
 
     # Define values for Cartesian product
@@ -575,7 +581,7 @@ def create_aj_data_combinations(
     return df_combinations.merge(strata_combinations, how="cross")
 
 
-def pivot_longer_strata_polars(data: pl.DataFrame) -> pl.DataFrame:
+def pivot_longer_strata(data: pl.DataFrame) -> pl.DataFrame:
     # Identify id_vars and value_vars
     id_vars = [col for col in data.columns if not col.startswith("strata_")]
     value_vars = [col for col in data.columns if col.startswith("strata_")]
@@ -588,33 +594,16 @@ def pivot_longer_strata_polars(data: pl.DataFrame) -> pl.DataFrame:
         value_name="strata",
     )
 
+    stratified_by_labels = ["probability_threshold", "ppcr"]
+    stratified_by_enum = pl.Enum(stratified_by_labels)
+    
     # Remove "strata_" prefix from the 'stratified_by' column
     data_long = data_long.with_columns(
-        pl.col("stratified_by").str.replace("^strata_", "")
+        pl.col("stratified_by").str.replace("^strata_", "").cast(stratified_by_enum)
     )
 
     return data_long
 
-
-def pivot_longer_strata(data):
-    data = data.copy()  # Ensure we are not modifying the original DataFrame
-
-    # Melt the DataFrame, converting multiple 'strata_*' columns into long format
-    data_long = data.melt(
-        id_vars=[
-            col for col in data.columns if not col.startswith("strata_")
-        ],  # Keep all non-strata columns
-        value_vars=[
-            col for col in data.columns if col.startswith("strata_")
-        ],  # Melt only strata columns
-        var_name="stratified_by",
-        value_name="strata",
-    )
-
-    # Remove "strata_" prefix from stratified_by column (equivalent to `names_prefix = "strata_"` in R)
-    data_long["stratified_by"] = data_long["stratified_by"].str.replace("strata_", "")
-
-    return data_long
 
 
 def update_administrative_censoring(data_to_adjust: pd.DataFrame) -> pd.DataFrame:
@@ -1502,7 +1491,7 @@ def create_list_data_to_adjust_polars(
 
     # Apply strata
     data_to_adjust = add_cutoff_strata_polars(data_to_adjust, by=by)
-    data_to_adjust = pivot_longer_strata_polars(data_to_adjust)
+    data_to_adjust = pivot_longer_strata(data_to_adjust)
 
     reals_labels = [
         "real_negatives",
@@ -1531,29 +1520,6 @@ def create_list_data_to_adjust_polars(
 
     return list_data_to_adjust
 
-
-def create_list_data_to_adjust(probs_dict, reals_dict, times_dict, stratified_by, by):
-    reference_groups = list(probs_dict.keys())
-    data_to_adjust = pd.DataFrame(
-        {
-            "reference_group": np.repeat(reference_groups, len(reals_dict)),
-            "probs": np.concatenate([probs_dict[group] for group in reference_groups]),
-            "reals": np.tile(reals_dict, len(reference_groups)),
-            "times": np.tile(times_dict, len(reference_groups)),
-        }
-    )
-    data_to_adjust = add_cutoff_strata(data_to_adjust, by=by)
-    data_to_adjust = pivot_longer_strata(data_to_adjust)
-    data_to_adjust["reals"] = data_to_adjust["reals"].replace(
-        {0: "real_negatives", 2: "real_competing", 1: "real_positives"}
-    )
-    data_to_adjust["reals"] = pd.Categorical(
-        data_to_adjust["reals"],
-        categories=["real_negatives", "real_competing", "real_positives"],
-        ordered=True,
-    )
-    list_data_to_adjust = {k: v for k, v in data_to_adjust.groupby("reference_group")}
-    return list_data_to_adjust
 
 
 def safe_pl_from_pandas(df: pd.DataFrame) -> pl.DataFrame:
