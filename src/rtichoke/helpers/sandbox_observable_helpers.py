@@ -6,73 +6,6 @@ import polars as pl
 from polarstate import predict_aj_estimates
 from polarstate import prepare_event_table
 
-print("Polars version:", pl.__version__)
-
-
-# def extract_aj_estimate(data_to_adjust, fixed_time_horizons) -> pd.DataFrame:
-#     """
-#     Hybrid version that accepts either pandas or Polars DataFrame and applies
-#     Aalen-Johansen estimation using lifelines (pandas-based).
-#     """
-
-#     # Ensure input is a pandas DataFrame
-#     if isinstance(data_to_adjust, pl.DataFrame):
-#         data_to_adjust = data_to_adjust.to_pandas()
-
-#     # Ensure fixed_time_horizons is a list
-#     if not isinstance(fixed_time_horizons, list):
-#         fixed_time_horizons = [fixed_time_horizons]
-
-#     data = data_to_adjust.copy()
-
-#     # Encode event types
-#     event_map = {
-#         "real_negatives": 0,
-#         "real_positives": 1,
-#         "real_competing": 2,
-#         "real_censored": 0
-#     }
-#     data["event_code"] = data["reals"].map(event_map)
-
-#     results = []
-
-#     strata_values = data["strata"].unique()
-#     for stratum in strata_values:
-#         stratum_data = data.loc[data["strata"] == stratum]
-#         n = len(stratum_data)
-
-#         ajf_1 = AalenJohansenFitter()
-#         ajf_1.fit(stratum_data["times"], stratum_data["event_code"], event_of_interest=1)
-
-#         ajf_2 = AalenJohansenFitter()
-#         ajf_2.fit(stratum_data["times"], stratum_data["event_code"], event_of_interest=2)
-
-#         for t in fixed_time_horizons:
-#             est_pos = ajf_1.predict(t)
-#             est_comp = ajf_2.predict(t)
-#             est_neg = 1 - est_pos - est_comp
-
-#             for state, est in zip(
-#                 ["real_negatives", "real_positives", "real_competing"],
-#                 [est_neg, est_pos, est_comp]
-#             ):
-#                 results.append({
-#                     "strata": stratum,
-#                     "fixed_time_horizon": t,
-#                     "reals": state,
-#                     "n": n,
-#                     "estimate": est,
-#                     "reals_estimate": est * n
-#                 })
-
-#     result_df = pd.DataFrame(results)
-#     result_df["strata"] = pd.Categorical(result_df["strata"])
-#     return result_df
-
-
-def extract_aj_estimate_polars(data_to_adjust, fixed_time_horizons):
-    pass
-
 
 def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
     """
@@ -184,43 +117,6 @@ def extract_crude_estimate(data_to_adjust: pd.DataFrame) -> pd.DataFrame:
     ).fill_null(0)
 
     return final.to_pandas()
-
-
-# def extract_crude_estimate(data_to_adjust):
-#     """
-#     Computes the crude estimate by counting occurrences of 'reals' within
-#     each combination of 'strata' and 'fixed_time_horizon'.
-
-#     Args:
-#         data_to_adjust (pd.DataFrame): Data containing 'strata', 'reals', and 'fixed_time_horizon'.
-
-#     Returns:
-#         pd.DataFrame: Aggregated counts with missing combinations filled with zero.
-#     """
-
-#     crude_estimate = (
-#         data_to_adjust
-#         .groupby(["strata", "reals", "fixed_time_horizon"], dropna=False)
-#         .size()
-#         .reset_index(name="reals_estimate")
-#     )
-
-#     unique_strata = data_to_adjust["strata"].unique()
-#     unique_time_horizons = data_to_adjust["fixed_time_horizon"].unique()
-#     unique_reals = data_to_adjust["reals"].unique()
-
-#     all_combinations = pd.DataFrame(
-#         list(itertools.product(unique_strata, unique_reals, unique_time_horizons)),
-#         columns=["strata", "reals", "fixed_time_horizon"]
-#     )
-
-#     crude_estimate = (
-#         all_combinations
-#         .merge(crude_estimate, on=["strata", "reals", "fixed_time_horizon"], how="left")
-#         .fillna({"reals_estimate": 0})
-#     )
-
-#     return crude_estimate
 
 
 def add_cutoff_strata_polars(data: pl.DataFrame, by: float) -> pl.DataFrame:
@@ -596,14 +492,13 @@ def pivot_longer_strata(data: pl.DataFrame) -> pl.DataFrame:
 
     stratified_by_labels = ["probability_threshold", "ppcr"]
     stratified_by_enum = pl.Enum(stratified_by_labels)
-    
+
     # Remove "strata_" prefix from the 'stratified_by' column
     data_long = data_long.with_columns(
         pl.col("stratified_by").str.replace("^strata_", "").cast(stratified_by_enum)
     )
 
     return data_long
-
 
 
 def update_administrative_censoring(data_to_adjust: pd.DataFrame) -> pd.DataFrame:
@@ -1069,55 +964,6 @@ def extract_aj_estimate_for_strata(data_to_adjust, horizons):
     )
 
 
-def create_adjusted_data_list_polars(
-    list_data_to_adjust, fixed_time_horizons, assumption_sets
-):
-    adjusted_data_list = []
-    
-
-    for reference_group, group_data_polars in list_data_to_adjust.items():
-        for assumptions in assumption_sets:
-            adjusted_data = extract_aj_estimate_by_assumptions_polars(
-                group_data_polars,
-                fixed_time_horizons=fixed_time_horizons,
-                censoring_assumption=assumptions["censored"],
-                competing_assumption=assumptions["competing"],
-            )
-
-            adjusted_data = adjusted_data.with_columns(
-                pl.lit(reference_group).alias("reference_group")
-            )
-            adjusted_data_list.append(adjusted_data)
-
-    return adjusted_data_list
-
-
-# def create_adjusted_data_list(
-#     list_data_to_adjust, fixed_time_horizons, assumption_sets
-# ):
-#     adjusted_data_list = []
-#     for reference_group, group_data in list_data_to_adjust.items():
-#         group_data = ensure_arrow_safe(group_data)
-
-#         for assumptions in assumption_sets:
-#             adjusted_data = extract_aj_estimate_by_assumptions(
-#                 group_data,
-#                 fixed_time_horizons=fixed_time_horizons,
-#                 censoring_assumption=assumptions["censored"],
-#                 competing_assumption=assumptions["competing"],
-#             )
-#             adjusted_data["reference_group"] = reference_group
-#             adjusted_data_list.append(adjusted_data)
-#     return adjusted_data_list
-
-
-# def assign_and_explode(data, fixed_time_horizons):
-#     data = data.copy()
-#     data["fixed_time_horizon"] = [fixed_time_horizons] * len(data)
-#     data = data.explode("fixed_time_horizon")
-#     return data
-
-
 def assign_and_explode(data: pd.DataFrame, fixed_time_horizons) -> pd.DataFrame:
     # Ensure list type
     if not isinstance(fixed_time_horizons, list):
@@ -1142,31 +988,6 @@ def assign_and_explode_polars(
         .explode("fixed_time_horizon")
         .with_columns(pl.col("fixed_time_horizon").cast(pl.Float64))
     )
-
-
-# def extract_aj_estimate_by_assumptions_polars(
-#     data_to_adjust: pl.DataFrame,
-#     fixed_time_horizons: list[float],
-#     censoring_assumption: str = "excluded",
-#     competing_assumption: str = "excluded"
-# ) -> pl.DataFrame:
-
-#     if censoring_assumption == "excluded" and competing_assumption == "excluded":
-#         print("🪵 Step 1: Input columns:", data_to_adjust.columns)
-
-#         aj = assign_and_explode_polars(data_to_adjust, fixed_time_horizons)
-#         print("🪵 Step 2: After assign_and_explode columns:", aj.columns)
-#         print("🪵 Schema:", aj.schema)
-#         print("🪵 Sample rows:")
-#         print(aj.head(3))
-
-#         aj = update_administrative_censoring_polars(aj)
-#         print("🪵 Step 3: After update_administrative_censoring:", aj.columns)
-
-#         return aj.with_columns([
-#             pl.lit(censoring_assumption).alias("censoring_assumption"),
-#             pl.lit(competing_assumption).alias("competing_assumption")
-#         ])
 
 
 def extract_aj_estimate_by_assumptions_polars(
@@ -1261,209 +1082,6 @@ def extract_aj_estimate_by_assumptions_polars(
     )
 
 
-# def extract_aj_estimate_by_assumptions(
-#     data_to_adjust: pd.DataFrame,
-#     fixed_time_horizons,
-#     censoring_assumption="excluded",
-#     competing_assumption="excluded",
-# ) -> pd.DataFrame:
-#     def to_pl(df):
-#         return safe_pl_from_pandas(df)
-
-#     def to_pd(df):
-#         return df.to_pandas()
-
-#     if censoring_assumption == "excluded" and competing_assumption == "excluded":
-#         aj_estimate_data = (
-#             assign_and_explode(data_to_adjust, fixed_time_horizons)
-#             .pipe(update_administrative_censoring)
-#             .pipe(extract_crude_estimate)
-#         )
-
-#     elif (
-#         censoring_assumption == "excluded"
-#         and competing_assumption == "adjusted_as_negative"
-#     ):
-#         exploded = assign_and_explode(data_to_adjust, fixed_time_horizons)
-#         exploded = update_administrative_censoring(exploded)
-#         pl_exploded = to_pl(exploded)
-
-#         aj_estimate_data_excluded = extract_crude_estimate(
-#             to_pd(pl_exploded.filter(pl.col("reals") == "real_censored"))
-#         )
-
-#         aj_estimate_data_adjusted = pd.concat(
-#             [
-#                 extract_aj_estimate(
-#                     data_to_adjust.assign(fixed_time_horizon=h).query(
-#                         "reals != 'real_censored' and fixed_time_horizon == @h"
-#                     ),
-#                     fixed_time_horizons=h,
-#                 )
-#                 for h in fixed_time_horizons
-#             ],
-#             ignore_index=True,
-#         )
-
-#         aj_estimate_data = pd.concat(
-#             [aj_estimate_data_excluded, aj_estimate_data_adjusted], ignore_index=True
-#         )
-
-#     elif censoring_assumption == "adjusted" and competing_assumption == "excluded":
-#         exploded = assign_and_explode(data_to_adjust, fixed_time_horizons)
-#         exploded = update_administrative_censoring(exploded)
-#         pl_exploded = to_pl(exploded)
-
-#         aj_estimate_data_excluded = extract_crude_estimate(
-#             to_pd(pl_exploded.filter(pl.col("reals") == "real_competing"))
-#         )
-
-#         aj_estimate_data_adjusted = pd.concat(
-#             [
-#                 extract_aj_estimate(
-#                     data_to_adjust.assign(fixed_time_horizon=h).query(
-#                         "reals != 'real_competing' and fixed_time_horizon == @h"
-#                     ),
-#                     fixed_time_horizons=h,
-#                 )
-#                 for h in fixed_time_horizons
-#             ],
-#             ignore_index=True,
-#         )
-
-#         aj_estimate_data = pd.concat(
-#             [aj_estimate_data_excluded, aj_estimate_data_adjusted], ignore_index=True
-#         )
-
-#     elif (
-#         censoring_assumption == "adjusted"
-#         and competing_assumption == "adjusted_as_negative"
-#     ):
-#         aj_estimate_data = extract_aj_estimate(data_to_adjust, fixed_time_horizons)
-
-#     elif (
-#         censoring_assumption == "adjusted"
-#         and competing_assumption == "adjusted_as_censored"
-#     ):
-#         df = data_to_adjust.copy()
-#         df["reals"] = df["reals"].replace({"real_competing": "real_negatives"})
-#         aj_estimate_data = extract_aj_estimate(df, fixed_time_horizons)
-
-#     return aj_estimate_data.assign(
-#         censoring_assumption=censoring_assumption,
-#         competing_assumption=competing_assumption,
-#     )
-
-
-# def extract_aj_estimate_by_assumptions(data_to_adjust, fixed_time_horizons,
-#                                        censoring_assumption="excluded",
-#                                        competing_assumption="excluded"):
-
-
-#     print("data_to_adjust")
-#     print(data_to_adjust)
-
-#     print("data_to_adjust.dtypes")
-#     print(data_to_adjust.dtypes)
-
-#     data_to_adjust = ensure_arrow_safe(data_to_adjust)
-
-#     print("data_to_adjust after ensure no categorical")
-#     print(data_to_adjust)
-
-#     print("data_to_adjust.dtypes after ensure no categorical")
-#     print(data_to_adjust.dtypes)
-
-
-#     # def assign_and_explode(data):
-#     #     return (
-#     #         data.assign(fixed_time_horizon=[fixed_time_horizons] * len(data))
-#     #           .explode("fixed_time_horizon")
-#     #     )
-#     # def assign_and_explode(data):
-#     #     try:
-#     #         import polars as pl
-#     #     except ImportError as e:
-#     #         raise ImportError("Polars is required for assign_and_explode. Please install it with 'pip install polars'.") from e
-
-#     #     pl_data = pl.from_pandas(data)
-#     #     pl_data = pl_data.with_columns(
-#     #         pl.Series("fixed_time_horizon", [fixed_time_horizons] * pl_data.height)
-#     #     ).explode("fixed_time_horizon")
-#     #     return pl_data.to_pandas()
-
-#     if censoring_assumption == "excluded" and competing_assumption == "excluded":
-
-#         aj_estimate_data = (
-#             assign_and_explode(data_to_adjust, fixed_time_horizons=fixed_time_horizons)
-#             .pipe(update_administrative_censoring)
-#             .pipe(extract_crude_estimate)
-#         )
-
-#     elif censoring_assumption == "excluded" and competing_assumption == "adjusted_as_negative":
-#         exploded_data = assign_and_explode(data_to_adjust, fixed_time_horizons=fixed_time_horizons).pipe(update_administrative_censoring)
-
-#         aj_estimate_data_excluded = (
-#             exploded_data
-#             .pipe(update_administrative_censoring)
-#             .query("reals == 'real_censored'")
-#             .pipe(extract_crude_estimate)
-#         )
-
-#         aj_estimate_data_adjusted = (
-#             pd.concat([
-#                 extract_aj_estimate(
-#                     data_to_adjust
-#                     .assign(fixed_time_horizon=h)
-#                     .query("reals != 'real_censored' and fixed_time_horizon == @h"),
-#                     fixed_time_horizons=h
-#                 )
-#                 for h in fixed_time_horizons
-#             ])
-#             .reset_index(drop=True)
-#         )
-
-#         aj_estimate_data = pd.concat([aj_estimate_data_excluded, aj_estimate_data_adjusted], ignore_index=True)
-
-#     elif censoring_assumption == "adjusted" and competing_assumption == "excluded":
-#         exploded_data = assign_and_explode(data_to_adjust, fixed_time_horizons=fixed_time_horizons).pipe(update_administrative_censoring)
-
-#         aj_estimate_data_excluded = (
-#             exploded_data
-#             .query("reals == 'real_competing'")
-#             .pipe(extract_crude_estimate)
-#         )
-
-#         aj_estimate_data_adjusted = (
-#             pd.concat([
-#                 extract_aj_estimate(
-#                     data_to_adjust
-#                     .assign(fixed_time_horizon=h)
-#                     .query("reals != 'real_competing' and fixed_time_horizon == @h"),
-#                     fixed_time_horizons=h
-#                 )
-#                 for h in fixed_time_horizons
-#             ])
-#             .reset_index(drop=True)
-#         )
-
-#         aj_estimate_data = pd.concat([aj_estimate_data_excluded, aj_estimate_data_adjusted], ignore_index=True)
-
-#     elif censoring_assumption == "adjusted" and competing_assumption == "adjusted_as_negative":
-#         aj_estimate_data = extract_aj_estimate(data_to_adjust, fixed_time_horizons=fixed_time_horizons)
-
-#     elif censoring_assumption == "adjusted" and competing_assumption == "adjusted_as_censored":
-#         aj_estimate_data = extract_aj_estimate(
-#             data_to_adjust.assign(reals=data_to_adjust["reals"].replace({"real_competing": "real_negatives"})),
-#             fixed_time_horizons=fixed_time_horizons
-#         )
-
-#     return aj_estimate_data.assign(
-#         censoring_assumption=censoring_assumption,
-#         competing_assumption=competing_assumption
-#     )
-
-
 def create_list_data_to_adjust_polars(
     probs_dict, reals_dict, times_dict, stratified_by, by
 ):
@@ -1485,9 +1103,7 @@ def create_list_data_to_adjust_polars(
             "reals": list(reals_dict) * len(reference_group_labels),
             "times": list(times_dict) * len(reference_group_labels),
         }
-    ).with_columns(
-        pl.col("reference_group").cast(reference_group_enum)
-    )
+    ).with_columns(pl.col("reference_group").cast(reference_group_enum))
 
     # Apply strata
     data_to_adjust = add_cutoff_strata_polars(data_to_adjust, by=by)
@@ -1519,7 +1135,6 @@ def create_list_data_to_adjust_polars(
     }
 
     return list_data_to_adjust
-
 
 
 def safe_pl_from_pandas(df: pd.DataFrame) -> pl.DataFrame:
@@ -1614,7 +1229,7 @@ def extract_aj_estimate_by_assumptions(
 def create_adjusted_data(
     list_data_to_adjust_polars: dict[str, pl.DataFrame],
     assumption_sets: list[dict[str, str]],
-    fixed_time_horizons: list[float]
+    fixed_time_horizons: list[float],
 ) -> pl.DataFrame:
     all_results = []
 
@@ -1631,13 +1246,28 @@ def create_adjusted_data(
         )
 
         aj_result_with_group = aj_result.with_columns(
-            pl.lit(reference_group)
-            .cast(reference_group_enum)
-            .alias("reference_group")
+            [
+                pl.lit(reference_group)
+                .cast(reference_group_enum)
+                .alias("reference_group")
+            ]
         )
 
         all_results.append(aj_result_with_group)
 
-    return pl.concat(all_results).with_columns(
-        pl.col("reference_group").cast(reference_group_enum)
+    reals_enum_dtype = pl.Enum(
+        [
+            "real_negatives",
+            "real_positives",
+            "real_competing",
+            "real_censored",
+        ]
+    )
+
+    return (
+        pl.concat(all_results)
+        .with_columns([pl.col("reference_group").cast(reference_group_enum)])
+        .with_columns(
+            pl.col("reals_labels").str.replace(r"_est$", "").cast(reals_enum_dtype)
+        )
     )
