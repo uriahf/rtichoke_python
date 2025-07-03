@@ -39,7 +39,15 @@ jobs:
 
     - name: Show package version
       run: grep -r "version" pyproject.toml || grep -r "__version__" rtichoke/ || python -c "import rtichoke; print(rtichoke.__version__)"
-    
+      
+    - name: Set up Quarto
+      uses: quarto-dev/quarto-actions/setup@v2
+  
+    - name: Set Git identity for Quarto publishing
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+  
     - name: Render and Publish
       working-directory: docs
       run: uv run quarto publish gh-pages --no-browser --token "${{ secrets.GITHUB_TOKEN }}"
