@@ -3,7 +3,9 @@ A module for Summary Report
 """
 
 from rtichoke.helpers.send_post_request_to_r_rtichoke import send_requests_to_rtichoke_r
-from rtichoke.helpers.sandbox_observable_helpers import create_aj_data_combinations_polars, create_list_data_to_adjust_polars
+from rtichoke.helpers.sandbox_observable_helpers import (
+    create_list_data_to_adjust_polars,
+)
 import subprocess
 
 
@@ -52,7 +54,7 @@ def render_summary_report():
         "--to",
         "html",
         "--output",
-        output_path#,
+        output_path,  # ,
         # "--execute-params",
         # f"probs={probs},reals={reals},times={times}",
     ]
@@ -60,17 +62,13 @@ def render_summary_report():
     # Execute the command
     subprocess.run(command, check=True)
 
-def create_data_for_summary_report(probs, reals, times):
-    fixed_time_horizons = [1, 3, 5]
-    stratified_by = ["probability_threshold", "ppcr"]
-    by=0.1
 
-    # Assuming probs is a dictionary, otherwise adjust accordingly
-    aj_data_combinations = create_aj_data_combinations_polars(list(probs.keys()), fixed_time_horizons, stratified_by, by)
+def create_data_for_summary_report(probs, reals, times, fixed_time_horizons):
+    stratified_by = ["probability_threshold", "ppcr"]
+    by = 0.1
 
     list_data_to_adjust_polars = create_list_data_to_adjust_polars(
-          probs, reals, times, stratified_by=stratified_by, by=by
+        probs, reals, times, stratified_by=stratified_by, by=by
     )
-
 
     return list_data_to_adjust_polars

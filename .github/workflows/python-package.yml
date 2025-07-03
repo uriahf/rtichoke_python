@@ -40,6 +40,10 @@ jobs:
     - name: Show package version
       run: grep -r "version" pyproject.toml || grep -r "__version__" rtichoke/ || python -c "import rtichoke; print(rtichoke.__version__)"
     
+    - name: Render and Publish
+      working-directory: docs
+      run: uv run quarto publish gh-pages --no-browser --token "${{ secrets.GITHUB_TOKEN }}"
+
     - name: Publish package
       if: github.ref == 'refs/heads/main' && matrix.python-version == '3.10'
       run: uv publish

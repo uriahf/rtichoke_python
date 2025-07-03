@@ -3,20 +3,20 @@ authors = [
     {name = "Uriah Finkel"},
 ]
 license = {text = "MIT"}
-requires-python = "<4.0,>=3.9"
+requires-python = ">=3.13"
 dependencies = [
     "plotly<6.0.0,>=5.13.1",
     "ipython<9.0.0,>=8.11.0",
     "nbformat<6.0.0,>=5.7.3",
     "sphinx-autoapi<3.0.0,>=2.1.0",
     "sphinx-rtd-theme<2.0.0,>=1.2.0",
-    "pandas<3.0.0,>=2.0.0",
     "importlib>=1.0.4",
     "quartodoc>=0.9.1",
     "papermill>=2.6.0",
     "polars>=1.28.0",
     "pyarrow>=20.0.0",
     "ty>=0.0.1a5",
+    "pandas>=2.2.3",
 ]
 name = "rtichoke"
 version = "0.1.10"
@@ -38,6 +38,9 @@ dev = [
     "lifelines>=0.30.0",
     "uv>=0.6.11",
     "monkeytype>=23.3.0",
+    "marimo>=0.14.7",
+    "polarstate>=0.1.5",
+    "pre-commit>=4.2.0",
 ]
 
 [tool.uv.workspace]
