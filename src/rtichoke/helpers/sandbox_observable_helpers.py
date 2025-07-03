@@ -1288,19 +1288,24 @@ def create_adjusted_data(
 
 
 def cast_and_join_adjusted_data(aj_data_combinations, aj_estimates_data):
-  strata_enum_dtype = aj_data_combinations.schema["strata"]
+    strata_enum_dtype = aj_data_combinations.schema["strata"]
 
-  aj_estimates_data = aj_estimates_data.with_columns([
-    pl.col("strata")
-  ]).with_columns(
-    pl.col("strata").cast(strata_enum_dtype)
-  )
+    aj_estimates_data = aj_estimates_data.with_columns([pl.col("strata")]).with_columns(
+        pl.col("strata").cast(strata_enum_dtype)
+    )
 
-  final_adjusted_data_polars = aj_data_combinations.with_columns([
-    pl.col("strata")
-  ]).join(
-    aj_estimates_data, 
-    on = ['strata', 'fixed_time_horizon', 'censoring_assumption', 'competing_assumption', 'reals_labels', 'reference_group'],
-    how = 'left'
-  )
-  return final_adjusted_data_polars
+    final_adjusted_data_polars = aj_data_combinations.with_columns(
+        [pl.col("strata")]
+    ).join(
+        aj_estimates_data,
+        on=[
+            "strata",
+            "fixed_time_horizon",
+            "censoring_assumption",
+            "competing_assumption",
+            "reals_labels",
+            "reference_group",
+        ],
+        how="left",
+    )
+    return final_adjusted_data_polars
