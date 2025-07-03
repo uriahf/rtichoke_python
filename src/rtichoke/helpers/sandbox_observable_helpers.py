@@ -1236,6 +1236,9 @@ def create_adjusted_data(
     reference_groups = list(list_data_to_adjust_polars.keys())
     reference_group_enum = pl.Enum(reference_groups)
 
+    censoring_assumption_labels = ["excluded", "adjusted"]
+    censoring_assumption_enum = pl.Enum(censoring_assumption_labels)
+
     for reference_group, df in list_data_to_adjust_polars.items():
         input_df = df.select(["strata", "reals", "times"])
 
@@ -1268,6 +1271,9 @@ def create_adjusted_data(
         pl.concat(all_results)
         .with_columns([pl.col("reference_group").cast(reference_group_enum)])
         .with_columns(
-            pl.col("reals_labels").str.replace(r"_est$", "").cast(reals_enum_dtype)
+            [
+                pl.col("reals_labels").str.replace(r"_est$", "").cast(reals_enum_dtype),
+                pl.col("censoring_assumption").cast(censoring_assumption_enum),
+            ]
         )
     )
