@@ -155,3 +155,10 @@ reals_dict.pkl
 times_dict.pkl
 docs/_site/example.html
 docs/_site/walkthrough_aj_estimate.html
+
+# quarto site related files
+docs/_site/
+*.js
+*.html
+*.css
+objects.json
