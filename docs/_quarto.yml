@@ -1,0 +1,42 @@
+project:
+  type: website
+
+metadata-files:
+  - _sidebar.yml
+
+website:
+  title: "rtichoke"
+  navbar:
+    left:
+      - href: reference.qmd
+        text: Reference
+      - href: walkthrough_aj_estimate.qmd
+        text: Example
+      - href: before_we_validate.qmd
+        text: Before we Validate
+
+quartodoc:
+  # the name used to import the package you want to create reference docs for
+  package: rtichoke
+  sidebar: "_sidebar.yml"
+  sections:
+    - title: Calibration
+      desc: Functions for Calibration.
+      contents:
+        - create_calibration_curve
+    - title: Discrimination
+      desc: Functions for Discrimination.
+      contents:
+        - create_roc_curve
+        - create_precision_recall_curve
+        - create_gains_curve
+        - create_lift_curve
+        - plot_roc_curve
+        - plot_precision_recall_curve
+        - plot_gains_curve
+        - plot_lift_curve
+    - title: Utility
+      desc: Functions for Utility.
+      contents:
+        - create_decision_curve
+        - plot_decision_curve
