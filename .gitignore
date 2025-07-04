@@ -161,3 +161,4 @@ docs/_site/
 *.js
 *.html
 *.css
+objects.json
