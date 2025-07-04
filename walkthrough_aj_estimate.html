@@ -174,14 +174,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<div id="a35465d1" class="cell" data-execution_count="2">
+<div id="f2b24f62" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-stdout">
 <pre><code>Polars version: 1.31.0</code></pre>
 </div>
 </div>
 <section id="polars" class="level2">
 <h2 class="anchored" data-anchor-id="polars">polars</h2>
-<div id="29ce96ff" class="cell" data-execution_count="3">
+<div id="d11ebcde" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-stdout">
 <pre><code>shape: (4_320,)
 Series: 'strata' [enum]
@@ -214,7 +214,7 @@ Series: 'strata' [enum]
 </section>
 <section id="create-aj_estimates_data" class="level2">
 <h2 class="anchored" data-anchor-id="create-aj_estimates_data">Create aj_estimates_data</h2>
-<div id="f96f4171" class="cell" data-execution_count="5">
+<div id="f4af2f95" class="cell" data-execution_count="5">
 <div class="cell-output cell-output-stdout">
 <pre><code>Assumption: censoring=adjusted, competing=adjusted_as_negative, rows=60
 Assumption: censoring=excluded, competing=adjusted_as_negative, rows=57
@@ -245,17 +245,77 @@ AJ estimates per strata censored: shape: (60, 3)
 │ ---          ┆ ---                ┆ ---               │
 │ str          ┆ f64                ┆ f64               │
 ╞══════════════╪════════════════════╪═══════════════════╡
-│ [0.10, 0.20) ┆ 1.0                ┆ 116.0             │
-│ [0.20, 0.30) ┆ 5.0                ┆ 64.0              │
-│ [0.30, 0.40) ┆ 5.0                ┆ 34.0              │
-│ 0.6          ┆ 5.0                ┆ 78.0              │
-│ 1.0          ┆ 5.0                ┆ 1.0               │
+│ [0.80, 0.90) ┆ 3.0                ┆ 9.0               │
+│ 0.3          ┆ 3.0                ┆ 75.0              │
+│ 0.3          ┆ 1.0                ┆ 78.0              │
+│ [0.00, 0.10) ┆ 1.0                ┆ 368.0             │
+│ [0.90, 1.00] ┆ 3.0                ┆ 4.0               │
 │ …            ┆ …                  ┆ …                 │
-│ 0.1          ┆ 5.0                ┆ 33.0              │
-│ 0.3          ┆ 5.0                ┆ 74.0              │
 │ [0.10, 0.20) ┆ 5.0                ┆ 113.0             │
-│ 0.5          ┆ 5.0                ┆ 80.0              │
-│ [0.50, 0.60) ┆ 3.0                ┆ 19.0              │
+│ [0.70, 0.80) ┆ 3.0                ┆ 7.0               │
+│ 1.0          ┆ 1.0                ┆ 1.0               │
+│ 0.1          ┆ 5.0                ┆ 33.0              │
+│ [0.60, 0.70) ┆ 3.0                ┆ 8.0               │
+└──────────────┴────────────────────┴───────────────────┘
+AJ estimates per strata competing: shape: (44, 3)
+┌──────────────┬────────────────────┬────────────────────┐
+│ strata       ┆ fixed_time_horizon ┆ real_competing_est │
+│ ---          ┆ ---                ┆ ---                │
+│ str          ┆ f64                ┆ f64                │
+╞══════════════╪════════════════════╪════════════════════╡
+│ 0.3          ┆ 1.0                ┆ 8.0                │
+│ 0.2          ┆ 3.0                ┆ 4.0                │
+│ 0.1          ┆ 5.0                ┆ 1.0                │
+│ 0.3          ┆ 5.0                ┆ 10.0               │
+│ 0.5          ┆ 3.0                ┆ 8.0                │
+│ …            ┆ …                  ┆ …                  │
+│ [0.00, 0.10) ┆ 1.0                ┆ 22.0               │
+│ [0.80, 0.90) ┆ 1.0                ┆ 1.0                │
+│ 0.4          ┆ 5.0                ┆ 8.0                │
+│ 0.9          ┆ 5.0                ┆ 6.0                │
+│ 0.4          ┆ 1.0                ┆ 6.0                │
+└──────────────┴────────────────────┴────────────────────┘
+Assumption: censoring=excluded, competing=excluded, rows=43
+Assumption: censoring=adjusted, competing=adjusted_as_negative, rows=60
+Assumption: censoring=excluded, competing=adjusted_as_negative, rows=57
+Assumption: censoring=adjusted, competing=adjusted_as_censored, rows=60
+Assumption: censoring=excluded, competing=adjusted_as_censored, rows=57
+Assumption: censoring=adjusted, competing=excluded, rows=44
+Exploded data: shape: (4_500, 4)
+┌──────────────┬───────┬───────────┬────────────────────┐
+│ strata       ┆ reals ┆ times     ┆ fixed_time_horizon │
+│ ---          ┆ ---   ┆ ---       ┆ ---                │
+│ str          ┆ i64   ┆ f64       ┆ f64                │
+╞══════════════╪═══════╪═══════════╪════════════════════╡
+│ [0.00, 0.10) ┆ 0     ┆ 3.008686  ┆ 1.0                │
+│ [0.00, 0.10) ┆ 0     ┆ 3.008686  ┆ 3.0                │
+│ [0.00, 0.10) ┆ 0     ┆ 3.008686  ┆ 5.0                │
+│ [0.80, 0.90) ┆ 0     ┆ 0.2491345 ┆ 1.0                │
+│ [0.80, 0.90) ┆ 0     ┆ 0.2491345 ┆ 3.0                │
+│ …            ┆ …     ┆ …         ┆ …                  │
+│ 0.8          ┆ 0     ┆ 0.3059905 ┆ 3.0                │
+│ 0.8          ┆ 0     ┆ 0.3059905 ┆ 5.0                │
+│ 0.8          ┆ 0     ┆ 0.8083693 ┆ 1.0                │
+│ 0.8          ┆ 0     ┆ 0.8083693 ┆ 3.0                │
+│ 0.8          ┆ 0     ┆ 0.8083693 ┆ 5.0                │
+└──────────────┴───────┴───────────┴────────────────────┘
+AJ estimates per strata censored: shape: (60, 3)
+┌──────────────┬────────────────────┬───────────────────┐
+│ strata       ┆ fixed_time_horizon ┆ real_censored_est │
+│ ---          ┆ ---                ┆ ---               │
+│ str          ┆ f64                ┆ f64               │
+╞══════════════╪════════════════════╪═══════════════════╡
+│ 0.3          ┆ 5.0                ┆ 74.0              │
+│ [0.40, 0.50) ┆ 5.0                ┆ 27.0              │
+│ [0.50, 0.60) ┆ 3.0                ┆ 16.0              │
+│ [0.10, 0.20) ┆ 1.0                ┆ 139.0             │
+│ 0.7          ┆ 3.0                ┆ 81.0              │
+│ …            ┆ …                  ┆ …                 │
+│ 0.5          ┆ 1.0                ┆ 82.0              │
+│ 0.9          ┆ 5.0                ┆ 83.0              │
+│ [0.10, 0.20) ┆ 3.0                ┆ 137.0             │
+│ 0.7          ┆ 5.0                ┆ 81.0              │
+│ [0.50, 0.60) ┆ 1.0                ┆ 19.0              │
 └──────────────┴────────────────────┴───────────────────┘
 AJ estimates per strata competing: shape: (44, 3)
 ┌──────────────┬────────────────────┬────────────────────┐
@@ -264,16 +324,16 @@ AJ estimates per strata competing: shape: (44, 3)
 │ str          ┆ f64                ┆ f64                │
 ╞══════════════╪════════════════════╪════════════════════╡
 │ [0.20, 0.30) ┆ 3.0                ┆ 7.0                │
-│ 0.1          ┆ 3.0                ┆ 1.0                │
-│ 0.4          ┆ 3.0                ┆ 8.0                │
-│ [0.10, 0.20) ┆ 3.0                ┆ 10.0               │
-│ 0.7          ┆ 3.0                ┆ 8.0                │
+│ 0.6          ┆ 3.0                ┆ 4.0                │
+│ 0.1          ┆ 1.0                ┆ 1.0                │
+│ 0.4          ┆ 3.0                ┆ 9.0                │
+│ 0.5          ┆ 5.0                ┆ 11.0               │
 │ …            ┆ …                  ┆ …                  │
-│ 0.5          ┆ 5.0                ┆ 9.0                │
-│ 0.9          ┆ 1.0                ┆ 6.0                │
-│ 0.6          ┆ 1.0                ┆ 2.0                │
-│ 0.8          ┆ 5.0                ┆ 8.0                │
-│ 0.8          ┆ 1.0                ┆ 6.0                │
+│ [0.00, 0.10) ┆ 5.0                ┆ 29.0               │
+│ 0.7          ┆ 1.0                ┆ 3.0                │
+│ [0.40, 0.50) ┆ 5.0                ┆ 2.0                │
+│ [0.90, 1.00] ┆ 3.0                ┆ 1.0                │
+│ [0.20, 0.30) ┆ 5.0                ┆ 7.0                │
 └──────────────┴────────────────────┴────────────────────┘
 Assumption: censoring=excluded, competing=excluded, rows=43
 Assumption: censoring=adjusted, competing=adjusted_as_negative, rows=60
@@ -305,17 +365,17 @@ AJ estimates per strata censored: shape: (60, 3)
 │ ---          ┆ ---                ┆ ---               │
 │ str          ┆ f64                ┆ f64               │
 ╞══════════════╪════════════════════╪═══════════════════╡
-│ [0.50, 0.60) ┆ 1.0                ┆ 19.0              │
-│ [0.80, 0.90) ┆ 3.0                ┆ 7.0               │
-│ [0.00, 0.10) ┆ 1.0                ┆ 346.0             │
-│ 1.0          ┆ 3.0                ┆ 1.0               │
+│ [0.20, 0.30) ┆ 5.0                ┆ 63.0              │
+│ 1.0          ┆ 5.0                ┆ 1.0               │
 │ 0.8          ┆ 5.0                ┆ 81.0              │
+│ 1.0          ┆ 1.0                ┆ 1.0               │
+│ [0.00, 0.10) ┆ 1.0                ┆ 347.0             │
 │ …            ┆ …                  ┆ …                 │
-│ [0.50, 0.60) ┆ 5.0                ┆ 16.0              │
-│ [0.40, 0.50) ┆ 5.0                ┆ 27.0              │
-│ 0.6          ┆ 5.0                ┆ 77.0              │
-│ 0.7          ┆ 5.0                ┆ 81.0              │
-│ [0.90, 1.00] ┆ 3.0                ┆ 5.0               │
+│ [0.50, 0.60) ┆ 1.0                ┆ 20.0              │
+│ 0.8          ┆ 3.0                ┆ 81.0              │
+│ [0.30, 0.40) ┆ 3.0                ┆ 28.0              │
+│ 0.1          ┆ 5.0                ┆ 36.0              │
+│ 0.6          ┆ 3.0                ┆ 77.0              │
 └──────────────┴────────────────────┴───────────────────┘
 AJ estimates per strata competing: shape: (44, 3)
 ┌──────────────┬────────────────────┬────────────────────┐
@@ -323,84 +383,24 @@ AJ estimates per strata competing: shape: (44, 3)
 │ ---          ┆ ---                ┆ ---                │
 │ str          ┆ f64                ┆ f64                │
 ╞══════════════╪════════════════════╪════════════════════╡
-│ [0.90, 1.00] ┆ 3.0                ┆ 1.0                │
-│ 0.3          ┆ 1.0                ┆ 5.0                │
-│ 0.8          ┆ 1.0                ┆ 6.0                │
-│ 0.2          ┆ 5.0                ┆ 6.0                │
-│ 0.1          ┆ 3.0                ┆ 1.0                │
-│ …            ┆ …                  ┆ …                  │
-│ 0.9          ┆ 1.0                ┆ 6.0                │
-│ [0.10, 0.20) ┆ 3.0                ┆ 17.0               │
-│ 0.4          ┆ 5.0                ┆ 9.0                │
+│ 0.5          ┆ 5.0                ┆ 10.0               │
 │ 0.8          ┆ 5.0                ┆ 7.0                │
 │ [0.40, 0.50) ┆ 3.0                ┆ 2.0                │
-└──────────────┴────────────────────┴────────────────────┘
-Assumption: censoring=excluded, competing=excluded, rows=43
-Assumption: censoring=adjusted, competing=adjusted_as_negative, rows=60
-Assumption: censoring=excluded, competing=adjusted_as_negative, rows=57
-Assumption: censoring=adjusted, competing=adjusted_as_censored, rows=60
-Assumption: censoring=excluded, competing=adjusted_as_censored, rows=57
-Assumption: censoring=adjusted, competing=excluded, rows=44
-Exploded data: shape: (4_500, 4)
-┌──────────────┬───────┬───────────┬────────────────────┐
-│ strata       ┆ reals ┆ times     ┆ fixed_time_horizon │
-│ ---          ┆ ---   ┆ ---       ┆ ---                │
-│ str          ┆ i64   ┆ f64       ┆ f64                │
-╞══════════════╪═══════╪═══════════╪════════════════════╡
-│ [0.00, 0.10) ┆ 0     ┆ 3.008686  ┆ 1.0                │
-│ [0.00, 0.10) ┆ 0     ┆ 3.008686  ┆ 3.0                │
-│ [0.00, 0.10) ┆ 0     ┆ 3.008686  ┆ 5.0                │
-│ [0.80, 0.90) ┆ 0     ┆ 0.2491345 ┆ 1.0                │
-│ [0.80, 0.90) ┆ 0     ┆ 0.2491345 ┆ 3.0                │
-│ …            ┆ …     ┆ …         ┆ …                  │
-│ 0.8          ┆ 0     ┆ 0.3059905 ┆ 3.0                │
-│ 0.8          ┆ 0     ┆ 0.3059905 ┆ 5.0                │
-│ 0.8          ┆ 0     ┆ 0.8083693 ┆ 1.0                │
-│ 0.8          ┆ 0     ┆ 0.8083693 ┆ 3.0                │
-│ 0.8          ┆ 0     ┆ 0.8083693 ┆ 5.0                │
-└──────────────┴───────┴───────────┴────────────────────┘
-AJ estimates per strata censored: shape: (60, 3)
-┌──────────────┬────────────────────┬───────────────────┐
-│ strata       ┆ fixed_time_horizon ┆ real_censored_est │
-│ ---          ┆ ---                ┆ ---               │
-│ str          ┆ f64                ┆ f64               │
-╞══════════════╪════════════════════╪═══════════════════╡
-│ [0.60, 0.70) ┆ 5.0                ┆ 9.0               │
-│ 0.8          ┆ 1.0                ┆ 82.0              │
-│ [0.80, 0.90) ┆ 3.0                ┆ 7.0               │
-│ [0.70, 0.80) ┆ 5.0                ┆ 7.0               │
-│ 0.2          ┆ 5.0                ┆ 55.0              │
-│ …            ┆ …                  ┆ …                 │
-│ [0.90, 1.00] ┆ 3.0                ┆ 5.0               │
-│ 0.7          ┆ 3.0                ┆ 81.0              │
-│ 0.1          ┆ 1.0                ┆ 45.0              │
-│ [0.60, 0.70) ┆ 3.0                ┆ 9.0               │
-│ 0.8          ┆ 5.0                ┆ 81.0              │
-└──────────────┴────────────────────┴───────────────────┘
-AJ estimates per strata competing: shape: (44, 3)
-┌──────────────┬────────────────────┬────────────────────┐
-│ strata       ┆ fixed_time_horizon ┆ real_competing_est │
-│ ---          ┆ ---                ┆ ---                │
-│ str          ┆ f64                ┆ f64                │
-╞══════════════╪════════════════════╪════════════════════╡
-│ 0.9          ┆ 3.0                ┆ 7.0                │
-│ [0.10, 0.20) ┆ 5.0                ┆ 17.0               │
-│ 0.2          ┆ 3.0                ┆ 6.0                │
-│ 0.4          ┆ 3.0                ┆ 9.0                │
-│ [0.10, 0.20) ┆ 1.0                ┆ 13.0               │
+│ [0.20, 0.30) ┆ 3.0                ┆ 7.0                │
+│ 0.9          ┆ 5.0                ┆ 7.0                │
 │ …            ┆ …                  ┆ …                  │
-│ [0.40, 0.50) ┆ 5.0                ┆ 2.0                │
+│ 0.6          ┆ 1.0                ┆ 3.0                │
 │ 0.6          ┆ 3.0                ┆ 4.0                │
-│ 0.8          ┆ 3.0                ┆ 7.0                │
-│ 0.5          ┆ 3.0                ┆ 10.0               │
-│ 0.1          ┆ 3.0                ┆ 1.0                │
+│ [0.00, 0.10) ┆ 1.0                ┆ 19.0               │
+│ 0.1          ┆ 1.0                ┆ 1.0                │
+│ [0.20, 0.30) ┆ 5.0                ┆ 7.0                │
 └──────────────┴────────────────────┴────────────────────┘
 Assumption: censoring=excluded, competing=excluded, rows=43</code></pre>
 </div>
 </div>
 <section id="check-strata-values" class="level3">
 <h3 class="anchored" data-anchor-id="check-strata-values">Check strata values</h3>
-<div id="a792fbda" class="cell" data-execution_count="6">
+<div id="211d8f3b" class="cell" data-execution_count="6">
 <div class="cell-output cell-output-stdout">
 <pre><code>shape: (4_320, 2)
 ┌──────────────┬───────────┐
@@ -432,7 +432,7 @@ shape: (0, 2)
 </section>
 <section id="cast-varibles-with-hacks" class="level3">
 <h3 class="anchored" data-anchor-id="cast-varibles-with-hacks">Cast varibles with hacks</h3>
-<div id="51b89723" class="cell" data-execution_count="8">
+<div id="e5a6f447" class="cell" data-execution_count="8">
 <div class="cell-output cell-output-display">
 <script type="ojs-define">{"contents": [{"name": "reference_groups_data", "value": ["full", "thin", "aft"]}]}</script>
 </div>
