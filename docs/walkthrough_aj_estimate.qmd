@@ -7,28 +7,73 @@ warning: false
 ---
 
 ```{python}
-from lifelines import AalenJohansenFitter
+import polars as pl
+import pandas as pd
+import numpy as np
+from lifelines import AalenJohansenFitter, CoxPHFitter, WeibullAFTFitter
+
+df_time_to_cancer_dx = pd.read_csv(
+    "https://raw.githubusercontent.com/ddsjoberg/dca-tutorial/main/data/df_time_to_cancer_dx.csv"
+)
+```
+
+
+```{python}
+
 import numpy as np
 from itertools import product
 import itertools
 from rtichoke.helpers.sandbox_observable_helpers import *
-from lifelines import CoxPHFitter
-from lifelines import WeibullAFTFitter
 import polars as pl
 print("Polars version:", pl.__version__)
 
 import pandas as pd
 import pickle  
 
-with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\probs_dict.pkl', 'rb') as file:
-    probs_dict = pickle.load(file)
+cph = CoxPHFitter()
+thin_model = CoxPHFitter()
+aft_model = WeibullAFTFitter()
 
-with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\reals_dict.pkl', 'rb') as file:
-    reals_dict = pickle.load(file)
+cox_formula = "age + famhistory + marker"
+thin_formula = "age + marker"
+aft_formula = "age + marker"
 
-with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\times_dict.pkl', 'rb') as file:
-    times_dict = pickle.load(file)
+cph.fit(
+    df_time_to_cancer_dx,
+    duration_col="ttcancer",
+    event_col="cancer",
+    formula=cox_formula,
+)
 
+thin_model.fit(
+    df_time_to_cancer_dx,
+    duration_col="ttcancer",
+    event_col="cancer",
+    formula=thin_formula,
+)
+
+aft_model.fit(
+    df_time_to_cancer_dx,
+    duration_col="ttcancer",
+    event_col="cancer",
+    formula=aft_formula,
+)
+
+
+
+cph_pred_vals = (1 - cph.predict_survival_function(df_time_to_cancer_dx[['age', 'famhistory', 'marker']], times=[1.5])).iloc[0, :].values
+
+thin_pred_vals = (1 - thin_model.predict_survival_function(df_time_to_cancer_dx[['age', 'famhistory', 'marker']], times=[1.5])).iloc[0, :].values
+
+aft_pred_vals = (1 - aft_model.predict_survival_function(df_time_to_cancer_dx[['age', 'famhistory', 'marker']], times=[1.5])).iloc[0, :].values
+
+probs_dict = {"full": cph_pred_vals, "thin": thin_pred_vals, "aft": aft_pred_vals}
+
+reals_mapping = {"censor": 0, "diagnosed with cancer": 1, "dead other causes": 2}
+
+reals_dict = df_time_to_cancer_dx["cancer_cr"].map(reals_mapping)
+
+times_dict = df_time_to_cancer_dx["ttcancer"]
 
 ```
 
@@ -39,7 +84,7 @@ with open(r'C:\Users\I\Documents\GitHub\rtichoke_python\times_dict.pkl', 'rb') a
 
 
 
-fixed_time_horizons = [1, 3, 5]
+fixed_time_horizons = [1.0, 3.0, 5.0]
 stratified_by = ["probability_threshold", "ppcr"]
 by=0.1
 
@@ -71,221 +116,48 @@ list_data_to_adjust_polars = create_list_data_to_adjust_polars(
 
 ### New extract aj estimate by assumptions polars
 
-#### One polars dataframe
-
-```{python}
-
-example_polars_df = list_data_to_adjust_polars.get('full').select(pl.col("strata"), pl.col("reals"), pl.col("times"))
-
-fixed_time_horizons = [1, 3, 5]
-
-
-```
-
-
 ## Create aj_estimates_data
 
-## Create aj_data
-
 ```{python}
 
-fixed_time_horizons = [2, 4]
+fixed_time_horizons = [1.0, 3.0, 5.0]
 
-aj_estimates_per_strata_adj_adjneg = create_aj_data(example_polars_df, "adjusted", "adjusted_as_negative", fixed_time_horizons)
+assumption_sets = [
+    {
+        "censoring_assumption": "adjusted",
+        "competing_assumption": "adjusted_as_negative",
+    },
+    {
+        "censoring_assumption": "excluded",
+        "competing_assumption": "adjusted_as_negative",
+    },
+    {
+        "censoring_assumption": "adjusted",
+        "competing_assumption": "adjusted_as_censored",
+    },
+    {
+        "censoring_assumption": "excluded",
+        "competing_assumption": "adjusted_as_censored",
+    },
+    {"censoring_assumption": "adjusted", "competing_assumption": "excluded"},
+    {"censoring_assumption": "excluded", "competing_assumption": "excluded"},
+]
 
-aj_estimates_per_strata_excl_adjneg = create_aj_data(example_polars_df, "excluded", "adjusted_as_negative", fixed_time_horizons)
+# aj_estimates_data = extract_aj_estimate_by_assumptions(
+#     example_polars_df,
+#     assumption_sets=assumption_sets,
+#     fixed_time_horizons=fixed_time_horizons,
+# )
 
-aj_estimates_per_strata_adj_adjcens = create_aj_data(example_polars_df, "adjusted", "adjusted_as_censored", fixed_time_horizons)
 
+aj_estimates_data = create_adjusted_data(
+    list_data_to_adjust_polars,
+    assumption_sets=assumption_sets,
+    fixed_time_horizons=fixed_time_horizons
+)
 
 ```
 
-## AJ estimates per assumptions
-
-```{python}
-
-# 1 adjusted - adjusted_as_negative
-
-aj_estimates_per_strata_adj_adjneg = example_polars_df.group_by("strata").map_groups(
-  lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizons)).join(pl.DataFrame({"real_censored_est": 0.0, "censoring_assumption": "adjusted", "competing_assumption": "adjusted_as_negative"}), how = 'cross')
-
-
-
-# 2 excluded - adjusted as negative
-
-exploded_data = example_polars_df.with_columns(fixed_time_horizon = pl.lit([1,3,5])).explode("fixed_time_horizon")
-
-aj_estimates_per_strata_censored = exploded_data.filter((pl.col("times") < pl.col("fixed_time_horizon")) & pl.col("reals")==0).group_by(["strata", "fixed_time_horizon"]).count().rename({"count": "real_censored_est"}).with_columns(
-    pl.col("real_censored_est").cast(pl.Float64)
-)
-
-non_censored_data = exploded_data.filter((pl.col("times") >= pl.col("fixed_time_horizon")) | pl.col("reals")>0)
-
-
-aj_estimates_per_strata_noncensored = pl.concat(
-    [
-        non_censored_data
-        .filter(pl.col("fixed_time_horizon") == fixed_time_horizon)
-        .group_by("strata")
-        .map_groups(lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizon))
-        for fixed_time_horizon in fixed_time_horizons
-    ],
-    how="vertical"
-)
-
-aj_estimates_per_strata_excl_adjneg = aj_estimates_per_strata_noncensored.join(
-  aj_estimates_per_strata_censored, 
-  on = ['strata', 'fixed_time_horizon']
-).join(pl.DataFrame({"censoring_assumption": "excluded", "competing_assumption": "adjusted_as_negative"}), how = 'cross')
-
-
-# 3 adjusted - adjusted as censored
-
-
-aj_estimates_per_strata_adj_adjcens = example_polars_df.with_columns([
-        pl.when(
-            (pl.col("reals") ==2)
-        ).then(pl.lit(0))
-            .otherwise(pl.col("reals"))
-         .alias("reals")
-    ]).group_by("strata").map_groups(
-  lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizons)).join(pl.DataFrame({"real_censored_est": 0.0, "censoring_assumption": "adjusted", "competing_assumption": "adjusted_as_censored"}), how = 'cross')
-
-# 4 excluded - adjusted as censored
-
-exploded_data = example_polars_df.with_columns(fixed_time_horizon = pl.lit([1,3,5])).explode("fixed_time_horizon")
-
-aj_estimates_per_strata_censored = exploded_data.filter((pl.col("times") < pl.col("fixed_time_horizon")) & pl.col("reals")==0).group_by(["strata", "fixed_time_horizon"]).count().rename({"count": "real_censored_est"}).with_columns(
-    pl.col("real_censored_est").cast(pl.Float64)
-)
-
-non_censored_data = exploded_data.filter((pl.col("times") >= pl.col("fixed_time_horizon")) | pl.col("reals")>0).with_columns([
-        pl.when(
-            (pl.col("reals") ==2)
-        ).then(pl.lit(0))
-            .otherwise(pl.col("reals"))
-         .alias("reals")
-    ])
-
-
-aj_estimates_per_strata_noncensored = pl.concat(
-    [
-        non_censored_data
-        .filter(pl.col("fixed_time_horizon") == fixed_time_horizon)
-        .group_by("strata")
-        .map_groups(lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizon))
-        for fixed_time_horizon in fixed_time_horizons
-    ],
-    how="vertical"
-)
-
-aj_estimates_per_strata_excl_adjcens = aj_estimates_per_strata_noncensored.join(
-  aj_estimates_per_strata_censored, 
-  on = ['strata', 'fixed_time_horizon']
-).join(pl.DataFrame({"censoring_assumption": "excluded", "competing_assumption": "adjusted_as_negative"}), how = 'cross')
-
-
-
-## 5 adjusted - excluded
-
-exploded_data = example_polars_df.with_columns(fixed_time_horizon = pl.lit([1,3,5])).explode("fixed_time_horizon")
-
-aj_estimates_per_strata_competing = exploded_data.filter((pl.col("reals")==2) & (pl.col("times") < pl.col("fixed_time_horizon"))).group_by(["strata", "fixed_time_horizon"]).count().rename({"count": "real_competing_est"}).with_columns(
-    pl.col("real_competing_est").cast(pl.Float64)
-)
-
-non_competing_data = exploded_data.filter((pl.col("times") >= pl.col("fixed_time_horizon")) | pl.col("reals")!=2).with_columns([
-        pl.when(
-            (pl.col("reals") ==2)
-        ).then(pl.lit(0))
-            .otherwise(pl.col("reals"))
-         .alias("reals")
-    ])
-
-
-aj_estimates_per_strata_noncompeting = pl.concat(
-    [
-        non_competing_data
-        .filter(pl.col("fixed_time_horizon") == fixed_time_horizon)
-        .group_by("strata")
-        .map_groups(lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizon))
-        for fixed_time_horizon in fixed_time_horizons
-    ],
-    how="vertical"
-).select(pl.exclude("real_competing_est"))
-
-aj_estimates_per_strata_adj_excl = aj_estimates_per_strata_competing.join(
-  aj_estimates_per_strata_noncompeting, 
-  on = ['strata', 'fixed_time_horizon']
-).join(pl.DataFrame({"real_censored_est": 0.0, "censoring_assumption": "adjusted", "competing_assumption": "excluded"}), how = 'cross').select(
-  ['strata',
- 'fixed_time_horizon',
- 'real_negatives_est',
- 'real_positives_est',
- 'real_competing_est',
- 'real_censored_est',
- 'censoring_assumption',
- 'competing_assumption']
-)
-
-
-## 6 excluded - excluded
-
-
-exploded_data = example_polars_df.with_columns(fixed_time_horizon = pl.lit([1,3,5])).explode("fixed_time_horizon")
-
-aj_estimates_per_strata_censored = exploded_data.filter((pl.col("times") < pl.col("fixed_time_horizon")) & pl.col("reals")==0).group_by(["strata", "fixed_time_horizon"]).count().rename({"count": "real_censored_est"}).with_columns(
-    pl.col("real_censored_est").cast(pl.Float64)
-)
-
-aj_estimates_per_strata_competing = exploded_data.filter((pl.col("reals")==2) & (pl.col("times") < pl.col("fixed_time_horizon"))).group_by(["strata", "fixed_time_horizon"]).count().rename({"count": "real_competing_est"}).with_columns(
-    pl.col("real_competing_est").cast(pl.Float64)
-)
-
-
-non_censored_non_competing_data = exploded_data.filter(((pl.col("times") >= pl.col("fixed_time_horizon")) | pl.col("reals")==1))
-
-
-aj_estimates_per_strata_noncompeting_noncompeting = pl.concat(
-    [
-        non_censored_non_competing_data
-        .filter(pl.col("fixed_time_horizon") == fixed_time_horizon)
-        .group_by("strata")
-        .map_groups(lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizon))
-        for fixed_time_horizon in fixed_time_horizons
-    ],
-    how="vertical"
-)
-
-aj_estimates_per_strata_excl_excl = aj_estimates_per_strata_competing.join(aj_estimates_per_strata_censored, on = ['strata', 'fixed_time_horizon']).join(
-  aj_estimates_per_strata_noncompeting, 
-  on = ['strata', 'fixed_time_horizon']
-).join(pl.DataFrame({"censoring_assumption": "excluded", "competing_assumption": "excluded"}), how = 'cross').select(
-  ['strata',
- 'fixed_time_horizon',
- 'real_negatives_est',
- 'real_positives_est',
- 'real_competing_est',
- 'real_censored_est',
- 'censoring_assumption',
- 'competing_assumption']
-)
-
-## combine all
-
-aj_estimates_data = pl.concat(
-  [
-    aj_estimates_per_strata_adj_adjneg,
-    aj_estimates_per_strata_adj_adjcens,
-    aj_estimates_per_strata_adj_excl,
-    aj_estimates_per_strata_excl_adjneg,
-    aj_estimates_per_strata_excl_adjcens,
-    aj_estimates_per_strata_excl_excl
-  ]
-).unpivot( index = ["strata", "fixed_time_horizon", "censoring_assumption", "competing_assumption"] , variable_name = "reals_labels", value_name = "reals_estimate")
-
-
-```
 
 ### Check strata values
 
@@ -322,38 +194,7 @@ print(result.filter(pl.col("is_in_df2") == False))
 
 ```{python}
 
-reals_enum_dtype = aj_data_combinations.schema["reals_labels"]
-censoring_assumptions_enum_dtype = aj_data_combinations.schema["censoring_assumption"]
-competing_assumptions_enum_dtype = aj_data_combinations.schema["competing_assumption"]
-
-strata_enum_dtype = aj_data_combinations.schema["strata"]
-
-
-aj_estimates_data = aj_estimates_data.with_columns([
-    pl.col("strata")
-]).with_columns(
-    pl.col("reals_labels").str.replace(r"_est$", "").cast(reals_enum_dtype)
-).with_columns(
-  pl.col("censoring_assumption").cast(censoring_assumptions_enum_dtype)
-).with_columns(
-  pl.col("competing_assumption").cast(competing_assumptions_enum_dtype)
-).with_columns(
-  pl.col("strata").cast(strata_enum_dtype)
-)
-
-```
-
-```{python}
-
-
-final_adjusted_data_polars = aj_data_combinations.with_columns([
-    pl.col("strata")
-]).join(
-  aj_estimates_data, 
-  on = ['strata', 'fixed_time_horizon', 'censoring_assumption', 'competing_assumption', 'reals_labels'],
-  how = 'left'
-)
-
+final_adjusted_data_polars = cast_and_join_adjusted_data(aj_data_combinations, aj_estimates_data)
 
 ```
 
@@ -441,6 +282,9 @@ Plot.plot({
     domain: ["real_positives", "real_competing", "real_negatives", "real_censored"], 
     range: ["#009e73", "#9DB4C0", "#FAC8CD", "#E3F09B"],
     legend: true
+  },
+  style: {
+    background: "none"
   }
 })
 
