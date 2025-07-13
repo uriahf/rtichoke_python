@@ -119,7 +119,7 @@ def extract_crude_estimate(data_to_adjust: pd.DataFrame) -> pd.DataFrame:
     return final.to_pandas()
 
 
-def add_cutoff_strata_polars(data: pl.DataFrame, by: float) -> pl.DataFrame:
+def add_cutoff_strata(data: pl.DataFrame, by: float) -> pl.DataFrame:
     def transform_group(group: pl.DataFrame) -> pl.DataFrame:
         # Convert to NumPy for numeric ops
         probs = group["probs"].to_numpy()
@@ -169,34 +169,6 @@ def add_cutoff_strata_polars(data: pl.DataFrame, by: float) -> pl.DataFrame:
     grouped = data.partition_by("reference_group", as_dict=True)
     transformed_groups = [transform_group(group) for group in grouped.values()]
     return pl.concat(transformed_groups)
-
-
-def add_cutoff_strata(data, by):
-    result = data.copy()
-
-    grouped = result.groupby("reference_group")
-
-    def transform_group(group):
-        group["strata_probability_threshold"] = pd.cut(
-            group["probs"],
-            bins=create_breaks_values(group["probs"], "probability_threshold", by),
-            include_lowest=True,
-        )
-
-        group["strata_ppcr"] = (
-            pd.qcut(-group["probs"], q=int(1 / by), labels=False, duplicates="drop") + 1
-        )
-
-        group["strata_ppcr"] = (group["strata_ppcr"] / (1 / by)).astype(str)
-
-        return group
-
-    result = grouped.apply(transform_group)
-
-    result = result.reset_index(drop=True)
-
-    return result
-
 
 def create_strata_combinations_polars(stratified_by: str, by: float) -> pl.DataFrame:
     if stratified_by == "probability_threshold":
@@ -1106,7 +1078,7 @@ def create_list_data_to_adjust(
     ).with_columns(pl.col("reference_group").cast(reference_group_enum))
 
     # Apply strata
-    data_to_adjust = add_cutoff_strata_polars(data_to_adjust, by=by)
+    data_to_adjust = add_cutoff_strata(data_to_adjust, by=by)
     data_to_adjust = pivot_longer_strata(data_to_adjust)
 
     reals_labels = [
