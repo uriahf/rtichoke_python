@@ -119,51 +119,46 @@ def extract_crude_estimate(data_to_adjust: pd.DataFrame) -> pd.DataFrame:
     return final.to_pandas()
 
 
-def add_cutoff_strata(data: pl.DataFrame, by: float) -> pl.DataFrame:
+def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFrame:
     def transform_group(group: pl.DataFrame) -> pl.DataFrame:
-        # Convert to NumPy for numeric ops
+
         probs = group["probs"].to_numpy()
+        columns_to_add = []
 
-        # --- Compute strata_probability_threshold ---
-        breaks = create_breaks_values(probs, "probability_threshold", by)
-        # strata_prob = np.digitize(probs, breaks, right=False) - 1
-        # Clamp indices to avoid out-of-bounds error when accessing breaks[i+1]
-        # strata_prob = np.clip(strata_prob, 0, len(breaks) - 2)
-        # strata_prob_labels = [
-        #     f"({breaks[i]:.3f}, {breaks[i+1]:.3f}]" for i in strata_prob
-        # ]
+        if "probability_threshold" in stratified_by:
+            breaks = create_breaks_values(probs, "probability_threshold", by)
+            last_bin_index = len(breaks) - 2
 
-        last_bin_index = len(breaks) - 2
+            bin_indices = np.digitize(probs, bins=breaks, right=False) - 1
+            bin_indices = np.where(probs == 1.0, last_bin_index, bin_indices)
 
-        bin_indices = np.digitize(probs, bins=breaks, right=False) - 1
-        bin_indices = np.where(probs == 1.0, last_bin_index, bin_indices)
+            lower_bounds = breaks[bin_indices]
+            upper_bounds = breaks[bin_indices + 1]
 
-        lower_bounds = breaks[bin_indices]
-        upper_bounds = breaks[bin_indices + 1]
+            include_upper_bounds = bin_indices == last_bin_index
 
-        include_upper_bounds = bin_indices == last_bin_index
+            strata_prob_labels = np.where(
+                include_upper_bounds,
+                [f"[{lo:.2f}, {hi:.2f}]" for lo, hi in zip(lower_bounds, upper_bounds)],
+                [f"[{lo:.2f}, {hi:.2f})" for lo, hi in zip(lower_bounds, upper_bounds)],
+            ).astype(str)
 
-        strata_prob_labels = np.where(
-            include_upper_bounds,
-            [f"[{lo:.2f}, {hi:.2f}]" for lo, hi in zip(lower_bounds, upper_bounds)],
-            [f"[{lo:.2f}, {hi:.2f})" for lo, hi in zip(lower_bounds, upper_bounds)],
-        )
+            columns_to_add.append(
+                pl.Series("strata_probability_threshold", strata_prob_labels)
+            )
+
+        if "ppcr" in stratified_by:
 
         # --- Compute strata_ppcr as quantiles on -probs ---
-        try:
-            q = int(1 / by)
-            quantile_edges = np.quantile(-probs, np.linspace(0, 1, q))
-            strata_ppcr = np.digitize(-probs, quantile_edges, right=False)
-            strata_ppcr = (strata_ppcr / (1 / by)).astype(str)
-        except ValueError:
-            strata_ppcr = np.array(["1"] * len(probs))  # fallback for small group
+            try:
+                q = int(1 / by)
+                quantile_edges = np.quantile(-probs, np.linspace(0, 1, q))
+                strata_ppcr = np.digitize(-probs, quantile_edges, right=False)
+                strata_ppcr = (strata_ppcr / (1 / by)).astype(str)
+            except ValueError:
+                strata_ppcr = np.array(["1"] * len(probs))  # fallback for small group
 
-        return group.with_columns(
-            [
-                pl.Series("strata_probability_threshold", strata_prob_labels),
-                pl.Series("strata_ppcr", strata_ppcr),
-            ]
-        )
+        return group.with_columns(columns_to_add)
 
     # Apply per-group transformation
     grouped = data.partition_by("reference_group", as_dict=True)
@@ -1078,7 +1073,7 @@ def create_list_data_to_adjust(
     ).with_columns(pl.col("reference_group").cast(reference_group_enum))
 
     # Apply strata
-    data_to_adjust = add_cutoff_strata(data_to_adjust, by=by)
+    data_to_adjust = add_cutoff_strata(data_to_adjust, by=by, stratified_by=stratified_by)
     data_to_adjust = pivot_longer_strata(data_to_adjust)
 
     reals_labels = [
