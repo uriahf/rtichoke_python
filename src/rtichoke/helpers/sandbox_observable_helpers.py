@@ -1082,7 +1082,7 @@ def extract_aj_estimate_by_assumptions_polars(
     )
 
 
-def create_list_data_to_adjust_polars(
+def create_list_data_to_adjust(
     probs_dict, reals_dict, times_dict, stratified_by, by
 ):
     # reference_groups = list(probs_dict.keys())
