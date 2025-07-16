@@ -96,29 +96,6 @@ def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
     return result_df
 
 
-def extract_crude_estimate(data_to_adjust: pd.DataFrame) -> pd.DataFrame:
-    df = safe_pl_from_pandas(data_to_adjust)
-
-    crude_estimate = df.group_by(["strata", "reals", "fixed_time_horizon"]).agg(
-        pl.count().alias("reals_estimate")
-    )
-
-    unique_strata = df.select("strata").unique().to_series().to_list()
-    unique_reals = df.select("reals").unique().to_series().to_list()
-    unique_horizons = df.select("fixed_time_horizon").unique().to_series().to_list()
-
-    all_combinations = pl.DataFrame(
-        itertools.product(unique_strata, unique_reals, unique_horizons),
-        schema=["strata", "reals", "fixed_time_horizon"],
-    )
-
-    final = all_combinations.join(
-        crude_estimate, on=["strata", "reals", "fixed_time_horizon"], how="left"
-    ).fill_null(0)
-
-    return final.to_pandas()
-
-
 def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFrame:
     def transform_group(group: pl.DataFrame) -> pl.DataFrame:
         probs = group["probs"].to_numpy()
@@ -465,34 +442,6 @@ def pivot_longer_strata(data: pl.DataFrame) -> pl.DataFrame:
     )
 
     return data_long
-
-
-def update_administrative_censoring(data_to_adjust: pd.DataFrame) -> pd.DataFrame:
-    data_to_adjust = data_to_adjust.copy()
-    data_to_adjust["reals"] = data_to_adjust["reals"].astype(str)
-
-    pl_data = safe_pl_from_pandas(data_to_adjust)
-
-    # Define logic in Python and map it row-wise (this avoids any column reference issues)
-    def adjust(row):
-        t = row["times"]
-        h = row["fixed_time_horizon"]
-        r = row["reals"]
-        if t > h and r == "real_positives":
-            return "real_negatives"
-        if t < h and r == "real_negatives":
-            return "real_censored"
-        return r
-
-    pl_data = pl_data.with_columns(
-        [
-            pl.struct(["times", "fixed_time_horizon", "reals"])
-            .map_elements(adjust)
-            .alias("reals")
-        ]
-    )
-
-    return pl_data.to_pandas()
 
 
 def map_reals_to_labels_polars(data: pl.DataFrame) -> pl.DataFrame:
@@ -930,22 +879,6 @@ def extract_aj_estimate_for_strata(data_to_adjust, horizons):
     )
 
 
-def assign_and_explode(data: pd.DataFrame, fixed_time_horizons) -> pd.DataFrame:
-    # Ensure list type
-    if not isinstance(fixed_time_horizons, list):
-        fixed_time_horizons = [fixed_time_horizons]
-
-    # Convert safely to Polars
-    df = safe_pl_from_pandas(data)
-
-    # Add the repeated list to each row, then explode
-    df = df.with_columns(
-        pl.Series("fixed_time_horizon", [fixed_time_horizons] * df.height)
-    ).explode("fixed_time_horizon")
-
-    return df.to_pandas()
-
-
 def assign_and_explode_polars(
     data: pl.DataFrame, fixed_time_horizons: list[float]
 ) -> pl.DataFrame:
@@ -1103,52 +1036,10 @@ def create_list_data_to_adjust(probs_dict, reals_dict, times_dict, stratified_by
     return list_data_to_adjust
 
 
-def safe_pl_from_pandas(df: pd.DataFrame) -> pl.DataFrame:
-    df = df.copy()
-    for col in df.select_dtypes(include="category").columns:
-        df[col] = df[col].astype(str)
-    for col in df.columns:
-        if df[col].dtype == "object":
-            try:
-                if any(
-                    isinstance(val, pd._libs.interval.Interval)
-                    for val in df[col].dropna()
-                ):
-                    df[col] = df[col].astype(str)
-            except Exception:
-                df[col] = df[col].astype(str)
-    return pl.from_pandas(df)
-
-
 def ensure_no_categorical(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     for col in df.select_dtypes(include="category").columns:
         df[col] = df[col].astype(str)
-    return df
-
-
-def ensure_arrow_safe(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.copy()
-
-    # Convert all category columns to string
-    for col in df.select_dtypes(include="category").columns:
-        df[col] = df[col].astype(str)
-
-    # Convert Interval and other Arrow-unsafe objects to string
-    for col in df.columns:
-        if df[col].dtype == "object":
-            try:
-                # Try to catch Interval or any other problematic type
-                if any(
-                    isinstance(val, pd._libs.interval.Interval)
-                    for val in df[col].dropna()
-                ):
-                    df[col] = df[col].astype(str)
-            except Exception:
-                df[col] = df[col].astype(
-                    str
-                )  # fallback: convert whole column to string
-
     return df
 
 
