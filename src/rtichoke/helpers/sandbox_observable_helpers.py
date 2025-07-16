@@ -121,7 +121,6 @@ def extract_crude_estimate(data_to_adjust: pd.DataFrame) -> pd.DataFrame:
 
 def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFrame:
     def transform_group(group: pl.DataFrame) -> pl.DataFrame:
-
         probs = group["probs"].to_numpy()
         columns_to_add = []
 
@@ -148,8 +147,7 @@ def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFr
             )
 
         if "ppcr" in stratified_by:
-
-        # --- Compute strata_ppcr as quantiles on -probs ---
+            # --- Compute strata_ppcr as quantiles on -probs ---
             try:
                 q = int(1 / by)
                 quantile_edges = np.quantile(-probs, np.linspace(0, 1, q))
@@ -164,6 +162,7 @@ def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFr
     grouped = data.partition_by("reference_group", as_dict=True)
     transformed_groups = [transform_group(group) for group in grouped.values()]
     return pl.concat(transformed_groups)
+
 
 def create_strata_combinations_polars(stratified_by: str, by: float) -> pl.DataFrame:
     if stratified_by == "probability_threshold":
@@ -1049,9 +1048,7 @@ def extract_aj_estimate_by_assumptions_polars(
     )
 
 
-def create_list_data_to_adjust(
-    probs_dict, reals_dict, times_dict, stratified_by, by
-):
+def create_list_data_to_adjust(probs_dict, reals_dict, times_dict, stratified_by, by):
     # reference_groups = list(probs_dict.keys())
     reference_group_labels = list(probs_dict.keys())
     num_reals = len(reals_dict)
@@ -1073,7 +1070,9 @@ def create_list_data_to_adjust(
     ).with_columns(pl.col("reference_group").cast(reference_group_enum))
 
     # Apply strata
-    data_to_adjust = add_cutoff_strata(data_to_adjust, by=by, stratified_by=stratified_by)
+    data_to_adjust = add_cutoff_strata(
+        data_to_adjust, by=by, stratified_by=stratified_by
+    )
     data_to_adjust = pivot_longer_strata(data_to_adjust)
 
     reals_labels = [
@@ -1156,7 +1155,7 @@ def ensure_arrow_safe(df: pd.DataFrame) -> pd.DataFrame:
 def extract_aj_estimate_by_assumptions(
     df: pl.DataFrame,
     assumption_sets: list[dict],
-    fixed_time_horizons: pl.Series,
+    fixed_time_horizons: list[float],
 ) -> pl.DataFrame:
     aj_dfs = []
 
