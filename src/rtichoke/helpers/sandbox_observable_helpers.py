@@ -276,7 +276,7 @@ def create_breaks_values(probs_vec, stratified_by, by):
     return breaks
 
 
-def create_aj_data_combinations_polars(
+def create_aj_data_combinations(
     reference_groups, fixed_time_horizons, stratified_by, by
 ):
     # Create strata combinations using Polars
@@ -374,51 +374,6 @@ def create_aj_data_combinations_polars(
         .join(strata_combinations, how="cross")
         .join(df_reals, how="cross")
     )
-
-
-def create_aj_data_combinations(
-    reference_groups, fixed_time_horizons, stratified_by, by
-):
-    strata_combinations = pd.concat(
-        [create_strata_combinations(x, by) for x in stratified_by], ignore_index=True
-    )
-
-    reals = pd.Categorical(
-        ["real_negatives", "real_positives", "real_competing", "real_censored"],
-        categories=[
-            "real_negatives",
-            "real_positives",
-            "real_competing",
-            "real_censored",
-        ],
-        ordered=True,
-    )
-
-    censoring_assumptions = ["excluded", "adjusted"]
-    competing_assumptions = ["excluded", "adjusted_as_negative", "adjusted_as_censored"]
-
-    combinations = list(
-        itertools.product(
-            reference_groups,
-            fixed_time_horizons,
-            reals,
-            censoring_assumptions,
-            competing_assumptions,
-        )
-    )
-
-    df_combinations = pd.DataFrame(
-        combinations,
-        columns=[
-            "reference_group",
-            "fixed_time_horizon",
-            "reals",
-            "censoring_assumption",
-            "competing_assumption",
-        ],
-    )
-
-    return df_combinations.merge(strata_combinations, how="cross")
 
 
 def pivot_longer_strata(data: pl.DataFrame) -> pl.DataFrame:
