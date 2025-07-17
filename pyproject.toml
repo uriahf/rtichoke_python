@@ -18,6 +18,7 @@ dependencies = [
     "ty>=0.0.1a5",
     "pandas>=2.2.3",
     "polarstate>=0.1.6",
+    "typing>=3.7.4.3",
 ]
 name = "rtichoke"
 version = "0.1.11"

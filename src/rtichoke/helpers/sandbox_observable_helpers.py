@@ -5,6 +5,7 @@ import itertools
 import polars as pl
 from polarstate import predict_aj_estimates
 from polarstate import prepare_event_table
+from typing import Dict, Union
 
 
 def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
@@ -981,7 +982,13 @@ def extract_aj_estimate_by_assumptions_polars(
     )
 
 
-def create_list_data_to_adjust(probs_dict, reals_dict, times_dict, stratified_by, by):
+def create_list_data_to_adjust(
+    probs_dict: Dict[str, np.ndarray],
+    reals_dict: Union[np.ndarray, Dict[str, np.ndarray]],
+    times_dict: Union[np.ndarray, Dict[str, np.ndarray]],
+    stratified_by,
+    by,
+):
     # reference_groups = list(probs_dict.keys())
     reference_group_labels = list(probs_dict.keys())
     num_reals = len(reals_dict)
@@ -991,14 +998,12 @@ def create_list_data_to_adjust(probs_dict, reals_dict, times_dict, stratified_by
     # Flatten and ensure list format
     data_to_adjust = pl.DataFrame(
         {
-            "reference_group": sum(
-                [[group] * num_reals for group in reference_group_labels], []
+            "reference_group": np.repeat(reference_group_labels, num_reals),
+            "probs": np.concatenate(
+                [probs_dict[group] for group in reference_group_labels]
             ),
-            "probs": sum(
-                [probs_dict[group].tolist() for group in reference_group_labels], []
-            ),
-            "reals": list(reals_dict) * len(reference_group_labels),
-            "times": list(times_dict) * len(reference_group_labels),
+            "reals": np.tile(np.asarray(reals_dict), len(reference_group_labels)),
+            "times": np.tile(np.asarray(times_dict), len(reference_group_labels)),
         }
     ).with_columns(pl.col("reference_group").cast(reference_group_enum))
 
