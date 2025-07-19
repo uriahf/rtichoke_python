@@ -596,7 +596,32 @@ def create_aj_data(
             {
                 "real_censored_est": 0.0,
                 "censoring_assumption": "adjusted",
-                "competing_assumption": "adjusted_as_censored",
+                "competing_assumption": "adjusted_as_composite",
+            },
+        )
+
+    if (
+        censoring_assumption == "excluded"
+        and competing_assumption == "adjusted_as_composite"
+    ):
+        exploded = explode_data(reference_group_data)
+        censored = censored_count(exploded)
+        non_censored = exploded.filter(
+            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
+        ).with_columns(
+            [
+                pl.when(pl.col("reals") == 2)
+                .then(pl.lit(1))
+                .otherwise(pl.col("reals"))
+                .alias("reals")
+            ]
+        )
+        aj_df = aj_estimates_per_horizon(non_censored, fixed_time_horizons)
+        return aj_estimates_with_cross(
+            aj_df.join(censored, on=["strata", "fixed_time_horizon"]),
+            {
+                "censoring_assumption": "excluded",
+                "competing_assumption": "adjusted_as_composite",
             },
         )
 
