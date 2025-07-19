@@ -576,6 +576,30 @@ def create_aj_data(
             },
         )
 
+    if (
+        censoring_assumption == "adjusted"
+        and competing_assumption == "adjusted_as_composite"
+    ):
+        adjusted = reference_group_data.with_columns(
+            [
+                pl.when(pl.col("reals") == 2)
+                .then(pl.lit(1))
+                .otherwise(pl.col("reals"))
+                .alias("reals")
+            ]
+        )
+        aj_df = adjusted.group_by("strata").map_groups(
+            lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizons)
+        )
+        return aj_estimates_with_cross(
+            aj_df,
+            {
+                "real_censored_est": 0.0,
+                "censoring_assumption": "adjusted",
+                "competing_assumption": "adjusted_as_censored",
+            },
+        )
+
     if censoring_assumption == "adjusted" and competing_assumption == "excluded":
         exploded = explode_data(reference_group_data)
         competing = competing_count(exploded)
