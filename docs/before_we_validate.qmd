@@ -363,7 +363,7 @@ Performance Validation in the face of censored observations require assumptions 
 
 TODO: add link to nan-van-geloven article
 
-##### Exclude Censored Events
+### Exclude Censored Events
 
 ```{mermaid}
 
@@ -393,7 +393,7 @@ All censored events to be excluded.
 Underlying Assumption: Small amount of censored events.
 Violation of the assumption leads to: Overestimation of the observed outcomes.
 
-##### Adjust Censored as partially seen Non-Event
+### Adjust Censored as partially seen Non-Event
 
 Observed outcomes for each strata are estimated using the AJ-estimate (equivalent to CIF and KM): Each censored observation is assumed to be similar to the ones who weren't censored.
 
@@ -410,7 +410,7 @@ Performance Validation in the face of competing observations require assumptions
 
 TODO: add link to nan-van-geloven article
 
-##### Exclude Competing Events
+### Exclude Competing Events
 
 ```{mermaid}
 
@@ -441,7 +441,7 @@ All competing events to be excluded.
 Underlying Assumption: Small amount of competing events.
 Violation of the assumption leads to: Overestimation of the observed outcomes. A competing event means that the primary event cannot happen.
 
-##### Adjust Competing Events as Censored (partially seen Non-Event)
+### Adjust Competing Events as Censored (Partially seen Negatives)
 
 Check
 
@@ -475,7 +475,7 @@ All competing events to be treated as censored.
 Underlying Assumption: We consider a patient experiencing a competing event equivalent to independent censoring.
 Violation of the assumption leads to: Overestimation of the observed outcomes. A competing event means that the primary event cannot happen.
 
-##### Adjust Competing Events as Competing
+### Adjust Competing Events as Negatives (Definite Non-Events)
 
 All competing events to be treated as Competing event to the primary event-of-interest.
 
@@ -512,6 +512,39 @@ subgraph adj[Adjusted for Censoring]
 
 Underlying Assumption: We consider a patient experiencing a competing event as a definite non-event.
 Violation of the assumption leads to Underestimation of the observed outcomes if a competing event can be considered as a different form of the primary event.
+
+### Adjust Competing Events as Composite (Positives)
+
+All competing events to be treated as another case of the Primary Event.
+
+A patient experience a competing-event might be seen as another case of "some-event"
+
+```{mermaid}
+
+graph LR
+subgraph adj[Adjusted for Censoring]
+    direction LR
+    S0["Non Event<br>0 🤨"] -->S1["Any Event<br>1 🤢 <br> Competing Event<br>2 💀"]
+    end
+
+    
+    classDef nonEvent fill:#E0E0E0,stroke:#333,stroke-width:1px,color:black
+    classDef primaryEvent fill:#808080,stroke:#333,stroke-width:1px,color:white
+    classDef competingEvent fill:#9DB4C0,stroke:#333,stroke-width:1px,color:black
+
+    class S0 nonEvent
+    class S1 primaryEvent
+    class S2 competingEvent
+
+    linkStyle 0 stroke:#333
+    style adj fill:#E3F09B,color:black
+
+```
+
+There is no need for an underlying assumption, the answer is explicit.
+
+This heuristic is can be seen as a different underlying question - what is the probability of having any type of event, Primary or Competing?
+
 
 # What rtichoke from now on?
 
