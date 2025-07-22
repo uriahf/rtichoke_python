@@ -306,39 +306,6 @@ ojs_define(data = final_data)
 ```{ojs}
 //| echo: false
 
-// data = [
-//   { time: 1, real: "🤨", id: 1, time_horizon: 1 },
-//   { time: 3, real: "🤨", id: 1, time_horizon: 3 },
-//   { time: 5, real: "🤨", id: 1, time_horizon: 5 },
-//   { time: 1, real: "🤨", id: 2, time_horizon: 1 },
-//   { time: 3, real: "🤨", id: 2, time_horizon: 3 },
-//   { time: 5, real: "🤨", id: 2, time_horizon: 5 },
-//   { time: 1, real: "🤨", id: 3, time_horizon: 1 },
-//   { time: 3, real: "🤨", id: 3, time_horizon: 3 },
-//   { time: 4.6, real: "🤬", id: 3, time_horizon: 5 },
-//   { time: 1, real: "🤨", id: 4, time_horizon: 1 },
-//   { time: 3, real: "🤨", id: 4, time_horizon: 3 },
-//   { time: 5, real: "🤨", id: 4, time_horizon: 5 },
-//   { time: 1, real: "🤨", id: 5, time_horizon: 1 },
-//   { time: 2.4, real: "🤢", id: 5, time_horizon: 3 },
-//   { time: 2.4, real: "🤢", id: 5, time_horizon: 5 },
-//   { time: 1, real: "🤨", id: 6, time_horizon: 1 },
-//   { time: 3, real: "🤨", id: 6, time_horizon: 3 },
-//   { time: 4.4, real: "🤬", id: 6, time_horizon: 5 },
-//   { time: 0.4, real: "🤢", id: 7, time_horizon: 1 },
-//   { time: 0.4, real: "🤢", id: 7, time_horizon: 3 },
-//   { time: 0.4, real: "🤢", id: 7, time_horizon: 5 },
-//   { time: 1, real: "🤨", id: 8, time_horizon: 1 },
-//   { time: 1.6, real: "💀", id: 8, time_horizon: 3 },
-//   { time: 1.6, real: "💀", id: 8, time_horizon: 5 },
-//   { time: 0.8, real: "🤢", id: 9, time_horizon: 1 },
-//   { time: 0.8, real: "🤢", id: 9, time_horizon: 3 },
-//   { time: 0.8, real: "🤢", id: 9, time_horizon: 5 },
-//   { time: 1, real: "🤨", id: 10, time_horizon: 1 },
-//   { time: 2.9, real: "🤢", id: 10, time_horizon: 3 },
-//   { time: 2.9, real: "🤢", id: 10, time_horizon: 5 }
-// ]
-
 filteredData = data.filter((d) => d.time_horizon == timeHorizon)
 
 viewof timeHorizon = Inputs.range([10, 50], {
