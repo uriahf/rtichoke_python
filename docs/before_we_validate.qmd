@@ -255,53 +255,101 @@ For cases with observed time-to-event is shorter than the prediction time horizo
 - If adjusted: encoded as 0.
 - If excluded: counted with crude estimate.
 
+
+```{python}
+#| echo: false
+
+import numpy as np
+
+# Inputs
+times = np.array([5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0])
+reals = np.array([1, 1, 2, 1, 0, 1, 0, 1, 2, 1])
+time_horizons = [10, 30, 50]
+
+# Icons
+def get_icon(outcome, t, h):
+    if outcome == 0:
+        return "🤬" if t < h else "🤨"
+    elif outcome == 1:
+        return "🤢"
+    elif outcome == 2:
+        return "💀"
+
+# Displayed time
+def get_time(outcome, t, h):
+    if outcome == 0:
+        return t if t < h else h
+    else:
+        return t
+
+# Final output
+final_data = []
+
+for i in range(len(times)):
+    id_ = i + 1
+    t = times[i]
+    r = reals[i]
+
+    for h in time_horizons:
+        outcome = r if t <= h else 0  # override outcome after horizon
+        final_data.append({
+            "id": id_,
+            "time_horizon": h,
+            "time": get_time(outcome, t, h),
+            "real": get_icon(outcome, t, h)
+        })
+
+ojs_define(data = final_data)
+
+```
+
 ```{ojs}
 //| echo: false
 
-data = [
-  { time: 1, real: "🤨", id: 1, time_horizon: 1 },
-  { time: 3, real: "🤨", id: 1, time_horizon: 3 },
-  { time: 5, real: "🤨", id: 1, time_horizon: 5 },
-  { time: 1, real: "🤨", id: 2, time_horizon: 1 },
-  { time: 3, real: "🤨", id: 2, time_horizon: 3 },
-  { time: 5, real: "🤨", id: 2, time_horizon: 5 },
-  { time: 1, real: "🤨", id: 3, time_horizon: 1 },
-  { time: 3, real: "🤨", id: 3, time_horizon: 3 },
-  { time: 4.6, real: "🤬", id: 3, time_horizon: 5 },
-  { time: 1, real: "🤨", id: 4, time_horizon: 1 },
-  { time: 3, real: "🤨", id: 4, time_horizon: 3 },
-  { time: 5, real: "🤨", id: 4, time_horizon: 5 },
-  { time: 1, real: "🤨", id: 5, time_horizon: 1 },
-  { time: 2.4, real: "🤢", id: 5, time_horizon: 3 },
-  { time: 2.4, real: "🤢", id: 5, time_horizon: 5 },
-  { time: 1, real: "🤨", id: 6, time_horizon: 1 },
-  { time: 3, real: "🤨", id: 6, time_horizon: 3 },
-  { time: 4.4, real: "🤬", id: 6, time_horizon: 5 },
-  { time: 0.4, real: "🤢", id: 7, time_horizon: 1 },
-  { time: 0.4, real: "🤢", id: 7, time_horizon: 3 },
-  { time: 0.4, real: "🤢", id: 7, time_horizon: 5 },
-  { time: 1, real: "🤨", id: 8, time_horizon: 1 },
-  { time: 1.6, real: "💀", id: 8, time_horizon: 3 },
-  { time: 1.6, real: "💀", id: 8, time_horizon: 5 },
-  { time: 0.8, real: "🤢", id: 9, time_horizon: 1 },
-  { time: 0.8, real: "🤢", id: 9, time_horizon: 3 },
-  { time: 0.8, real: "🤢", id: 9, time_horizon: 5 },
-  { time: 1, real: "🤨", id: 10, time_horizon: 1 },
-  { time: 2.9, real: "🤢", id: 10, time_horizon: 3 },
-  { time: 2.9, real: "🤢", id: 10, time_horizon: 5 }
-]
+// data = [
+//   { time: 1, real: "🤨", id: 1, time_horizon: 1 },
+//   { time: 3, real: "🤨", id: 1, time_horizon: 3 },
+//   { time: 5, real: "🤨", id: 1, time_horizon: 5 },
+//   { time: 1, real: "🤨", id: 2, time_horizon: 1 },
+//   { time: 3, real: "🤨", id: 2, time_horizon: 3 },
+//   { time: 5, real: "🤨", id: 2, time_horizon: 5 },
+//   { time: 1, real: "🤨", id: 3, time_horizon: 1 },
+//   { time: 3, real: "🤨", id: 3, time_horizon: 3 },
+//   { time: 4.6, real: "🤬", id: 3, time_horizon: 5 },
+//   { time: 1, real: "🤨", id: 4, time_horizon: 1 },
+//   { time: 3, real: "🤨", id: 4, time_horizon: 3 },
+//   { time: 5, real: "🤨", id: 4, time_horizon: 5 },
+//   { time: 1, real: "🤨", id: 5, time_horizon: 1 },
+//   { time: 2.4, real: "🤢", id: 5, time_horizon: 3 },
+//   { time: 2.4, real: "🤢", id: 5, time_horizon: 5 },
+//   { time: 1, real: "🤨", id: 6, time_horizon: 1 },
+//   { time: 3, real: "🤨", id: 6, time_horizon: 3 },
+//   { time: 4.4, real: "🤬", id: 6, time_horizon: 5 },
+//   { time: 0.4, real: "🤢", id: 7, time_horizon: 1 },
+//   { time: 0.4, real: "🤢", id: 7, time_horizon: 3 },
+//   { time: 0.4, real: "🤢", id: 7, time_horizon: 5 },
+//   { time: 1, real: "🤨", id: 8, time_horizon: 1 },
+//   { time: 1.6, real: "💀", id: 8, time_horizon: 3 },
+//   { time: 1.6, real: "💀", id: 8, time_horizon: 5 },
+//   { time: 0.8, real: "🤢", id: 9, time_horizon: 1 },
+//   { time: 0.8, real: "🤢", id: 9, time_horizon: 3 },
+//   { time: 0.8, real: "🤢", id: 9, time_horizon: 5 },
+//   { time: 1, real: "🤨", id: 10, time_horizon: 1 },
+//   { time: 2.9, real: "🤢", id: 10, time_horizon: 3 },
+//   { time: 2.9, real: "🤢", id: 10, time_horizon: 5 }
+// ]
 
 filteredData = data.filter((d) => d.time_horizon == timeHorizon)
 
-viewof timeHorizon = Inputs.range([1, 5], {
-  step: 2,
-  value: 5,
+viewof timeHorizon = Inputs.range([10, 50], {
+  step: 20,
+  value: 50,
   label: "Time Horizon"
 })
 
 Plot.plot({
   x: {
-    domain: [0, 5]
+    domain: [0, 50]
   },
   y: {
     domain: [0, 11],
