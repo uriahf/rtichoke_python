@@ -561,6 +561,7 @@ There is no need for an underlying assumption, the answer is explicit.
 This heuristic is can be seen as a different underlying question - what is the probability of having any type of event, Primary or Competing?
 
 
+
 # What rtichoke from now on?
 
 ## Render Predictions Histogram
@@ -570,4 +571,93 @@ This heuristic is can be seen as a different underlying question - what is the p
 For each requried combination of reference_group x predictions_strata x fixed_time_horizons x censored_heuristic x competing_heuristic a separate AJ estimated is calculated for the adjusted `reals` and a Crude estimate is calculated for the excluded `reals`.
 
 The sum of the AJ estimates for each predictions_strata is equal to the overal AJ estimate.
+
+``` {ojs}
+
+Inputs.radio(["Adjusted", "Excluded"], {label: "Censored Assumption"})
+
+Inputs.radio(["Adjusted as Censored", "Adjusted as Negative", "Adjusted as Composite", "Excluded"], {label: "Competing Assumption"})
+
+```
+
+```{python}
+import polars as pl
+from rtichoke.helpers.sandbox_observable_helpers import (
+    create_aj_data,
+    create_list_data_to_adjust,
+    create_adjusted_data
+)
+
+from polarstate import prepare_event_table
+
+times_and_reals = pl.DataFrame({
+    "times": times,
+    "reals": reals
+})
+
+event_table = prepare_event_table(times_and_reals)
+
+# event_table_data = event_table.to_dicts()
+    
+long_df = event_table.select(
+    pl.col("times"),
+    pl.col("overall_survival"),
+    pl.col("state_occupancy_probability_1_at_times"),
+    pl.col("state_occupancy_probability_2_at_times")
+).unpivot(
+    index = "times",
+    variable_name="state",
+    value_name="aj_estimate"
+).to_dicts()
+
+
+ojs_define(long_df = long_df)
+
+```
+
+
+``` {ojs}
+
+long_df
+
+Plot.plot({
+  x: {
+    label: "Time",
+  },
+  y: {
+    label: "Aalen-Johansen Estimate",
+    stack: false
+  },
+  color: {
+    legend: true, 
+    domain: [
+      "state_occupancy_probability_1_at_times", 
+      "state_occupancy_probability_2_at_times",
+      "overall_survival"
+    ],
+    range: [
+      "#4C5454", 
+      "#C880B7",
+      "#E0E0E0", 
+    ]
+  },
+  marks: [
+    Plot.lineY(long_df, {
+      x: "times",
+      y: "aj_estimate",
+      stroke: "state",
+      curve: "step-after"
+    }),
+    Plot.dot(long_df, {
+      x: "times",
+      y: "aj_estimate",
+      fill: "state",
+      r: 2.5,
+      tip: true
+    }),
+    Plot.ruleY([0]) 
+  ]
+})
+
+```
 
