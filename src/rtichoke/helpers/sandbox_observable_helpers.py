@@ -459,28 +459,36 @@ def create_aj_data(
         )
 
     def censored_count(df):
-        return (
-            df.filter(
-                (pl.col("times") < pl.col("fixed_time_horizon"))
-                & (pl.col("reals") == 0)
+        censored_count = (
+            df.with_columns(
+                (
+                    (pl.col("times") < pl.col("fixed_time_horizon"))
+                    & (pl.col("reals") == 0)
+                )
+                .cast(pl.Float64)
+                .alias("is_censored")
             )
             .group_by(["strata", "fixed_time_horizon"])
-            .count()
-            .rename({"count": "real_censored_est"})
-            .with_columns(pl.col("real_censored_est").cast(pl.Float64))
+            .agg(pl.col("is_censored").sum().alias("real_censored_est"))
         )
 
+        return censored_count
+
     def competing_count(df):
-        return (
-            df.filter(
-                (pl.col("reals") == 2)
-                & (pl.col("times") < pl.col("fixed_time_horizon"))
+        competing_count = (
+            df.with_columns(
+                (
+                    (pl.col("times") < pl.col("fixed_time_horizon"))
+                    & (pl.col("reals") == 2)
+                )
+                .cast(pl.Float64)
+                .alias("is_competing")
             )
             .group_by(["strata", "fixed_time_horizon"])
-            .count()
-            .rename({"count": "real_competing_est"})
-            .with_columns(pl.col("real_competing_est").cast(pl.Float64))
+            .agg(pl.col("is_competing").sum().alias("real_competing_est"))
         )
+
+        return competing_count
 
     def aj_estimates_per_horizon(df, horizons):
         return pl.concat(
@@ -519,6 +527,11 @@ def create_aj_data(
             (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
         )
         aj_df = aj_estimates_per_horizon(non_censored, fixed_time_horizons)
+
+        print(exploded)
+        print(censored)
+        print(aj_df)
+
         return aj_estimates_with_cross(
             aj_df.join(censored, on=["strata", "fixed_time_horizon"]),
             {
@@ -628,6 +641,9 @@ def create_aj_data(
     if censoring_assumption == "adjusted" and competing_assumption == "excluded":
         exploded = explode_data(reference_group_data)
         competing = competing_count(exploded)
+
+        print(competing)
+
         non_competing = exploded.filter(
             (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") != 2)
         ).with_columns(
@@ -642,6 +658,29 @@ def create_aj_data(
             pl.exclude("real_competing_est")
         )
         result = competing.join(aj_df, on=["strata", "fixed_time_horizon"])
+
+        print(
+            aj_estimates_with_cross(
+                result,
+                {
+                    "real_censored_est": 0.0,
+                    "censoring_assumption": "adjusted",
+                    "competing_assumption": "excluded",
+                },
+            ).select(
+                [
+                    "strata",
+                    "fixed_time_horizon",
+                    "real_negatives_est",
+                    "real_positives_est",
+                    "real_competing_est",
+                    "real_censored_est",
+                    "censoring_assumption",
+                    "competing_assumption",
+                ]
+            )
+        )
+
         return aj_estimates_with_cross(
             result,
             {
