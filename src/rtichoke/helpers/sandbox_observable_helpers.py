@@ -448,290 +448,335 @@ def create_aj_data(
     """
 
     def aj_estimates_with_cross(df, extra_cols):
-        return df.join(
-            pl.DataFrame(extra_cols),
-            how="cross",
-        )
+        return df.join(pl.DataFrame(extra_cols), how="cross")
 
-    def explode_data(df):
-        return df.with_columns(fixed_time_horizon=pl.lit(fixed_time_horizons)).explode(
-            "fixed_time_horizon"
-        )
+    exploded = assign_and_explode_polars(reference_group_data, fixed_time_horizons)
 
-    def censored_count(df):
-        censored_count = (
-            df.with_columns(
-                (
-                    (pl.col("times") < pl.col("fixed_time_horizon"))
-                    & (pl.col("reals") == 0)
-                )
-                .cast(pl.Float64)
-                .alias("is_censored")
-            )
-            .group_by(["strata", "fixed_time_horizon"])
-            .agg(pl.col("is_censored").sum().alias("real_censored_est"))
-        )
+    excluded_df = _excluded_events_df(
+        exploded, censoring_assumption, competing_assumption
+    )
 
-        return censored_count
+    aj_df = _aj_adjusted_events(
+        reference_group_data,
+        exploded,
+        censoring_assumption,
+        competing_assumption,
+        fixed_time_horizons,
+    )
 
-    def competing_count(df):
-        competing_count = (
-            df.with_columns(
-                (
-                    (pl.col("times") < pl.col("fixed_time_horizon"))
-                    & (pl.col("reals") == 2)
-                )
-                .cast(pl.Float64)
-                .alias("is_competing")
-            )
-            .group_by(["strata", "fixed_time_horizon"])
-            .agg(pl.col("is_competing").sum().alias("real_competing_est"))
-        )
+    result = aj_df.join(excluded_df, on=["strata", "fixed_time_horizon"], how="left")
 
-        return competing_count
+    return aj_estimates_with_cross(
+        result,
+        {
+            "censoring_assumption": censoring_assumption,
+            "competing_assumption": competing_assumption,
+        },
+    ).select(
+        [
+            "strata",
+            "fixed_time_horizon",
+            "real_negatives_est",
+            "real_positives_est",
+            "real_competing_est",
+            "real_censored_est",
+            "censoring_assumption",
+            "competing_assumption",
+        ]
+    )
 
-    def aj_estimates_per_horizon(df, horizons):
-        return pl.concat(
-            [
-                df.filter(pl.col("fixed_time_horizon") == h)
-                .group_by("strata")
-                .map_groups(lambda group: extract_aj_estimate_for_strata(group, [h]))
-                for h in horizons
-            ],
-            how="vertical",
-        )
 
-    if (
-        censoring_assumption == "adjusted"
-        and competing_assumption == "adjusted_as_negative"
-    ):
-        aj_df = reference_group_data.group_by("strata").map_groups(
-            lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizons)
-        )
-        return aj_estimates_with_cross(
-            aj_df,
-            {
-                "real_censored_est": 0.0,
-                "censoring_assumption": "adjusted",
-                "competing_assumption": "adjusted_as_negative",
-            },
-        )
+# def create_aj_data(
+#     reference_group_data,
+#     censoring_assumption,
+#     competing_assumption,
+#     fixed_time_horizons,
+# ):
+#     """
+#     Create AJ estimates per strata based on censoring and competing assumptions.
+#     """
 
-    if (
-        censoring_assumption == "excluded"
-        and competing_assumption == "adjusted_as_negative"
-    ):
-        exploded = explode_data(reference_group_data)
-        censored = censored_count(exploded)
-        non_censored = exploded.filter(
-            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
-        )
-        aj_df = aj_estimates_per_horizon(non_censored, fixed_time_horizons)
+#     def aj_estimates_with_cross(df, extra_cols):
+#         return df.join(
+#             pl.DataFrame(extra_cols),
+#             how="cross",
+#         )
 
-        print(exploded)
-        print(censored)
-        print(aj_df)
+#     def explode_data(df):
+#         return df.with_columns(fixed_time_horizon=pl.lit(fixed_time_horizons)).explode(
+#             "fixed_time_horizon"
+#         )
 
-        return aj_estimates_with_cross(
-            aj_df.join(censored, on=["strata", "fixed_time_horizon"]),
-            {
-                "censoring_assumption": "excluded",
-                "competing_assumption": "adjusted_as_negative",
-            },
-        )
+#     def censored_count(df):
+#         censored_count = (
+#             df.with_columns(
+#                 (
+#                     (pl.col("times") < pl.col("fixed_time_horizon"))
+#                     & (pl.col("reals") == 0)
+#                 )
+#                 .cast(pl.Float64)
+#                 .alias("is_censored")
+#             )
+#             .group_by(["strata", "fixed_time_horizon"])
+#             .agg(pl.col("is_censored").sum().alias("real_censored_est"))
+#         )
 
-    if (
-        censoring_assumption == "adjusted"
-        and competing_assumption == "adjusted_as_censored"
-    ):
-        adjusted = reference_group_data.with_columns(
-            [
-                pl.when(pl.col("reals") == 2)
-                .then(pl.lit(0))
-                .otherwise(pl.col("reals"))
-                .alias("reals")
-            ]
-        )
-        aj_df = adjusted.group_by("strata").map_groups(
-            lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizons)
-        )
-        return aj_estimates_with_cross(
-            aj_df,
-            {
-                "real_censored_est": 0.0,
-                "censoring_assumption": "adjusted",
-                "competing_assumption": "adjusted_as_censored",
-            },
-        )
+#         return censored_count
 
-    if (
-        censoring_assumption == "excluded"
-        and competing_assumption == "adjusted_as_censored"
-    ):
-        exploded = explode_data(reference_group_data)
-        censored = censored_count(exploded)
-        non_censored = exploded.filter(
-            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
-        ).with_columns(
-            [
-                pl.when(pl.col("reals") == 2)
-                .then(pl.lit(0))
-                .otherwise(pl.col("reals"))
-                .alias("reals")
-            ]
-        )
-        aj_df = aj_estimates_per_horizon(non_censored, fixed_time_horizons)
-        return aj_estimates_with_cross(
-            aj_df.join(censored, on=["strata", "fixed_time_horizon"]),
-            {
-                "censoring_assumption": "excluded",
-                "competing_assumption": "adjusted_as_censored",
-            },
-        )
+#     def competing_count(df):
+#         competing_count = (
+#             df.with_columns(
+#                 (
+#                     (pl.col("times") < pl.col("fixed_time_horizon"))
+#                     & (pl.col("reals") == 2)
+#                 )
+#                 .cast(pl.Float64)
+#                 .alias("is_competing")
+#             )
+#             .group_by(["strata", "fixed_time_horizon"])
+#             .agg(pl.col("is_competing").sum().alias("real_competing_est"))
+#         )
 
-    if (
-        censoring_assumption == "adjusted"
-        and competing_assumption == "adjusted_as_composite"
-    ):
-        adjusted = reference_group_data.with_columns(
-            [
-                pl.when(pl.col("reals") == 2)
-                .then(pl.lit(1))
-                .otherwise(pl.col("reals"))
-                .alias("reals")
-            ]
-        )
-        aj_df = adjusted.group_by("strata").map_groups(
-            lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizons)
-        )
-        return aj_estimates_with_cross(
-            aj_df,
-            {
-                "real_censored_est": 0.0,
-                "censoring_assumption": "adjusted",
-                "competing_assumption": "adjusted_as_composite",
-            },
-        )
+#         return competing_count
 
-    if (
-        censoring_assumption == "excluded"
-        and competing_assumption == "adjusted_as_composite"
-    ):
-        exploded = explode_data(reference_group_data)
-        censored = censored_count(exploded)
-        non_censored = exploded.filter(
-            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
-        ).with_columns(
-            [
-                pl.when(pl.col("reals") == 2)
-                .then(pl.lit(1))
-                .otherwise(pl.col("reals"))
-                .alias("reals")
-            ]
-        )
-        aj_df = aj_estimates_per_horizon(non_censored, fixed_time_horizons)
-        return aj_estimates_with_cross(
-            aj_df.join(censored, on=["strata", "fixed_time_horizon"]),
-            {
-                "censoring_assumption": "excluded",
-                "competing_assumption": "adjusted_as_composite",
-            },
-        )
+#     def aj_estimates_per_horizon(df, horizons):
+#         return pl.concat(
+#             [
+#                 df.filter(pl.col("fixed_time_horizon") == h)
+#                 .group_by("strata")
+#                 .map_groups(lambda group: extract_aj_estimate_for_strata(group, [h]))
+#                 for h in horizons
+#             ],
+#             how="vertical",
+#         )
 
-    if censoring_assumption == "adjusted" and competing_assumption == "excluded":
-        exploded = explode_data(reference_group_data)
-        competing = competing_count(exploded)
+#     if (
+#         censoring_assumption == "adjusted"
+#         and competing_assumption == "adjusted_as_negative"
+#     ):
+#         aj_df = reference_group_data.group_by("strata").map_groups(
+#             lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizons)
+#         )
+#         return aj_estimates_with_cross(
+#             aj_df,
+#             {
+#                 "real_censored_est": 0.0,
+#                 "censoring_assumption": "adjusted",
+#                 "competing_assumption": "adjusted_as_negative",
+#             },
+#         )
 
-        print(competing)
+#     if (
+#         censoring_assumption == "excluded"
+#         and competing_assumption == "adjusted_as_negative"
+#     ):
+#         exploded = explode_data(reference_group_data)
+#         censored = censored_count(exploded)
+#         non_censored = exploded.filter(
+#             (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
+#         )
+#         aj_df = aj_estimates_per_horizon(non_censored, fixed_time_horizons)
 
-        non_competing = exploded.filter(
-            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") != 2)
-        ).with_columns(
-            [
-                pl.when(pl.col("reals") == 2)
-                .then(pl.lit(0))
-                .otherwise(pl.col("reals"))
-                .alias("reals")
-            ]
-        )
-        aj_df = aj_estimates_per_horizon(non_competing, fixed_time_horizons).select(
-            pl.exclude("real_competing_est")
-        )
-        result = competing.join(aj_df, on=["strata", "fixed_time_horizon"])
+#         return aj_estimates_with_cross(
+#             aj_df.join(censored, on=["strata", "fixed_time_horizon"]),
+#             {
+#                 "censoring_assumption": "excluded",
+#                 "competing_assumption": "adjusted_as_negative",
+#             },
+#         )
 
-        print(
-            aj_estimates_with_cross(
-                result,
-                {
-                    "real_censored_est": 0.0,
-                    "censoring_assumption": "adjusted",
-                    "competing_assumption": "excluded",
-                },
-            ).select(
-                [
-                    "strata",
-                    "fixed_time_horizon",
-                    "real_negatives_est",
-                    "real_positives_est",
-                    "real_competing_est",
-                    "real_censored_est",
-                    "censoring_assumption",
-                    "competing_assumption",
-                ]
-            )
-        )
+#     if (
+#         censoring_assumption == "adjusted"
+#         and competing_assumption == "adjusted_as_censored"
+#     ):
+#         adjusted = reference_group_data.with_columns(
+#             [
+#                 pl.when(pl.col("reals") == 2)
+#                 .then(pl.lit(0))
+#                 .otherwise(pl.col("reals"))
+#                 .alias("reals")
+#             ]
+#         )
+#         aj_df = adjusted.group_by("strata").map_groups(
+#             lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizons)
+#         )
+#         return aj_estimates_with_cross(
+#             aj_df,
+#             {
+#                 "real_censored_est": 0.0,
+#                 "censoring_assumption": "adjusted",
+#                 "competing_assumption": "adjusted_as_censored",
+#             },
+#         )
 
-        return aj_estimates_with_cross(
-            result,
-            {
-                "real_censored_est": 0.0,
-                "censoring_assumption": "adjusted",
-                "competing_assumption": "excluded",
-            },
-        ).select(
-            [
-                "strata",
-                "fixed_time_horizon",
-                "real_negatives_est",
-                "real_positives_est",
-                "real_competing_est",
-                "real_censored_est",
-                "censoring_assumption",
-                "competing_assumption",
-            ]
-        )
+#     if (
+#         censoring_assumption == "excluded"
+#         and competing_assumption == "adjusted_as_censored"
+#     ):
+#         exploded = explode_data(reference_group_data)
+#         censored = censored_count(exploded)
+#         non_censored = exploded.filter(
+#             (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
+#         ).with_columns(
+#             [
+#                 pl.when(pl.col("reals") == 2)
+#                 .then(pl.lit(0))
+#                 .otherwise(pl.col("reals"))
+#                 .alias("reals")
+#             ]
+#         )
+#         aj_df = aj_estimates_per_horizon(non_censored, fixed_time_horizons)
+#         return aj_estimates_with_cross(
+#             aj_df.join(censored, on=["strata", "fixed_time_horizon"]),
+#             {
+#                 "censoring_assumption": "excluded",
+#                 "competing_assumption": "adjusted_as_censored",
+#             },
+#         )
 
-    if censoring_assumption == "excluded" and competing_assumption == "excluded":
-        exploded = explode_data(reference_group_data)
-        censored = censored_count(exploded)
-        competing = competing_count(exploded)
-        non_censored_non_competing = exploded.filter(
-            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") == 1)
-        )
-        aj_df = aj_estimates_per_horizon(
-            non_censored_non_competing, fixed_time_horizons
-        )
-        result = competing.join(censored, on=["strata", "fixed_time_horizon"]).join(
-            aj_df, on=["strata", "fixed_time_horizon"]
-        )
-        return aj_estimates_with_cross(
-            result,
-            {
-                "censoring_assumption": "excluded",
-                "competing_assumption": "excluded",
-            },
-        ).select(
-            [
-                "strata",
-                "fixed_time_horizon",
-                "real_negatives_est",
-                "real_positives_est",
-                "real_competing_est",
-                "real_censored_est",
-                "censoring_assumption",
-                "competing_assumption",
-            ]
-        )
+#     if (
+#         censoring_assumption == "adjusted"
+#         and competing_assumption == "adjusted_as_composite"
+#     ):
+#         adjusted = reference_group_data.with_columns(
+#             [
+#                 pl.when(pl.col("reals") == 2)
+#                 .then(pl.lit(1))
+#                 .otherwise(pl.col("reals"))
+#                 .alias("reals")
+#             ]
+#         )
+#         aj_df = adjusted.group_by("strata").map_groups(
+#             lambda group: extract_aj_estimate_for_strata(group, fixed_time_horizons)
+#         )
+#         return aj_estimates_with_cross(
+#             aj_df,
+#             {
+#                 "real_censored_est": 0.0,
+#                 "censoring_assumption": "adjusted",
+#                 "competing_assumption": "adjusted_as_composite",
+#             },
+#         )
+
+#     if (
+#         censoring_assumption == "excluded"
+#         and competing_assumption == "adjusted_as_composite"
+#     ):
+#         exploded = explode_data(reference_group_data)
+#         censored = censored_count(exploded)
+#         non_censored = exploded.filter(
+#             (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
+#         ).with_columns(
+#             [
+#                 pl.when(pl.col("reals") == 2)
+#                 .then(pl.lit(1))
+#                 .otherwise(pl.col("reals"))
+#                 .alias("reals")
+#             ]
+#         )
+#         aj_df = aj_estimates_per_horizon(non_censored, fixed_time_horizons)
+#         return aj_estimates_with_cross(
+#             aj_df.join(censored, on=["strata", "fixed_time_horizon"]),
+#             {
+#                 "censoring_assumption": "excluded",
+#                 "competing_assumption": "adjusted_as_composite",
+#             },
+#         )
+
+#     if censoring_assumption == "adjusted" and competing_assumption == "excluded":
+#         exploded = explode_data(reference_group_data)
+#         competing = competing_count(exploded)
+
+#         print(competing)
+
+#         non_competing = exploded.filter(
+#             (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") != 2)
+#         ).with_columns(
+#             [
+#                 pl.when(pl.col("reals") == 2)
+#                 .then(pl.lit(0))
+#                 .otherwise(pl.col("reals"))
+#                 .alias("reals")
+#             ]
+#         )
+#         aj_df = aj_estimates_per_horizon(non_competing, fixed_time_horizons).select(
+#             pl.exclude("real_competing_est")
+#         )
+#         result = competing.join(aj_df, on=["strata", "fixed_time_horizon"])
+
+#         print(
+#             aj_estimates_with_cross(
+#                 result,
+#                 {
+#                     "real_censored_est": 0.0,
+#                     "censoring_assumption": "adjusted",
+#                     "competing_assumption": "excluded",
+#                 },
+#             ).select(
+#                 [
+#                     "strata",
+#                     "fixed_time_horizon",
+#                     "real_negatives_est",
+#                     "real_positives_est",
+#                     "real_competing_est",
+#                     "real_censored_est",
+#                     "censoring_assumption",
+#                     "competing_assumption",
+#                 ]
+#             )
+#         )
+
+#         return aj_estimates_with_cross(
+#             result,
+#             {
+#                 "real_censored_est": 0.0,
+#                 "censoring_assumption": "adjusted",
+#                 "competing_assumption": "excluded",
+#             },
+#         ).select(
+#             [
+#                 "strata",
+#                 "fixed_time_horizon",
+#                 "real_negatives_est",
+#                 "real_positives_est",
+#                 "real_competing_est",
+#                 "real_censored_est",
+#                 "censoring_assumption",
+#                 "competing_assumption",
+#             ]
+#         )
+
+#     if censoring_assumption == "excluded" and competing_assumption == "excluded":
+#         exploded = explode_data(reference_group_data)
+#         censored = censored_count(exploded)
+#         competing = competing_count(exploded)
+#         non_censored_non_competing = exploded.filter(
+#             (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") == 1)
+#         )
+#         aj_df = aj_estimates_per_horizon(
+#             non_censored_non_competing, fixed_time_horizons
+#         )
+#         result = competing.join(censored, on=["strata", "fixed_time_horizon"]).join(
+#             aj_df, on=["strata", "fixed_time_horizon"]
+#         )
+#         return aj_estimates_with_cross(
+#             result,
+#             {
+#                 "censoring_assumption": "excluded",
+#                 "competing_assumption": "excluded",
+#             },
+#         ).select(
+#             [
+#                 "strata",
+#                 "fixed_time_horizon",
+#                 "real_negatives_est",
+#                 "real_positives_est",
+#                 "real_competing_est",
+#                 "real_censored_est",
+#                 "censoring_assumption",
+#                 "competing_assumption",
+#             ]
+#         )
 
 
 def extract_crude_estimate_polars(data: pl.DataFrame) -> pl.DataFrame:
@@ -1004,3 +1049,142 @@ def cast_and_join_adjusted_data(aj_data_combinations, aj_estimates_data):
         how="left",
     )
     return final_adjusted_data_polars
+
+
+def _censored_count(df: pl.DataFrame) -> pl.DataFrame:
+    return (
+        df.with_columns(
+            ((pl.col("times") < pl.col("fixed_time_horizon")) & (pl.col("reals") == 0))
+            .cast(pl.Float64)
+            .alias("is_censored")
+        )
+        .group_by(["strata", "fixed_time_horizon"])
+        .agg(pl.col("is_censored").sum().alias("real_censored_est"))
+    )
+
+
+def _competing_count(df: pl.DataFrame) -> pl.DataFrame:
+    return (
+        df.with_columns(
+            ((pl.col("times") < pl.col("fixed_time_horizon")) & (pl.col("reals") == 2))
+            .cast(pl.Float64)
+            .alias("is_competing")
+        )
+        .group_by(["strata", "fixed_time_horizon"])
+        .agg(pl.col("is_competing").sum().alias("real_competing_est"))
+    )
+
+
+def _aj_estimates_per_horizon(df: pl.DataFrame, horizons: list[float]) -> pl.DataFrame:
+    return pl.concat(
+        [
+            df.filter(pl.col("fixed_time_horizon") == h)
+            .group_by("strata")
+            .map_groups(lambda group: extract_aj_estimate_for_strata(group, [h]))
+            for h in horizons
+        ],
+        how="vertical",
+    )
+
+
+def _excluded_events_df(
+    exploded: pl.DataFrame, censoring: str, competing: str
+) -> pl.DataFrame:
+    base = exploded.select(["strata", "fixed_time_horizon"]).unique()
+    censored = (
+        _censored_count(exploded)
+        if censoring == "excluded"
+        else base.with_columns(pl.lit(0.0).alias("real_censored_est"))
+    )
+    competing_df = (
+        _competing_count(exploded)
+        if competing == "excluded"
+        else base.with_columns(pl.lit(0.0).alias("real_competing_est"))
+    )
+    return (
+        base.join(censored, on=["strata", "fixed_time_horizon"], how="left")
+        .join(competing_df, on=["strata", "fixed_time_horizon"], how="left")
+        .fill_null(0.0)
+    )
+
+
+def _aj_adjusted_events(
+    reference_group_data: pl.DataFrame,
+    exploded: pl.DataFrame,
+    censoring: str,
+    competing: str,
+    horizons: list[float],
+) -> pl.DataFrame:
+    if censoring == "adjusted" and competing == "adjusted_as_negative":
+        return reference_group_data.group_by("strata").map_groups(
+            lambda group: extract_aj_estimate_for_strata(group, horizons)
+        )
+
+    if censoring == "excluded" and competing == "adjusted_as_negative":
+        non_censored = exploded.filter(
+            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
+        )
+        return _aj_estimates_per_horizon(non_censored, horizons)
+
+    if censoring == "adjusted" and competing == "adjusted_as_censored":
+        adjusted = reference_group_data.with_columns(
+            pl.when(pl.col("reals") == 2)
+            .then(pl.lit(0))
+            .otherwise(pl.col("reals"))
+            .alias("reals")
+        )
+        return adjusted.group_by("strata").map_groups(
+            lambda group: extract_aj_estimate_for_strata(group, horizons)
+        )
+
+    if censoring == "excluded" and competing == "adjusted_as_censored":
+        non_censored = exploded.filter(
+            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
+        ).with_columns(
+            pl.when(pl.col("reals") == 2)
+            .then(pl.lit(0))
+            .otherwise(pl.col("reals"))
+            .alias("reals")
+        )
+        return _aj_estimates_per_horizon(non_censored, horizons)
+
+    if censoring == "adjusted" and competing == "adjusted_as_composite":
+        adjusted = reference_group_data.with_columns(
+            pl.when(pl.col("reals") == 2)
+            .then(pl.lit(1))
+            .otherwise(pl.col("reals"))
+            .alias("reals")
+        )
+        return adjusted.group_by("strata").map_groups(
+            lambda group: extract_aj_estimate_for_strata(group, horizons)
+        )
+
+    if censoring == "excluded" and competing == "adjusted_as_composite":
+        non_censored = exploded.filter(
+            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
+        ).with_columns(
+            pl.when(pl.col("reals") == 2)
+            .then(pl.lit(1))
+            .otherwise(pl.col("reals"))
+            .alias("reals")
+        )
+        return _aj_estimates_per_horizon(non_censored, horizons)
+
+    if censoring == "adjusted" and competing == "excluded":
+        non_competing = exploded.filter(
+            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") != 2)
+        ).with_columns(
+            pl.when(pl.col("reals") == 2)
+            .then(pl.lit(0))
+            .otherwise(pl.col("reals"))
+            .alias("reals")
+        )
+        return _aj_estimates_per_horizon(non_competing, horizons).select(
+            pl.exclude("real_competing_est")
+        )
+
+    # censoring == "excluded" and competing == "excluded"
+    non_censored_non_competing = exploded.filter(
+        (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") == 1)
+    )
+    return _aj_estimates_per_horizon(non_censored_non_competing, horizons)
