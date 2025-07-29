@@ -3187,14 +3187,14 @@ wheels = [
 
 [[package]]
 name = "polarstate"
-version = "0.1.6"
+version = "0.1.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "polars" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/79/02/f1c77f1d76846202cd0c885fca02882c261e49068bfdc7936078f515a810/polarstate-0.1.6.tar.gz", hash = "sha256:350cd3978a06bcd049f57136a2eb163e3c9702cc32aca7c3ac6f703c943509ab", size = 4222089, upload-time = "2025-07-03T17:54:06.682Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9b/09/107eb49e8fc33392d1f226c353adbaa2c345e9e77b82039bf0b9edbfadfc/polarstate-0.1.8.tar.gz", hash = "sha256:803e158f5961f234700aa0121e47ca754ff76796d01dc0230e5133f020cbe7bd", size = 3155, upload-time = "2025-07-29T02:24:27.829Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4a/0c/f35a4e67d5daa8554d74f6b5be8f8b4ee8ce287a364bc4c1539656f7567c/polarstate-0.1.6-py3-none-any.whl", hash = "sha256:2cfc6de578cc714da83d51ca8d798ed85fc713a4d46263e730c67f8490e1c455", size = 3988, upload-time = "2025-07-03T17:54:05.811Z" },
+    { url = "https://files.pythonhosted.org/packages/d4/68/c80de613a28e48be2ce15e00118bf8a018b74229349fd1c26347b352dcee/polarstate-0.1.8-py3-none-any.whl", hash = "sha256:710d791e67ea09c46f79030ecd1253e67a9d2f100aceb848c25967d88314db6a", size = 4403, upload-time = "2025-07-29T02:24:27.122Z" },
 ]
 
 [[package]]
@@ -4083,6 +4083,7 @@ dev = [
     { name = "marimo" },
     { name = "myst-nb", marker = "python_full_version < '4'" },
     { name = "plotly" },
+    { name = "polarstate" },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -4103,7 +4104,7 @@ requires-dist = [
     { name = "papermill", specifier = ">=2.6.0" },
     { name = "plotly", specifier = ">=5.13.1,<6.0.0" },
     { name = "polars", specifier = ">=1.28.0" },
-    { name = "polarstate", specifier = ">=0.1.6" },
+    { name = "polarstate", specifier = "==0.1.8" },
     { name = "pyarrow", specifier = ">=20.0.0" },
     { name = "quartodoc", specifier = ">=0.9.1" },
     { name = "sphinx-autoapi", specifier = ">=2.1.0,<3.0.0" },
@@ -4121,6 +4122,7 @@ dev = [
     { name = "marimo", specifier = ">=0.14.7" },
     { name = "myst-nb", marker = "python_full_version >= '3.9' and python_full_version < '4'", specifier = ">=0.17.1,<1.0.0" },
     { name = "plotly", specifier = ">=5.24.1" },
+    { name = "polarstate", specifier = ">=0.1.6" },
     { name = "pre-commit", specifier = ">=4.2.0" },
     { name = "pytest", specifier = ">=7.3.0,<8.0.0" },
     { name = "pytest-cov", specifier = ">=4.0.0,<5.0.0" },

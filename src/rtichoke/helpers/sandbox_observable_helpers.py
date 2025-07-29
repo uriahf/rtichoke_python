@@ -735,13 +735,15 @@ def extract_crude_estimate_polars(data: pl.DataFrame) -> pl.DataFrame:
 
 def extract_aj_estimate_for_strata(data_to_adjust, horizons):
     n = data_to_adjust.height
+
     event_table = prepare_event_table(data_to_adjust)
+
     aj_estimate_for_strata_polars = predict_aj_estimates(
         event_table, pl.Series(horizons)
     )
 
     aj_estimate_for_strata_polars = aj_estimate_for_strata_polars.rename(
-        {"fixed_time_horizons": "fixed_time_horizon"}
+        {"times": "fixed_time_horizon"}
     )
 
     return aj_estimate_for_strata_polars.with_columns(

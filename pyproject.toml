@@ -17,8 +17,8 @@ dependencies = [
     "pyarrow>=20.0.0",
     "ty>=0.0.1a5",
     "pandas>=2.2.3",
-    "polarstate>=0.1.6",
     "typing>=3.7.4.3",
+    "polarstate==0.1.8",
 ]
 name = "rtichoke"
 version = "0.1.11"
@@ -42,6 +42,7 @@ dev = [
     "plotly>=5.24.1",
     "ty>=0.0.1a12",
     "scikit-learn>=1.6.1",
+    "polarstate>=0.1.6",
 ]
 
 [tool.uv.workspace]
