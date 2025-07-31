@@ -21,6 +21,7 @@ def _expected(
     censoring: str,
     competing_assump: str,
 ) -> pl.DataFrame:
+    estimate_origin_enum = pl.Enum(["fixed_time_horizons", "event_table"])
     return pl.DataFrame(
         {
             "strata": ["group1", "group1", "group1"],
@@ -31,6 +32,9 @@ def _expected(
             "real_censored_est": censored,
             "censoring_assumption": [censoring] * 3,
             "competing_assumption": [competing_assump] * 3,
+            "estimate_origin": pl.Series(
+                ["fixed_time_horizons"] * 3, dtype=estimate_origin_enum
+            ),
         }
     )
 
@@ -169,8 +173,10 @@ def test_extract_aj_estimate_for_strata_basic() -> None:
         }
     )
     horizons = [1.0, 2.0, 3.0]
-
-    result = extract_aj_estimate_for_strata(df, horizons).sort("fixed_time_horizon")
+    estimate_origin_enum = pl.Enum(["fixed_time_horizons", "event_table"])
+    result = extract_aj_estimate_for_strata(df, horizons, full_event_table=False).sort(
+        "fixed_time_horizon"
+    )
 
     expected = pl.DataFrame(
         {
@@ -179,6 +185,9 @@ def test_extract_aj_estimate_for_strata_basic() -> None:
             "real_negatives_est": [4.0, 4.0, 8 / 3],
             "real_positives_est": [0.0, 0.0, 4 / 3],
             "real_competing_est": [1.0, 1.0, 1.0],
+            "estimate_origin": pl.Series(
+                ["fixed_time_horizons"] * 3, dtype=estimate_origin_enum
+            ),
         }
     )
 
