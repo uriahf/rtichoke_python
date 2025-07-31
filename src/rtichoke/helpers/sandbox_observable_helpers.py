@@ -452,9 +452,15 @@ def create_aj_data(
 
     exploded = assign_and_explode_polars(reference_group_data, fixed_time_horizons)
 
+    print("exploded")
+    print(exploded)
+
     excluded_df = _excluded_events_df(
         exploded, censoring_assumption, competing_assumption
     )
+
+    print("excluded_df")
+    print(excluded_df)
 
     aj_df = _aj_adjusted_events(
         reference_group_data,
@@ -463,6 +469,9 @@ def create_aj_data(
         competing_assumption,
         fixed_time_horizons,
     )
+
+    print("aj_df")
+    print(aj_df)
 
     result = aj_df.join(excluded_df, on=["strata", "fixed_time_horizon"], how="left")
 
@@ -1054,7 +1063,7 @@ def cast_and_join_adjusted_data(aj_data_combinations, aj_estimates_data):
 def _censored_count(df: pl.DataFrame) -> pl.DataFrame:
     return (
         df.with_columns(
-            ((pl.col("times") < pl.col("fixed_time_horizon")) & (pl.col("reals") == 0))
+            ((pl.col("times") <= pl.col("fixed_time_horizon")) & (pl.col("reals") == 0))
             .cast(pl.Float64)
             .alias("is_censored")
         )
@@ -1066,7 +1075,7 @@ def _censored_count(df: pl.DataFrame) -> pl.DataFrame:
 def _competing_count(df: pl.DataFrame) -> pl.DataFrame:
     return (
         df.with_columns(
-            ((pl.col("times") < pl.col("fixed_time_horizon")) & (pl.col("reals") == 2))
+            ((pl.col("times") <= pl.col("fixed_time_horizon")) & (pl.col("reals") == 2))
             .cast(pl.Float64)
             .alias("is_competing")
         )
@@ -1122,7 +1131,7 @@ def _aj_adjusted_events(
 
     if censoring == "excluded" and competing == "adjusted_as_negative":
         non_censored = exploded.filter(
-            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
+            (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
         )
         return _aj_estimates_per_horizon(non_censored, horizons)
 
@@ -1139,7 +1148,7 @@ def _aj_adjusted_events(
 
     if censoring == "excluded" and competing == "adjusted_as_censored":
         non_censored = exploded.filter(
-            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
+            (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
         ).with_columns(
             pl.when(pl.col("reals") == 2)
             .then(pl.lit(0))
@@ -1161,7 +1170,7 @@ def _aj_adjusted_events(
 
     if censoring == "excluded" and competing == "adjusted_as_composite":
         non_censored = exploded.filter(
-            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
+            (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
         ).with_columns(
             pl.when(pl.col("reals") == 2)
             .then(pl.lit(1))
@@ -1172,7 +1181,7 @@ def _aj_adjusted_events(
 
     if censoring == "adjusted" and competing == "excluded":
         non_competing = exploded.filter(
-            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") != 2)
+            (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") != 2)
         ).with_columns(
             pl.when(pl.col("reals") == 2)
             .then(pl.lit(0))
@@ -1185,6 +1194,9 @@ def _aj_adjusted_events(
 
     # censoring == "excluded" and competing == "excluded"
     non_censored_non_competing = exploded.filter(
-        (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") == 1)
+        (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") == 1)
     )
-    return _aj_estimates_per_horizon(non_censored_non_competing, horizons)
+
+    return _aj_estimates_per_horizon(non_censored_non_competing, horizons).drop(
+        "real_competing_est"
+    )
