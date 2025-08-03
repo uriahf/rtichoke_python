@@ -33,6 +33,7 @@ def _expected(
         {
             "strata": ["group1", "group1", "group1"],
             "fixed_time_horizon": [1.0, 2.0, 3.0],
+            "times": [1.0, 2.0, 3.0],
             "real_negatives_est": negatives,
             "real_positives_est": positives,
             "real_competing_est": competing,
@@ -188,6 +189,7 @@ def test_extract_aj_estimate_for_strata_basic() -> None:
     expected = pl.DataFrame(
         {
             "strata": ["group1", "group1", "group1"],
+            "times": [1.0, 2.0, 3.0],
             "fixed_time_horizon": [1.0, 2.0, 3.0],
             "real_negatives_est": [4.0, 4.0, 8 / 3],
             "real_positives_est": [0.0, 0.0, 4 / 3],
@@ -262,6 +264,7 @@ def _expected_aj_df(neg, pos, comp, include_comp=True):
 
     data = {
         "strata": ["group1"] * 3,
+        "times": TIME_HORIZONS,
         "fixed_time_horizon": TIME_HORIZONS,
         "real_negatives_est": [neg[0], neg[1], neg[2]],
         "real_positives_est": [pos[0], pos[1], pos[2]],
@@ -274,6 +277,7 @@ def _expected_aj_df(neg, pos, comp, include_comp=True):
 
     cols = [
         "strata",
+        "times",
         "fixed_time_horizon",
         "real_negatives_est",
         "real_positives_est",
@@ -292,6 +296,7 @@ def _expected_excluded_df(censoring, competing):
             "fixed_time_horizon": TIME_HORIZONS,
             "real_censored_est": EXCLUDED_EXPECTED[censoring],
             "real_competing_est": COMPETING_EXCLUDED[competing],
+            "times": TIME_HORIZONS,
         }
     )
 
