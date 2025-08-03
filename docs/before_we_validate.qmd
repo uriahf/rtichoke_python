@@ -587,7 +587,7 @@ from rtichoke.helpers.sandbox_observable_helpers import (
     create_adjusted_data
 )
 
-from polarstate import prepare_event_table
+from polarstate import prepare_event_table, predict_aj_estimates
 
 times_and_reals = pl.DataFrame({
     "times": times,
@@ -596,18 +596,34 @@ times_and_reals = pl.DataFrame({
 
 event_table = prepare_event_table(times_and_reals)
 
-# event_table_data = event_table.to_dicts()
-    
-long_df = event_table.select(
+long_df = predict_aj_estimates(
+  event_table,
+  [10.0, 30.0, 50.0], 
+  True
+).select(
     pl.col("times"),
-    pl.col("overall_survival"),
-    pl.col("state_occupancy_probability_1_at_times"),
-    pl.col("state_occupancy_probability_2_at_times")
+    pl.col("state_occupancy_probability_0"),
+    pl.col("state_occupancy_probability_1"),
+    pl.col("state_occupancy_probability_2"),
+    pl.col("estimate_origin")
 ).unpivot(
-    index = "times",
+    index = ["times", "estimate_origin"],
     variable_name="state",
     value_name="aj_estimate"
 ).to_dicts()
+
+# event_table_data = event_table.to_dicts()
+    
+# long_df = event_table.select(
+#     pl.col("times"),
+#     pl.col("overall_survival"),
+#     pl.col("state_occupancy_probability_1_at_times"),
+#     pl.col("state_occupancy_probability_2_at_times")
+# ).unpivot(
+#     index = ["times", "estimate_origin"],
+#     variable_name="state",
+#     value_name="aj_estimate"
+# ).to_dicts()
 
 
 ojs_define(long_df = long_df)
@@ -615,13 +631,97 @@ ojs_define(long_df = long_df)
 ```
 
 
+```{python}
+from rtichoke.helpers.sandbox_observable_helpers import (
+  assign_and_explode_polars, _excluded_events_df, _aj_adjusted_events)
+
+censoring_assumption = "excluded"
+competing_assumption = "adjusted_as_negative"
+fixed_time_horizons = [10.0, 30.0, 50.0]
+
+reference_group_data = pl.DataFrame(
+    {
+        "strata": ["model"] * 10,
+        "reals": reals,
+        "times": times,
+    }
+)
+
+exploded = assign_and_explode_polars(reference_group_data, fixed_time_horizons)
+
+long_excluded_df = _excluded_events_df(
+        exploded, censoring_assumption, competing_assumption
+).select(
+    pl.col("fixed_time_horizon"),
+    pl.col("real_censored_est"),
+    pl.col("real_competing_est")
+).unpivot(
+    index = ["fixed_time_horizon"],
+    variable_name="state",
+    value_name="excluded_count"
+).to_dicts()
+
+long_adjusted_df = _aj_adjusted_events(
+        reference_group_data,
+        exploded,
+        censoring_assumption,
+        competing_assumption,
+        fixed_time_horizons,
+        True,
+).select(
+    pl.col("fixed_time_horizon"),
+    pl.col("real_negatives_est"),
+    pl.col("real_positives_est"),
+    pl.col("real_competing_est"),
+    pl.col("estimate_origin"),
+    pl.col("times")
+).unpivot(
+    index = ["fixed_time_horizon", "times",  "estimate_origin"],
+    variable_name="state",
+    value_name="aj_estimate"
+).sort(pl.col("fixed_time_horizon")).to_dicts()
+
+
+
+ojs_define(
+  long_excluded_df = long_excluded_df,
+  long_adjusted_df = long_adjusted_df)
+
+```
+
 ``` {ojs}
+//| echo: false
+
+long_excluded_df
 
 long_df
 
+long_adjusted_df
+
+```
+
+``` {ojs}
+//| echo: false
+
+viewof timeHorizon_aj_estimate = Inputs.range([10, 50], {
+  step: 20,
+  value: 50,
+  label: "Time Horizon"
+})
+
+filteredLongAdjustedDf = long_adjusted_df.filter((d) => d.fixed_time_horizon == timeHorizon_aj_estimate)
+filteredLongExcludedDf = long_excluded_df.filter((d) => d.fixed_time_horizon == timeHorizon_aj_estimate)
+
+filteredLongAdjustedDf
+filteredLongExcludedDf
+
 Plot.plot({
+  style: {
+    background: "transparent"
+  },
   x: {
     label: "Time",
+    domain: [0, 50]
   },
   y: {
     label: "Aalen-Johansen Estimate",
@@ -630,9 +730,12 @@ Plot.plot({
   color: {
     legend: true, 
     domain: [
-      "state_occupancy_probability_1_at_times", 
-      "state_occupancy_probability_2_at_times",
-      "overall_survival"
+      "real_positives_est",
+      "real_competing_est",
+      "real_negatives_est"
+      // "state_occupancy_probability_1", 
+      // "state_occupancy_probability_2",
+      // "state_occupancy_probability_0"
     ],
     range: [
       "#4C5454", 
@@ -641,17 +744,74 @@ Plot.plot({
     ]
   },
   marks: [
-    Plot.lineY(long_df, {
+    Plot.lineY(filteredLongAdjustedDf.filter(d => d.estimate_origin === "event_table"), {
       x: "times",
       y: "aj_estimate",
       stroke: "state",
       curve: "step-after"
     }),
-    Plot.dot(long_df, {
+    Plot.dot(filteredLongAdjustedDf.filter(d => d.estimate_origin === "event_table"), {
       x: "times",
       y: "aj_estimate",
       fill: "state",
       r: 2.5,
+      tip: true
+    }),
+    Plot.dot(filteredLongAdjustedDf.filter(d => d.estimate_origin === "fixed_time_horizons"), {
+      x: "times",
+      y: "aj_estimate",
+      fill: "state",
+      r: 10,
+      tip: true
+    }),
+    Plot.ruleY([0]) 
+  ]
+})
+
+
+
+Plot.plot({
+  style: {
+    background: "transparent"
+  },
+  x: {
+    label: "Time",
+    domain: [0, 50]
+  },
+  y: {
+    label: "Aalen-Johansen Estimate",
+    stack: false
+  },
+  color: {
+    legend: true, 
+    domain: [
+      "real_competing_est",
+      "real_censored_est"
+    ],
+    range: [
+      "#C880B7",
+      "#E3F09B", 
+    ]
+  },
+  marks: [
+    Plot.lineY(long_excluded_df, {
+      x: "fixed_time_horizon",
+      y: "excluded_count",
+      stroke: "state",
+      curve: "step-after"
+    }),
+    Plot.dot(long_excluded_df, {
+      x: "fixed_time_horizon",
+      y: "excluded_count",
+      fill: "state",
+      r: 2.5,
+      tip: true
+    }),
+    Plot.dot(filteredLongExcludedDf, {
+      x: "fixed_time_horizon",
+      y: "excluded_count",
+      fill: "state",
+      r: 10,
       tip: true
     }),
     Plot.ruleY([0]) 
@@ -659,4 +819,6 @@ Plot.plot({
 })
 
 ```
+
+
 
