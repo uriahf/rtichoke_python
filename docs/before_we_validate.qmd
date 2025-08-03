@@ -771,6 +771,7 @@ Plot.plot({
 
 
 Plot.plot({
+  height: 100,
   style: {
     background: "transparent"
   },
