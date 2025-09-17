@@ -439,8 +439,8 @@ def update_administrative_censoring_polars(data: pl.DataFrame) -> pl.DataFrame:
 
 def create_aj_data(
     reference_group_data,
-    censoring_assumption,
-    competing_assumption,
+    censoring_heuristic,
+    competing_heuristic,
     fixed_time_horizons,
     full_event_table: bool = False,
 ):
@@ -459,18 +459,22 @@ def create_aj_data(
     print("exploded")
     print(exploded)
 
-    excluded_df = _excluded_events_df(
-        exploded, censoring_assumption, competing_assumption
+    event_table = prepare_event_table(reference_group_data)
+
+    # TODO: solve strata in the pipeline
+
+    excluded_events = _extract_excluded_events(
+        event_table, fixed_time_horizons, censoring_heuristic, competing_heuristic
     )
 
-    print("excluded_df")
-    print(excluded_df)
+    print("excluded_events")
+    print(excluded_events)
 
     aj_df = _aj_adjusted_events(
         reference_group_data,
         exploded,
-        censoring_assumption,
-        competing_assumption,
+        censoring_heuristic,
+        competing_heuristic,
         fixed_time_horizons,
         full_event_table,
     )
@@ -478,7 +482,7 @@ def create_aj_data(
     print("aj_df")
     print(aj_df.sort(pl.col("fixed_time_horizon")))
 
-    result = aj_df.join(excluded_df, on=["strata", "fixed_time_horizon"], how="left")
+    result = aj_df.join(excluded_events, on=["fixed_time_horizon"], how="left")
 
     print("result")
     print(result.sort(pl.col("fixed_time_horizon")))
@@ -486,8 +490,8 @@ def create_aj_data(
     return aj_estimates_with_cross(
         result,
         {
-            "censoring_assumption": censoring_assumption,
-            "competing_assumption": competing_assumption,
+            "censoring_assumption": censoring_heuristic,
+            "competing_assumption": competing_heuristic,
         },
     ).select(
         [
@@ -503,6 +507,40 @@ def create_aj_data(
             "estimate_origin",
         ]
     )
+
+
+def _extract_excluded_events(
+    event_table: pl.DataFrame,
+    fixed_time_horizons: list[float],
+    censoring_heuristic: str,
+    competing_heuristic: str,
+) -> pl.DataFrame:
+    horizons_df = pl.DataFrame({"times": fixed_time_horizons}).sort("times")
+
+    excluded_events = horizons_df.join_asof(
+        event_table.with_columns(
+            pl.col("count_0").cum_sum().cast(pl.Float64).alias("real_censored_est"),
+            pl.col("count_2").cum_sum().cast(pl.Float64).alias("real_competing_est"),
+        ).select(
+            pl.col("times"),
+            pl.col("real_censored_est"),
+            pl.col("real_competing_est"),
+        ),
+        left_on="times",
+        right_on="times",
+    ).with_columns([pl.col("times").alias("fixed_time_horizon")])
+
+    if censoring_heuristic != "excluded":
+        excluded_events = excluded_events.with_columns(
+            pl.lit(0.0).alias("real_censored_est")
+        )
+
+    if competing_heuristic != "excluded":
+        excluded_events = excluded_events.with_columns(
+            pl.lit(0.0).alias("real_competing_est")
+        )
+
+    return excluded_events
 
 
 def extract_crude_estimate_polars(data: pl.DataFrame) -> pl.DataFrame:
@@ -846,28 +884,6 @@ def _aj_estimates_per_horizon(
         ],
         how="vertical",
     )
-
-
-def _excluded_events_df(
-    exploded: pl.DataFrame, censoring: str, competing: str
-) -> pl.DataFrame:
-    base = exploded.select(["strata", "fixed_time_horizon"]).unique()
-    censored = (
-        _censored_count(exploded)
-        if censoring == "excluded"
-        else base.with_columns(pl.lit(0.0).alias("real_censored_est"))
-    )
-    competing_df = (
-        _competing_count(exploded)
-        if competing == "excluded"
-        else base.with_columns(pl.lit(0.0).alias("real_competing_est"))
-    )
-
-    return (
-        base.join(censored, on=["strata", "fixed_time_horizon"], how="left")
-        .join(competing_df, on=["strata", "fixed_time_horizon"], how="left")
-        .fill_null(0.0)
-    ).with_columns([pl.col("fixed_time_horizon").alias("times")])
 
 
 def _aj_adjusted_events(

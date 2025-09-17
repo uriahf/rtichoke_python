@@ -7,7 +7,6 @@ from rtichoke.helpers.sandbox_observable_helpers import (
     extract_aj_estimate_for_strata,
     assign_and_explode_polars,
     _aj_adjusted_events,
-    _excluded_events_df,
 )
 
 # from rtichoke import rtichoke
@@ -164,8 +163,8 @@ def test_create_aj_data(
 
     result = create_aj_data(
         df,
-        censoring_assumption=censoring_assumption,
-        competing_assumption=competing_assumption,
+        censoring_heuristic=censoring_assumption,
+        competing_heuristic=competing_assumption,
         fixed_time_horizons=horizons,
     ).sort("fixed_time_horizon")
 
@@ -328,31 +327,4 @@ def test_aj_adjusted_events(censoring: str, competing: str) -> None:
     comp_vals = [v[2] for v in AJ_EXPECTED[(censoring, competing)]]
     include_comp = competing != "excluded"
     expected = _expected_aj_df(neg, pos, comp_vals, include_comp)
-    assert_frame_equal(result, expected)
-
-
-@pytest.mark.parametrize(
-    "censoring, competing",
-    [
-        (c, cc)
-        for c in ["adjusted", "excluded"]
-        for cc in [
-            "adjusted_as_negative",
-            "adjusted_as_censored",
-            "adjusted_as_composite",
-            "excluded",
-        ]
-    ],
-)
-def test_excluded_events_df(censoring: str, competing: str) -> None:
-    df = pl.DataFrame(
-        {"strata": ["group1"] * len(TIMES), "reals": REALS, "times": TIMES}
-    )
-    exploded = assign_and_explode_polars(df, TIME_HORIZONS)
-
-    result = _excluded_events_df(exploded, censoring, competing).sort(
-        "fixed_time_horizon"
-    )
-
-    expected = _expected_excluded_df(censoring, competing)
     assert_frame_equal(result, expected)
