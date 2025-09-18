@@ -249,9 +249,9 @@ For cases with observed time-to-event is shorter than the prediction time horizo
 
 import numpy as np
 
-times = np.array([24.1, 9.7, 49.9, 18.6, 34.8, 14.2, 39.2, 46.0, 4.3, 31.5])
+times = np.array([24.1, 9.7, 49.9, 18.6, 34.8, 14.2, 39.2, 46.0, 31.5, 4.3])
 reals = np.array([1, 1, 1, 1, 0, 2, 1, 2, 0, 1])
-time_horizons = [10, 30, 50]
+time_horizons = [10, 20, 30, 40, 50]
 
 # Icons
 def get_icon(outcome, t, h):
@@ -542,7 +542,7 @@ This heuristic is can be seen as a different underlying question - what is the p
 
 ## Render Predictions Histogram
 
-### Extract AJ Estimate by Assumptions
+### Extract AJ Estimate by Assumptions 
 
 For each requried combination of reference_group x predictions_strata x fixed_time_horizons x censored_heuristic x competing_heuristic a separate AJ estimated is calculated for the adjusted `reals` and a Crude estimate is calculated for the excluded `reals`.
 
@@ -567,7 +567,7 @@ event_table = prepare_event_table(times_and_reals)
 
 long_df = predict_aj_estimates(
   event_table,
-  [10.0, 30.0, 50.0], 
+  [10.0, 20.0, 30.0, 40.0, 50.0], 
   True
 ).select(
     pl.col("times"),
@@ -588,7 +588,7 @@ ojs_define(long_df = long_df)
 
 ```{python}
 from rtichoke.helpers.sandbox_observable_helpers import (
-  assign_and_explode_polars, _excluded_events_df, _aj_adjusted_events)
+  assign_and_explode_polars, _extract_excluded_events, _aj_adjusted_events)
 
 
 censoring_assumptions = ["excluded", "adjusted"]
@@ -601,7 +601,7 @@ competing_assumptions = [
 
 censoring_assumption = "adjusted" #["excluded", "adjusted"]
 competing_assumption = "adjusted_as_composite"
-fixed_time_horizons = [10.0, 30.0, 50.0]
+fixed_time_horizons = [10.0, 20.0, 30.0, 40.0, 50.0]
 
 reference_group_data = pl.DataFrame(
     {
@@ -613,9 +613,9 @@ reference_group_data = pl.DataFrame(
 
 exploded = assign_and_explode_polars(reference_group_data, fixed_time_horizons)
 
-def _long_excluded_for_combo(exploded: pl.DataFrame, ca: str, co: str) -> pl.DataFrame:
+def _long_excluded_for_combo(event_table: pl.DataFrame, fixed_time_horizons, ca: str, co: str) -> pl.DataFrame:
     return (
-        _excluded_events_df(exploded, ca, co)
+        _extract_excluded_events(event_table, fixed_time_horizons, ca, co)
         .select("fixed_time_horizon", "real_censored_est", "real_competing_est")
         .unpivot(index=["fixed_time_horizon"], variable_name="state", value_name="excluded_count")
         .sort("fixed_time_horizon")
@@ -643,7 +643,7 @@ def _long_adjusted_for_combo(reference_group_data: pl.DataFrame, exploded: pl.Da
             pl.col(r"^real_.*_est$"),
             pl.col("estimate_origin"),
             pl.col("times")
-        )
+        ).filter(pl.col("times")<=pl.col("fixed_time_horizon"))
         .unpivot(
             index = ["fixed_time_horizon", "times",  "estimate_origin"],
             variable_name="state",
@@ -663,7 +663,7 @@ adjusted_frames = [
 ]
 
 excluded_frames = [
-    _long_excluded_for_combo(exploded, ca, co)
+    _long_excluded_for_combo(event_table, fixed_time_horizons, ca, co)
     for ca in censoring_assumptions
     for co in competing_assumptions
 ]
@@ -672,26 +672,12 @@ long_excluded_df = pl.concat(excluded_frames, how="vertical", rechunk=True).to_d
 
 long_adjusted_df = pl.concat(adjusted_frames, how="vertical", rechunk=True).to_dicts()
 
-print("long_excluded_df")
-print(long_excluded_df)
-
-
 ojs_define(
   long_excluded_df = long_excluded_df,
   long_adjusted_df = long_adjusted_df)
 
 ```
 
-```{ojs}
-//| echo: false
-
-long_excluded_df
-
-long_df
-
-long_adjusted_df
-
-```
 
 ```{ojs}
 //| echo: false
@@ -721,7 +707,7 @@ viewof competing_heuristics = Inputs.radio(
 )
 
 viewof timeHorizon_aj_estimate = Inputs.range([10, 50], {
-  step: 20,
+  step: 10,
   value: 50,
   label: "Time Horizon"
 })
@@ -739,8 +725,82 @@ filteredLongAdjustedDf = filteredLongAdjustedDf_heuristic.filter((d) => d.fixed_
 
 filteredLongExcludedDf = long_excluded_df_heuristic_filtered.filter((d) => d.fixed_time_horizon == timeHorizon_aj_estimate)
 
-filteredLongAdjustedDf
-filteredLongExcludedDf
+//filteredLongAdjustedDf
+//filteredLongExcludedDf
+
+//filteredLongAdjustedDf.filter(d => d.estimate_origin === "event_table")
+
+```
+
+
+::: {.panel-tabset}
+
+#### Stacked
+
+```{ojs}
+//| echo: false
+
+Plot.plot({
+  style: { background: "transparent" },
+  x: { label: "Time", domain: [0, 50] },
+  y: { label: "Aalen-Johansen Estimate", stack: true, domain: [0, 10] },
+  color: {
+    legend: true,
+    domain: ["real_positives_est", "real_competing_est", "real_negatives_est"],
+    range: ["#4C5454", "#C880B7", "#E0E0E0"]
+  },
+  marks: [
+    Plot.areaY(
+      filteredLongAdjustedDf.filter(d => d.estimate_origin === "event_table"),
+      {
+        x: "times",
+        y: "aj_estimate",
+        fill: "state",
+        curve: "step-after",
+        tip: true
+      }
+    ),
+
+    Plot.ruleY([0])
+  ]
+})
+
+
+
+
+Plot.plot({
+  height: 220,
+  style: { background: "transparent" },
+  x: { label: "Time", domain: [0, 50] },   // bars extend from x=0 to horizon
+  y: { label: "Excluded count", domain: [0, 4] },
+  color: {
+    legend: true,
+    domain: ["real_competing_est", "real_censored_est"],
+    range: ["#C880B7", "#E3F09B"]
+  },
+  marks: [
+    Plot.rectX(
+      filteredLongExcludedDf,
+      Plot.stackY({
+        x1: 0,                        // always start from 0
+        x2: "fixed_time_horizon",     // extend to horizon
+        y: "excluded_count",          // stack along y
+        fill: "state",
+        tip: true
+      })
+    ),
+    Plot.ruleX([0])                   // reference at x=0
+  ]
+})
+
+```
+
+#### Non-Stacked
+
+```{ojs}
+//| echo: false
+
+// TODO: Add start point 0 and end-point fixed time horizons
 
 Plot.plot({
   style: {
@@ -752,7 +812,8 @@ Plot.plot({
   },
   y: {
     label: "Aalen-Johansen Estimate",
-    stack: false
+    stack: false, 
+    domain: [0, 10]
   },
   color: {
     legend: true, 
@@ -793,54 +854,41 @@ Plot.plot({
 })
 
 
-
 Plot.plot({
-  height: 100,
-  style: {
-    background: "transparent"
-  },
-  x: {
-    label: "Time",
-    domain: [0, 50]
-  },
-  y: {
-    label: "Aalen-Johansen Estimate",
-    stack: false
-  },
+  height: 120,
+  style: { background: "transparent" },
+  x: { label: "Time", domain: [0, 50] },
+  y: { label: "Aalen-Johansen Estimate", 
+    domain: [0, 2] },
   color: {
-    legend: true, 
-    domain: [
-      "real_competing_est",
-      "real_censored_est"
-    ],
-    range: [
-      "#C880B7",
-      "#E3F09B", 
-    ]
+    legend: true,
+    domain: ["real_competing_est", "real_censored_est"],
+    range: ["#C880B7", "#E3F09B"]
   },
   marks: [
-    Plot.lineY(long_excluded_df_heuristic_filtered, {
-      x: "fixed_time_horizon",
-      y: "excluded_count",
-      stroke: "state",
-      curve: "step-after"
-    }),
-    Plot.dot(long_excluded_df_heuristic_filtered, {
-      x: "fixed_time_horizon",
-      y: "excluded_count",
-      fill: "state",
-      r: 2.5,
-      tip: true
-    }),
     Plot.dot(filteredLongExcludedDf, {
       x: "fixed_time_horizon",
       y: "excluded_count",
       fill: "state",
       r: 10,
+      fillOpacity: 0.85,
+      strokeWidth: 1.5,
       tip: true
     }),
-    Plot.ruleY([0]) 
+
+    // horizontal lines from x=0 to x=fixed_time_horizon
+    Plot.ruleY(filteredLongExcludedDf, {
+      x1: 0,
+      x2: "fixed_time_horizon",
+      y: "excluded_count",
+      stroke: "state",
+      strokeOpacity: 0.6
+    }),
+    Plot.ruleY([0])
   ]
 })
 
 ```
+
+
+:::
