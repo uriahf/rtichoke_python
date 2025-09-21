@@ -451,13 +451,7 @@ def create_aj_data(
     def aj_estimates_with_cross(df, extra_cols):
         return df.join(pl.DataFrame(extra_cols), how="cross")
 
-    print("reference_group_data")
-    print(reference_group_data)
-
     exploded = assign_and_explode_polars(reference_group_data, fixed_time_horizons)
-
-    print("exploded")
-    print(exploded)
 
     event_table = prepare_event_table(reference_group_data)
 
@@ -466,9 +460,6 @@ def create_aj_data(
     excluded_events = _extract_excluded_events(
         event_table, fixed_time_horizons, censoring_heuristic, competing_heuristic
     )
-
-    print("excluded_events")
-    print(excluded_events)
 
     aj_df = _aj_adjusted_events(
         reference_group_data,
@@ -479,13 +470,7 @@ def create_aj_data(
         full_event_table,
     )
 
-    print("aj_df")
-    print(aj_df.sort(pl.col("fixed_time_horizon")))
-
     result = aj_df.join(excluded_events, on=["fixed_time_horizon"], how="left")
-
-    print("result")
-    print(result.sort(pl.col("fixed_time_horizon")))
 
     return aj_estimates_with_cross(
         result,
@@ -590,12 +575,6 @@ def extract_aj_estimate_for_strata(data_to_adjust, horizons, full_event_table: b
         event_table, pl.Series(horizons), full_event_table
     )
 
-    print("horizons")
-    print(horizons)
-
-    print("len(horizons)")
-    print(len(horizons))
-
     if len(horizons) == 1:
         aj_estimate_for_strata_polars = aj_estimate_for_strata_polars.with_columns(
             pl.lit(horizons[0]).alias("fixed_time_horizon")
@@ -617,9 +596,6 @@ def extract_aj_estimate_for_strata(data_to_adjust, horizons, full_event_table: b
         aj_estimate_for_strata_polars = pl.concat(
             [fixed_df, event_df], how="vertical"
         ).sort("estimate_origin", "fixed_time_horizon", "times")
-
-    print("aj_estimate_for_strata_polars")
-    print(aj_estimate_for_strata_polars)
 
     return aj_estimate_for_strata_polars.with_columns(
         [
@@ -737,12 +713,10 @@ def extract_aj_estimate_by_assumptions(
                 pl.lit(competing).alias("competing_assumption"),
             ]
         )
-        print(
-            f"Assumption: censoring={censoring}, competing={competing}, rows={aj_df.height}"
-        )
+
         aj_dfs.append(aj_df)
 
-    aj_estimates_data = pl.concat(aj_dfs)
+    aj_estimates_data = pl.concat(aj_dfs).drop(["estimate_origin", "times"])
 
     aj_estimates_unpivoted = aj_estimates_data.unpivot(
         index=[
