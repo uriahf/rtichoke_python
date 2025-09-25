@@ -1,11 +1,18 @@
 from lifelines import AalenJohansenFitter
 import pandas as pd
 import numpy as np
-import itertools
 import polars as pl
 from polarstate import predict_aj_estimates
 from polarstate import prepare_event_table
 from typing import Dict, Union
+from collections.abc import Sequence
+
+
+def _enum_dataframe(column_name: str, values: Sequence[str]) -> pl.DataFrame:
+    """Create a single-column DataFrame with an enum dtype."""
+    enum_values = list(dict.fromkeys(values))
+    enum_dtype = pl.Enum(enum_values)
+    return pl.DataFrame({column_name: pl.Series(values, dtype=enum_dtype)})
 
 
 def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
@@ -142,7 +149,7 @@ def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFr
     return pl.concat(transformed_groups)
 
 
-def create_strata_combinations_polars(stratified_by: str, by: float) -> pl.DataFrame:
+def create_strata_combinations(stratified_by: str, by: float) -> pl.DataFrame:
     if stratified_by == "probability_threshold":
         breaks = create_breaks_values(None, "probability_threshold", by)
 
@@ -213,59 +220,6 @@ def format_strata_interval(
     return f"{left}{lower:.3f}, {upper:.3f}{right}"
 
 
-def create_strata_combinations(stratified_by, by):
-    if stratified_by == "probability_threshold":
-        upper_bound = create_breaks_values(None, "probability_threshold", by)
-        lower_bound = np.roll(upper_bound, 1)
-        lower_bound[0] = 0
-        mid_point = upper_bound - by / 2
-        include_lower_bound = lower_bound == 0
-        include_upper_bound = upper_bound != 0
-        strata = [
-            f"{'[' if include_lower else '('}{lower}, {upper}{']' if include_upper else ')'}"
-            for include_lower, lower, upper, include_upper in zip(
-                include_lower_bound, lower_bound, upper_bound, include_upper_bound
-            )
-        ]
-        chosen_cutoff = upper_bound
-    elif stratified_by == "ppcr":
-        strata = create_breaks_values(None, "probability_threshold", by)[1:]
-        lower_bound = strata - by
-        upper_bound = strata + by
-        mid_point = upper_bound - by / 2
-        include_lower_bound = np.ones_like(strata, dtype=bool)
-        include_upper_bound = np.zeros_like(strata, dtype=bool)
-        chosen_cutoff = strata
-    return pd.DataFrame(
-        {
-            "strata": strata,
-            "lower_bound": lower_bound,
-            "upper_bound": upper_bound,
-            "mid_point": mid_point,
-            "include_lower_bound": include_lower_bound,
-            "include_upper_bound": include_upper_bound,
-            "chosen_cutoff": chosen_cutoff,
-            "stratified_by": stratified_by,
-        }
-    )
-
-
-def create_breaks_values_polars(probs_vec, stratified_by, by):
-    # Ensure probs_vec is a NumPy array (in case it's a Polars Series)
-    if hasattr(probs_vec, "to_numpy"):
-        probs_vec = probs_vec.to_numpy()
-
-    if stratified_by != "probability_threshold":
-        # Quantile-based bin edges (descending)
-        breaks = np.quantile(probs_vec, np.linspace(1, 0, int(1 / by) + 1))
-    else:
-        # Fixed-width bin edges (ascending)
-        decimal_places = len(str(by).split(".")[-1])
-        breaks = np.round(np.arange(0, 1 + by, by), decimals=decimal_places)
-
-    return breaks
-
-
 def create_breaks_values(probs_vec, stratified_by, by):
     if stratified_by != "probability_threshold":
         breaks = np.quantile(probs_vec, np.linspace(1, 0, int(1 / by) + 1))
@@ -277,19 +231,18 @@ def create_breaks_values(probs_vec, stratified_by, by):
 
 
 def create_aj_data_combinations(
-    reference_groups, fixed_time_horizons, stratified_by, by
-):
-    # Create strata combinations using Polars
-    strata_combinations_list = [
-        create_strata_combinations_polars(x, by) for x in stratified_by
-    ]
-    strata_combinations = pl.concat(strata_combinations_list, how="vertical")
+    reference_groups: Sequence[str],
+    fixed_time_horizons: Sequence[float],
+    stratified_by: Sequence[str],
+    by: float,
+) -> pl.DataFrame:
+    strata_combinations = pl.concat(
+        [create_strata_combinations(value, by) for value in stratified_by],
+        how="vertical",
+    )
 
-    strata_labels = strata_combinations["strata"]
-    strata_enum = pl.Enum(strata_labels)
-
-    stratified_by_labels = ["probability_threshold", "ppcr"]
-    stratified_by_enum = pl.Enum(stratified_by_labels)
+    strata_enum = pl.Enum(strata_combinations["strata"])
+    stratified_by_enum = pl.Enum(["probability_threshold", "ppcr"])
 
     strata_combinations = strata_combinations.with_columns(
         [
@@ -305,25 +258,8 @@ def create_aj_data_combinations(
         "real_competing",
         "real_censored",
     ]
-    reals_enum = pl.Enum(reals_labels)
-    df_reals = pl.DataFrame({"reals_labels": pl.Series(reals_labels, dtype=reals_enum)})
-    df_reference_groups = pl.DataFrame(
-        {
-            "reference_group": pl.Series(
-                reference_groups, dtype=pl.Enum(reference_groups)
-            )
-        }
-    )
 
     censoring_assumptions_labels = ["excluded", "adjusted"]
-    censoring_assumptions_enum = pl.Enum(censoring_assumptions_labels)
-    df_censoring_assumptions = pl.DataFrame(
-        {
-            "censoring_assumption": pl.Series(
-                censoring_assumptions_labels, dtype=censoring_assumptions_enum
-            )
-        }
-    )
 
     competing_assumptions_labels = [
         "excluded",
@@ -331,50 +267,23 @@ def create_aj_data_combinations(
         "adjusted_as_censored",
         "adjusted_as_composite",
     ]
-    competing_assumptions_enum = pl.Enum(competing_assumptions_labels)
-    df_competing_assumptions = pl.DataFrame(
-        {
-            "competing_assumption": pl.Series(
-                competing_assumptions_labels, dtype=competing_assumptions_enum
-            )
-        }
-    )
 
-    # Create all combinations
-    combinations = list(
-        itertools.product(
-            # reference_groups,
-            fixed_time_horizons,
-            # censoring_assumptions,
-            # competing_assumptions
-        )
-    )
+    combinations_frames: list[pl.DataFrame] = [
+        _enum_dataframe("reference_group", reference_groups),
+        pl.DataFrame(
+            {"fixed_time_horizon": pl.Series(fixed_time_horizons, dtype=pl.Float64)}
+        ),
+        _enum_dataframe("censoring_assumption", censoring_assumptions_labels),
+        _enum_dataframe("competing_assumption", competing_assumptions_labels),
+        strata_combinations,
+        _enum_dataframe("reals_labels", reals_labels),
+    ]
 
-    df_combinations = pl.DataFrame(
-        combinations,
-        schema=[
-            # "reference_group",               # str
-            "fixed_time_horizon",  # cast to Float64
-            # "censoring_assumption",         # str
-            # "competing_assumption"          # str
-        ],
-    ).with_columns(
-        [
-            pl.col("fixed_time_horizon").cast(pl.Float64),
-            # pl.col("censoring_assumption").cast(pl.String),
-            # pl.col("competing_assumption").cast(pl.String),
-            # pl.col("reference_group").cast(pl.String)
-        ]
-    )
+    result = combinations_frames[0]
+    for frame in combinations_frames[1:]:
+        result = result.join(frame, how="cross")
 
-    # Cross join (cartesian product) with strata_combinations
-    return (
-        df_reference_groups.join(df_combinations, how="cross")
-        .join(df_censoring_assumptions, how="cross")
-        .join(df_competing_assumptions, how="cross")
-        .join(strata_combinations, how="cross")
-        .join(df_reals, how="cross")
-    )
+    return result
 
 
 def pivot_longer_strata(data: pl.DataFrame) -> pl.DataFrame:
