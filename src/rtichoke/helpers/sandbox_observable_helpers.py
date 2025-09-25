@@ -150,16 +150,16 @@ def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFr
 
 
 def create_strata_combinations(stratified_by: str, by: float) -> pl.DataFrame:
-    if stratified_by == "probability_threshold":
-        breaks = create_breaks_values(None, "probability_threshold", by)
+    breaks = create_breaks_values(None, "probability_threshold", by)
 
+    if stratified_by == "probability_threshold":
         upper_bound = breaks[1:]  # breaks
         lower_bound = breaks[:-1]  # np.roll(upper_bound, 1)
         # lower_bound[0] = 0.0
         mid_point = upper_bound - by / 2
         include_lower_bound = lower_bound > -0.1
         include_upper_bound = upper_bound == 1.0  # upper_bound != 0.0
-        chosen_cutoff = upper_bound
+        # chosen_cutoff = upper_bound
         strata = format_strata_column(
             lower_bound=lower_bound,
             upper_bound=upper_bound,
@@ -169,18 +169,18 @@ def create_strata_combinations(stratified_by: str, by: float) -> pl.DataFrame:
         )
 
     elif stratified_by == "ppcr":
-        strata_mid = create_breaks_values(None, "probability_threshold", by)[1:]
+        strata_mid = breaks[1:]
         lower_bound = strata_mid - by
         upper_bound = strata_mid + by
         mid_point = upper_bound - by
         include_lower_bound = np.ones_like(strata_mid, dtype=bool)
         include_upper_bound = np.zeros_like(strata_mid, dtype=bool)
-        chosen_cutoff = strata_mid
+        # chosen_cutoff = strata_mid
         strata = np.round(mid_point, 3).astype(str)
     else:
         raise ValueError(f"Unsupported stratified_by: {stratified_by}")
 
-    return pl.DataFrame(
+    bins_df = pl.DataFrame(
         {
             "strata": pl.Series(strata),
             "lower_bound": lower_bound,
@@ -188,10 +188,14 @@ def create_strata_combinations(stratified_by: str, by: float) -> pl.DataFrame:
             "mid_point": mid_point,
             "include_lower_bound": include_lower_bound,
             "include_upper_bound": include_upper_bound,
-            "chosen_cutoff": chosen_cutoff,
+            # "chosen_cutoff": chosen_cutoff,
             "stratified_by": [stratified_by] * len(strata),
         }
     )
+
+    cutoffs_df = pl.DataFrame({"chosen_cutoff": breaks})
+
+    return bins_df.join(cutoffs_df, how="cross")
 
 
 def format_strata_column(
@@ -236,12 +240,18 @@ def create_aj_data_combinations(
     stratified_by: Sequence[str],
     by: float,
 ) -> pl.DataFrame:
-    strata_combinations = pl.concat(
-        [create_strata_combinations(value, by) for value in stratified_by],
-        how="vertical",
+    dfs = [create_strata_combinations(sb, by) for sb in stratified_by]
+    strata_combinations = pl.concat(dfs, how="vertical")
+
+    # strata_enum = pl.Enum(strata_combinations["strata"])
+
+    strata_cats = (
+        strata_combinations.select(pl.col("strata").unique(maintain_order=True))
+        .to_series()
+        .to_list()
     )
 
-    strata_enum = pl.Enum(strata_combinations["strata"])
+    strata_enum = pl.Enum(strata_cats)
     stratified_by_enum = pl.Enum(["probability_threshold", "ppcr"])
 
     strata_combinations = strata_combinations.with_columns(
