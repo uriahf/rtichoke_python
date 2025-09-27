@@ -153,9 +153,7 @@ def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFr
     return pl.concat(transformed_groups)
 
 
-def create_strata_combinations(stratified_by: str, by: float) -> pl.DataFrame:
-    breaks = create_breaks_values(None, "probability_threshold", by)
-
+def create_strata_combinations(stratified_by: str, by: float, breaks) -> pl.DataFrame:
     if stratified_by == "probability_threshold":
         upper_bound = breaks[1:]  # breaks
         lower_bound = breaks[:-1]  # np.roll(upper_bound, 1)
@@ -243,8 +241,9 @@ def create_aj_data_combinations(
     fixed_time_horizons: Sequence[float],
     stratified_by: Sequence[str],
     by: float,
+    breaks: Sequence[float],
 ) -> pl.DataFrame:
-    dfs = [create_strata_combinations(sb, by) for sb in stratified_by]
+    dfs = [create_strata_combinations(sb, by, breaks) for sb in stratified_by]
     strata_combinations = pl.concat(dfs, how="vertical")
 
     # strata_enum = pl.Enum(strata_combinations["strata"])
@@ -362,6 +361,7 @@ def update_administrative_censoring_polars(data: pl.DataFrame) -> pl.DataFrame:
 
 def create_aj_data(
     reference_group_data,
+    breaks,
     censoring_heuristic,
     competing_heuristic,
     fixed_time_horizons,
@@ -387,6 +387,7 @@ def create_aj_data(
 
     aj_df = _aj_adjusted_events(
         reference_group_data,
+        breaks,
         exploded,
         censoring_heuristic,
         competing_heuristic,
@@ -637,6 +638,7 @@ def ensure_no_categorical(df: pd.DataFrame) -> pd.DataFrame:
 
 def extract_aj_estimate_by_assumptions(
     df: pl.DataFrame,
+    breaks: Sequence[float],
     assumptions_sets: list[dict],
     fixed_time_horizons: list[float],
     risk_set_scope: str = "within_stratum",
@@ -649,6 +651,7 @@ def extract_aj_estimate_by_assumptions(
 
         aj_df = create_aj_data(
             df,
+            breaks,
             censoring,
             competing,
             fixed_time_horizons,
@@ -683,6 +686,7 @@ def create_adjusted_data(
     list_data_to_adjust_polars: dict[str, pl.DataFrame],
     assumptions_sets: list[dict[str, str]],
     fixed_time_horizons: list[float],
+    breaks: Sequence[float],
     risk_set_scope: str = "within_stratum",
 ) -> pl.DataFrame:
     all_results = []
@@ -707,6 +711,7 @@ def create_adjusted_data(
 
         aj_result = extract_aj_estimate_by_assumptions(
             input_df,
+            breaks,
             assumptions_sets=assumptions_sets,
             fixed_time_horizons=fixed_time_horizons,
             risk_set_scope=risk_set_scope,
@@ -812,6 +817,7 @@ def _aj_estimates_per_horizon(
 
 def _aj_adjusted_events(
     reference_group_data: pl.DataFrame,
+    breaks: Sequence[float],
     exploded: pl.DataFrame,
     censoring: str,
     competing: str,

@@ -17,6 +17,7 @@ import pytest
 TIMES = [24.1, 9.7, 49.9, 18.6, 34.8, 14.2, 39.2, 46.0, 4.3, 31.5]
 REALS = [1, 1, 1, 1, 0, 2, 1, 2, 0, 1]
 TIME_HORIZONS = [10.0, 30.0, 50.0]
+BREAKS: list[float] = [0.0, 0.5, 1.0]
 
 
 def _expected(
@@ -160,9 +161,11 @@ def test_create_aj_data(
         }
     )
     horizons = [1.0, 2.0, 3.0]
+    breaks = [0.0, 0.5, 1.0]
 
     result = create_aj_data(
         df,
+        breaks=breaks,
         censoring_heuristic=censoring_assumption,
         competing_heuristic=competing_assumption,
         fixed_time_horizons=horizons,
@@ -319,7 +322,13 @@ def test_aj_adjusted_events(censoring: str, competing: str) -> None:
     )
     exploded = assign_and_explode_polars(df, TIME_HORIZONS)
     result = _aj_adjusted_events(
-        df, exploded, censoring, competing, TIME_HORIZONS, full_event_table=False
+        df,
+        BREAKS,
+        exploded,
+        censoring,
+        competing,
+        TIME_HORIZONS,
+        full_event_table=False,
     ).sort("fixed_time_horizon")
 
     neg = [v[0] for v in AJ_EXPECTED[(censoring, competing)]]
