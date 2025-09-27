@@ -136,8 +136,12 @@ def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFr
             try:
                 q = int(1 / by)
                 quantile_edges = np.quantile(-probs, np.linspace(0, 1, q))
+
                 strata_ppcr = np.digitize(-probs, quantile_edges, right=False)
                 strata_ppcr = (strata_ppcr / (1 / by)).astype(str)
+
+                columns_to_add.append(pl.Series("strata_ppcr", strata_ppcr))
+
             except ValueError:
                 strata_ppcr = np.array(["1"] * len(probs))  # fallback for small group
 
@@ -170,9 +174,9 @@ def create_strata_combinations(stratified_by: str, by: float) -> pl.DataFrame:
 
     elif stratified_by == "ppcr":
         strata_mid = breaks[1:]
-        lower_bound = strata_mid - by
-        upper_bound = strata_mid + by
-        mid_point = upper_bound - by
+        lower_bound = strata_mid - by / 2
+        upper_bound = strata_mid + by / 2
+        mid_point = breaks[1:]
         include_lower_bound = np.ones_like(strata_mid, dtype=bool)
         include_upper_bound = np.zeros_like(strata_mid, dtype=bool)
         # chosen_cutoff = strata_mid
@@ -362,6 +366,7 @@ def create_aj_data(
     competing_heuristic,
     fixed_time_horizons,
     full_event_table: bool = False,
+    risk_set_scope: str = "within_stratum",
 ):
     """
     Create AJ estimates per strata based on censoring and competing assumptions.
@@ -387,6 +392,7 @@ def create_aj_data(
         competing_heuristic,
         fixed_time_horizons,
         full_event_table,
+        risk_set_scope,
     )
 
     result = aj_df.join(excluded_events, on=["fixed_time_horizon"], how="left")
@@ -548,6 +554,7 @@ def assign_and_explode_polars(
 
 
 def create_list_data_to_adjust(
+    aj_data_combinations: pl.DataFrame,
     probs_dict: Dict[str, np.ndarray],
     reals_dict: Union[np.ndarray, Dict[str, np.ndarray]],
     times_dict: Union[np.ndarray, Dict[str, np.ndarray]],
@@ -559,6 +566,8 @@ def create_list_data_to_adjust(
     num_reals = len(reals_dict)
 
     reference_group_enum = pl.Enum(reference_group_labels)
+
+    strata_enum_dtype = aj_data_combinations.schema["strata"]
 
     # Flatten and ensure list format
     data_to_adjust = pl.DataFrame(
@@ -576,7 +585,20 @@ def create_list_data_to_adjust(
     data_to_adjust = add_cutoff_strata(
         data_to_adjust, by=by, stratified_by=stratified_by
     )
+
     data_to_adjust = pivot_longer_strata(data_to_adjust)
+
+    data_to_adjust = (
+        data_to_adjust.with_columns([pl.col("strata")])
+        .with_columns(pl.col("strata").cast(strata_enum_dtype))
+        .join(
+            aj_data_combinations.select(
+                pl.col("strata"), pl.col("stratified_by"), pl.col("upper_bound")
+            ).unique(),
+            how="left",
+            on=["strata", "stratified_by"],
+        )
+    )
 
     reals_labels = [
         "real_negatives",
@@ -617,6 +639,7 @@ def extract_aj_estimate_by_assumptions(
     df: pl.DataFrame,
     assumptions_sets: list[dict],
     fixed_time_horizons: list[float],
+    risk_set_scope: str = "within_stratum",
 ) -> pl.DataFrame:
     aj_dfs = []
 
@@ -625,7 +648,12 @@ def extract_aj_estimate_by_assumptions(
         competing = assumption["competing_assumption"]
 
         aj_df = create_aj_data(
-            df, censoring, competing, fixed_time_horizons
+            df,
+            censoring,
+            competing,
+            fixed_time_horizons,
+            full_event_table=False,
+            risk_set_scope=risk_set_scope,
         ).with_columns(
             [
                 pl.lit(censoring).alias("censoring_assumption"),
@@ -655,6 +683,7 @@ def create_adjusted_data(
     list_data_to_adjust_polars: dict[str, pl.DataFrame],
     assumptions_sets: list[dict[str, str]],
     fixed_time_horizons: list[float],
+    risk_set_scope: str = "within_stratum",
 ) -> pl.DataFrame:
     all_results = []
 
@@ -670,6 +699,7 @@ def create_adjusted_data(
         "adjusted_as_censored",
         "adjusted_as_composite",
     ]
+
     competing_assumption_enum = pl.Enum(competing_assumption_labels)
 
     for reference_group, df in list_data_to_adjust_polars.items():
@@ -679,6 +709,7 @@ def create_adjusted_data(
             input_df,
             assumptions_sets=assumptions_sets,
             fixed_time_horizons=fixed_time_horizons,
+            risk_set_scope=risk_set_scope,
         )
 
         aj_result_with_group = aj_result.with_columns(
@@ -786,13 +817,18 @@ def _aj_adjusted_events(
     competing: str,
     horizons: list[float],
     full_event_table: bool = False,
+    risk_set_scope: str = "within_stratum",
 ) -> pl.DataFrame:
     if censoring == "adjusted" and competing == "adjusted_as_negative":
-        return reference_group_data.group_by("strata").map_groups(
-            lambda group: extract_aj_estimate_for_strata(
-                group, horizons, full_event_table
+        if risk_set_scope == "within_stratum":
+            return reference_group_data.group_by("strata").map_groups(
+                lambda group: extract_aj_estimate_for_strata(
+                    group, horizons, full_event_table
+                )
             )
-        )
+
+        elif risk_set_scope == "pooled_by_cutoff":
+            pass
 
     if censoring == "excluded" and competing == "adjusted_as_negative":
         non_censored = exploded.filter(
