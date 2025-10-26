@@ -105,12 +105,12 @@ def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
 
 
 def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFrame:
-    def transform_group(group: pl.DataFrame) -> pl.DataFrame:
+    def transform_group(group: pl.DataFrame, by: float) -> pl.DataFrame:
         probs = group["probs"].to_numpy()
         columns_to_add = []
 
+        breaks = create_breaks_values(probs, "probability_threshold", by)
         if "probability_threshold" in stratified_by:
-            breaks = create_breaks_values(probs, "probability_threshold", by)
             last_bin_index = len(breaks) - 2
 
             bin_indices = np.digitize(probs, bins=breaks, right=False) - 1
@@ -132,28 +132,54 @@ def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFr
             )
 
         if "ppcr" in stratified_by:
-            # --- Compute strata_ppcr as quantiles on -probs ---
-            try:
-                q = int(1 / by)
-                quantile_edges = np.quantile(-probs, np.linspace(0, 1, q))
+            # --- Compute strata_ppcr as equal-frequency quantile bins by rank ---
+            by = float(by)
+            q = int(round(1 / by))  # e.g. 0.2 -> 5 bins
 
-                strata_ppcr = np.digitize(-probs, quantile_edges, right=False)
-                strata_ppcr = (strata_ppcr / (1 / by)).astype(str)
+            probs = np.asarray(probs, float)
+            n = probs.size
+            print(f"q = {q}, n = {n}")
+            print("probs:", probs)
 
-                columns_to_add.append(pl.Series("strata_ppcr", strata_ppcr))
+            edges = np.quantile(probs, np.linspace(0.0, 1.0, q + 1), method="linear")
+            print("edges before accumulating:", edges)
 
-            except ValueError:
-                strata_ppcr = np.array(["1"] * len(probs))  # fallback for small group
+            edges = np.maximum.accumulate(edges)
+            print("edges after accumulating:", edges)
 
+            edges[0] = 0.0
+            edges[-1] = 1.0
+
+            print("edges after setting 0 and 1:", edges)
+
+            bin_idx = np.digitize(probs, bins=edges[1:-1], right=True)
+            print("bin_idx:", bin_idx)
+
+            s = str(by)
+            decimals = len(s.split(".")[-1]) if "." in s else 0
+
+            labels = [f"{x:.{decimals}f}" for x in np.linspace(by, 1.0, q)]
+            print("bin_labels", labels)
+
+            strata_labels = np.array([labels[i] for i in bin_idx], dtype=object)
+            print("strata_labels:", strata_labels)
+
+            columns_to_add.append(
+                pl.Series("strata_ppcr", strata_labels).cast(pl.Enum(labels))
+            )
         return group.with_columns(columns_to_add)
 
     # Apply per-group transformation
     grouped = data.partition_by("reference_group", as_dict=True)
-    transformed_groups = [transform_group(group) for group in grouped.values()]
+    transformed_groups = [transform_group(group, by) for group in grouped.values()]
     return pl.concat(transformed_groups)
 
 
 def create_strata_combinations(stratified_by: str, by: float, breaks) -> pl.DataFrame:
+    s_by = str(by)
+    decimals = len(s_by.split(".")[-1]) if "." in s_by else 0
+    fmt = f"{{:.{decimals}f}}"
+
     if stratified_by == "probability_threshold":
         upper_bound = breaks[1:]  # breaks
         lower_bound = breaks[:-1]  # np.roll(upper_bound, 1)
@@ -178,7 +204,8 @@ def create_strata_combinations(stratified_by: str, by: float, breaks) -> pl.Data
         include_lower_bound = np.ones_like(strata_mid, dtype=bool)
         include_upper_bound = np.zeros_like(strata_mid, dtype=bool)
         # chosen_cutoff = strata_mid
-        strata = np.round(mid_point, 3).astype(str)
+        strata = np.array([fmt.format(x) for x in strata_mid], dtype=object)
+        print("strata", strata)
     else:
         raise ValueError(f"Unsupported stratified_by: {stratified_by}")
 
@@ -242,6 +269,7 @@ def create_aj_data_combinations(
     stratified_by: Sequence[str],
     by: float,
     breaks: Sequence[float],
+    risk_set_scope: Sequence[str] = ["within_stratum", "pooled_by_cutoff"],
 ) -> pl.DataFrame:
     dfs = [create_strata_combinations(sb, by, breaks) for sb in stratified_by]
     strata_combinations = pl.concat(dfs, how="vertical")
@@ -262,6 +290,14 @@ def create_aj_data_combinations(
             pl.col("strata").cast(strata_enum),
             pl.col("stratified_by").cast(stratified_by_enum),
         ]
+    )
+
+    risk_set_scope_combinations = pl.DataFrame(
+        {
+            "risk_set_scope": pl.Series(risk_set_scope).cast(
+                pl.Enum(["within_stratum", "pooled_by_cutoff"])
+            )
+        }
     )
 
     # Define values for Cartesian product
@@ -289,6 +325,7 @@ def create_aj_data_combinations(
         _enum_dataframe("censoring_assumption", censoring_assumptions_labels),
         _enum_dataframe("competing_assumption", competing_assumptions_labels),
         strata_combinations,
+        risk_set_scope_combinations,
         _enum_dataframe("reals_labels", reals_labels),
     ]
 
@@ -365,12 +402,15 @@ def create_aj_data(
     censoring_heuristic,
     competing_heuristic,
     fixed_time_horizons,
+    stratified_by: Sequence[str],
     full_event_table: bool = False,
-    risk_set_scope: str = "within_stratum",
+    risk_set_scope: Sequence[str] = "within_stratum",
 ):
     """
     Create AJ estimates per strata based on censoring and competing assumptions.
     """
+    print("stratified_by", stratified_by)
+    print("Creating aj data")
 
     def aj_estimates_with_cross(df, extra_cols):
         return df.join(pl.DataFrame(extra_cols), how="cross")
@@ -385,16 +425,50 @@ def create_aj_data(
         event_table, fixed_time_horizons, censoring_heuristic, competing_heuristic
     )
 
-    aj_df = _aj_adjusted_events(
-        reference_group_data,
-        breaks,
-        exploded,
-        censoring_heuristic,
-        competing_heuristic,
-        fixed_time_horizons,
-        full_event_table,
-        risk_set_scope,
-    )
+    print("stratified_by before _aj_adjusted_events", stratified_by)
+
+    aj_dfs = []
+    for rscope in risk_set_scope:
+        aj_res = _aj_adjusted_events(
+            reference_group_data,
+            breaks,
+            exploded,
+            censoring_heuristic,
+            competing_heuristic,
+            fixed_time_horizons,
+            stratified_by,
+            full_event_table,
+            rscope,
+        )
+
+        print("aj_res before select", aj_res.columns)
+        print("aj_res", aj_res)
+
+        aj_res = aj_res.select(
+            [
+                "strata",
+                "times",
+                "chosen_cutoff",
+                "real_negatives_est",
+                "real_positives_est",
+                "real_competing_est",
+                "estimate_origin",
+                "fixed_time_horizon",
+                "risk_set_scope",
+            ]
+        )
+
+        print("aj_res columns", aj_res.columns)
+        print("aj_res", aj_res)
+
+        aj_dfs.append(aj_res)
+
+    aj_df = pl.concat(aj_dfs, how="vertical")
+
+    print("aj_df columns", aj_df.columns)
+
+    # print("aj_df")
+    # print(aj_df)
 
     result = aj_df.join(excluded_events, on=["fixed_time_horizon"], how="left")
 
@@ -407,6 +481,7 @@ def create_aj_data(
     ).select(
         [
             "strata",
+            "chosen_cutoff",
             "fixed_time_horizon",
             "times",
             "real_negatives_est",
@@ -416,6 +491,7 @@ def create_aj_data(
             "censoring_assumption",
             "competing_assumption",
             "estimate_origin",
+            "risk_set_scope",
         ]
     )
 
@@ -492,6 +568,179 @@ def extract_crude_estimate_polars(data: pl.DataFrame) -> pl.DataFrame:
 #     return result_pandas
 
 
+def extract_aj_estimate_by_cutoffs(
+    data_to_adjust, horizons, breaks, stratified_by, full_event_table: bool
+):
+    # n = data_to_adjust.height
+
+    counts_per_strata = (
+        data_to_adjust.group_by(["strata", "stratified_by", "upper_bound"])
+        .len(name="strata_count")
+        .with_columns(pl.col("strata_count").cast(pl.Float64))
+    )
+
+    print("counts per strata")
+    print(counts_per_strata)
+
+    print("data_to_adjust")
+    print(data_to_adjust)
+
+    # TODO: iterate over predicted-positives / negatives
+
+    aj_estimates_predicted_positives = pl.DataFrame()
+    aj_estimates_predicted_negatives = pl.DataFrame()
+
+    for stratification_criteria in stratified_by:
+        for chosen_cutoff in breaks:
+            if stratification_criteria == "probability_threshold":
+                mask_predicted_positives = (pl.col("upper_bound") > chosen_cutoff) & (
+                    pl.col("stratified_by") == "probability_threshold"
+                )
+                mask_predicted_negatives = (pl.col("upper_bound") <= chosen_cutoff) & (
+                    pl.col("stratified_by") == "probability_threshold"
+                )
+
+            elif stratification_criteria == "ppcr":
+                mask_predicted_positives = (pl.col("upper_bound") <= chosen_cutoff) & (
+                    pl.col("stratified_by") == "ppcr"
+                )
+                mask_predicted_negatives = (pl.col("upper_bound") > chosen_cutoff) & (
+                    pl.col("stratified_by") == "ppcr"
+                )
+
+            predicted_positives = data_to_adjust.filter(mask_predicted_positives)
+            predicted_negatives = data_to_adjust.filter(mask_predicted_negatives)
+
+            counts_per_strata_predicted_positives = counts_per_strata.filter(
+                mask_predicted_positives
+            )
+            counts_per_strata_predicted_negatives = counts_per_strata.filter(
+                mask_predicted_negatives
+            )
+
+            event_table_predicted_positives = prepare_event_table(predicted_positives)
+            event_table_predicted_negatives = prepare_event_table(predicted_negatives)
+
+            aj_estimate_predicted_positives = (
+                (
+                    predict_aj_estimates(
+                        event_table_predicted_positives,
+                        pl.Series(horizons),
+                        full_event_table,
+                    )
+                    .with_columns(
+                        pl.lit(chosen_cutoff).alias("chosen_cutoff"),
+                        pl.lit(stratification_criteria)
+                        .alias("stratified_by")
+                        .cast(pl.Enum(["probability_threshold", "ppcr"])),
+                    )
+                    .join(
+                        counts_per_strata_predicted_positives,
+                        on=["stratified_by"],
+                        how="left",
+                    )
+                    .with_columns(
+                        [
+                            (
+                                pl.col("state_occupancy_probability_0")
+                                * pl.col("strata_count")
+                            ).alias("real_negatives_est"),
+                            (
+                                pl.col("state_occupancy_probability_1")
+                                * pl.col("strata_count")
+                            ).alias("real_positives_est"),
+                            (
+                                pl.col("state_occupancy_probability_2")
+                                * pl.col("strata_count")
+                            ).alias("real_competing_est"),
+                        ]
+                    )
+                )
+                .select(
+                    [
+                        "strata",
+                        # "stratified_by",
+                        "times",
+                        "chosen_cutoff",
+                        "real_negatives_est",
+                        "real_positives_est",
+                        "real_competing_est",
+                        "estimate_origin",
+                    ]
+                )
+                .with_columns([pl.col("times").alias("fixed_time_horizon")])
+            )
+
+            aj_estimate_predicted_negatives = (
+                (
+                    predict_aj_estimates(
+                        event_table_predicted_negatives,
+                        pl.Series(horizons),
+                        full_event_table,
+                    )
+                    .with_columns(
+                        pl.lit(chosen_cutoff).alias("chosen_cutoff"),
+                        pl.lit(stratification_criteria)
+                        .alias("stratified_by")
+                        .cast(pl.Enum(["probability_threshold", "ppcr"])),
+                    )
+                    .join(
+                        counts_per_strata_predicted_negatives,
+                        on=["stratified_by"],
+                        how="left",
+                    )
+                    .with_columns(
+                        [
+                            (
+                                pl.col("state_occupancy_probability_0")
+                                * pl.col("strata_count")
+                            ).alias("real_negatives_est"),
+                            (
+                                pl.col("state_occupancy_probability_1")
+                                * pl.col("strata_count")
+                            ).alias("real_positives_est"),
+                            (
+                                pl.col("state_occupancy_probability_2")
+                                * pl.col("strata_count")
+                            ).alias("real_competing_est"),
+                        ]
+                    )
+                )
+                .select(
+                    [
+                        "strata",
+                        # "stratified_by",
+                        "times",
+                        "chosen_cutoff",
+                        "real_negatives_est",
+                        "real_positives_est",
+                        "real_competing_est",
+                        "estimate_origin",
+                    ]
+                )
+                .with_columns([pl.col("times").alias("fixed_time_horizon")])
+            )
+
+            aj_estimates_predicted_negatives = pl.concat(
+                [aj_estimates_predicted_negatives, aj_estimate_predicted_negatives],
+                how="vertical",
+            )
+
+            aj_estimates_predicted_positives = pl.concat(
+                [aj_estimates_predicted_positives, aj_estimate_predicted_positives],
+                how="vertical",
+            )
+
+    aj_estimate_by_cutoffs = pl.concat(
+        [aj_estimates_predicted_negatives, aj_estimates_predicted_positives],
+        how="vertical",
+    )
+
+    print("aj_estimate_by_cutoffs", aj_estimate_by_cutoffs)
+
+    return aj_estimate_by_cutoffs
+
+
 def extract_aj_estimate_for_strata(data_to_adjust, horizons, full_event_table: bool):
     n = data_to_adjust.height
 
@@ -522,6 +771,9 @@ def extract_aj_estimate_for_strata(data_to_adjust, horizons, full_event_table: b
         aj_estimate_for_strata_polars = pl.concat(
             [fixed_df, event_df], how="vertical"
         ).sort("estimate_origin", "fixed_time_horizon", "times")
+
+    # print("aj_estimate_for_strata_polars")
+    # print(aj_estimate_for_strata_polars)
 
     return aj_estimate_for_strata_polars.with_columns(
         [
@@ -641,13 +893,22 @@ def extract_aj_estimate_by_assumptions(
     breaks: Sequence[float],
     assumptions_sets: list[dict],
     fixed_time_horizons: list[float],
+    stratified_by: Sequence[str],
     risk_set_scope: str = "within_stratum",
 ) -> pl.DataFrame:
     aj_dfs = []
 
+    print("stratified_by", stratified_by)
+
     for assumption in assumptions_sets:
         censoring = assumption["censoring_assumption"]
         competing = assumption["competing_assumption"]
+
+        print("stratified_by", stratified_by)
+
+        print("df before create_aj_data")
+        print(df.columns)
+        print(df.schema)
 
         aj_df = create_aj_data(
             df,
@@ -655,6 +916,7 @@ def extract_aj_estimate_by_assumptions(
             censoring,
             competing,
             fixed_time_horizons,
+            stratified_by=stratified_by,
             full_event_table=False,
             risk_set_scope=risk_set_scope,
         ).with_columns(
@@ -666,18 +928,26 @@ def extract_aj_estimate_by_assumptions(
 
         aj_dfs.append(aj_df)
 
+    # print("aj_dfs", aj_dfs)
+
     aj_estimates_data = pl.concat(aj_dfs).drop(["estimate_origin", "times"])
+
+    print("aj_estimates_data", aj_estimates_data)
 
     aj_estimates_unpivoted = aj_estimates_data.unpivot(
         index=[
             "strata",
+            "chosen_cutoff",
             "fixed_time_horizon",
             "censoring_assumption",
             "competing_assumption",
+            "risk_set_scope",
         ],
         variable_name="reals_labels",
         value_name="reals_estimate",
     )
+
+    print("aj_estimates_unpivoted", aj_estimates_unpivoted)
 
     return aj_estimates_unpivoted
 
@@ -687,6 +957,7 @@ def create_adjusted_data(
     assumptions_sets: list[dict[str, str]],
     fixed_time_horizons: list[float],
     breaks: Sequence[float],
+    stratified_by: Sequence[str],
     risk_set_scope: str = "within_stratum",
 ) -> pl.DataFrame:
     all_results = []
@@ -707,13 +978,18 @@ def create_adjusted_data(
     competing_assumption_enum = pl.Enum(competing_assumption_labels)
 
     for reference_group, df in list_data_to_adjust_polars.items():
-        input_df = df.select(["strata", "reals", "times"])
+        input_df = df.select(
+            ["strata", "reals", "times", "upper_bound", "stratified_by"]
+        )
+
+        print("stratified_by", stratified_by)
 
         aj_result = extract_aj_estimate_by_assumptions(
             input_df,
             breaks,
             assumptions_sets=assumptions_sets,
             fixed_time_horizons=fixed_time_horizons,
+            stratified_by=stratified_by,
             risk_set_scope=risk_set_scope,
         )
 
@@ -726,6 +1002,8 @@ def create_adjusted_data(
         )
 
         all_results.append(aj_result_with_group)
+
+    print("all_results", all_results)
 
     reals_enum_dtype = pl.Enum(
         [
@@ -756,19 +1034,86 @@ def cast_and_join_adjusted_data(aj_data_combinations, aj_estimates_data):
         pl.col("strata").cast(strata_enum_dtype)
     )
 
-    final_adjusted_data_polars = aj_data_combinations.with_columns(
-        [pl.col("strata")]
-    ).join(
-        aj_estimates_data,
-        on=[
-            "strata",
-            "fixed_time_horizon",
-            "censoring_assumption",
-            "competing_assumption",
-            "reals_labels",
-            "reference_group",
-        ],
-        how="left",
+    final_adjusted_data_polars = (
+        aj_data_combinations.with_columns([pl.col("strata")])
+        .join(
+            aj_estimates_data,
+            on=[
+                "strata",
+                "fixed_time_horizon",
+                "censoring_assumption",
+                "competing_assumption",
+                "reals_labels",
+                "reference_group",
+                "chosen_cutoff",
+                "risk_set_scope",
+            ],
+            how="left",
+        )
+        .with_columns(
+            pl.when(
+                (
+                    (pl.col("chosen_cutoff") >= pl.col("upper_bound"))
+                    & (pl.col("stratified_by") == "probability_threshold")
+                )
+                | (
+                    (pl.col("chosen_cutoff") < pl.col("upper_bound"))
+                    & (pl.col("stratified_by") == "ppcr")
+                )
+            )
+            .then(pl.lit("predicted_negatives"))
+            .otherwise(pl.lit("predicted_positives"))
+            .cast(pl.Enum(["predicted_negatives", "predicted_positives"]))
+            .alias("prediction_label")
+        )
+        .with_columns(
+            (
+                pl.when(
+                    (pl.col("prediction_label") == pl.lit("predicted_positives"))
+                    & (pl.col("reals_labels") == pl.lit("real_positives"))
+                )
+                .then(pl.lit("true_positives"))
+                .when(
+                    (pl.col("prediction_label") == pl.lit("predicted_positives"))
+                    & (pl.col("reals_labels") == pl.lit("real_negatives"))
+                )
+                .then(pl.lit("false_positives"))
+                .when(
+                    (pl.col("prediction_label") == pl.lit("predicted_negatives"))
+                    & (pl.col("reals_labels") == pl.lit("real_negatives"))
+                )
+                .then(pl.lit("true_negatives"))
+                .when(
+                    (pl.col("prediction_label") == pl.lit("predicted_negatives"))
+                    & (pl.col("reals_labels") == pl.lit("real_positives"))
+                )
+                .then(pl.lit("false_negatives"))
+                .when(
+                    (pl.col("prediction_label") == pl.lit("predicted_negatives"))
+                    & (pl.col("reals_labels") == pl.lit("real_competing"))
+                    & (pl.col("competing_assumption") == pl.lit("adjusted_as_negative"))
+                )
+                .then(pl.lit("true_negatives"))
+                .when(
+                    (pl.col("prediction_label") == pl.lit("predicted_positives"))
+                    & (pl.col("reals_labels") == pl.lit("real_competing"))
+                    & (pl.col("competing_assumption") == pl.lit("adjusted_as_negative"))
+                )
+                .then(pl.lit("false_positives"))
+                .otherwise(pl.lit("excluded"))  # or pl.lit(None) if you prefer nulls
+                .cast(
+                    pl.Enum(
+                        [
+                            "true_positives",
+                            "false_positives",
+                            "true_negatives",
+                            "false_negatives",
+                            "excluded",
+                        ]
+                    )
+                )
+            ).alias("classification_outcome")
+        )
     )
     return final_adjusted_data_polars
 
@@ -797,6 +1142,27 @@ def _competing_count(df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+def _aj_estimates_by_cutoff_per_horizon(
+    df: pl.DataFrame,
+    horizons: list[float],
+    breaks: Sequence[float],
+    stratified_by: Sequence[str],
+) -> pl.DataFrame:
+    return pl.concat(
+        [
+            df.filter(pl.col("fixed_time_horizon") == h)
+            .group_by("strata")
+            .map_groups(
+                lambda group: extract_aj_estimate_by_cutoffs(
+                    group, [h], breaks, stratified_by, full_event_table=False
+                )
+            )
+            for h in horizons
+        ],
+        how="vertical",
+    )
+
+
 def _aj_estimates_per_horizon(
     df: pl.DataFrame, horizons: list[float], full_event_table: bool
 ) -> pl.DataFrame:
@@ -822,75 +1188,81 @@ def _aj_adjusted_events(
     censoring: str,
     competing: str,
     horizons: list[float],
+    stratified_by: Sequence[str],
     full_event_table: bool = False,
     risk_set_scope: str = "within_stratum",
 ) -> pl.DataFrame:
+    print("reference_group_data")
+    print(reference_group_data)
+
+    strata_enum_dtype = reference_group_data.schema["strata"]
+
+    # Special-case: adjusted censoring + competing adjusted_as_negative supports pooled_by_cutoff
     if censoring == "adjusted" and competing == "adjusted_as_negative":
         if risk_set_scope == "within_stratum":
-            return reference_group_data.group_by("strata").map_groups(
-                lambda group: extract_aj_estimate_for_strata(
-                    group, horizons, full_event_table
+            print("reference_group_data", reference_group_data)
+
+            adjusted = (
+                reference_group_data.group_by("strata")
+                .map_groups(
+                    lambda group: extract_aj_estimate_for_strata(
+                        group, horizons, full_event_table
+                    )
                 )
+                .join(pl.DataFrame({"chosen_cutoff": breaks}), how="cross")
             )
+            # preserve the original enum dtype for 'strata' coming from reference_group_data
+
+            adjusted = adjusted.with_columns(
+                [
+                    pl.col("strata").cast(strata_enum_dtype),
+                    pl.lit(risk_set_scope)
+                    .cast(pl.Enum(["within_stratum", "pooled_by_cutoff"]))
+                    .alias("risk_set_scope"),
+                ]
+            )
+
+            return adjusted
 
         elif risk_set_scope == "pooled_by_cutoff":
-            pass
+            print("reference_group_data", reference_group_data)
 
-    if censoring == "excluded" and competing == "adjusted_as_negative":
-        non_censored = exploded.filter(
-            (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
-        )
-        return _aj_estimates_per_horizon(non_censored, horizons, full_event_table)
-
-    if censoring == "adjusted" and competing == "adjusted_as_censored":
-        adjusted = reference_group_data.with_columns(
-            pl.when(pl.col("reals") == 2)
-            .then(pl.lit(0))
-            .otherwise(pl.col("reals"))
-            .alias("reals")
-        )
-        return adjusted.group_by("strata").map_groups(
-            lambda group: extract_aj_estimate_for_strata(
-                group, horizons, full_event_table
+            adjusted = extract_aj_estimate_by_cutoffs(
+                reference_group_data, horizons, breaks, stratified_by, full_event_table
             )
-        )
-
-    if censoring == "excluded" and competing == "adjusted_as_censored":
-        non_censored = exploded.filter(
-            (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
-        ).with_columns(
-            pl.when(pl.col("reals") == 2)
-            .then(pl.lit(0))
-            .otherwise(pl.col("reals"))
-            .alias("reals")
-        )
-        return _aj_estimates_per_horizon(non_censored, horizons, full_event_table)
-
-    if censoring == "adjusted" and competing == "adjusted_as_composite":
-        adjusted = reference_group_data.with_columns(
-            pl.when(pl.col("reals") == 2)
-            .then(pl.lit(1))
-            .otherwise(pl.col("reals"))
-            .alias("reals")
-        )
-        return adjusted.group_by("strata").map_groups(
-            lambda group: extract_aj_estimate_for_strata(
-                group, horizons, full_event_table
+            adjusted = adjusted.with_columns(
+                pl.lit(risk_set_scope)
+                .cast(pl.Enum(["within_stratum", "pooled_by_cutoff"]))
+                .alias("risk_set_scope")
             )
+            return adjusted
+
+    # Special-case: both excluded (faster branch in original)
+    if censoring == "excluded" and competing == "excluded":
+        non_censored_non_competing = exploded.filter(
+            (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") == 1)
         )
 
-    if censoring == "excluded" and competing == "adjusted_as_composite":
-        non_censored = exploded.filter(
-            (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
-        ).with_columns(
-            pl.when(pl.col("reals") == 2)
-            .then(pl.lit(1))
-            .otherwise(pl.col("reals"))
-            .alias("reals")
+        adjusted = _aj_estimates_per_horizon(
+            non_censored_non_competing, horizons, full_event_table
         )
-        return _aj_estimates_per_horizon(non_censored, horizons, full_event_table)
 
-    if censoring == "adjusted" and competing == "excluded":
+        adjusted = adjusted.with_columns(
+            [
+                pl.col("strata").cast(strata_enum_dtype),
+                pl.lit(risk_set_scope)
+                .cast(pl.Enum(["within_stratum", "pooled_by_cutoff"]))
+                .alias("risk_set_scope"),
+            ]
+        ).join(pl.DataFrame({"chosen_cutoff": breaks}), how="cross")
+
+        return adjusted
+
+    # Special-case: competing excluded (handled by filtering out competing events)
+    if competing == "excluded":
+        print("running for censoring adjusted and competing excluded")
+
+        # Use exploded to apply filters that depend on fixed_time_horizon consistently
         non_competing = exploded.filter(
             (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") != 2)
         ).with_columns(
@@ -899,15 +1271,112 @@ def _aj_adjusted_events(
             .otherwise(pl.col("reals"))
             .alias("reals")
         )
-        return _aj_estimates_per_horizon(
-            non_competing, horizons, full_event_table
-        ).select(pl.exclude("real_competing_est"))
 
-    # censoring == "excluded" and competing == "excluded"
-    non_censored_non_competing = exploded.filter(
-        (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") == 1)
+        print("non_competing data", non_competing)
+
+        if risk_set_scope == "within_stratum":
+            adjusted = (
+                _aj_estimates_per_horizon(non_competing, horizons, full_event_table)
+                # .select(pl.exclude("real_competing_est"))
+                .join(pl.DataFrame({"chosen_cutoff": breaks}), how="cross")
+            )
+
+        elif risk_set_scope == "pooled_by_cutoff":
+            adjusted = extract_aj_estimate_by_cutoffs(
+                non_competing, horizons, breaks, stratified_by, full_event_table
+            )
+
+        print("adjusted after join cutoffs", adjusted)
+
+        adjusted = adjusted.with_columns(
+            [
+                pl.col("strata").cast(strata_enum_dtype),
+                pl.lit(risk_set_scope)
+                .cast(pl.Enum(["within_stratum", "pooled_by_cutoff"]))
+                .alias("risk_set_scope"),
+            ]
+        )
+        return adjusted
+
+    # For remaining cases, determine base dataframe depending on censoring rule:
+    # - "adjusted": use the full reference_group_data (events censored at horizon are kept/adjusted)
+    # - "excluded": remove administratively censored observations (use exploded with filter)
+    base_df = (
+        exploded.filter(
+            (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
+        )
+        if censoring == "excluded"
+        else reference_group_data
     )
 
-    return _aj_estimates_per_horizon(
-        non_censored_non_competing, horizons, full_event_table
-    ).drop("real_competing_est")
+    # Apply competing-event transformation if required
+    if competing == "adjusted_as_censored":
+        base_df = base_df.with_columns(
+            pl.when(pl.col("reals") == 2)
+            .then(pl.lit(0))
+            .otherwise(pl.col("reals"))
+            .alias("reals")
+        )
+    elif competing == "adjusted_as_composite":
+        base_df = base_df.with_columns(
+            pl.when(pl.col("reals") == 2)
+            .then(pl.lit(1))
+            .otherwise(pl.col("reals"))
+            .alias("reals")
+        )
+    # competing == "adjusted_as_negative": keep reals as-is (no transform)
+
+    # Finally choose aggregation strategy: per-stratum or horizon-wise
+    if censoring == "excluded":
+        # For excluded censoring we always evaluate per-horizon on the filtered (exploded) dataset
+
+        if risk_set_scope == "within_stratum":
+            adjusted = _aj_estimates_per_horizon(base_df, horizons, full_event_table)
+
+            adjusted = adjusted.join(
+                pl.DataFrame({"chosen_cutoff": breaks}), how="cross"
+            )
+
+            print("adjusted after join", adjusted)
+
+        elif risk_set_scope == "pooled_by_cutoff":
+            adjusted = _aj_estimates_by_cutoff_per_horizon(
+                base_df, horizons, breaks, stratified_by
+            )
+
+        adjusted = adjusted.with_columns(
+            pl.lit(risk_set_scope)
+            .cast(pl.Enum(["within_stratum", "pooled_by_cutoff"]))
+            .alias("risk_set_scope")
+        )
+
+        return adjusted.with_columns(pl.col("strata").cast(strata_enum_dtype))
+    else:
+        # For adjusted censoring we aggregate within strata
+
+        if risk_set_scope == "within_stratum":
+            adjusted = (
+                base_df.group_by("strata")
+                .map_groups(
+                    lambda group: extract_aj_estimate_for_strata(
+                        group, horizons, full_event_table
+                    )
+                )
+                .join(pl.DataFrame({"chosen_cutoff": breaks}), how="cross")
+            )
+
+        elif risk_set_scope == "pooled_by_cutoff":
+            adjusted = extract_aj_estimate_by_cutoffs(
+                base_df, horizons, breaks, stratified_by, full_event_table
+            )
+
+        adjusted = adjusted.with_columns(
+            [
+                pl.col("strata").cast(strata_enum_dtype),
+                pl.lit(risk_set_scope)
+                .cast(pl.Enum(["within_stratum", "pooled_by_cutoff"]))
+                .alias("risk_set_scope"),
+            ]
+        )
+
+        return adjusted
