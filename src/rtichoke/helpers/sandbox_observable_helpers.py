@@ -1380,3 +1380,64 @@ def _aj_adjusted_events(
         )
 
         return adjusted
+
+
+def calculate_cumulative_aj_data(aj_data: pl.DataFrame) -> pl.DataFrame:
+    cumulative_aj_data = (
+        aj_data.filter(pl.col("risk_set_scope") == "pooled_by_cutoff")
+        .group_by(
+            [
+                "reference_group",
+                "fixed_time_horizon",
+                "censoring_assumption",
+                "competing_assumption",
+                "stratified_by",
+                "chosen_cutoff",
+                "classification_outcome",
+            ]
+        )
+        .agg([pl.col("reals_estimate").sum()])
+        .pivot(on="classification_outcome", values="reals_estimate")
+        .with_columns(
+            (pl.col("true_positives") + pl.col("false_positives")).alias(
+                "predicted_positives"
+            ),
+            (pl.col("true_negatives") + pl.col("false_negatives")).alias(
+                "predicted_negatives"
+            ),
+            (pl.col("true_positives") + pl.col("false_negatives")).alias(
+                "real_positives"
+            ),
+            (pl.col("false_positives") + pl.col("true_negatives")).alias(
+                "real_negatives"
+            ),
+            (
+                pl.col("true_positives")
+                + pl.col("true_negatives")
+                + pl.col("false_positives")
+                + pl.col("false_negatives")
+            ).alias("n"),
+        )
+        .with_columns(
+            (pl.col("true_positives") + pl.col("false_positives")).alias(
+                "predicted_positives"
+            ),
+            (pl.col("true_negatives") + pl.col("false_negatives")).alias(
+                "predicted_negatives"
+            ),
+            (pl.col("true_positives") + pl.col("false_negatives")).alias(
+                "real_positives"
+            ),
+            (pl.col("false_positives") + pl.col("true_negatives")).alias(
+                "real_negatives"
+            ),
+            (
+                pl.col("true_positives")
+                + pl.col("true_negatives")
+                + pl.col("false_positives")
+                + pl.col("false_negatives")
+            ).alias("n"),
+        )
+    )
+
+    return cumulative_aj_data
