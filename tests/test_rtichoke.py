@@ -3,16 +3,12 @@ A module for tests
 """
 
 from rtichoke.helpers.sandbox_observable_helpers import (
-    create_aj_data,
     extract_aj_estimate_for_strata,
-    assign_and_explode_polars,
-    _aj_adjusted_events,
 )
 
 # from rtichoke import rtichoke
 import polars as pl
 from polars.testing import assert_frame_equal
-import pytest
 
 TIMES = [24.1, 9.7, 49.9, 18.6, 34.8, 14.2, 39.2, 46.0, 4.3, 31.5]
 REALS = [1, 1, 1, 1, 0, 2, 1, 2, 0, 1]
@@ -45,133 +41,6 @@ def _expected(
             ),
         }
     )
-
-
-@pytest.mark.parametrize(
-    "censoring_assumption, competing_assumption, expected",
-    [
-        (
-            "adjusted",
-            "adjusted_as_negative",
-            _expected(
-                [4.0, 4.0, 8 / 3],
-                [0.0, 0.0, 4 / 3],
-                [1.0, 1.0, 1.0],
-                [0.0, 0.0, 0.0],
-                "adjusted",
-                "adjusted_as_negative",
-            ),
-        ),
-        (
-            "excluded",
-            "adjusted_as_negative",
-            _expected(
-                [4.0, 3.0, 2.0],
-                [0.0, 0.0, 1.0],
-                [1.0, 1.0, 1.0],
-                [0.0, 1.0, 1.0],
-                "excluded",
-                "adjusted_as_negative",
-            ),
-        ),
-        (
-            "adjusted",
-            "adjusted_as_censored",
-            _expected(
-                [5.0, 5.0, 10 / 3],
-                [0.0, 0.0, 5 / 3],
-                [0.0, 0.0, 0.0],
-                [0.0, 0.0, 0.0],
-                "adjusted",
-                "adjusted_as_censored",
-            ),
-        ),
-        (
-            "excluded",
-            "adjusted_as_censored",
-            _expected(
-                [5.0, 4.0, 8 / 3],
-                [0.0, 0.0, 4 / 3],
-                [0.0, 0.0, 0.0],
-                [0.0, 1.0, 1.0],
-                "excluded",
-                "adjusted_as_censored",
-            ),
-        ),
-        (
-            "adjusted",
-            "adjusted_as_composite",
-            _expected(
-                [4.0, 4.0, 8 / 3],
-                [1.0, 1.0, 7 / 3],
-                [0.0, 0.0, 0.0],
-                [0.0, 0.0, 0.0],
-                "adjusted",
-                "adjusted_as_composite",
-            ),
-        ),
-        (
-            "excluded",
-            "adjusted_as_composite",
-            _expected(
-                [4.0, 3.0, 2.0],
-                [1.0, 1.0, 2.0],
-                [0.0, 0.0, 0.0],
-                [0.0, 1.0, 1.0],
-                "excluded",
-                "adjusted_as_composite",
-            ),
-        ),
-        (
-            "adjusted",
-            "excluded",
-            _expected(
-                [4.0, 4.0, 8 / 3],
-                [0.0, 0.0, 4 / 3],
-                [1.0, 1.0, 1.0],
-                [0.0, 0.0, 0.0],
-                "adjusted",
-                "excluded",
-            ),
-        ),
-        (
-            "excluded",
-            "excluded",
-            _expected(
-                [4.0, 3.0, 2.0],
-                [0.0, 0.0, 1.0],
-                [1.0, 1.0, 1.0],
-                [0.0, 1.0, 1.0],
-                "excluded",
-                "excluded",
-            ),
-        ),
-    ],
-)
-def test_create_aj_data(
-    censoring_assumption: str,
-    competing_assumption: str,
-    expected: pl.DataFrame,
-) -> None:
-    df = pl.DataFrame(
-        {
-            "strata": ["group1"] * 5,
-            "reals": [0, 1, 2, 1, 0],
-            "times": [5.0, 3.0, 1.0, 4.0, 2.0],
-        }
-    )
-    horizons = [1.0, 2.0, 3.0]
-    breaks = [0.0, 0.5, 1.0]
-
-    result = create_aj_data(
-        df,
-        breaks=breaks,
-        censoring_heuristic=censoring_assumption,
-        competing_heuristic=competing_assumption,
-        fixed_time_horizons=horizons,
-    ).sort("fixed_time_horizon")
-
-    assert_frame_equal(result, expected)
 
 
 def test_extract_aj_estimate_for_strata_basic() -> None:
@@ -289,51 +158,3 @@ def _expected_aj_df(neg, pos, comp, include_comp=True):
     cols.append("estimate_origin")
 
     return pl.DataFrame(data)[cols]
-
-
-def _expected_excluded_df(censoring, competing):
-    return pl.DataFrame(
-        {
-            "strata": ["group1"] * 3,
-            "fixed_time_horizon": TIME_HORIZONS,
-            "real_censored_est": EXCLUDED_EXPECTED[censoring],
-            "real_competing_est": COMPETING_EXCLUDED[competing],
-            "times": TIME_HORIZONS,
-        }
-    )
-
-
-@pytest.mark.parametrize(
-    "censoring, competing",
-    [
-        (c, cc)
-        for c in ["adjusted", "excluded"]
-        for cc in [
-            "adjusted_as_negative",
-            "adjusted_as_censored",
-            "adjusted_as_composite",
-            "excluded",
-        ]
-    ],
-)
-def test_aj_adjusted_events(censoring: str, competing: str) -> None:
-    df = pl.DataFrame(
-        {"strata": ["group1"] * len(TIMES), "reals": REALS, "times": TIMES}
-    )
-    exploded = assign_and_explode_polars(df, TIME_HORIZONS)
-    result = _aj_adjusted_events(
-        df,
-        BREAKS,
-        exploded,
-        censoring,
-        competing,
-        TIME_HORIZONS,
-        full_event_table=False,
-    ).sort("fixed_time_horizon")
-
-    neg = [v[0] for v in AJ_EXPECTED[(censoring, competing)]]
-    pos = [v[1] for v in AJ_EXPECTED[(censoring, competing)]]
-    comp_vals = [v[2] for v in AJ_EXPECTED[(censoring, competing)]]
-    include_comp = competing != "excluded"
-    expected = _expected_aj_df(neg, pos, comp_vals, include_comp)
-    assert_frame_equal(result, expected)

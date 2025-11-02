@@ -6,227 +6,151 @@ app = marimo.App(width="columns")
 
 @app.cell(column=0)
 def _():
+    import numpy as np
     import polars as pl
-    import pandas as pd
     import plotly.express as px
-    from lifelines import CoxPHFitter, WeibullAFTFitter
 
-    df_time_to_cancer_dx = pd.read_csv(
-        "https://raw.githubusercontent.com/ddsjoberg/dca-tutorial/main/data/df_time_to_cancer_dx.csv"
-    )
-    return CoxPHFitter, WeibullAFTFitter, df_time_to_cancer_dx, pl, px
-
-
-@app.cell
-def _(CoxPHFitter, WeibullAFTFitter, df_time_to_cancer_dx):
-    cph = CoxPHFitter()
-    thin_model = CoxPHFitter()
-    aft_model = WeibullAFTFitter()
-
-    cox_formula = "age + famhistory + marker"
-    thin_formula = "age + marker"
-    aft_formula = "age + marker"
-
-    cph.fit(
-        df_time_to_cancer_dx,
-        duration_col="ttcancer",
-        event_col="cancer",
-        formula=cox_formula,
-    )
-
-    thin_model.fit(
-        df_time_to_cancer_dx,
-        duration_col="ttcancer",
-        event_col="cancer",
-        formula=thin_formula,
-    )
-
-    aft_model.fit(
-        df_time_to_cancer_dx,
-        duration_col="ttcancer",
-        event_col="cancer",
-        formula=aft_formula,
-    )
-
-    cph_pred_vals = (
-        (
-            1
-            - cph.predict_survival_function(
-                df_time_to_cancer_dx[["age", "famhistory", "marker"]], times=[1.5]
-            )
-        )
-        .iloc[0, :]
-        .values
-    )
-
-    thin_pred_vals = (
-        (
-            1
-            - thin_model.predict_survival_function(
-                df_time_to_cancer_dx[["age", "famhistory", "marker"]], times=[1.5]
-            )
-        )
-        .iloc[0, :]
-        .values
-    )
-
-    aft_pred_vals = (
-        (
-            1
-            - aft_model.predict_survival_function(
-                df_time_to_cancer_dx[["age", "famhistory", "marker"]], times=[1.5]
-            )
-        )
-        .iloc[0, :]
-        .values
-    )
-
-    print(type(cph_pred_vals))
-
-    probs_dict = {
-        "full": cph_pred_vals,
-        "thin": thin_pred_vals,
-        "aft": aft_pred_vals,
-    }
-
-    reals_mapping = {
-        "censor": 0,
-        "diagnosed with cancer": 1,
-        "dead other causes": 2,
-    }
-
-    reals_dict = df_time_to_cancer_dx["cancer_cr"].map(reals_mapping)
-
-    times_dict = df_time_to_cancer_dx["ttcancer"]
-    return probs_dict, reals_dict, times_dict
-
-
-@app.cell
-def _():
-    import marimo as mo
-
-    return (mo,)
-
-
-@app.cell
-def _(probs_dict):
     from rtichoke.helpers.sandbox_observable_helpers import (
+        create_breaks_values,
+        create_list_data_to_adjust,
+        create_adjusted_data,
+        create_aj_data_combinations,
+        cast_and_join_adjusted_data,
+    )
+
+    return (
+        cast_and_join_adjusted_data,
+        create_adjusted_data,
         create_aj_data_combinations,
         create_breaks_values,
+        create_list_data_to_adjust,
+        np,
+        pl,
+        px,
     )
 
-    stratified_by = ["probability_threshold", "ppcr"]
 
+@app.cell
+def _(np, pl):
+    probs_test = {
+        "small_data_set": np.array(
+            [0.9, 0.85, 0.95, 0.88, 0.6, 0.7, 0.51, 0.2, 0.1, 0.33]
+        )
+    }
+    reals_dict_test = [1, 1, 1, 1, 0, 2, 1, 2, 0, 1]
+    times_dict_test = [24.1, 9.7, 49.9, 18.6, 34.8, 14.2, 39.2, 46.0, 31.5, 4.3]
+
+    data_to_adjust = pl.DataFrame(
+        {
+            "strata": np.repeat("small_data_test", 10),
+            # "probs": probs_test["test_data"],
+            "reals": reals_dict_test,
+            "times": times_dict_test,
+        }
+    )
+
+    data_to_adjust
+    return probs_test, reals_dict_test, times_dict_test
+
+
+@app.cell
+def _(create_aj_data_combinations, create_breaks_values):
+    by = 0.2
+    breaks = create_breaks_values(None, "probability_threshold", by)
+    stratified_by = ["probability_threshold", "ppcr"]
     # stratified_by = ["probability_threshold"]
+
     # stratified_by = ["ppcr"]
 
-    by = 0.1
-    breaks = create_breaks_values(None, "probability_threshold", by)
-    # fixed_time_horizons = [1.0, 1.5, 3.0, 5.0]
-    fixed_time_horizons = [1.0, 3.0, 5.0]
-    stratified_by = stratified_by
-
     heuristics_sets = [
+        {
+            "censoring_heuristic": "excluded",
+            "competing_heuristic": "adjusted_as_negative",
+        },
+        {
+            "censoring_heuristic": "excluded",
+            "competing_heuristic": "adjusted_as_composite",
+        },
+        {
+            "censoring_heuristic": "excluded",
+            "competing_heuristic": "adjusted_as_censored",
+        },
         {
             "censoring_heuristic": "adjusted",
             "competing_heuristic": "adjusted_as_negative",
         },
         {
-            "censoring_heuristic": "excluded",
-            "competing_heuristic": "adjusted_as_negative",
+            "censoring_heuristic": "adjusted",
+            "competing_heuristic": "adjusted_as_censored",
         },
-        # {
-        #     "censoring_assumption": "adjusted",
-        #     "competing_assumption": "adjusted_as_censored",
-        # },
-        # {
-        #     "censoring_assumption": "excluded",
-        #     "competing_assumption": "adjusted_as_censored",
-        # },
-        # {"censoring_assumption": "adjusted", "competing_assumption": "excluded"},
-        # {"censoring_assumption": "excluded", "competing_assumption": "excluded"},
+        {
+            "censoring_heuristic": "adjusted",
+            "competing_heuristic": "adjusted_as_composite",
+        },
+        {
+            "censoring_heuristic": "excluded",
+            "competing_heuristic": "excluded",
+        },
+        {
+            "censoring_heuristic": "adjusted",
+            "competing_heuristic": "excluded",
+        },
     ]
 
     aj_data_combinations = create_aj_data_combinations(
-        list(probs_dict.keys()),
-        heuristics_sets,
-        fixed_time_horizons,
-        stratified_by,
-        by,
-        breaks,
+        ["small_data_set"],
+        heuristics_sets=heuristics_sets,
+        fixed_time_horizons=[10.0, 20.0, 30.0, 40.0, 50.0],
+        stratified_by=stratified_by,
+        by=by,
+        breaks=breaks,
+        risk_set_scope=["pooled_by_cutoff", "within_stratum"],
     )
 
+    # aj_data_combinations
+
     aj_data_combinations
-    return (
-        aj_data_combinations,
-        breaks,
-        by,
-        fixed_time_horizons,
-        heuristics_sets,
-        stratified_by,
-    )
-
-
-@app.cell
-def _(aj_data_combinations):
-    aj_data_combinations
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""## create list data to adjust polars""")
-    return
+    return aj_data_combinations, breaks, by, heuristics_sets, stratified_by
 
 
 @app.cell
 def _(
     aj_data_combinations,
     by,
-    probs_dict,
-    reals_dict,
+    create_list_data_to_adjust,
+    probs_test,
+    reals_dict_test,
     stratified_by,
-    times_dict,
+    times_dict_test,
 ):
-    from rtichoke.helpers.sandbox_observable_helpers import (
-        create_list_data_to_adjust,
-        create_adjusted_data,
-        cast_and_join_adjusted_data,
-    )
-
-    list_data_to_adjust_polars = create_list_data_to_adjust(
+    list_data_to_adjust_polars_probability_threshold = create_list_data_to_adjust(
         aj_data_combinations,
-        probs_dict,
-        reals_dict,
-        times_dict,
+        probs_test,
+        reals_dict_test,
+        times_dict_test,
         stratified_by=stratified_by,
         by=by,
     )
 
-    list_data_to_adjust_polars
-    return (
-        cast_and_join_adjusted_data,
-        create_adjusted_data,
-        list_data_to_adjust_polars,
-    )
+    list_data_to_adjust_polars_probability_threshold
+    return (list_data_to_adjust_polars_probability_threshold,)
 
 
 @app.cell
 def _(
     breaks,
     create_adjusted_data,
-    fixed_time_horizons,
     heuristics_sets,
-    list_data_to_adjust_polars,
+    list_data_to_adjust_polars_probability_threshold,
     stratified_by,
 ):
     adjusted_data = create_adjusted_data(
-        list_data_to_adjust_polars,
+        list_data_to_adjust_polars_probability_threshold,
         heuristics_sets=heuristics_sets,
-        fixed_time_horizons=fixed_time_horizons,
+        fixed_time_horizons=[10.0, 20.0, 30.0, 40.0, 50.0],
         breaks=breaks,
         stratified_by=stratified_by,
-        # stratified_by=["probability_threshold", "ppcr"]
+        # risk_set_scope = ["pooled_by_cutoff"]
         risk_set_scope=["pooled_by_cutoff", "within_stratum"],
     )
 
@@ -242,12 +166,6 @@ def _(adjusted_data, aj_data_combinations, cast_and_join_adjusted_data):
 
     final_adjusted_data_polars
     return (final_adjusted_data_polars,)
-
-
-@app.cell
-def _(final_adjusted_data_polars):
-    final_adjusted_data_polars
-    return
 
 
 @app.cell
@@ -275,16 +193,6 @@ def _(cumulative_aj_data):
 
 
 @app.cell(column=1, hide_code=True)
-def _(mo):
-    reference_group_radio = mo.ui.radio(
-        options=["full", "thin", "aft"], value="full", label="Model"
-    )
-
-    reference_group_radio
-    return (reference_group_radio,)
-
-
-@app.cell(hide_code=True)
 def _(mo):
     fill_color_radio = mo.ui.radio(
         options=["classification_outcome", "reals_labels"],
@@ -321,19 +229,33 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(by, mo):
+def _(by):
+    import marimo as mo
+
     slider_cutoff = mo.ui.slider(start=0, stop=1, step=by, label="Cutoff")
     slider_cutoff
-    return (slider_cutoff,)
+    return mo, slider_cutoff
 
 
 @app.cell(hide_code=True)
 def _(mo):
     fixed_time_horizons_slider = mo.ui.slider(
-        start=1, stop=5, step=2, label="Fixed Time Horizon"
+        start=10, stop=50, step=10, label="Fixed Time Horizon"
     )
     fixed_time_horizons_slider
     return (fixed_time_horizons_slider,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    censoring_heuristic_radio = mo.ui.radio(
+        options=["adjusted", "excluded"],
+        value="adjusted",
+        label="Censoring Heuristic",
+    )
+
+    censoring_heuristic_radio
+    return (censoring_heuristic_radio,)
 
 
 @app.cell(hide_code=True)
@@ -353,18 +275,6 @@ def _(mo):
     return (competing_heuristic_radio,)
 
 
-@app.cell(hide_code=True)
-def _(mo):
-    censoring_heuristic_radio = mo.ui.radio(
-        options=["adjusted", "excluded"],
-        value="adjusted",
-        label="Censoring Heuristic",
-    )
-
-    censoring_heuristic_radio
-    return (censoring_heuristic_radio,)
-
-
 @app.cell(column=2, hide_code=True)
 def _(
     by,
@@ -375,19 +285,17 @@ def _(
     fixed_time_horizons_slider,
     pl,
     px,
-    reference_group_radio,
     risk_set_scope_radio,
     slider_cutoff,
     stratified_by_radio,
 ):
     chosen_cutoff_data = final_adjusted_data_polars.filter(
-        pl.col("chosen_cutoff") == slider_cutoff.value,
-        pl.col("fixed_time_horizon") == fixed_time_horizons_slider.value,
-        pl.col("reference_group") == reference_group_radio.value,
-        pl.col("risk_set_scope") == risk_set_scope_radio.value,
-        pl.col("stratified_by") == stratified_by_radio.value,
         pl.col("censoring_heuristic") == censoring_heuristic_radio.value,
         pl.col("competing_heuristic") == competing_heuristic_radio.value,
+        pl.col("chosen_cutoff") == slider_cutoff.value,
+        pl.col("fixed_time_horizon") == fixed_time_horizons_slider.value,
+        pl.col("risk_set_scope") == risk_set_scope_radio.value,
+        pl.col("stratified_by") == stratified_by_radio.value,
     ).sort(pl.col("strata"))
 
     color_discrete_map = {
@@ -434,7 +342,7 @@ def _(
         annotation_position="top right",
     )
 
-    # fig_new
+    fig_new
     return
 
 
