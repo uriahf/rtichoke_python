@@ -265,6 +265,7 @@ def create_breaks_values(probs_vec, stratified_by, by):
 
 def create_aj_data_combinations(
     reference_groups: Sequence[str],
+    heuristics_sets: list[Dict],
     fixed_time_horizons: Sequence[float],
     stratified_by: Sequence[str],
     by: float,
@@ -308,22 +309,28 @@ def create_aj_data_combinations(
         "real_censored",
     ]
 
-    censoring_assumptions_labels = ["excluded", "adjusted"]
+    print("heuristics_sets", pl.DataFrame(heuristics_sets))
 
-    competing_assumptions_labels = [
-        "excluded",
-        "adjusted_as_negative",
-        "adjusted_as_censored",
-        "adjusted_as_composite",
-    ]
+    heuristics_combinations = pl.DataFrame(heuristics_sets)
+
+    censoring_heuristics_enum = pl.Enum(
+        heuristics_combinations["censoring_heuristic"].unique(maintain_order=True)
+    )
+    competing_heuristics_enum = pl.Enum(
+        heuristics_combinations["competing_heuristic"].unique(maintain_order=True)
+    )
 
     combinations_frames: list[pl.DataFrame] = [
         _enum_dataframe("reference_group", reference_groups),
         pl.DataFrame(
             {"fixed_time_horizon": pl.Series(fixed_time_horizons, dtype=pl.Float64)}
         ),
-        _enum_dataframe("censoring_assumption", censoring_assumptions_labels),
-        _enum_dataframe("competing_assumption", competing_assumptions_labels),
+        heuristics_combinations.with_columns(
+            [
+                pl.col("censoring_heuristic").cast(censoring_heuristics_enum),
+                pl.col("competing_heuristic").cast(competing_heuristics_enum),
+            ]
+        ),
         strata_combinations,
         risk_set_scope_combinations,
         _enum_dataframe("reals_labels", reals_labels),
@@ -407,7 +414,7 @@ def create_aj_data(
     risk_set_scope: Sequence[str] = "within_stratum",
 ):
     """
-    Create AJ estimates per strata based on censoring and competing assumptions.
+    Create AJ estimates per strata based on censoring and competing heuristicss.
     """
     print("stratified_by", stratified_by)
     print("Creating aj data")
@@ -475,8 +482,8 @@ def create_aj_data(
     return aj_estimates_with_cross(
         result,
         {
-            "censoring_assumption": censoring_heuristic,
-            "competing_assumption": competing_heuristic,
+            "censoring_heuristic": censoring_heuristic,
+            "competing_heuristic": competing_heuristic,
         },
     ).select(
         [
@@ -488,8 +495,8 @@ def create_aj_data(
             "real_positives_est",
             "real_competing_est",
             "real_censored_est",
-            "censoring_assumption",
-            "competing_assumption",
+            "censoring_heuristic",
+            "competing_heuristic",
             "estimate_origin",
             "risk_set_scope",
         ]
@@ -888,10 +895,10 @@ def ensure_no_categorical(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def extract_aj_estimate_by_assumptions(
+def extract_aj_estimate_by_heuristics(
     df: pl.DataFrame,
     breaks: Sequence[float],
-    assumptions_sets: list[dict],
+    heuristics_sets: list[dict],
     fixed_time_horizons: list[float],
     stratified_by: Sequence[str],
     risk_set_scope: str = "within_stratum",
@@ -900,9 +907,9 @@ def extract_aj_estimate_by_assumptions(
 
     print("stratified_by", stratified_by)
 
-    for assumption in assumptions_sets:
-        censoring = assumption["censoring_assumption"]
-        competing = assumption["competing_assumption"]
+    for heuristic in heuristics_sets:
+        censoring = heuristic["censoring_heuristic"]
+        competing = heuristic["competing_heuristic"]
 
         print("stratified_by", stratified_by)
 
@@ -921,8 +928,8 @@ def extract_aj_estimate_by_assumptions(
             risk_set_scope=risk_set_scope,
         ).with_columns(
             [
-                pl.lit(censoring).alias("censoring_assumption"),
-                pl.lit(competing).alias("competing_assumption"),
+                pl.lit(censoring).alias("censoring_heuristic"),
+                pl.lit(competing).alias("competing_heuristic"),
             ]
         )
 
@@ -939,8 +946,8 @@ def extract_aj_estimate_by_assumptions(
             "strata",
             "chosen_cutoff",
             "fixed_time_horizon",
-            "censoring_assumption",
-            "competing_assumption",
+            "censoring_heuristic",
+            "competing_heuristic",
             "risk_set_scope",
         ],
         variable_name="reals_labels",
@@ -954,7 +961,7 @@ def extract_aj_estimate_by_assumptions(
 
 def create_adjusted_data(
     list_data_to_adjust_polars: dict[str, pl.DataFrame],
-    assumptions_sets: list[dict[str, str]],
+    heuristics_sets: list[dict[str, str]],
     fixed_time_horizons: list[float],
     breaks: Sequence[float],
     stratified_by: Sequence[str],
@@ -965,17 +972,13 @@ def create_adjusted_data(
     reference_groups = list(list_data_to_adjust_polars.keys())
     reference_group_enum = pl.Enum(reference_groups)
 
-    censoring_assumption_labels = ["excluded", "adjusted"]
-    censoring_assumption_enum = pl.Enum(censoring_assumption_labels)
-
-    competing_assumption_labels = [
-        "excluded",
-        "adjusted_as_negative",
-        "adjusted_as_censored",
-        "adjusted_as_composite",
-    ]
-
-    competing_assumption_enum = pl.Enum(competing_assumption_labels)
+    heuristics_df = pl.DataFrame(heuristics_sets)
+    censoring_heuristic_enum = pl.Enum(
+        heuristics_df["censoring_heuristic"].unique(maintain_order=True)
+    )
+    competing_heuristic_enum = pl.Enum(
+        heuristics_df["competing_heuristic"].unique(maintain_order=True)
+    )
 
     for reference_group, df in list_data_to_adjust_polars.items():
         input_df = df.select(
@@ -984,10 +987,10 @@ def create_adjusted_data(
 
         print("stratified_by", stratified_by)
 
-        aj_result = extract_aj_estimate_by_assumptions(
+        aj_result = extract_aj_estimate_by_heuristics(
             input_df,
             breaks,
-            assumptions_sets=assumptions_sets,
+            heuristics_sets=heuristics_sets,
             fixed_time_horizons=fixed_time_horizons,
             stratified_by=stratified_by,
             risk_set_scope=risk_set_scope,
@@ -1020,8 +1023,8 @@ def create_adjusted_data(
         .with_columns(
             [
                 pl.col("reals_labels").str.replace(r"_est$", "").cast(reals_enum_dtype),
-                pl.col("censoring_assumption").cast(censoring_assumption_enum),
-                pl.col("competing_assumption").cast(competing_assumption_enum),
+                pl.col("censoring_heuristic").cast(censoring_heuristic_enum),
+                pl.col("competing_heuristic").cast(competing_heuristic_enum),
             ]
         )
     )
@@ -1041,8 +1044,8 @@ def cast_and_join_adjusted_data(aj_data_combinations, aj_estimates_data):
             on=[
                 "strata",
                 "fixed_time_horizon",
-                "censoring_assumption",
-                "competing_assumption",
+                "censoring_heuristic",
+                "competing_heuristic",
                 "reals_labels",
                 "reference_group",
                 "chosen_cutoff",
@@ -1091,13 +1094,13 @@ def cast_and_join_adjusted_data(aj_data_combinations, aj_estimates_data):
                 .when(
                     (pl.col("prediction_label") == pl.lit("predicted_negatives"))
                     & (pl.col("reals_labels") == pl.lit("real_competing"))
-                    & (pl.col("competing_assumption") == pl.lit("adjusted_as_negative"))
+                    & (pl.col("competing_heuristic") == pl.lit("adjusted_as_negative"))
                 )
                 .then(pl.lit("true_negatives"))
                 .when(
                     (pl.col("prediction_label") == pl.lit("predicted_positives"))
                     & (pl.col("reals_labels") == pl.lit("real_competing"))
-                    & (pl.col("competing_assumption") == pl.lit("adjusted_as_negative"))
+                    & (pl.col("competing_heuristic") == pl.lit("adjusted_as_negative"))
                 )
                 .then(pl.lit("false_positives"))
                 .otherwise(pl.lit("excluded"))  # or pl.lit(None) if you prefer nulls
@@ -1389,8 +1392,8 @@ def _calculate_cumulative_aj_data(aj_data: pl.DataFrame) -> pl.DataFrame:
             [
                 "reference_group",
                 "fixed_time_horizon",
-                "censoring_assumption",
-                "competing_assumption",
+                "censoring_heuristic",
+                "competing_heuristic",
                 "stratified_by",
                 "chosen_cutoff",
                 "classification_outcome",
