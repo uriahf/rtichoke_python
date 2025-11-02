@@ -581,18 +581,12 @@ def extract_aj_estimate_by_cutoffs(
     # n = data_to_adjust.height
 
     counts_per_strata = (
-        data_to_adjust.group_by(["strata", "stratified_by", "upper_bound"])
+        data_to_adjust.group_by(
+            ["strata", "stratified_by", "upper_bound", "lower_bound"]
+        )
         .len(name="strata_count")
         .with_columns(pl.col("strata_count").cast(pl.Float64))
     )
-
-    print("counts per strata")
-    print(counts_per_strata)
-
-    print("data_to_adjust")
-    print(data_to_adjust)
-
-    # TODO: iterate over predicted-positives / negatives
 
     aj_estimates_predicted_positives = pl.DataFrame()
     aj_estimates_predicted_negatives = pl.DataFrame()
@@ -608,12 +602,12 @@ def extract_aj_estimate_by_cutoffs(
                 )
 
             elif stratification_criteria == "ppcr":
-                mask_predicted_positives = (pl.col("upper_bound") <= chosen_cutoff) & (
-                    pl.col("stratified_by") == "ppcr"
-                )
-                mask_predicted_negatives = (pl.col("upper_bound") > chosen_cutoff) & (
-                    pl.col("stratified_by") == "ppcr"
-                )
+                mask_predicted_positives = (
+                    pl.col("lower_bound") > 1 - chosen_cutoff
+                ) & (pl.col("stratified_by") == "ppcr")
+                mask_predicted_negatives = (
+                    pl.col("lower_bound") <= 1 - chosen_cutoff
+                ) & (pl.col("stratified_by") == "ppcr")
 
             predicted_positives = data_to_adjust.filter(mask_predicted_positives)
             predicted_negatives = data_to_adjust.filter(mask_predicted_negatives)
@@ -853,7 +847,10 @@ def create_list_data_to_adjust(
         .with_columns(pl.col("strata").cast(strata_enum_dtype))
         .join(
             aj_data_combinations.select(
-                pl.col("strata"), pl.col("stratified_by"), pl.col("upper_bound")
+                pl.col("strata"),
+                pl.col("stratified_by"),
+                pl.col("upper_bound"),
+                pl.col("lower_bound"),
             ).unique(),
             how="left",
             on=["strata", "stratified_by"],
@@ -982,7 +979,7 @@ def create_adjusted_data(
 
     for reference_group, df in list_data_to_adjust_polars.items():
         input_df = df.select(
-            ["strata", "reals", "times", "upper_bound", "stratified_by"]
+            ["strata", "reals", "times", "upper_bound", "lower_bound", "stratified_by"]
         )
 
         print("stratified_by", stratified_by)
@@ -1060,7 +1057,7 @@ def cast_and_join_adjusted_data(aj_data_combinations, aj_estimates_data):
                     & (pl.col("stratified_by") == "probability_threshold")
                 )
                 | (
-                    (pl.col("chosen_cutoff") < pl.col("upper_bound"))
+                    ((1 - pl.col("chosen_cutoff")) >= pl.col("mid_point"))
                     & (pl.col("stratified_by") == "ppcr")
                 )
             )
