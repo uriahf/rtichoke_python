@@ -17,6 +17,10 @@ color:
 
 typography:
   fonts:
+    - source: file
+      family: Fraunces9pt-Light
+      files:
+        - fonts/Fraunces9pt-Light.woff2
     - family: Fraunces
       source: google
       weight: [400, 700]
@@ -31,7 +35,7 @@ typography:
     weight: 400
     line-height: 1.5
   headings:
-    family: Fraunces
+    family: Fraunces9pt-Light
     weight: 700
     style: normal
     line-height: 1.2
