@@ -1382,7 +1382,7 @@ def _aj_adjusted_events(
         return adjusted
 
 
-def calculate_cumulative_aj_data(aj_data: pl.DataFrame) -> pl.DataFrame:
+def _calculate_cumulative_aj_data(aj_data: pl.DataFrame) -> pl.DataFrame:
     cumulative_aj_data = (
         aj_data.filter(pl.col("risk_set_scope") == "pooled_by_cutoff")
         .group_by(
@@ -1441,3 +1441,33 @@ def calculate_cumulative_aj_data(aj_data: pl.DataFrame) -> pl.DataFrame:
     )
 
     return cumulative_aj_data
+
+
+def _turn_cumulative_aj_to_performance_data(
+    cumulative_aj_data: pl.DataFrame,
+) -> pl.DataFrame:
+    performance_data = cumulative_aj_data.with_columns(
+        (pl.col("true_positives") / pl.col("real_positives")).alias("sensitivity"),
+        (pl.col("true_negatives") / pl.col("real_negatives")).alias("specificity"),
+        (pl.col("true_positives") / pl.col("predicted_positives")).alias("ppv"),
+        (pl.col("true_negatives") / pl.col("predicted_negatives")).alias("npv"),
+        (
+            (pl.col("true_positives") / pl.col("real_positives"))
+            / (pl.col("real_positives") / pl.col("n"))
+        ).alias("lift"),
+        pl.when(pl.col("stratified_by") == "probability_threshold")
+        .then(
+            (pl.col("true_positives") / pl.col("n"))
+            - (pl.col("false_positives") / pl.col("n"))
+            * pl.col("chosen_cutoff")
+            / (1 - pl.col("chosen_cutoff"))
+        )
+        .otherwise(None)
+        .alias("net_benefit"),
+        pl.when(pl.col("stratified_by") == "probability_threshold")
+        .then(pl.col("predicted_positives") / pl.col("n"))
+        .otherwise(pl.col("chosen_cutoff"))
+        .alias("ppcr"),
+    )
+
+    return performance_data
