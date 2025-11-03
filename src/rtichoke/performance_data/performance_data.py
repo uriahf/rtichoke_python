@@ -37,6 +37,8 @@ def prepare_performance_data(
         list(probs.keys()), stratified_by=stratified_by, by=by, breaks=breaks
     )
 
-    performance_data = _create_list_data_to_adjust_binary(aj_data_combinations)
+    performance_data = _create_list_data_to_adjust_binary(
+        aj_data_combinations, probs, reals, stratified_by=stratified_by, by=by
+    )
 
     return performance_data
