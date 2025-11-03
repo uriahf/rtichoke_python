@@ -8,10 +8,8 @@ website:
   title: "rtichoke"
   navbar:
     left:
-      - href: reference.qmd
+      - href: reference/
         text: Reference
-      - href: before_we_validate.qmd
-        text: Before we Validate
 
 quartodoc:
   # the name used to import the package you want to create reference docs for
