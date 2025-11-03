@@ -252,6 +252,48 @@ def create_breaks_values(probs_vec, stratified_by, by):
     return breaks
 
 
+def _create_aj_data_combinations_binary(
+    reference_groups: Sequence[str],
+    stratified_by: Sequence[str],
+    by: float,
+    breaks: Sequence[float],
+) -> pl.DataFrame:
+    dfs = [create_strata_combinations(sb, by, breaks) for sb in stratified_by]
+
+    strata_combinations = pl.concat(dfs, how="vertical")
+
+    strata_cats = (
+        strata_combinations.select(pl.col("strata").unique(maintain_order=True))
+        .to_series()
+        .to_list()
+    )
+
+    strata_enum = pl.Enum(strata_cats)
+    stratified_by_enum = pl.Enum(["probability_threshold", "ppcr"])
+
+    strata_combinations = strata_combinations.with_columns(
+        [
+            pl.col("strata").cast(strata_enum),
+            pl.col("stratified_by").cast(stratified_by_enum),
+        ]
+    )
+
+    # Define values for Cartesian product
+    reals_labels = ["real_negatives", "real_positives"]
+
+    combinations_frames: list[pl.DataFrame] = [
+        _enum_dataframe("reference_group", reference_groups),
+        strata_combinations,
+        _enum_dataframe("reals_labels", reals_labels),
+    ]
+
+    result = combinations_frames[0]
+    for frame in combinations_frames[1:]:
+        result = result.join(frame, how="cross")
+
+    return result
+
+
 def create_aj_data_combinations(
     reference_groups: Sequence[str],
     heuristics_sets: list[Dict],
