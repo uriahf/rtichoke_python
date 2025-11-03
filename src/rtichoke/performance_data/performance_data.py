@@ -11,6 +11,7 @@ from rtichoke.helpers.sandbox_observable_helpers import (
     _create_list_data_to_adjust_binary,
     _create_adjusted_data_binary,
     _cast_and_join_adjusted_data_binary,
+    _calculate_cumulative_aj_data_binary,
 )
 import numpy as np
 
@@ -51,6 +52,8 @@ def prepare_performance_data(
         aj_data_combinations, adjusted_data
     )
 
-    performance_data = final_adjusted_data
+    cumulative_aj_data = _calculate_cumulative_aj_data_binary(final_adjusted_data)
+
+    performance_data = cumulative_aj_data
 
     return performance_data

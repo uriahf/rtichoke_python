@@ -1522,6 +1522,65 @@ def _aj_adjusted_events(
         return adjusted
 
 
+def _calculate_cumulative_aj_data_binary(aj_data: pl.DataFrame) -> pl.DataFrame:
+    cumulative_aj_data = (
+        aj_data.group_by(
+            [
+                "reference_group",
+                "stratified_by",
+                "chosen_cutoff",
+                "classification_outcome",
+            ]
+        )
+        .agg([pl.col("reals_estimate").sum()])
+        .pivot(on="classification_outcome", values="reals_estimate")
+        .with_columns(
+            (pl.col("true_positives") + pl.col("false_positives")).alias(
+                "predicted_positives"
+            ),
+            (pl.col("true_negatives") + pl.col("false_negatives")).alias(
+                "predicted_negatives"
+            ),
+            (pl.col("true_positives") + pl.col("false_negatives")).alias(
+                "real_positives"
+            ),
+            (pl.col("false_positives") + pl.col("true_negatives")).alias(
+                "real_negatives"
+            ),
+            (
+                pl.col("true_positives")
+                + pl.col("true_negatives")
+                + pl.col("false_positives")
+                + pl.col("false_negatives")
+            )
+            .alias("n")
+            .sum(),
+        )
+        .with_columns(
+            (pl.col("true_positives") + pl.col("false_positives")).alias(
+                "predicted_positives"
+            ),
+            (pl.col("true_negatives") + pl.col("false_negatives")).alias(
+                "predicted_negatives"
+            ),
+            (pl.col("true_positives") + pl.col("false_negatives")).alias(
+                "real_positives"
+            ),
+            (pl.col("false_positives") + pl.col("true_negatives")).alias(
+                "real_negatives"
+            ),
+            (
+                pl.col("true_positives")
+                + pl.col("true_negatives")
+                + pl.col("false_positives")
+                + pl.col("false_negatives")
+            ).alias("n"),
+        )
+    )
+
+    return cumulative_aj_data
+
+
 def _calculate_cumulative_aj_data(aj_data: pl.DataFrame) -> pl.DataFrame:
     cumulative_aj_data = (
         aj_data.filter(pl.col("risk_set_scope") == "pooled_by_cutoff")
