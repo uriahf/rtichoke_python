@@ -15,7 +15,28 @@ def create_calibration_curve(
     reals: Dict[str, List[int]],
     calibration_type: str = "discrete",
     size: Optional[int] = None,
-    color_values: List[str] = None,
+    color_values: Optional[List[str]] = [
+        "#1b9e77",
+        "#d95f02",
+        "#7570b3",
+        "#e7298a",
+        "#07004D",
+        "#E6AB02",
+        "#FE5F55",
+        "#54494B",
+        "#006E90",
+        "#BC96E6",
+        "#52050A",
+        "#1F271B",
+        "#BE7C4D",
+        "#63768D",
+        "#08A045",
+        "#320A28",
+        "#82FF9E",
+        "#2176FF",
+        "#D1603D",
+        "#585123",
+    ],
     url_api: str = "http://localhost:4242/",
 ) -> Figure:
     """Creates Calibration Curve
@@ -31,29 +52,6 @@ def create_calibration_curve(
     Returns:
         Figure: _description_
     """
-    if color_values is None:
-        color_values = [
-            "#1b9e77",
-            "#d95f02",
-            "#7570b3",
-            "#e7298a",
-            "#07004D",
-            "#E6AB02",
-            "#FE5F55",
-            "#54494B",
-            "#006E90",
-            "#BC96E6",
-            "#52050A",
-            "#1F271B",
-            "#BE7C4D",
-            "#63768D",
-            "#08A045",
-            "#320A28",
-            "#82FF9E",
-            "#2176FF",
-            "#D1603D",
-            "#585123",
-        ]
 
     rtichoke_response = send_requests_to_rtichoke_r(
         dictionary_to_send={
