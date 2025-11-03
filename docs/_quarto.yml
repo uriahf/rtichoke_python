@@ -16,6 +16,10 @@ quartodoc:
   package: rtichoke
   sidebar: "_sidebar.yml"
   sections:
+    - title: Performance Data
+      desc: Functions for creating performance data.
+      contents:
+        - prepare_performance_data_times
     - title: Calibration
       desc: Functions for Calibration.
       contents:

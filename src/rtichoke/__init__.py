@@ -31,6 +31,10 @@ from rtichoke.performance_data.performance_data import (
     prepare_performance_data as prepare_performance_data,
 )
 
+from rtichoke.performance_data.performance_data_times import (
+    prepare_performance_data_times as prepare_performance_data_times,
+)
+
 from rtichoke.summary_report.summary_report import (
     create_summary_report as create_summary_report,
 )
@@ -48,5 +52,6 @@ __all__ = [
     "create_decision_curve",
     "plot_decision_curve",
     "prepare_performance_data",
+    "prepare_performance_data_times",
     "create_summary_report",
 ]

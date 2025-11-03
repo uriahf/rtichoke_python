@@ -32,7 +32,7 @@ def _():
 
 @app.cell
 def _(np, pl):
-    probs_test = {
+    probs_dict_test = {
         "small_data_set": np.array(
             [0.9, 0.85, 0.95, 0.88, 0.6, 0.7, 0.51, 0.2, 0.1, 0.33]
         )
@@ -50,7 +50,7 @@ def _(np, pl):
     )
 
     data_to_adjust
-    return probs_test, reals_dict_test, times_dict_test
+    return probs_dict_test, reals_dict_test, times_dict_test
 
 
 @app.cell
@@ -59,6 +59,8 @@ def _(create_aj_data_combinations, create_breaks_values):
     breaks = create_breaks_values(None, "probability_threshold", by)
     stratified_by = ["probability_threshold", "ppcr"]
     # stratified_by = ["probability_threshold"]
+
+    fixed_time_horizons = [10.0, 20.0, 30.0, 40.0, 50.0]
 
     # stratified_by = ["ppcr"]
 
@@ -100,7 +102,7 @@ def _(create_aj_data_combinations, create_breaks_values):
     aj_data_combinations = create_aj_data_combinations(
         ["small_data_set"],
         heuristics_sets=heuristics_sets,
-        fixed_time_horizons=[10.0, 20.0, 30.0, 40.0, 50.0],
+        fixed_time_horizons=fixed_time_horizons,
         stratified_by=stratified_by,
         by=by,
         breaks=breaks,
@@ -110,7 +112,14 @@ def _(create_aj_data_combinations, create_breaks_values):
     # aj_data_combinations
 
     aj_data_combinations
-    return aj_data_combinations, breaks, by, heuristics_sets, stratified_by
+    return (
+        aj_data_combinations,
+        breaks,
+        by,
+        fixed_time_horizons,
+        heuristics_sets,
+        stratified_by,
+    )
 
 
 @app.cell
@@ -118,14 +127,14 @@ def _(
     aj_data_combinations,
     by,
     create_list_data_to_adjust,
-    probs_test,
+    probs_dict_test,
     reals_dict_test,
     stratified_by,
     times_dict_test,
 ):
     list_data_to_adjust_polars_probability_threshold = create_list_data_to_adjust(
         aj_data_combinations,
-        probs_test,
+        probs_dict_test,
         reals_dict_test,
         times_dict_test,
         stratified_by=stratified_by,
@@ -140,6 +149,7 @@ def _(
 def _(
     breaks,
     create_adjusted_data,
+    fixed_time_horizons,
     heuristics_sets,
     list_data_to_adjust_polars_probability_threshold,
     stratified_by,
@@ -147,7 +157,7 @@ def _(
     adjusted_data = create_adjusted_data(
         list_data_to_adjust_polars_probability_threshold,
         heuristics_sets=heuristics_sets,
-        fixed_time_horizons=[10.0, 20.0, 30.0, 40.0, 50.0],
+        fixed_time_horizons=fixed_time_horizons,
         breaks=breaks,
         stratified_by=stratified_by,
         # risk_set_scope = ["pooled_by_cutoff"]
@@ -192,7 +202,50 @@ def _(cumulative_aj_data):
     return
 
 
-@app.cell(column=1, hide_code=True)
+@app.cell(column=1)
+def _():
+    from rtichoke.performance_data.performance_data_times import (
+        prepare_performance_data_times,
+    )
+
+    return (prepare_performance_data_times,)
+
+
+@app.cell
+def _(
+    fixed_time_horizons,
+    prepare_performance_data_times,
+    probs_dict_test,
+    reals_dict_test,
+    times_dict_test,
+):
+    prepare_performance_data_times(
+        probs_dict_test, reals_dict_test, times_dict_test, fixed_time_horizons, by=0.1
+    )
+    return
+
+
+@app.cell
+def _(np):
+    probs_dict_test = {
+        "small_data_set": np.array(
+            [0.9, 0.85, 0.95, 0.88, 0.6, 0.7, 0.51, 0.2, 0.1, 0.33]
+        )
+    }
+    reals_dict_test = [1, 1, 1, 1, 0, 2, 1, 2, 0, 1]
+    times_dict_test = [24.1, 9.7, 49.9, 18.6, 34.8, 14.2, 39.2, 46.0, 31.5, 4.3]
+
+    fixed_time_horizons = [10.0, 20.0, 30.0, 40.0, 50.0]
+
+    return (
+        fixed_time_horizons,
+        probs_dict_test,
+        reals_dict_test,
+        times_dict_test,
+    )
+
+
+@app.cell(column=2, hide_code=True)
 def _(mo):
     fill_color_radio = mo.ui.radio(
         options=["classification_outcome", "reals_labels"],
@@ -275,7 +328,7 @@ def _(mo):
     return (competing_heuristic_radio,)
 
 
-@app.cell(column=2, hide_code=True)
+@app.cell(column=3, hide_code=True)
 def _(
     by,
     censoring_heuristic_radio,

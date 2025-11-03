@@ -3,6 +3,9 @@ website:
   - contents:
     - reference/index.qmd
     - contents:
+      - reference/prepare_performance_data_times.qmd
+      section: Performance Data
+    - contents:
       - reference/create_calibration_curve.qmd
       section: Calibration
     - contents:
