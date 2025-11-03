@@ -816,6 +816,74 @@ def assign_and_explode_polars(
     )
 
 
+def _create_list_data_to_adjust_binary(
+    aj_data_combinations: pl.DataFrame,
+    probs_dict: Dict[str, np.ndarray],
+    reals_dict: Union[np.ndarray, Dict[str, np.ndarray]],
+    stratified_by,
+    by,
+) -> Dict[str, pl.DataFrame]:
+    reference_group_labels = list(probs_dict.keys())
+    num_reals = len(reals_dict)
+
+    reference_group_enum = pl.Enum(reference_group_labels)
+
+    strata_enum_dtype = aj_data_combinations.schema["strata"]
+
+    data_to_adjust = pl.DataFrame(
+        {
+            "reference_group": np.repeat(reference_group_labels, num_reals),
+            "probs": np.concatenate(
+                [probs_dict[group] for group in reference_group_labels]
+            ),
+            "reals": np.tile(np.asarray(reals_dict), len(reference_group_labels)),
+        }
+    ).with_columns(pl.col("reference_group").cast(reference_group_enum))
+
+    data_to_adjust = add_cutoff_strata(
+        data_to_adjust, by=by, stratified_by=stratified_by
+    )
+
+    data_to_adjust = pivot_longer_strata(data_to_adjust)
+
+    data_to_adjust = (
+        data_to_adjust.with_columns([pl.col("strata")])
+        .with_columns(pl.col("strata").cast(strata_enum_dtype))
+        .join(
+            aj_data_combinations.select(
+                pl.col("strata"),
+                pl.col("stratified_by"),
+                pl.col("upper_bound"),
+                pl.col("lower_bound"),
+            ).unique(),
+            how="left",
+            on=["strata", "stratified_by"],
+        )
+    )
+
+    reals_labels = ["real_negatives", "real_positives"]
+
+    reals_enum = pl.Enum(reals_labels)
+
+    reals_map = {0: "real_negatives", 1: "real_positives"}
+
+    data_to_adjust = data_to_adjust.with_columns(
+        pl.col("reals")
+        .replace_strict(reals_map, return_dtype=reals_enum)
+        .alias("reals_labels")
+    )
+
+    # Partition by reference_group
+    list_data_to_adjust = {
+        group[0]: df
+        for group, df in data_to_adjust.partition_by(
+            "reference_group", as_dict=True
+        ).items()
+    }
+
+    return list_data_to_adjust
+
+
 def create_list_data_to_adjust(
     aj_data_combinations: pl.DataFrame,
     probs_dict: Dict[str, np.ndarray],
@@ -872,6 +940,7 @@ def create_list_data_to_adjust(
         "real_competing",
         "real_censored",
     ]
+
     reals_enum = pl.Enum(reals_labels)
 
     # Map reals values to strings

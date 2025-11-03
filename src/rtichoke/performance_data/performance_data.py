@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from rtichoke.helpers.sandbox_observable_helpers import (
     _create_aj_data_combinations_binary,
     create_breaks_values,
+    _create_list_data_to_adjust_binary,
 )
 import numpy as np
 
@@ -36,6 +37,6 @@ def prepare_performance_data(
         list(probs.keys()), stratified_by=stratified_by, by=by, breaks=breaks
     )
 
-    performance_data = aj_data_combinations
+    performance_data = _create_list_data_to_adjust_binary(aj_data_combinations)
 
     return performance_data
