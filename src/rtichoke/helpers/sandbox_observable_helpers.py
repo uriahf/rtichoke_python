@@ -1020,8 +1020,24 @@ def extract_aj_estimate_by_heuristics(
     return aj_estimates_unpivoted
 
 
+def _create_adjusted_data_binary(
+    list_data_to_adjust: dict[str, pl.DataFrame],
+    breaks: Sequence[float],
+    stratified_by: Sequence[str],
+) -> pl.DataFrame:
+    long_df = pl.concat(list(list_data_to_adjust.values()), how="vertical")
+
+    adjusted_data_binary = (
+        long_df.group_by(["strata", "stratified_by", "reference_group", "reals_labels"])
+        .agg(pl.sum("reals").alias("reals_estimate"))
+        .join(pl.DataFrame({"chosen_cutoff": breaks}), how="cross")
+    )
+
+    return adjusted_data_binary
+
+
 def create_adjusted_data(
-    list_data_to_adjust_polars: dict[str, pl.DataFrame],
+    list_data_to_adjust: dict[str, pl.DataFrame],
     heuristics_sets: list[dict[str, str]],
     fixed_time_horizons: list[float],
     breaks: Sequence[float],
@@ -1030,7 +1046,7 @@ def create_adjusted_data(
 ) -> pl.DataFrame:
     all_results = []
 
-    reference_groups = list(list_data_to_adjust_polars.keys())
+    reference_groups = list(list_data_to_adjust.keys())
     reference_group_enum = pl.Enum(reference_groups)
 
     heuristics_df = pl.DataFrame(heuristics_sets)
@@ -1041,7 +1057,7 @@ def create_adjusted_data(
         heuristics_df["competing_heuristic"].unique(maintain_order=True)
     )
 
-    for reference_group, df in list_data_to_adjust_polars.items():
+    for reference_group, df in list_data_to_adjust.items():
         input_df = df.select(
             ["strata", "reals", "times", "upper_bound", "lower_bound", "stratified_by"]
         )
@@ -1085,6 +1101,83 @@ def create_adjusted_data(
             ]
         )
     )
+
+
+def _cast_and_join_adjusted_data_binary(
+    aj_data_combinations: pl.DataFrame, aj_estimates_data: pl.DataFrame
+) -> pl.DataFrame:
+    strata_enum_dtype = aj_data_combinations.schema["strata"]
+
+    aj_estimates_data = aj_estimates_data.with_columns([pl.col("strata")]).with_columns(
+        pl.col("strata").cast(strata_enum_dtype)
+    )
+
+    final_adjusted_data_polars = (
+        (
+            aj_data_combinations.with_columns([pl.col("strata")]).join(
+                aj_estimates_data,
+                on=[
+                    "strata",
+                    "stratified_by",
+                    "reals_labels",
+                    "reference_group",
+                    "chosen_cutoff",
+                ],
+                how="left",
+            )
+        )
+        .with_columns(
+            pl.when(
+                (
+                    (pl.col("chosen_cutoff") >= pl.col("upper_bound"))
+                    & (pl.col("stratified_by") == "probability_threshold")
+                )
+                | (
+                    ((1 - pl.col("chosen_cutoff")) >= pl.col("mid_point"))
+                    & (pl.col("stratified_by") == "ppcr")
+                )
+            )
+            .then(pl.lit("predicted_negatives"))
+            .otherwise(pl.lit("predicted_positives"))
+            .cast(pl.Enum(["predicted_negatives", "predicted_positives"]))
+            .alias("prediction_label")
+        )
+        .with_columns(
+            (
+                pl.when(
+                    (pl.col("prediction_label") == pl.lit("predicted_positives"))
+                    & (pl.col("reals_labels") == pl.lit("real_positives"))
+                )
+                .then(pl.lit("true_positives"))
+                .when(
+                    (pl.col("prediction_label") == pl.lit("predicted_positives"))
+                    & (pl.col("reals_labels") == pl.lit("real_negatives"))
+                )
+                .then(pl.lit("false_positives"))
+                .when(
+                    (pl.col("prediction_label") == pl.lit("predicted_negatives"))
+                    & (pl.col("reals_labels") == pl.lit("real_negatives"))
+                )
+                .then(pl.lit("true_negatives"))
+                .when(
+                    (pl.col("prediction_label") == pl.lit("predicted_negatives"))
+                    & (pl.col("reals_labels") == pl.lit("real_positives"))
+                )
+                .then(pl.lit("false_negatives"))
+                .cast(
+                    pl.Enum(
+                        [
+                            "true_positives",
+                            "false_positives",
+                            "true_negatives",
+                            "false_negatives",
+                        ]
+                    )
+                )
+            ).alias("classification_outcome")
+        )
+    )
+    return final_adjusted_data_polars
 
 
 def cast_and_join_adjusted_data(

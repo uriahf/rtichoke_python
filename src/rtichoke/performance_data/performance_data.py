@@ -9,6 +9,8 @@ from rtichoke.helpers.sandbox_observable_helpers import (
     _create_aj_data_combinations_binary,
     create_breaks_values,
     _create_list_data_to_adjust_binary,
+    _create_adjusted_data_binary,
+    _cast_and_join_adjusted_data_binary,
 )
 import numpy as np
 
@@ -37,8 +39,18 @@ def prepare_performance_data(
         list(probs.keys()), stratified_by=stratified_by, by=by, breaks=breaks
     )
 
-    performance_data = _create_list_data_to_adjust_binary(
+    list_data_to_adjust = _create_list_data_to_adjust_binary(
         aj_data_combinations, probs, reals, stratified_by=stratified_by, by=by
     )
+
+    adjusted_data = _create_adjusted_data_binary(
+        list_data_to_adjust, breaks=breaks, stratified_by=stratified_by
+    )
+
+    final_adjusted_data = _cast_and_join_adjusted_data_binary(
+        aj_data_combinations, adjusted_data
+    )
+
+    performance_data = final_adjusted_data
 
     return performance_data
