@@ -10,8 +10,6 @@ website:
     left:
       - href: reference.qmd
         text: Reference
-      - href: walkthrough_aj_estimate.qmd
-        text: Example
       - href: before_we_validate.qmd
         text: Before we Validate
 
