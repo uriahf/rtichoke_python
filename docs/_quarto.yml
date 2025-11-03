@@ -10,6 +10,8 @@ website:
     left:
       - href: reference/
         text: Reference
+      - href: before_we_validate.qmd
+        text: Before We Validate
 
 quartodoc:
   # the name used to import the package you want to create reference docs for
