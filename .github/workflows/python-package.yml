@@ -48,6 +48,10 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Quartodoc build
+      working-directory: docs
+      run: uv run quartodoc build
   
     - name: Render and Publish
       working-directory: docs
