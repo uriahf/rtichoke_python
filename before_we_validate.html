@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Uriah Finkel">
+
+<title>Before we Validate Performance – rtichoke</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-707d8167ce6003fca903bfe2be84ab7f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-1331f0d9b4b52cbbd89540b4a4264c49.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-1331f0d9b4b52cbbd89540b4a4264c49.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-1331f0d9b4b52cbbd89540b4a4264c49.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="module" src="site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
+<link href="site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+<script src="site_libs/quarto-diagram/mermaid-postprocess-shim.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="./index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">rtichoke</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./reference/"> 
+<span class="menu-text">Reference</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="./before_we_validate.html" aria-current="page"> 
+<span class="menu-text">Before We Validate</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Before we Validate Performance</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Uriah Finkel </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Ideally we would like to keep Performance Validation as agnostic as possible. However, the structure of the validation set (<code>probs</code>, <code>reals</code> and <code>times</code>) implies the nature of the related assumptions and the required use case.</p>
+<p>So before we validate performance, let us consider the underlying process.</p>
+<p>✍️ The User Inputs<br>
+🪛 Internal Function</p>
+<section id="declare-reference-groups" class="level1">
+<h1>✍️ Declare reference groups</h1>
+<p>The dimentions of the <code>probs</code> and the <code>real</code> dictionaries imply the nature of the use case:</p>
+<p>TODO: copy from rtichoke r README.</p>
+<section id="one-model-one-population" class="level5">
+<h5 class="anchored" data-anchor-id="one-model-one-population">One Model, One Population:</h5>
+<ul>
+<li>Just one reference group: “model”.</li>
+</ul>
+</section>
+<section id="several-models-one-population" class="level5">
+<h5 class="anchored" data-anchor-id="several-models-one-population">Several Models, One Population:</h5>
+<p>Compare between different candidate models. - Each model stand as a reference groups such as “thin” model, or a “full” model.</p>
+</section>
+<section id="several-models-several-populations" class="level5">
+<h5 class="anchored" data-anchor-id="several-models-several-populations">Several Models, Several Populations</h5>
+<p>Compare performance over different sub-populations. - Internal Validation: “test”, “val” and “train”. - External Validation: “Framingham”, “Australia”. - Fairness: “Male”, “Female”.</p>
+</section>
+</section>
+<section id="declare-how-to-stratify-predictions" class="level1">
+<h1>✍️ Declare how to stratify predictions ✂️</h1>
+<p>The <code>stratified_by</code> argument is designed for the user to choose how to stratify predictions for decision-making, each method implies different problem:</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true" href="">Probability Threshold</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false" href="">PPCR</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true" href="">Baseline Strategy: Treat None</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false" href="">Baseline Strategy: Treat All</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<svg aria-roledescription="flowchart-v2" role="graphics-document document" viewbox="0 0 1110.515625 636" class="flowchart" xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="672" id="mermaid-figure-1" height="480">
+<style>#mermaid-figure-1{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-figure-1 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-figure-1 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-figure-1 .error-icon{fill:#552222;}#mermaid-figure-1 .error-text{fill:#552222;stroke:#552222;}#mermaid-figure-1 .edge-thickness-normal{stroke-width:1px;}#mermaid-figure-1 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-figure-1 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-figure-1 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-figure-1 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-figure-1 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-figure-1 .marker{fill:#333333;stroke:#333333;}#mermaid-figure-1 .marker.cross{stroke:#333333;}#mermaid-figure-1 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaid-figure-1 p{margin:0;}#mermaid-figure-1 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#mermaid-figure-1 .cluster-label text{fill:#333;}#mermaid-figure-1 .cluster-label span{color:#333;}#mermaid-figure-1 .cluster-label span p{background-color:transparent;}#mermaid-figure-1 .label text,#mermaid-figure-1 span{fill:#333;color:#333;}#mermaid-figure-1 .node rect,#mermaid-figure-1 .node circle,#mermaid-figure-1 .node ellipse,#mermaid-figure-1 .node polygon,#mermaid-figure-1 .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#mermaid-figure-1 .rough-node .label text,#mermaid-figure-1 .node .label text,#mermaid-figure-1 .image-shape .label,#mermaid-figure-1 .icon-shape .label{text-anchor:middle;}#mermaid-figure-1 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-figure-1 .rough-node .label,#mermaid-figure-1 .node .label,#mermaid-figure-1 .image-shape .label,#mermaid-figure-1 .icon-shape .label{text-align:center;}#mermaid-figure-1 .node.clickable{cursor:pointer;}#mermaid-figure-1 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#mermaid-figure-1 .arrowheadPath{fill:#333333;}#mermaid-figure-1 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#mermaid-figure-1 .flowchart-link{stroke:#333333;fill:none;}#mermaid-figure-1 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#mermaid-figure-1 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#mermaid-figure-1 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#mermaid-figure-1 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#mermaid-figure-1 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#mermaid-figure-1 .cluster text{fill:#333;}#mermaid-figure-1 .cluster span{color:#333;}#mermaid-figure-1 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#mermaid-figure-1 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#mermaid-figure-1 rect.text{fill:none;stroke-width:0;}#mermaid-figure-1 .icon-shape,#mermaid-figure-1 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#mermaid-figure-1 .icon-shape p,#mermaid-figure-1 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#mermaid-figure-1 .icon-shape rect,#mermaid-figure-1 .image-shape rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#mermaid-figure-1 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#mermaid-figure-1 .subgraphStyle>*{fill:#FAF6EC!important;stroke:#333!important;stroke-width:1px!important;}#mermaid-figure-1 .subgraphStyle span{fill:#FAF6EC!important;stroke:#333!important;stroke-width:1px!important;}</style>
+<g><marker orient="auto" markerheight="8" markerwidth="8" markerunits="userSpaceOnUse" refy="5" refx="5" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174631507_flowchart-v2-pointEnd"><path style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 0 0 L 10 5 L 0 10 z"></path></marker><marker orient="auto" markerheight="8" markerwidth="8" markerunits="userSpaceOnUse" refy="5" refx="4.5" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174631507_flowchart-v2-pointStart"><path style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 0 5 L 10 10 L 10 0 z"></path></marker><marker orient="auto" markerheight="11" markerwidth="11" markerunits="userSpaceOnUse" refy="5" refx="11" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174631507_flowchart-v2-circleEnd"><circle style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" r="5" cy="5" cx="5"></circle></marker><marker orient="auto" markerheight="11" markerwidth="11" markerunits="userSpaceOnUse" refy="5" refx="-1" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174631507_flowchart-v2-circleStart"><circle style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" r="5" cy="5" cx="5"></circle></marker><marker orient="auto" markerheight="11" markerwidth="11" markerunits="userSpaceOnUse" refy="5.2" refx="12" viewbox="0 0 11 11" class="marker cross flowchart-v2" id="mermaid-1762174631507_flowchart-v2-crossEnd"><path style="stroke-width: 2; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 1,1 l 9,9 M 10,1 l -9,9"></path></marker><marker orient="auto" markerheight="11" markerwidth="11" markerunits="userSpaceOnUse" refy="5.2" refx="-1" viewbox="0 0 11 11" class="marker cross flowchart-v2" id="mermaid-1762174631507_flowchart-v2-crossStart"><path style="stroke-width: 2; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 1,1 l 9,9 M 10,1 l -9,9"></path></marker><g class="root"><g class="clusters"><g data-look="classic" id="ut" class="cluster subgraphStyle"><rect height="620" width="587.5625" y="8" x="514.953125" style="fill:#FAF6EC !important;stroke:#333 !important;stroke-width:1px !important"></rect><g transform="translate(734.0390625, 8)" class="cluster-label"><foreignobject height="24" width="149.390625">
+<div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" data-xmlns="http://www.w3.org/1999/xhtml">
+<span class="nodeLabel">
+<p>
+Utility of the Decision
+</p>
+</span>
+</div>
+</foreignobject></g></g><g data-look="classic" id="trt" class="cluster subgraphStyle"><rect height="542" width="349.828125" y="45" x="8" style="fill:#FAF6EC !important;stroke:#333 !important;stroke-width:1px !important"></rect><g transform="translate(113.8515625, 45)" class="cluster-label"><foreignobject height="24" width="138.125">
+<div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" data-xmlns="http://www.w3.org/1999/xhtml">
+<span class="nodeLabel">
+<p>
+Treatment Decision
+</p>
+</span>
+</div>
+</foreignobject></g></g><g data-look="classic" id="nb" class="cluster"><rect height="544" width="174.90625" y="52" x="902.609375" style="fill:#E8F4FF !important;stroke:black !important"></rect><g transform="translate(950.484375, 52)" class="cluster-label"><foreignobject height="24" width="79.15625">
+<div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" data-xmlns="http://www.w3.org/1999/xhtml">
+<span style="color:black !important" class="nodeLabel">
+<p>
+Net Benefit
+</p>
+</span>
+</div>
+</foreignobject></g></g><g data-look="classic" id="baselinestrategy" class="cluster"><rect height="568" width="208" y="40" x="682.9453125" style="fill:#E8F4FF !important;stroke:black !important"></rect><g transform="translate(686.9453125, 40)" class="cluster-label"><foreignobject height="48" width="200">
+<div style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;" data-xmlns="http://www.w3.org/1999/xhtml">
+<span style="color:black !important" class="nodeLabel">
+<p>
+Baseline Strategy: Treat None
+</p>
+</span>
+</div>
+</foreignobject></g></g><g data-look="classic" id="pred" class="cluster"><rect height="580" width="131.328125" y="28" x="539.953125" style="fill:#E8F4FF !important;stroke:black !important"></rect><g transform="translate(546.03125, 28)" class="cluster-label"><foreignobject height="24" width="119.171875">
+<div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" data-xmlns="http://www.w3.org/1999/xhtml">
+<span style="color:black !important" class="nodeLabel">
+<p>
+Prediction Model
+</p>
+</span>
+</div>
+</foreignobject></g></g></g><g class="edgePaths"><path marker-end="url(#mermaid-1762174631507_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_A_B_0" d="M77.822,297L90.925,279.167C104.027,261.333,130.232,225.667,154.913,207.833C179.594,190,202.75,190,214.328,190L225.906,190"></path><path marker-end="url(#mermaid-1762174631507_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_A_C_0" d="M76.191,351L89.566,370.833C102.94,390.667,129.689,430.333,154.641,450.167C179.594,470,202.75,470,214.328,470L225.906,470"></path><path marker-end="url(#mermaid-1762174631507_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_B_D_0" d="M332.828,138.849L336.995,134.708C341.161,130.566,349.495,122.283,366.755,118.142C384.016,114,410.203,114,436.391,114C462.578,114,488.766,114,506.026,114C523.286,114,531.62,114,539.359,114C547.099,114,554.245,114,557.818,114L561.391,114"></path><path marker-end="url(#mermaid-1762174631507_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_B_E_0" d="M332.828,241.151L336.995,245.292C341.161,249.434,349.495,257.717,366.755,261.858C384.016,266,410.203,266,436.391,266C462.578,266,488.766,266,506.026,266C523.286,266,531.62,266,539.359,266C547.099,266,554.245,266,557.818,266L561.391,266"></path><path marker-end="url(#mermaid-1762174631507_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_C_F_0" d="M332.828,426.926L336.995,423.438C341.161,419.95,349.495,412.975,366.755,409.488C384.016,406,410.203,406,436.391,406C462.578,406,488.766,406,506.026,406C523.286,406,531.62,406,539.286,406C546.953,406,553.953,406,557.453,406L560.953,406"></path><path marker-end="url(#mermaid-1762174631507_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_C_G_0" d="M332.828,513.074L336.995,516.562C341.161,520.05,349.495,527.025,366.755,530.512C384.016,534,410.203,534,436.391,534C462.578,534,488.766,534,506.026,534C523.286,534,531.62,534,539.286,534C546.953,534,553.953,534,557.453,534L560.953,534"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_D_Dnone_0" d="M645.844,114L650.083,114C654.323,114,662.802,114,671.208,114C679.615,114,687.948,114,696.281,114C704.615,114,712.948,114,721.281,114C729.615,114,737.948,114,742.115,114L746.281,114"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_E_Enone_0" d="M645.844,266L650.083,266C654.323,266,662.802,266,671.208,266C679.615,266,687.948,266,696.281,266C704.615,266,712.948,266,721.281,266C729.615,266,737.948,266,742.115,266L746.281,266"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_F_Fnone_0" d="M646.281,406L650.448,406C654.615,406,662.948,406,671.281,406C679.615,406,687.948,406,696.281,406C704.615,406,712.948,406,721.281,406C729.615,406,737.948,406,742.115,406L746.281,406"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_G_Gnone_0" d="M646.281,534L650.448,534C654.615,534,662.948,534,671.281,534C679.615,534,687.948,534,696.281,534C704.615,534,712.948,534,721.281,534C729.615,534,737.948,534,742.115,534L746.281,534"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_Dnone_Dnb_0" d="M827.609,114L831.776,114C835.943,114,844.276,114,852.609,114C860.943,114,869.276,114,877.609,114C885.943,114,894.276,114,907.276,114C920.276,114,937.943,114,946.776,114L955.609,114"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_Enone_Enb_0" d="M827.609,266L831.776,266C835.943,266,844.276,266,852.609,266C860.943,266,869.276,266,877.609,266C885.943,266,894.276,266,902.609,266C910.943,266,919.276,266,923.443,266L927.609,266"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_Fnone_Fnb_0" d="M827.609,406L831.776,406C835.943,406,844.276,406,852.609,406C860.943,406,869.276,406,877.609,406C885.943,406,894.276,406,907.276,406C920.276,406,937.943,406,946.776,406L955.609,406"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_Gnone_Gnb_0" d="M827.609,534L831.776,534C835.943,534,844.276,534,852.609,534C860.943,534,869.276,534,877.609,534C885.943,534,894.276,534,907.276,534C920.276,534,937.943,534,946.776,534L955.609,534"></path></g><g class="edgeLabels"><g transform="translate(156.4375, 190)" class="edgeLabel"><g transform="translate(-48.3671875, -12)" class="label"><foreignobject height="24" width="96.734375">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+Treatment 💊
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(156.4375, 470)" class="edgeLabel"><g transform="translate(-48.46875, -12)" class="label"><foreignobject height="24" width="96.9375">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+No Treatment
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(436.390625, 114)" class="edgeLabel"><g transform="translate(-41.109375, -12)" class="label"><foreignobject height="24" width="82.21875">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+Disease 🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(436.390625, 266)" class="edgeLabel"><g transform="translate(-53.5625, -12)" class="label"><foreignobject height="24" width="107.125">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+No Disease 🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(436.390625, 406)" class="edgeLabel"><g transform="translate(-41.109375, -12)" class="label"><foreignobject height="24" width="82.21875">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+Disease 🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(436.390625, 534)" class="edgeLabel"><g transform="translate(-53.5625, -12)" class="label"><foreignobject height="24" width="107.125">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+No Disease 🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g></g><g class="nodes"><g transform="translate(57.984375, 324)" id="flowchart-A-0" class="node default"><rect height="54" width="49.96875" y="-27" x="-24.984375" ry="5" rx="5" style="fill:#E8F4FF !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-9.984375, -12)" style="color:black !important" class="label"><rect></rect><foreignobject height="24" width="19.96875">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+😷
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(281.3671875, 190)" id="flowchart-B-1" class="node default"><rect height="126" width="102.921875" y="-63" x="-51.4609375" ry="5" rx="5" style="fill:#E8F4FF !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-36.4609375, -48)" style="color:black !important" class="label"><rect></rect><foreignobject height="96" width="72.921875">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>Predicted<br>Positive</b><br>💊<br>😷
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(281.3671875, 470)" id="flowchart-C-3" class="node default"><rect height="102" width="102.921875" y="-51" x="-51.4609375" ry="5" rx="5" style="fill:#E8F4FF !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-36.4609375, -36)" style="color:black !important" class="label"><rect></rect><foreignobject height="72" width="72.921875">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>Predicted<br>Negative</b><br>😷
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(605.6171875, 114)" id="flowchart-D-5" class="node default"><rect height="102" width="80.453125" y="-51" x="-40.2265625" style="fill:#C0FFC0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.2265625, -36)" style="color:black !important" class="label"><rect></rect><foreignobject height="72" width="20.453125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>TP</b><br>💊<br>🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(605.6171875, 266)" id="flowchart-E-7" class="node default"><rect height="102" width="80.453125" y="-51" x="-40.2265625" style="fill:#FFCCE0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.2265625, -36)" style="color:black !important" class="label"><rect></rect><foreignobject height="72" width="20.453125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>FP</b><br>💊<br>🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(605.6171875, 406)" id="flowchart-F-9" class="node default"><rect height="78" width="81.328125" y="-39" x="-40.6640625" style="fill:#FFCCE0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.6640625, -24)" style="color:black !important" class="label"><rect></rect><foreignobject height="48" width="21.328125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>FN</b><br>🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(605.6171875, 534)" id="flowchart-G-11" class="node default"><rect height="78" width="81.328125" y="-39" x="-40.6640625" style="fill:#C0FFC0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.6640625, -24)" style="color:black !important" class="label"><rect></rect><foreignobject height="48" width="21.328125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>TN</b><br>🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(786.9453125, 114)" id="flowchart-Dnone-12" class="node default"><rect height="78" width="81.328125" y="-39" x="-40.6640625" style="fill:#FFCCE0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.6640625, -24)" style="color:black !important" class="label"><rect></rect><foreignobject height="48" width="21.328125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>FN</b><br>🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(786.9453125, 266)" id="flowchart-Enone-13" class="node default"><rect height="78" width="81.328125" y="-39" x="-40.6640625" style="fill:#C0FFC0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.6640625, -24)" style="color:black !important" class="label"><rect></rect><foreignobject height="48" width="21.328125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>TN</b><br>🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(786.9453125, 406)" id="flowchart-Fnone-14" class="node default"><rect height="78" width="81.328125" y="-39" x="-40.6640625" style="fill:#FFCCE0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.6640625, -24)" style="color:black !important" class="label"><rect></rect><foreignobject height="48" width="21.328125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>FN</b><br>🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(786.9453125, 534)" id="flowchart-Gnone-15" class="node default"><rect height="78" width="81.328125" y="-39" x="-40.6640625" style="fill:#C0FFC0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.6640625, -24)" style="color:black !important" class="label"><rect></rect><foreignobject height="48" width="21.328125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>TN</b><br>🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(990.0625, 114)" id="flowchart-Dnb-24" class="node default"><rect height="54" width="68.90625" y="-27" x="-34.453125" style="fill:#C0FFC0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-4.453125, -12)" style="color:black !important" class="label"><rect></rect><foreignobject height="24" width="8.90625">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+1
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(990.0625, 266)" id="flowchart-Enb-25" class="node default"><rect height="54" width="124.90625" y="-27" x="-62.453125" style="fill:#FFCCE0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-32.453125, -12)" style="color:black !important" class="label"><rect></rect><foreignobject height="24" width="64.90625">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+pt / (1-pt)
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(990.0625, 406)" id="flowchart-Fnb-26" class="node default"><rect height="54" width="68.90625" y="-27" x="-34.453125" style="fill:#E8F4FF !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-4.453125, -12)" style="color:black !important" class="label"><rect></rect><foreignobject height="24" width="8.90625">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+0
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(990.0625, 534)" id="flowchart-Gnb-27" class="node default"><rect height="54" width="68.90625" y="-27" x="-34.453125" style="fill:#E8F4FF !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-4.453125, -12)" style="color:black !important" class="label"><rect></rect><foreignobject height="24" width="8.90625">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+0
+</p>
+</span>
+</div>
+</foreignobject></g></g></g></g><marker orient="auto" markerheight="8" markerwidth="8" markerunits="userSpaceOnUse" refy="5" refx="5" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174631507_flowchart-v2-pointEnd__000"><path fill="#000" stroke="#000" style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 0 0 L 10 5 L 0 10 z"></path></marker></g>
+</svg>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<svg aria-roledescription="flowchart-v2" role="graphics-document document" viewbox="0 0 1109.640625 684" class="flowchart" xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="672" id="mermaid-figure-3" height="480">
+<style>#mermaid-figure-3{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-figure-3 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-figure-3 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-figure-3 .error-icon{fill:#552222;}#mermaid-figure-3 .error-text{fill:#552222;stroke:#552222;}#mermaid-figure-3 .edge-thickness-normal{stroke-width:1px;}#mermaid-figure-3 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-figure-3 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-figure-3 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-figure-3 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-figure-3 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-figure-3 .marker{fill:#333333;stroke:#333333;}#mermaid-figure-3 .marker.cross{stroke:#333333;}#mermaid-figure-3 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaid-figure-3 p{margin:0;}#mermaid-figure-3 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#mermaid-figure-3 .cluster-label text{fill:#333;}#mermaid-figure-3 .cluster-label span{color:#333;}#mermaid-figure-3 .cluster-label span p{background-color:transparent;}#mermaid-figure-3 .label text,#mermaid-figure-3 span{fill:#333;color:#333;}#mermaid-figure-3 .node rect,#mermaid-figure-3 .node circle,#mermaid-figure-3 .node ellipse,#mermaid-figure-3 .node polygon,#mermaid-figure-3 .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#mermaid-figure-3 .rough-node .label text,#mermaid-figure-3 .node .label text,#mermaid-figure-3 .image-shape .label,#mermaid-figure-3 .icon-shape .label{text-anchor:middle;}#mermaid-figure-3 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-figure-3 .rough-node .label,#mermaid-figure-3 .node .label,#mermaid-figure-3 .image-shape .label,#mermaid-figure-3 .icon-shape .label{text-align:center;}#mermaid-figure-3 .node.clickable{cursor:pointer;}#mermaid-figure-3 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#mermaid-figure-3 .arrowheadPath{fill:#333333;}#mermaid-figure-3 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#mermaid-figure-3 .flowchart-link{stroke:#333333;fill:none;}#mermaid-figure-3 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#mermaid-figure-3 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#mermaid-figure-3 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#mermaid-figure-3 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#mermaid-figure-3 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#mermaid-figure-3 .cluster text{fill:#333;}#mermaid-figure-3 .cluster span{color:#333;}#mermaid-figure-3 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#mermaid-figure-3 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#mermaid-figure-3 rect.text{fill:none;stroke-width:0;}#mermaid-figure-3 .icon-shape,#mermaid-figure-3 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#mermaid-figure-3 .icon-shape p,#mermaid-figure-3 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#mermaid-figure-3 .icon-shape rect,#mermaid-figure-3 .image-shape rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#mermaid-figure-3 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#mermaid-figure-3 .subgraphStyle>*{fill:#FAF6EC!important;stroke:#333!important;stroke-width:1px!important;}#mermaid-figure-3 .subgraphStyle span{fill:#FAF6EC!important;stroke:#333!important;stroke-width:1px!important;}</style>
+<g><marker orient="auto" markerheight="8" markerwidth="8" markerunits="userSpaceOnUse" refy="5" refx="5" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174632263_flowchart-v2-pointEnd"><path style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 0 0 L 10 5 L 0 10 z"></path></marker><marker orient="auto" markerheight="8" markerwidth="8" markerunits="userSpaceOnUse" refy="5" refx="4.5" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174632263_flowchart-v2-pointStart"><path style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 0 5 L 10 10 L 10 0 z"></path></marker><marker orient="auto" markerheight="11" markerwidth="11" markerunits="userSpaceOnUse" refy="5" refx="11" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174632263_flowchart-v2-circleEnd"><circle style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" r="5" cy="5" cx="5"></circle></marker><marker orient="auto" markerheight="11" markerwidth="11" markerunits="userSpaceOnUse" refy="5" refx="-1" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174632263_flowchart-v2-circleStart"><circle style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" r="5" cy="5" cx="5"></circle></marker><marker orient="auto" markerheight="11" markerwidth="11" markerunits="userSpaceOnUse" refy="5.2" refx="12" viewbox="0 0 11 11" class="marker cross flowchart-v2" id="mermaid-1762174632263_flowchart-v2-crossEnd"><path style="stroke-width: 2; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 1,1 l 9,9 M 10,1 l -9,9"></path></marker><marker orient="auto" markerheight="11" markerwidth="11" markerunits="userSpaceOnUse" refy="5.2" refx="-1" viewbox="0 0 11 11" class="marker cross flowchart-v2" id="mermaid-1762174632263_flowchart-v2-crossStart"><path style="stroke-width: 2; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 1,1 l 9,9 M 10,1 l -9,9"></path></marker><g class="root"><g class="clusters"><g data-look="classic" id="ut" class="cluster subgraphStyle"><rect height="668" width="586.6875" y="8" x="514.953125" style="fill:#FAF6EC !important;stroke:#333 !important;stroke-width:1px !important"></rect><g transform="translate(733.6015625, 8)" class="cluster-label"><foreignobject height="24" width="149.390625">
+<div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" data-xmlns="http://www.w3.org/1999/xhtml">
+<span class="nodeLabel">
+<p>
+Utility of the Decision
+</p>
+</span>
+</div>
+</foreignobject></g></g><g data-look="classic" id="trt" class="cluster subgraphStyle"><rect height="578" width="349.828125" y="45" x="8" style="fill:#FAF6EC !important;stroke:#333 !important;stroke-width:1px !important"></rect><g transform="translate(113.8515625, 45)" class="cluster-label"><foreignobject height="24" width="138.125">
+<div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" data-xmlns="http://www.w3.org/1999/xhtml">
+<span class="nodeLabel">
+<p>
+Treatment Decision
+</p>
+</span>
+</div>
+</foreignobject></g></g><g data-look="classic" id="nb" class="cluster"><rect height="580" width="174.90625" y="52" x="901.734375" style="fill:#E8F4FF !important;stroke:black !important"></rect><g transform="translate(949.609375, 52)" class="cluster-label"><foreignobject height="24" width="79.15625">
+<div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" data-xmlns="http://www.w3.org/1999/xhtml">
+<span style="color:black !important" class="nodeLabel">
+<p>
+Net Benefit
+</p>
+</span>
+</div>
+</foreignobject></g></g><g data-look="classic" id="baselinestrategy" class="cluster"><rect height="628" width="200.109375" y="28" x="686.453125" style="fill:#E8F4FF !important;stroke:black !important"></rect><g transform="translate(690.453125, 28)" class="cluster-label"><foreignobject height="24" width="192.109375">
+<div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" data-xmlns="http://www.w3.org/1999/xhtml">
+<span style="color:black !important" class="nodeLabel">
+<p>
+Baseline Strategy: Treat All
+</p>
+</span>
+</div>
+</foreignobject></g></g><g data-look="classic" id="pred" class="cluster"><rect height="616" width="131.328125" y="28" x="539.953125" style="fill:#E8F4FF !important;stroke:black !important"></rect><g transform="translate(546.03125, 28)" class="cluster-label"><foreignobject height="24" width="119.171875">
+<div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" data-xmlns="http://www.w3.org/1999/xhtml">
+<span style="color:black !important" class="nodeLabel">
+<p>
+Prediction Model
+</p>
+</span>
+</div>
+</foreignobject></g></g></g><g class="edgePaths"><path marker-end="url(#mermaid-1762174632263_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_A_B_0" d="M75.473,315L88.967,294.167C102.461,273.333,129.449,231.667,154.522,210.833C179.594,190,202.75,190,214.328,190L225.906,190"></path><path marker-end="url(#mermaid-1762174632263_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_A_C_0" d="M75.473,369L88.967,389.833C102.461,410.667,129.449,452.333,154.522,473.167C179.594,494,202.75,494,214.328,494L225.906,494"></path><path marker-end="url(#mermaid-1762174632263_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_B_D_0" d="M332.828,138.849L336.995,134.708C341.161,130.566,349.495,122.283,366.755,118.142C384.016,114,410.203,114,436.391,114C462.578,114,488.766,114,506.026,114C523.286,114,531.62,114,539.359,114C547.099,114,554.245,114,557.818,114L561.391,114"></path><path marker-end="url(#mermaid-1762174632263_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_B_E_0" d="M332.828,241.151L336.995,245.292C341.161,249.434,349.495,257.717,366.755,261.858C384.016,266,410.203,266,436.391,266C462.578,266,488.766,266,506.026,266C523.286,266,531.62,266,539.359,266C547.099,266,554.245,266,557.818,266L561.391,266"></path><path marker-end="url(#mermaid-1762174632263_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_C_F_0" d="M332.677,443L336.868,438.833C341.06,434.667,349.444,426.333,366.73,422.167C384.016,418,410.203,418,436.391,418C462.578,418,488.766,418,506.026,418C523.286,418,531.62,418,539.286,418C546.953,418,553.953,418,557.453,418L560.953,418"></path><path marker-end="url(#mermaid-1762174632263_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_C_G_0" d="M332.677,545L336.868,549.167C341.06,553.333,349.444,561.667,366.73,565.833C384.016,570,410.203,570,436.391,570C462.578,570,488.766,570,506.026,570C523.286,570,531.62,570,539.286,570C546.953,570,553.953,570,557.453,570L560.953,570"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_D_Dall_0" d="M645.844,114L650.083,114C654.323,114,662.802,114,671.208,114C679.615,114,687.948,114,696.281,114C704.615,114,712.948,114,721.281,114C729.615,114,737.948,114,742.115,114L746.281,114"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_E_Eall_0" d="M645.844,266L650.083,266C654.323,266,662.802,266,671.208,266C679.615,266,687.948,266,696.281,266C704.615,266,712.948,266,721.281,266C729.615,266,737.948,266,742.115,266L746.281,266"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_F_Fall_0" d="M646.281,418L650.448,418C654.615,418,662.948,418,671.281,418C679.615,418,687.948,418,696.281,418C704.615,418,712.948,418,721.281,418C729.615,418,737.948,418,742.115,418L746.281,418"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_G_Gall_0" d="M646.281,570L650.448,570C654.615,570,662.948,570,671.281,570C679.615,570,687.948,570,696.281,570C704.615,570,712.948,570,721.281,570C729.615,570,737.948,570,742.115,570L746.281,570"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_Dall_Dnb_0" d="M826.734,114L830.901,114C835.068,114,843.401,114,851.734,114C860.068,114,868.401,114,876.734,114C885.068,114,893.401,114,906.401,114C919.401,114,937.068,114,945.901,114L954.734,114"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_Eall_Enb_0" d="M826.734,266L830.901,266C835.068,266,843.401,266,851.734,266C860.068,266,868.401,266,876.734,266C885.068,266,893.401,266,906.401,266C919.401,266,937.068,266,945.901,266L954.734,266"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_Fall_Fnb_0" d="M826.734,418L830.901,418C835.068,418,843.401,418,851.734,418C860.068,418,868.401,418,876.734,418C885.068,418,893.401,418,901.734,418C910.068,418,918.401,418,922.568,418L926.734,418"></path><path style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_Gall_Gnb_0" d="M826.734,570L830.901,570C835.068,570,843.401,570,851.734,570C860.068,570,868.401,570,876.734,570C885.068,570,893.401,570,906.401,570C919.401,570,937.068,570,945.901,570L954.734,570"></path></g><g class="edgeLabels"><g transform="translate(156.4375, 190)" class="edgeLabel"><g transform="translate(-48.3671875, -12)" class="label"><foreignobject height="24" width="96.734375">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+Treatment 💊
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(156.4375, 494)" class="edgeLabel"><g transform="translate(-48.46875, -12)" class="label"><foreignobject height="24" width="96.9375">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+No Treatment
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(436.390625, 114)" class="edgeLabel"><g transform="translate(-41.109375, -12)" class="label"><foreignobject height="24" width="82.21875">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+Disease 🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(436.390625, 266)" class="edgeLabel"><g transform="translate(-53.5625, -12)" class="label"><foreignobject height="24" width="107.125">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+No Disease 🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(436.390625, 418)" class="edgeLabel"><g transform="translate(-41.109375, -12)" class="label"><foreignobject height="24" width="82.21875">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+Disease 🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(436.390625, 570)" class="edgeLabel"><g transform="translate(-53.5625, -12)" class="label"><foreignobject height="24" width="107.125">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+No Disease 🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignobject height="0" width="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000"></span>
+</div>
+</foreignobject></g></g></g><g class="nodes"><g transform="translate(57.984375, 342)" id="flowchart-A-0" class="node default"><rect height="54" width="49.96875" y="-27" x="-24.984375" ry="5" rx="5" style="fill:#E8F4FF !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-9.984375, -12)" style="color:black !important" class="label"><rect></rect><foreignobject height="24" width="19.96875">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+😷
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(281.3671875, 190)" id="flowchart-B-1" class="node default"><rect height="126" width="102.921875" y="-63" x="-51.4609375" ry="5" rx="5" style="fill:#E8F4FF !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-36.4609375, -48)" style="color:black !important" class="label"><rect></rect><foreignobject height="96" width="72.921875">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>Predicted<br>Positive</b><br>💊<br>😷
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(281.3671875, 494)" id="flowchart-C-3" class="node default"><rect height="102" width="102.921875" y="-51" x="-51.4609375" ry="5" rx="5" style="fill:#E8F4FF !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-36.4609375, -36)" style="color:black !important" class="label"><rect></rect><foreignobject height="72" width="72.921875">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>Predicted<br>Negative</b><br>😷
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(605.6171875, 114)" id="flowchart-D-5" class="node default"><rect height="102" width="80.453125" y="-51" x="-40.2265625" style="fill:#C0FFC0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.2265625, -36)" style="color:black !important" class="label"><rect></rect><foreignobject height="72" width="20.453125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>TP</b><br>💊<br>🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(605.6171875, 266)" id="flowchart-E-7" class="node default"><rect height="102" width="80.453125" y="-51" x="-40.2265625" style="fill:#FFCCE0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.2265625, -36)" style="color:black !important" class="label"><rect></rect><foreignobject height="72" width="20.453125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>FP</b><br>💊<br>🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(605.6171875, 418)" id="flowchart-F-9" class="node default"><rect height="78" width="81.328125" y="-39" x="-40.6640625" style="fill:#FFCCE0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.6640625, -24)" style="color:black !important" class="label"><rect></rect><foreignobject height="48" width="21.328125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>FN</b><br>🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(605.6171875, 570)" id="flowchart-G-11" class="node default"><rect height="78" width="81.328125" y="-39" x="-40.6640625" style="fill:#C0FFC0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.6640625, -24)" style="color:black !important" class="label"><rect></rect><foreignobject height="48" width="21.328125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>TN</b><br>🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(786.5078125, 114)" id="flowchart-Dall-12" class="node default"><rect height="102" width="80.453125" y="-51" x="-40.2265625" style="fill:#C0FFC0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.2265625, -36)" style="color:black !important" class="label"><rect></rect><foreignobject height="72" width="20.453125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>TP</b><br>💊<br>🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(786.5078125, 266)" id="flowchart-Eall-13" class="node default"><rect height="102" width="80.453125" y="-51" x="-40.2265625" style="fill:#FFCCE0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.2265625, -36)" style="color:black !important" class="label"><rect></rect><foreignobject height="72" width="20.453125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>FP</b><br>💊<br>🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(786.5078125, 418)" id="flowchart-Fall-14" class="node default"><rect height="102" width="80.453125" y="-51" x="-40.2265625" style="fill:#C0FFC0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.2265625, -36)" style="color:black !important" class="label"><rect></rect><foreignobject height="72" width="20.453125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>TP</b><br>💊<br>🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(786.5078125, 570)" id="flowchart-Gall-15" class="node default"><rect height="102" width="80.453125" y="-51" x="-40.2265625" style="fill:#FFCCE0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-10.2265625, -36)" style="color:black !important" class="label"><rect></rect><foreignobject height="72" width="20.453125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>FP</b><br>💊<br>🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(989.1875, 114)" id="flowchart-Dnb-24" class="node default"><rect height="54" width="68.90625" y="-27" x="-34.453125" style="fill:#E8F4FF !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-4.453125, -12)" style="color:black !important" class="label"><rect></rect><foreignobject height="24" width="8.90625">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+0
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(989.1875, 266)" id="flowchart-Enb-25" class="node default"><rect height="54" width="68.90625" y="-27" x="-34.453125" style="fill:#E8F4FF !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-4.453125, -12)" style="color:black !important" class="label"><rect></rect><foreignobject height="24" width="8.90625">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+0
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(989.1875, 418)" id="flowchart-Fnb-26" class="node default"><rect height="54" width="124.90625" y="-27" x="-62.453125" style="fill:#FFCCE0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-32.453125, -12)" style="color:black !important" class="label"><rect></rect><foreignobject height="24" width="64.90625">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+(1-pt) / pt
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(989.1875, 570)" id="flowchart-Gnb-27" class="node default"><rect height="54" width="68.90625" y="-27" x="-34.453125" style="fill:#C0FFC0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-4.453125, -12)" style="color:black !important" class="label"><rect></rect><foreignobject height="24" width="8.90625">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+1
+</p>
+</span>
+</div>
+</foreignobject></g></g></g></g><marker orient="auto" markerheight="8" markerwidth="8" markerunits="userSpaceOnUse" refy="5" refx="5" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174632263_flowchart-v2-pointEnd__000"><path fill="#000" stroke="#000" style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 0 0 L 10 5 L 0 10 z"></path></marker></g>
+</svg>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p><em>Regardless</em> of ranking each prediction is categorised to a bin: 0.32 -&gt; <code>[0.3, 0.4)</code>.</p>
+<ol type="1">
+<li>Categorise Absolute Risk: 0.32 -&gt; <code>[0.3, 0.4)</code></li>
+</ol>
+<p>References: Pauker SG, Kassirer JP. Therapeutic decision making: a cost-benefit analysis. N Engl J Med. 1975;293(5):229-234. doi:10.1056/NEJM197507312930505</p>
+</div>
+</div>
+</div>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<p><img src="line_ppcr_04.svg" class="img-fluid"></p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<svg aria-roledescription="flowchart-v2" role="graphics-document document" viewbox="0 0 919.171875 636" class="flowchart" xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="672" id="mermaid-figure-2" height="480">
+<style>#mermaid-figure-2{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-figure-2 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-figure-2 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-figure-2 .error-icon{fill:#552222;}#mermaid-figure-2 .error-text{fill:#552222;stroke:#552222;}#mermaid-figure-2 .edge-thickness-normal{stroke-width:1px;}#mermaid-figure-2 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-figure-2 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-figure-2 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-figure-2 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-figure-2 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-figure-2 .marker{fill:#333333;stroke:#333333;}#mermaid-figure-2 .marker.cross{stroke:#333333;}#mermaid-figure-2 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaid-figure-2 p{margin:0;}#mermaid-figure-2 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#mermaid-figure-2 .cluster-label text{fill:#333;}#mermaid-figure-2 .cluster-label span{color:#333;}#mermaid-figure-2 .cluster-label span p{background-color:transparent;}#mermaid-figure-2 .label text,#mermaid-figure-2 span{fill:#333;color:#333;}#mermaid-figure-2 .node rect,#mermaid-figure-2 .node circle,#mermaid-figure-2 .node ellipse,#mermaid-figure-2 .node polygon,#mermaid-figure-2 .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#mermaid-figure-2 .rough-node .label text,#mermaid-figure-2 .node .label text,#mermaid-figure-2 .image-shape .label,#mermaid-figure-2 .icon-shape .label{text-anchor:middle;}#mermaid-figure-2 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-figure-2 .rough-node .label,#mermaid-figure-2 .node .label,#mermaid-figure-2 .image-shape .label,#mermaid-figure-2 .icon-shape .label{text-align:center;}#mermaid-figure-2 .node.clickable{cursor:pointer;}#mermaid-figure-2 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#mermaid-figure-2 .arrowheadPath{fill:#333333;}#mermaid-figure-2 .edgePath .path{stroke:#333333;stroke-width:2.0px;}#mermaid-figure-2 .flowchart-link{stroke:#333333;fill:none;}#mermaid-figure-2 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#mermaid-figure-2 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#mermaid-figure-2 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#mermaid-figure-2 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#mermaid-figure-2 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#mermaid-figure-2 .cluster text{fill:#333;}#mermaid-figure-2 .cluster span{color:#333;}#mermaid-figure-2 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#mermaid-figure-2 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#mermaid-figure-2 rect.text{fill:none;stroke-width:0;}#mermaid-figure-2 .icon-shape,#mermaid-figure-2 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#mermaid-figure-2 .icon-shape p,#mermaid-figure-2 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#mermaid-figure-2 .icon-shape rect,#mermaid-figure-2 .image-shape rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#mermaid-figure-2 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#mermaid-figure-2 .subgraphStyle>*{fill:#FAF6EC!important;stroke:#333!important;stroke-width:1px!important;}#mermaid-figure-2 .subgraphStyle span{fill:#FAF6EC!important;stroke:#333!important;stroke-width:1px!important;}</style>
+<g><marker orient="auto" markerheight="8" markerwidth="8" markerunits="userSpaceOnUse" refy="5" refx="5" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174631993_flowchart-v2-pointEnd"><path style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 0 0 L 10 5 L 0 10 z"></path></marker><marker orient="auto" markerheight="8" markerwidth="8" markerunits="userSpaceOnUse" refy="5" refx="4.5" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174631993_flowchart-v2-pointStart"><path style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 0 5 L 10 10 L 10 0 z"></path></marker><marker orient="auto" markerheight="11" markerwidth="11" markerunits="userSpaceOnUse" refy="5" refx="11" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174631993_flowchart-v2-circleEnd"><circle style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" r="5" cy="5" cx="5"></circle></marker><marker orient="auto" markerheight="11" markerwidth="11" markerunits="userSpaceOnUse" refy="5" refx="-1" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174631993_flowchart-v2-circleStart"><circle style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" r="5" cy="5" cx="5"></circle></marker><marker orient="auto" markerheight="11" markerwidth="11" markerunits="userSpaceOnUse" refy="5.2" refx="12" viewbox="0 0 11 11" class="marker cross flowchart-v2" id="mermaid-1762174631993_flowchart-v2-crossEnd"><path style="stroke-width: 2; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 1,1 l 9,9 M 10,1 l -9,9"></path></marker><marker orient="auto" markerheight="11" markerwidth="11" markerunits="userSpaceOnUse" refy="5.2" refx="-1" viewbox="0 0 11 11" class="marker cross flowchart-v2" id="mermaid-1762174631993_flowchart-v2-crossStart"><path style="stroke-width: 2; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 1,1 l 9,9 M 10,1 l -9,9"></path></marker><g class="root"><g class="clusters"><g data-look="classic" id="ut" class="cluster subgraphStyle"><rect height="580" width="209.828125" y="27" x="701.34375" style="fill:#FAF6EC !important;stroke:#333 !important;stroke-width:1px !important"></rect><g transform="translate(731.5625, 27)" class="cluster-label"><foreignobject height="24" width="149.390625">
+<div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" data-xmlns="http://www.w3.org/1999/xhtml">
+<span class="nodeLabel">
+<p>
+Utility of the Decision
+</p>
+</span>
+</div>
+</foreignobject></g></g><g data-look="classic" id="trt" class="cluster subgraphStyle"><rect height="620" width="456.375" y="8" x="8" style="fill:#FAF6EC !important;stroke:#333 !important;stroke-width:1px !important"></rect><g transform="translate(136.1875, 8)" class="cluster-label"><foreignobject height="48" width="200">
+<div style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;" data-xmlns="http://www.w3.org/1999/xhtml">
+<span class="nodeLabel">
+<p>
+Treatment Allocation Decision
+</p>
+</span>
+</div>
+</foreignobject></g></g></g><g class="edgePaths"><path marker-end="url(#mermaid-1762174631993_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_A_B_0" d="M82.969,296.905L100.188,278.921C117.406,260.937,151.844,224.968,188.349,206.984C224.854,189,263.427,189,282.714,189L302,189"></path><path marker-end="url(#mermaid-1762174631993_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_A_C_0" d="M82.969,351.432L100.188,371.027C117.406,390.621,151.844,429.811,185.615,449.405C219.385,469,252.49,469,269.042,469L285.594,469"></path><path marker-end="url(#mermaid-1762174631993_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_B_D_0" d="M422.969,144.503L429.87,139.253C436.771,134.002,450.573,123.501,477.221,118.251C503.87,113,543.365,113,582.859,113C622.354,113,661.849,113,688.424,113C715,113,728.656,113,735.484,113L742.313,113"></path><path marker-end="url(#mermaid-1762174631993_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_B_E_0" d="M422.969,233.497L429.87,238.747C436.771,243.998,450.573,254.499,477.221,259.749C503.87,265,543.365,265,582.859,265C622.354,265,661.849,265,690.54,265C719.232,265,737.12,265,746.064,265L755.008,265"></path><path marker-end="url(#mermaid-1762174631993_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_C_F_0" d="M439.375,421.018L443.542,418.348C447.708,415.678,456.042,410.339,479.956,407.67C503.87,405,543.365,405,582.859,405C622.354,405,661.849,405,690.467,405C719.086,405,736.828,405,745.699,405L754.57,405"></path><path marker-end="url(#mermaid-1762174631993_flowchart-v2-pointEnd__000)" style="stroke:#000;" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" id="L_C_G_0" d="M439.375,516.982L443.542,519.652C447.708,522.322,456.042,527.661,479.956,530.33C503.87,533,543.365,533,582.859,533C622.354,533,661.849,533,685.096,533C708.344,533,715.344,533,718.844,533L722.344,533"></path></g><g class="edgeLabels"><g transform="translate(186.28125, 189)" class="edgeLabel"><g transform="translate(-78.3125, -12)" class="label"><foreignobject height="24" width="156.625">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+Treatment 💊💊💊💊
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(186.28125, 469)" class="edgeLabel"><g transform="translate(-48.46875, -12)" class="label"><foreignobject height="24" width="96.9375">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+No Treatment
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(582.859375, 113)" class="edgeLabel"><g transform="translate(-61.0703125, -12)" class="label"><foreignobject height="24" width="122.140625">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+Disease 🤢🤢🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(582.859375, 265)" class="edgeLabel"><g transform="translate(-53.5625, -12)" class="label"><foreignobject height="24" width="107.125">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+No Disease 🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(582.859375, 405)" class="edgeLabel"><g transform="translate(-41.109375, -12)" class="label"><foreignobject height="24" width="82.21875">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+Disease 🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(582.859375, 533)" class="edgeLabel"><g transform="translate(-93.484375, -12)" class="label"><foreignobject height="24" width="186.96875">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml" style="stroke: rgb(0, 0, 0); display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel" style=";stroke:#000">
+<p>
+No Disease 🤨🤨🤨🤨🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g></g><g class="nodes"><g transform="translate(57.984375, 323)" id="flowchart-A-0" class="node default"><rect height="270" width="49.96875" y="-135" x="-24.984375" ry="5" rx="5" style="fill:#E8F4FF !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-9.984375, -120)" style="color:black !important" class="label"><rect></rect><foreignobject height="240" width="19.96875">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+😷<br>😷<br>😷<br>😷<br>😷<br>😷<br>😷<br>😷<br>😷<br>😷
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(364.484375, 189)" id="flowchart-B-1" class="node default"><rect height="126" width="116.96875" y="-63" x="-58.484375" ry="5" rx="5" style="fill:#E8F4FF !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-43.484375, -48)" style="color:black !important" class="label"><rect></rect><foreignobject height="96" width="86.96875">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>Σ Predicted<br>Positives</b><br>💊💊💊💊<br>😷😷😷😷
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(364.484375, 469)" id="flowchart-C-3" class="node default"><rect height="102" width="149.78125" y="-51" x="-74.890625" ry="5" rx="5" style="fill:#E8F4FF !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-59.890625, -36)" style="color:black !important" class="label"><rect></rect><foreignobject height="72" width="119.78125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>Σ Predicted<br>Negatives</b><br>😷😷😷😷😷😷
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(806.2578125, 113)" id="flowchart-D-5" class="node default"><rect height="102" width="119.890625" y="-51" x="-59.9453125" style="fill:#C0FFC0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-29.9453125, -36)" style="color:black !important" class="label"><rect></rect><foreignobject height="72" width="59.890625">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>Σ TP</b><br>💊💊💊<br>🤢🤢🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(806.2578125, 265)" id="flowchart-E-7" class="node default"><rect height="102" width="94.5" y="-51" x="-47.25" style="fill:#FFCCE0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-17.25, -36)" style="color:black !important" class="label"><rect></rect><foreignobject height="72" width="34.5">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>Σ FP</b><br>💊<br>🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(806.2578125, 405)" id="flowchart-F-9" class="node default"><rect height="78" width="95.375" y="-39" x="-47.6875" style="fill:#FFCCE0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-17.6875, -24)" style="color:black !important" class="label"><rect></rect><foreignobject height="48" width="35.375">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>Σ FN</b><br>🤢
+</p>
+</span>
+</div>
+</foreignobject></g></g><g transform="translate(806.2578125, 533)" id="flowchart-G-11" class="node default"><rect height="78" width="159.828125" y="-39" x="-79.9140625" style="fill:#C0FFC0 !important;stroke:black !important" class="basic label-container"></rect><g transform="translate(-49.9140625, -24)" style="color:black !important" class="label"><rect></rect><foreignobject height="48" width="99.828125">
+<div data-xmlns="http://www.w3.org/1999/xhtml" style="color: black !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel" style="color:black !important">
+<p>
+<b>Σ TN</b><br>🤨🤨🤨🤨🤨
+</p>
+</span>
+</div>
+</foreignobject></g></g></g></g><marker orient="auto" markerheight="8" markerwidth="8" markerunits="userSpaceOnUse" refy="5" refx="5" viewbox="0 0 10 10" class="marker flowchart-v2" id="mermaid-1762174631993_flowchart-v2-pointEnd__000"><path fill="#000" stroke="#000" style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 0 0 L 10 5 L 0 10 z"></path></marker></g>
+</svg>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>By choosing PPCR as a cutoff the implied assumption is that you are concerned with resource constraint and assume no individual treatment harm.</p>
+<p><em>Regarding</em> the ranking each prediction is categorised to a bin: if the absolute probability 0.32 is the 18th highest predictions out of 100, it will be categorised to the second decile -&gt; <code>0.18</code>.</p>
+<ol type="1">
+<li>Calculate Risk-Quantile from Absolute Risk: 0.32 -&gt; <code>0.18</code></li>
+</ol>
+<p>References: https://en.wikipedia.org/wiki/Precision_and_recall</p>
+</div>
+</div>
+</div>
+</section>
+<section id="declare-fixed-time-horizons" class="level1">
+<h1>✍️ Declare Fixed Time Horizons 🌅 (📅🤬)</h1>
+<p>The <code>fixed_time_horizons</code> argument is designed for the user to choose the set of time horizons to follow.</p>
+<p>Different followups contain different distributions of observed outcomes: Declare fixed time horizons for the prediction model, such as [5, 10] years of prediction for CVD evet.</p>
+<section id="update-administrative-censorng" class="level2">
+<h2 class="anchored" data-anchor-id="update-administrative-censorng">🪛 Update Administrative Censorng</h2>
+<p>For cases with observed time-to-event is shorter than the prediction time horizon, the outcomes might change:</p>
+<ul>
+<li><p><code>Real Positives</code> 🤢 should be considered as <code>Real Negatives</code> 🤨, the outcome of interest did not happen yet.</p></li>
+<li><p>Always included and Encoded as 0.</p></li>
+<li><p><code>Real Neagtives</code> 🤨 should be considered as <code>Real Censored</code> 🤬, the event of interest could have happened in the gap between the observed time and the fixed time horizon.</p></li>
+<li><p>If adjusted: encoded as 0.</p></li>
+<li><p>If excluded: counted with crude estimate.</p></li>
+</ul>
+<div id="5863de0d" class="cell" data-execution_count="1">
+<div class="cell-output cell-output-display">
+<script type="ojs-define">{"contents": [{"name": "data", "value": [{"id": 1, "time_horizon": 10, "time": 10, "real": "\ud83e\udd28"}, {"id": 1, "time_horizon": 20, "time": 20, "real": "\ud83e\udd28"}, {"id": 1, "time_horizon": 30, "time": 24.1, "real": "\ud83e\udd22"}, {"id": 1, "time_horizon": 40, "time": 24.1, "real": "\ud83e\udd22"}, {"id": 1, "time_horizon": 50, "time": 24.1, "real": "\ud83e\udd22"}, {"id": 2, "time_horizon": 10, "time": 9.7, "real": "\ud83e\udd22"}, {"id": 2, "time_horizon": 20, "time": 9.7, "real": "\ud83e\udd22"}, {"id": 2, "time_horizon": 30, "time": 9.7, "real": "\ud83e\udd22"}, {"id": 2, "time_horizon": 40, "time": 9.7, "real": "\ud83e\udd22"}, {"id": 2, "time_horizon": 50, "time": 9.7, "real": "\ud83e\udd22"}, {"id": 3, "time_horizon": 10, "time": 10, "real": "\ud83e\udd28"}, {"id": 3, "time_horizon": 20, "time": 20, "real": "\ud83e\udd28"}, {"id": 3, "time_horizon": 30, "time": 30, "real": "\ud83e\udd28"}, {"id": 3, "time_horizon": 40, "time": 40, "real": "\ud83e\udd28"}, {"id": 3, "time_horizon": 50, "time": 49.9, "real": "\ud83e\udd22"}, {"id": 4, "time_horizon": 10, "time": 10, "real": "\ud83e\udd28"}, {"id": 4, "time_horizon": 20, "time": 18.6, "real": "\ud83e\udd22"}, {"id": 4, "time_horizon": 30, "time": 18.6, "real": "\ud83e\udd22"}, {"id": 4, "time_horizon": 40, "time": 18.6, "real": "\ud83e\udd22"}, {"id": 4, "time_horizon": 50, "time": 18.6, "real": "\ud83e\udd22"}, {"id": 5, "time_horizon": 10, "time": 10, "real": "\ud83e\udd28"}, {"id": 5, "time_horizon": 20, "time": 20, "real": "\ud83e\udd28"}, {"id": 5, "time_horizon": 30, "time": 30, "real": "\ud83e\udd28"}, {"id": 5, "time_horizon": 40, "time": 34.8, "real": "\ud83e\udd2c"}, {"id": 5, "time_horizon": 50, "time": 34.8, "real": "\ud83e\udd2c"}, {"id": 6, "time_horizon": 10, "time": 10, "real": "\ud83e\udd28"}, {"id": 6, "time_horizon": 20, "time": 14.2, "real": "\ud83d\udc80"}, {"id": 6, "time_horizon": 30, "time": 14.2, "real": "\ud83d\udc80"}, {"id": 6, "time_horizon": 40, "time": 14.2, "real": "\ud83d\udc80"}, {"id": 6, "time_horizon": 50, "time": 14.2, "real": "\ud83d\udc80"}, {"id": 7, "time_horizon": 10, "time": 10, "real": "\ud83e\udd28"}, {"id": 7, "time_horizon": 20, "time": 20, "real": "\ud83e\udd28"}, {"id": 7, "time_horizon": 30, "time": 30, "real": "\ud83e\udd28"}, {"id": 7, "time_horizon": 40, "time": 39.2, "real": "\ud83e\udd22"}, {"id": 7, "time_horizon": 50, "time": 39.2, "real": "\ud83e\udd22"}, {"id": 8, "time_horizon": 10, "time": 10, "real": "\ud83e\udd28"}, {"id": 8, "time_horizon": 20, "time": 20, "real": "\ud83e\udd28"}, {"id": 8, "time_horizon": 30, "time": 30, "real": "\ud83e\udd28"}, {"id": 8, "time_horizon": 40, "time": 40, "real": "\ud83e\udd28"}, {"id": 8, "time_horizon": 50, "time": 46.0, "real": "\ud83d\udc80"}, {"id": 9, "time_horizon": 10, "time": 10, "real": "\ud83e\udd28"}, {"id": 9, "time_horizon": 20, "time": 20, "real": "\ud83e\udd28"}, {"id": 9, "time_horizon": 30, "time": 30, "real": "\ud83e\udd28"}, {"id": 9, "time_horizon": 40, "time": 31.5, "real": "\ud83e\udd2c"}, {"id": 9, "time_horizon": 50, "time": 31.5, "real": "\ud83e\udd2c"}, {"id": 10, "time_horizon": 10, "time": 4.3, "real": "\ud83e\udd22"}, {"id": 10, "time_horizon": 20, "time": 4.3, "real": "\ud83e\udd22"}, {"id": 10, "time_horizon": 30, "time": 4.3, "real": "\ud83e\udd22"}, {"id": 10, "time_horizon": 40, "time": 4.3, "real": "\ud83e\udd22"}, {"id": 10, "time_horizon": 50, "time": 4.3, "real": "\ud83e\udd22"}]}]}</script>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb1" data-startfrom="301" data-source-offset="-1"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 300;"><span id="cb1-301"><a href="#cb1-301" aria-hidden="true" tabindex="-1"></a>filteredData <span class="op">=</span> data<span class="op">.</span><span class="fu">filter</span>((d) <span class="kw">=&gt;</span> d<span class="op">.</span><span class="at">time_horizon</span> <span class="op">==</span> timeHorizon)</span>
+<span id="cb1-302"><a href="#cb1-302" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-303"><a href="#cb1-303" aria-hidden="true" tabindex="-1"></a>viewof timeHorizon <span class="op">=</span> Inputs<span class="op">.</span><span class="fu">range</span>([<span class="dv">10</span><span class="op">,</span> <span class="dv">50</span>]<span class="op">,</span> {</span>
+<span id="cb1-304"><a href="#cb1-304" aria-hidden="true" tabindex="-1"></a>  <span class="dt">step</span><span class="op">:</span> <span class="dv">10</span><span class="op">,</span></span>
+<span id="cb1-305"><a href="#cb1-305" aria-hidden="true" tabindex="-1"></a>  <span class="dt">value</span><span class="op">:</span> <span class="dv">50</span><span class="op">,</span></span>
+<span id="cb1-306"><a href="#cb1-306" aria-hidden="true" tabindex="-1"></a>  <span class="dt">label</span><span class="op">:</span> <span class="st">"Time Horizon"</span></span>
+<span id="cb1-307"><a href="#cb1-307" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb1-308"><a href="#cb1-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-309"><a href="#cb1-309" aria-hidden="true" tabindex="-1"></a>Plot<span class="op">.</span><span class="fu">plot</span>({</span>
+<span id="cb1-310"><a href="#cb1-310" aria-hidden="true" tabindex="-1"></a>  <span class="dt">x</span><span class="op">:</span> {</span>
+<span id="cb1-311"><a href="#cb1-311" aria-hidden="true" tabindex="-1"></a>    <span class="dt">domain</span><span class="op">:</span> [<span class="dv">0</span><span class="op">,</span> <span class="dv">50</span>]</span>
+<span id="cb1-312"><a href="#cb1-312" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb1-313"><a href="#cb1-313" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y</span><span class="op">:</span> {</span>
+<span id="cb1-314"><a href="#cb1-314" aria-hidden="true" tabindex="-1"></a>    <span class="dt">domain</span><span class="op">:</span> [<span class="dv">0</span><span class="op">,</span> <span class="dv">11</span>]<span class="op">,</span></span>
+<span id="cb1-315"><a href="#cb1-315" aria-hidden="true" tabindex="-1"></a>    <span class="dt">axis</span><span class="op">:</span> <span class="kw">false</span></span>
+<span id="cb1-316"><a href="#cb1-316" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb1-317"><a href="#cb1-317" aria-hidden="true" tabindex="-1"></a>  <span class="dt">marks</span><span class="op">:</span> [</span>
+<span id="cb1-318"><a href="#cb1-318" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">ruleX</span>([timeHorizon]<span class="op">,</span> {</span>
+<span id="cb1-319"><a href="#cb1-319" aria-hidden="true" tabindex="-1"></a>      <span class="dt">stroke</span><span class="op">:</span> <span class="st">"#D9E8A3"</span><span class="op">,</span></span>
+<span id="cb1-320"><a href="#cb1-320" aria-hidden="true" tabindex="-1"></a>      <span class="dt">strokeWidth</span><span class="op">:</span> <span class="dv">6</span><span class="op">,</span></span>
+<span id="cb1-321"><a href="#cb1-321" aria-hidden="true" tabindex="-1"></a>      <span class="dt">strokeDasharray</span><span class="op">:</span> <span class="st">"5,5"</span><span class="op">,</span></span>
+<span id="cb1-322"><a href="#cb1-322" aria-hidden="true" tabindex="-1"></a>      <span class="dt">y1</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb1-323"><a href="#cb1-323" aria-hidden="true" tabindex="-1"></a>      <span class="dt">y2</span><span class="op">:</span> <span class="dv">10</span> <span class="co">// Should match the y-domain max</span></span>
+<span id="cb1-324"><a href="#cb1-324" aria-hidden="true" tabindex="-1"></a>    })<span class="op">,</span></span>
+<span id="cb1-325"><a href="#cb1-325" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">ruleY</span>(filteredData<span class="op">,</span> {</span>
+<span id="cb1-326"><a href="#cb1-326" aria-hidden="true" tabindex="-1"></a>      <span class="dt">x</span><span class="op">:</span> <span class="st">"time"</span><span class="op">,</span></span>
+<span id="cb1-327"><a href="#cb1-327" aria-hidden="true" tabindex="-1"></a>      <span class="dt">y</span><span class="op">:</span> <span class="st">"id"</span><span class="op">,</span></span>
+<span id="cb1-328"><a href="#cb1-328" aria-hidden="true" tabindex="-1"></a>      <span class="dt">strokeWidth</span><span class="op">:</span> <span class="fl">1.5</span></span>
+<span id="cb1-329"><a href="#cb1-329" aria-hidden="true" tabindex="-1"></a>    })<span class="op">,</span></span>
+<span id="cb1-330"><a href="#cb1-330" aria-hidden="true" tabindex="-1"></a>    Plot<span class="op">.</span><span class="fu">text</span>(filteredData<span class="op">,</span> {</span>
+<span id="cb1-331"><a href="#cb1-331" aria-hidden="true" tabindex="-1"></a>      <span class="dt">x</span><span class="op">:</span> <span class="st">"time"</span><span class="op">,</span></span>
+<span id="cb1-332"><a href="#cb1-332" aria-hidden="true" tabindex="-1"></a>      <span class="dt">y</span><span class="op">:</span> <span class="st">"id"</span><span class="op">,</span></span>
+<span id="cb1-333"><a href="#cb1-333" aria-hidden="true" tabindex="-1"></a>      <span class="dt">text</span><span class="op">:</span> <span class="st">"real"</span><span class="op">,</span></span>
+<span id="cb1-334"><a href="#cb1-334" aria-hidden="true" tabindex="-1"></a>      <span class="dt">tip</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb1-335"><a href="#cb1-335" aria-hidden="true" tabindex="-1"></a>      <span class="dt">fontSize</span><span class="op">:</span> <span class="dv">30</span></span>
+<span id="cb1-336"><a href="#cb1-336" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb1-337"><a href="#cb1-337" aria-hidden="true" tabindex="-1"></a>  ]</span>
+<span id="cb1-338"><a href="#cb1-338" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-2" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-1-3" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6IlxuZmlsdGVyZWREYXRhID0gZGF0YS5maWx0ZXIoKGQpID0+IGQudGltZV9ob3Jpem9uID09IHRpbWVIb3Jpem9uKVxuXG52aWV3b2YgdGltZUhvcml6b24gPSBJbnB1dHMucmFuZ2UoWzEwLCA1MF0sIHtcbiAgc3RlcDogMTAsXG4gIHZhbHVlOiA1MCxcbiAgbGFiZWw6IFwiVGltZSBIb3Jpem9uXCJcbn0pXG5cblBsb3QucGxvdCh7XG4gIHg6IHtcbiAgICBkb21haW46IFswLCA1MF1cbiAgfSxcbiAgeToge1xuICAgIGRvbWFpbjogWzAsIDExXSxcbiAgICBheGlzOiBmYWxzZVxuICB9LFxuICBtYXJrczogW1xuICAgIFBsb3QucnVsZVgoW3RpbWVIb3Jpem9uXSwge1xuICAgICAgc3Ryb2tlOiBcIiNEOUU4QTNcIixcbiAgICAgIHN0cm9rZVdpZHRoOiA2LFxuICAgICAgc3Ryb2tlRGFzaGFycmF5OiBcIjUsNVwiLFxuICAgICAgeTE6IDAsXG4gICAgICB5MjogMTAgLy8gU2hvdWxkIG1hdGNoIHRoZSB5LWRvbWFpbiBtYXhcbiAgICB9KSxcbiAgICBQbG90LnJ1bGVZKGZpbHRlcmVkRGF0YSwge1xuICAgICAgeDogXCJ0aW1lXCIsXG4gICAgICB5OiBcImlkXCIsXG4gICAgICBzdHJva2VXaWR0aDogMS41XG4gICAgfSksXG4gICAgUGxvdC50ZXh0KGZpbHRlcmVkRGF0YSwge1xuICAgICAgeDogXCJ0aW1lXCIsXG4gICAgICB5OiBcImlkXCIsXG4gICAgICB0ZXh0OiBcInJlYWxcIixcbiAgICAgIHRpcDogdHJ1ZSxcbiAgICAgIGZvbnRTaXplOiAzMFxuICAgIH0pXG4gIF1cbn0pXG5cbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoic2hpbnlJbnB1dCgndGltZUhvcml6b24nKSJ9XX0=
+</script>
+<script type="module">
+if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
+window._ojs.paths.runtimeToDoc = "../..";
+window._ojs.paths.runtimeToRoot = "../..";
+window._ojs.paths.docToRoot = "";
+window._ojs.selfContained = false;
+window._ojs.runtime.interpretFromScriptTags();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/uriahf\.github\.io\/rtichoke_python\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -4,7 +4,7 @@
     "href": "contributing.html",
     "title": "rtichoke",
     "section": "",
-    "text": "dzmcpwkim ../CONTRIBUTING.md"
+    "text": "xndlgsegt ../CONTRIBUTING.md"
   },
   {
     "objectID": "reference/create_roc_curve.html",
@@ -154,6 +154,20 @@
     "crumbs": [
       "Function reference"
     ]
+  },
+  {
+    "objectID": "before_we_validate.html",
+    "href": "before_we_validate.html",
+    "title": "Before we Validate Performance",
+    "section": "",
+    "text": "Ideally we would like to keep Performance Validation as agnostic as possible. However, the structure of the validation set (probs, reals and times) implies the nature of the related assumptions and the required use case.\nSo before we validate performance, let us consider the underlying process.\n✍️ The User Inputs\n🪛 Internal Function"
+  },
+  {
+    "objectID": "before_we_validate.html#update-administrative-censorng",
+    "href": "before_we_validate.html#update-administrative-censorng",
+    "title": "Before we Validate Performance",
+    "section": "🪛 Update Administrative Censorng",
+    "text": "🪛 Update Administrative Censorng\nFor cases with observed time-to-event is shorter than the prediction time horizon, the outcomes might change:\n\nReal Positives 🤢 should be considered as Real Negatives 🤨, the outcome of interest did not happen yet.\nAlways included and Encoded as 0.\nReal Neagtives 🤨 should be considered as Real Censored 🤬, the event of interest could have happened in the gap between the observed time and the fixed time horizon.\nIf adjusted: encoded as 0.\nIf excluded: counted with crude estimate.\n\n\n\n\n\n\n\nfilteredData = data.filter((d) =&gt; d.time_horizon == timeHorizon)\n\nviewof timeHorizon = Inputs.range([10, 50], {\n  step: 10,\n  value: 50,\n  label: \"Time Horizon\"\n})\n\nPlot.plot({\n  x: {\n    domain: [0, 50]\n  },\n  y: {\n    domain: [0, 11],\n    axis: false\n  },\n  marks: [\n    Plot.ruleX([timeHorizon], {\n      stroke: \"#D9E8A3\",\n      strokeWidth: 6,\n      strokeDasharray: \"5,5\",\n      y1: 0,\n      y2: 10 // Should match the y-domain max\n    }),\n    Plot.ruleY(filteredData, {\n      x: \"time\",\n      y: \"id\",\n      strokeWidth: 1.5\n    }),\n    Plot.text(filteredData, {\n      x: \"time\",\n      y: \"id\",\n      text: \"real\",\n      tip: true,\n      fontSize: 30\n    })\n  ]\n})"
   },
   {
     "objectID": "reference/plot_decision_curve.html",
