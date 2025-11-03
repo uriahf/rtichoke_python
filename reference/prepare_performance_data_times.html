@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>create_roc_curve – rtichoke</title>
+<title>prepare_performance_data_times – rtichoke</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -145,7 +145,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../reference/create_roc_curve.html">Discrimination</a></li><li class="breadcrumb-item"><a href="../reference/create_roc_curve.html">create_roc_curve</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../reference/prepare_performance_data_times.html">Performance Data</a></li><li class="breadcrumb-item"><a href="../reference/prepare_performance_data_times.html">prepare_performance_data_times</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -178,7 +178,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_performance_data_times.html" class="sidebar-item-text sidebar-link">
+  <a href="../reference/prepare_performance_data_times.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">prepare_performance_data_times</span></a>
   </div>
 </li>
@@ -212,7 +212,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../reference/create_roc_curve.html" class="sidebar-item-text sidebar-link active">
+  <a href="../reference/create_roc_curve.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">create_roc_curve</span></a>
   </div>
 </li>
@@ -290,27 +290,131 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- margin-sidebar -->
     
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../reference/create_roc_curve.html">Discrimination</a></li><li class="breadcrumb-item"><a href="../reference/create_roc_curve.html">create_roc_curve</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../reference/prepare_performance_data_times.html">Performance Data</a></li><li class="breadcrumb-item"><a href="../reference/prepare_performance_data_times.html">prepare_performance_data_times</a></li></ol></nav></header>
 
 
 
 
-<section id="rtichoke.create_roc_curve" class="level1">
-<h1>create_roc_curve</h1>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>create_roc_curve(</span>
+<section id="rtichoke.prepare_performance_data_times" class="level1">
+<h1>prepare_performance_data_times</h1>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>prepare_performance_data_times(</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    probs,</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    reals,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    by<span class="op">=</span><span class="fl">0.01</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    stratified_by<span class="op">=</span><span class="st">'probability_threshold'</span>,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    size<span class="op">=</span><span class="va">None</span>,</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    color_values<span class="op">=</span>[<span class="st">'#1b9e77'</span>, <span class="st">'#d95f02'</span>, <span class="st">'#7570b3'</span>, <span class="st">'#e7298a'</span>, <span class="st">'#07004D'</span>, <span class="st">'#E6AB02'</span>, <span class="st">'#FE5F55'</span>, <span class="st">'#54494B'</span>, <span class="st">'#006E90'</span>, <span class="st">'#BC96E6'</span>, <span class="st">'#52050A'</span>, <span class="st">'#1F271B'</span>, <span class="st">'#BE7C4D'</span>, <span class="st">'#63768D'</span>, <span class="st">'#08A045'</span>, <span class="st">'#320A28'</span>, <span class="st">'#82FF9E'</span>, <span class="st">'#2176FF'</span>, <span class="st">'#D1603D'</span>, <span class="st">'#585123'</span>],</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    url_api<span class="op">=</span><span class="st">'http://localhost:4242/'</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    times,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    fixed_time_horizons,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    heuristics_sets<span class="op">=</span>[{<span class="st">'censoring_heuristic'</span>: <span class="st">'adjusted'</span>, <span class="st">'competing_heuristic'</span>: <span class="st">'adjusted_as_negative'</span>}],</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    stratified_by<span class="op">=</span>[<span class="st">'probability_threshold'</span>],</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    by<span class="op">=</span><span class="fl">0.01</span>,</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Create ROC Curve</p>
-<p>Args: probs (Dict[str, List[float]]): <em>description</em> reals (Dict[str, List[int]]): <em>description</em> by (float, optional): <em>description</em>. Defaults to 0.01. stratified_by (str, optional): <em>description</em>. Defaults to “probability_threshold”. size (Optional[int], optional): <em>description</em>. Defaults to None. color_values (List[str], optional): <em>description</em>. Defaults to None. url_api (<em>type</em>, optional): <em>description</em>. Defaults to “http://localhost:4242/”.</p>
-<p>Returns: Figure: <em>description</em></p>
+<p>Prepare performance data with a time dimension.</p>
+<section id="parameters" class="level2 doc-section doc-section-parameters">
+<h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 5%">
+<col style="width: 12%">
+<col style="width: 59%">
+<col style="width: 23%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>probs</td>
+<td>Dict[str, np.ndarray]</td>
+<td>Mapping from dataset name to predicted probabilities (1-D numpy arrays).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>reals</td>
+<td>Union[np.ndarray, Dict[str, np.ndarray]]</td>
+<td>True event labels. Can be a single array aligned to pooled probabilities or a dictionary mapping each dataset name to its true-label array. Labels are expected to be integers (e.g., 0/1 for binary, or competing event codes).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>times</td>
+<td>Union[np.ndarray, Dict[str, np.ndarray]]</td>
+<td>Event or censoring times corresponding to <code>reals</code>. Either a single array or a dictionary keyed like <code>probs</code> when multiple datasets are provided.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>fixed_time_horizons</td>
+<td>list[float]</td>
+<td>Fixed time horizons (same units as <code>times</code>) at which to evaluate performance.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>heuristics_sets</td>
+<td>list[Dict]</td>
+<td>List of heuristic dictionaries controlling censoring/competing-event handling. Default is a single heuristic set: <code>[{"censoring_heuristic": "adjusted", "competing_heuristic": "adjusted_as_negative"}]</code></td>
+<td><code>[{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}]</code></td>
+</tr>
+<tr class="even">
+<td>stratified_by</td>
+<td>Sequence[str]</td>
+<td>Stratification variables used to create combinations/breaks. Defaults to <code>["probability_threshold"]</code>.</td>
+<td><code>['probability_threshold']</code></td>
+</tr>
+<tr class="odd">
+<td>by</td>
+<td>float</td>
+<td>Step width for probability-threshold breaks (used to create the grid of cutoffs). Defaults to <code>0.01</code>.</td>
+<td><code>0.01</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level2 doc-section doc-section-returns">
+<h2 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 3%">
+<col style="width: 5%">
+<col style="width: 91%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>pl.DataFrame</td>
+<td>A Polars DataFrame containing performance metrics computed across probability thresholds and fixed time horizons. Columns include the probability cutoff, fixed time horizon, heuristic identifiers, and AJ-derived performance measures.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples" class="level2 doc-section doc-section-examples">
+<h2 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> probs_dict_test <span class="op">=</span> {</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>...     <span class="st">"small_data_set"</span>: np.array(</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>...         [<span class="fl">0.9</span>, <span class="fl">0.85</span>, <span class="fl">0.95</span>, <span class="fl">0.88</span>, <span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.51</span>, <span class="fl">0.2</span>, <span class="fl">0.1</span>, <span class="fl">0.33</span>]</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>...     )</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>... }</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> reals_dict_test <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>]</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> times_dict_test <span class="op">=</span> [<span class="fl">24.1</span>, <span class="fl">9.7</span>, <span class="fl">49.9</span>, <span class="fl">18.6</span>, <span class="fl">34.8</span>, <span class="fl">14.2</span>, <span class="fl">39.2</span>, <span class="fl">46.0</span>, <span class="fl">31.5</span>, <span class="fl">4.3</span>]</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fixed_time_horizons <span class="op">=</span> [<span class="fl">10.0</span>, <span class="fl">20.0</span>, <span class="fl">30.0</span>, <span class="fl">40.0</span>, <span class="fl">50.0</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> prepare_performance_data_times(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>...     probs_dict_test,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>...     reals_dict_test,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>...     times_dict_test,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>...     fixed_time_horizons,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>...     by <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>... )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
