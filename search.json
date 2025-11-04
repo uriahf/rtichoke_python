@@ -1,10 +1,91 @@
 [
   {
-    "objectID": "reference/rtichoke.html",
-    "href": "reference/rtichoke.html",
-    "title": "rtichoke",
+    "objectID": "reference/create_roc_curve.html",
+    "href": "reference/create_roc_curve.html",
+    "title": "create_roc_curve",
     "section": "",
-    "text": "rtichoke\nrtichoke"
+    "text": "create_roc_curve\ncreate_roc_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nCreate ROC Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Discrimination",
+      "create_roc_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_gains_curve.html",
+    "href": "reference/create_gains_curve.html",
+    "title": "create_gains_curve",
+    "section": "",
+    "text": "create_gains_curve\ncreate_gains_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nCreate Gains Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Discrimination",
+      "create_gains_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_precision_recall_curve.html",
+    "href": "reference/create_precision_recall_curve.html",
+    "title": "create_precision_recall_curve",
+    "section": "",
+    "text": "create_precision_recall_curve\ncreate_precision_recall_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nCreate Precision Recall Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Discrimination",
+      "create_precision_recall_curve"
+    ]
+  },
+  {
+    "objectID": "reference/prepare_performance_data_times.html",
+    "href": "reference/prepare_performance_data_times.html",
+    "title": "prepare_performance_data_times",
+    "section": "",
+    "text": "prepare_performance_data_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}],\n    stratified_by=['probability_threshold'],\n    by=0.01,\n)\nPrepare performance data with a time dimension.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nMapping from dataset name to predicted probabilities (1-D numpy arrays).\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nTrue event labels. Can be a single array aligned to pooled probabilities or a dictionary mapping each dataset name to its true-label array. Labels are expected to be integers (e.g., 0/1 for binary, or competing event codes).\nrequired\n\n\ntimes\nUnion[np.ndarray, Dict[str, np.ndarray]]\nEvent or censoring times corresponding to reals. Either a single array or a dictionary keyed like probs when multiple datasets are provided.\nrequired\n\n\nfixed_time_horizons\nlist[float]\nFixed time horizons (same units as times) at which to evaluate performance.\nrequired\n\n\nheuristics_sets\nlist[Dict]\nList of heuristic dictionaries controlling censoring/competing-event handling. Default is a single heuristic set: [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n[{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}]\n\n\nstratified_by\nSequence[str]\nStratification variables used to create combinations/breaks. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nby\nfloat\nStep width for probability-threshold breaks (used to create the grid of cutoffs). Defaults to 0.01.\n0.01\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npl.DataFrame\nA Polars DataFrame containing performance metrics computed across probability thresholds and fixed time horizons. Columns include the probability cutoff, fixed time horizon, heuristic identifiers, and AJ-derived performance measures.\n\n\n\n\n\n\n&gt;&gt;&gt; import numpy as np\n&gt;&gt;&gt; probs_dict_test = {\n...     \"small_data_set\": np.array(\n...         [0.9, 0.85, 0.95, 0.88, 0.6, 0.7, 0.51, 0.2, 0.1, 0.33]\n...     )\n... }\n&gt;&gt;&gt; reals_dict_test = [1, 1, 1, 1, 0, 2, 1, 2, 0, 1]\n&gt;&gt;&gt; times_dict_test = [24.1, 9.7, 49.9, 18.6, 34.8, 14.2, 39.2, 46.0, 31.5, 4.3]\n&gt;&gt;&gt; fixed_time_horizons = [10.0, 20.0, 30.0, 40.0, 50.0]\n&gt;&gt;&gt; prepare_performance_data_times(\n...     probs_dict_test,\n...     reals_dict_test,\n...     times_dict_test,\n...     fixed_time_horizons,\n...     by = 0.1\n... )",
+    "crumbs": [
+      "Performance Data",
+      "prepare_performance_data_times"
+    ]
+  },
+  {
+    "objectID": "reference/prepare_performance_data_times.html#parameters",
+    "href": "reference/prepare_performance_data_times.html#parameters",
+    "title": "prepare_performance_data_times",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nMapping from dataset name to predicted probabilities (1-D numpy arrays).\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nTrue event labels. Can be a single array aligned to pooled probabilities or a dictionary mapping each dataset name to its true-label array. Labels are expected to be integers (e.g., 0/1 for binary, or competing event codes).\nrequired\n\n\ntimes\nUnion[np.ndarray, Dict[str, np.ndarray]]\nEvent or censoring times corresponding to reals. Either a single array or a dictionary keyed like probs when multiple datasets are provided.\nrequired\n\n\nfixed_time_horizons\nlist[float]\nFixed time horizons (same units as times) at which to evaluate performance.\nrequired\n\n\nheuristics_sets\nlist[Dict]\nList of heuristic dictionaries controlling censoring/competing-event handling. Default is a single heuristic set: [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n[{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}]\n\n\nstratified_by\nSequence[str]\nStratification variables used to create combinations/breaks. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nby\nfloat\nStep width for probability-threshold breaks (used to create the grid of cutoffs). Defaults to 0.01.\n0.01",
+    "crumbs": [
+      "Performance Data",
+      "prepare_performance_data_times"
+    ]
+  },
+  {
+    "objectID": "reference/prepare_performance_data_times.html#returns",
+    "href": "reference/prepare_performance_data_times.html#returns",
+    "title": "prepare_performance_data_times",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\npl.DataFrame\nA Polars DataFrame containing performance metrics computed across probability thresholds and fixed time horizons. Columns include the probability cutoff, fixed time horizon, heuristic identifiers, and AJ-derived performance measures.",
+    "crumbs": [
+      "Performance Data",
+      "prepare_performance_data_times"
+    ]
+  },
+  {
+    "objectID": "reference/prepare_performance_data_times.html#examples",
+    "href": "reference/prepare_performance_data_times.html#examples",
+    "title": "prepare_performance_data_times",
+    "section": "",
+    "text": "&gt;&gt;&gt; import numpy as np\n&gt;&gt;&gt; probs_dict_test = {\n...     \"small_data_set\": np.array(\n...         [0.9, 0.85, 0.95, 0.88, 0.6, 0.7, 0.51, 0.2, 0.1, 0.33]\n...     )\n... }\n&gt;&gt;&gt; reals_dict_test = [1, 1, 1, 1, 0, 2, 1, 2, 0, 1]\n&gt;&gt;&gt; times_dict_test = [24.1, 9.7, 49.9, 18.6, 34.8, 14.2, 39.2, 46.0, 31.5, 4.3]\n&gt;&gt;&gt; fixed_time_horizons = [10.0, 20.0, 30.0, 40.0, 50.0]\n&gt;&gt;&gt; prepare_performance_data_times(\n...     probs_dict_test,\n...     reals_dict_test,\n...     times_dict_test,\n...     fixed_time_horizons,\n...     by = 0.1\n... )",
+    "crumbs": [
+      "Performance Data",
+      "prepare_performance_data_times"
+    ]
+  },
+  {
+    "objectID": "reference/plot_lift_curve.html",
+    "href": "reference/plot_lift_curve.html",
+    "title": "plot_lift_curve",
+    "section": "",
+    "text": "plot_lift_curve\nplot_lift_curve(\n    performance_data,\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nPlot Lift Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Discrimination",
+      "plot_lift_curve"
+    ]
   },
   {
     "objectID": "reference/prepare_performance_data.html",
@@ -51,25 +132,25 @@
     ]
   },
   {
-    "objectID": "reference/plot_precision_recall_curve.html",
-    "href": "reference/plot_precision_recall_curve.html",
-    "title": "plot_precision_recall_curve",
+    "objectID": "reference/create_lift_curve.html",
+    "href": "reference/create_lift_curve.html",
+    "title": "create_lift_curve",
     "section": "",
-    "text": "plot_precision_recall_curve\nplot_precision_recall_curve(\n    performance_data,\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nPlot Precision Recall Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "text": "create_lift_curve\ncreate_lift_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nCreate Lift Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
     "crumbs": [
       "Discrimination",
-      "plot_precision_recall_curve"
+      "create_lift_curve"
     ]
   },
   {
-    "objectID": "reference/plot_gains_curve.html",
-    "href": "reference/plot_gains_curve.html",
-    "title": "plot_gains_curve",
+    "objectID": "reference/plot_decision_curve.html",
+    "href": "reference/plot_decision_curve.html",
+    "title": "plot_decision_curve",
     "section": "",
-    "text": "plot_gains_curve\nplot_gains_curve(\n    performance_data,\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nPlot Gains Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "text": "plot_decision_curve\nplot_decision_curve(\n    performance_data,\n    decision_type,\n    min_p_threshold=0,\n    max_p_threshold=1,\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nPlot Decision Curve\nArgs: performance_data (DataFrame): description decision_type (str): description min_p_threshold (int, optional): description. Defaults to 0. max_p_threshold (int, optional): description. Defaults to 1. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
     "crumbs": [
-      "Discrimination",
-      "plot_gains_curve"
+      "Utility",
+      "plot_decision_curve"
     ]
   },
   {
@@ -123,25 +204,14 @@
     ]
   },
   {
-    "objectID": "reference/create_precision_recall_curve.html",
-    "href": "reference/create_precision_recall_curve.html",
-    "title": "create_precision_recall_curve",
+    "objectID": "reference/plot_roc_curve.html",
+    "href": "reference/plot_roc_curve.html",
+    "title": "plot_roc_curve",
     "section": "",
-    "text": "create_precision_recall_curve\ncreate_precision_recall_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nCreate Precision Recall Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "text": "plot_roc_curve\nplot_roc_curve(\n    performance_data,\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nPlot ROC Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
     "crumbs": [
       "Discrimination",
-      "create_precision_recall_curve"
-    ]
-  },
-  {
-    "objectID": "reference/create_gains_curve.html",
-    "href": "reference/create_gains_curve.html",
-    "title": "create_gains_curve",
-    "section": "",
-    "text": "create_gains_curve\ncreate_gains_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nCreate Gains Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
-    "crumbs": [
-      "Discrimination",
-      "create_gains_curve"
+      "plot_roc_curve"
     ]
   },
   {
@@ -156,18 +226,33 @@
     ]
   },
   {
-    "objectID": "before_we_validate.html",
-    "href": "before_we_validate.html",
-    "title": "Before we Validate Performance",
+    "objectID": "reference/plot_gains_curve.html",
+    "href": "reference/plot_gains_curve.html",
+    "title": "plot_gains_curve",
     "section": "",
-    "text": "Ideally we would like to keep Performance Validation as agnostic as possible. However, the structure of the validation set (probs, reals and times) implies the nature of the related assumptions and the required use case.\nSo before we validate performance, let us consider the underlying process.\n✍️ The User Inputs\n🪛 Internal Function"
+    "text": "plot_gains_curve\nplot_gains_curve(\n    performance_data,\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nPlot Gains Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Discrimination",
+      "plot_gains_curve"
+    ]
   },
   {
-    "objectID": "before_we_validate.html#update-administrative-censorng",
-    "href": "before_we_validate.html#update-administrative-censorng",
-    "title": "Before we Validate Performance",
-    "section": "🪛 Update Administrative Censorng",
-    "text": "🪛 Update Administrative Censorng\nFor cases with observed time-to-event is shorter than the prediction time horizon, the outcomes might change:\n\nReal Positives 🤢 should be considered as Real Negatives 🤨, the outcome of interest did not happen yet.\nAlways included and Encoded as 0.\nReal Neagtives 🤨 should be considered as Real Censored 🤬, the event of interest could have happened in the gap between the observed time and the fixed time horizon.\nIf adjusted: encoded as 0.\nIf excluded: counted with crude estimate.\n\n\n\n\n\n\n\nfilteredData = data.filter((d) =&gt; d.time_horizon == timeHorizon)\n\nviewof timeHorizon = Inputs.range([10, 50], {\n  step: 10,\n  value: 50,\n  label: \"Time Horizon\"\n})\n\nPlot.plot({\n  x: {\n    domain: [0, 50]\n  },\n  y: {\n    domain: [0, 11],\n    axis: false\n  },\n  marks: [\n    Plot.ruleX([timeHorizon], {\n      stroke: \"#D9E8A3\",\n      strokeWidth: 6,\n      strokeDasharray: \"5,5\",\n      y1: 0,\n      y2: 10 // Should match the y-domain max\n    }),\n    Plot.ruleY(filteredData, {\n      x: \"time\",\n      y: \"id\",\n      strokeWidth: 1.5\n    }),\n    Plot.text(filteredData, {\n      x: \"time\",\n      y: \"id\",\n      text: \"real\",\n      tip: true,\n      fontSize: 30\n    })\n  ]\n})"
+    "objectID": "reference/plot_precision_recall_curve.html",
+    "href": "reference/plot_precision_recall_curve.html",
+    "title": "plot_precision_recall_curve",
+    "section": "",
+    "text": "plot_precision_recall_curve\nplot_precision_recall_curve(\n    performance_data,\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nPlot Precision Recall Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "crumbs": [
+      "Discrimination",
+      "plot_precision_recall_curve"
+    ]
+  },
+  {
+    "objectID": "reference/rtichoke.html",
+    "href": "reference/rtichoke.html",
+    "title": "rtichoke",
+    "section": "",
+    "text": "rtichoke\nrtichoke"
   },
   {
     "objectID": "reference/create_decision_curve.html",
@@ -178,105 +263,6 @@
     "crumbs": [
       "Utility",
       "create_decision_curve"
-    ]
-  },
-  {
-    "objectID": "reference/create_lift_curve.html",
-    "href": "reference/create_lift_curve.html",
-    "title": "create_lift_curve",
-    "section": "",
-    "text": "create_lift_curve\ncreate_lift_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nCreate Lift Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
-    "crumbs": [
-      "Discrimination",
-      "create_lift_curve"
-    ]
-  },
-  {
-    "objectID": "reference/create_roc_curve.html",
-    "href": "reference/create_roc_curve.html",
-    "title": "create_roc_curve",
-    "section": "",
-    "text": "create_roc_curve\ncreate_roc_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nCreate ROC Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
-    "crumbs": [
-      "Discrimination",
-      "create_roc_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_decision_curve.html",
-    "href": "reference/plot_decision_curve.html",
-    "title": "plot_decision_curve",
-    "section": "",
-    "text": "plot_decision_curve\nplot_decision_curve(\n    performance_data,\n    decision_type,\n    min_p_threshold=0,\n    max_p_threshold=1,\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nPlot Decision Curve\nArgs: performance_data (DataFrame): description decision_type (str): description min_p_threshold (int, optional): description. Defaults to 0. max_p_threshold (int, optional): description. Defaults to 1. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
-    "crumbs": [
-      "Utility",
-      "plot_decision_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_lift_curve.html",
-    "href": "reference/plot_lift_curve.html",
-    "title": "plot_lift_curve",
-    "section": "",
-    "text": "plot_lift_curve\nplot_lift_curve(\n    performance_data,\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nPlot Lift Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
-    "crumbs": [
-      "Discrimination",
-      "plot_lift_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_roc_curve.html",
-    "href": "reference/plot_roc_curve.html",
-    "title": "plot_roc_curve",
-    "section": "",
-    "text": "plot_roc_curve\nplot_roc_curve(\n    performance_data,\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nPlot ROC Curve\nArgs: performance_data (DataFrame): description size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
-    "crumbs": [
-      "Discrimination",
-      "plot_roc_curve"
-    ]
-  },
-  {
-    "objectID": "reference/prepare_performance_data_times.html",
-    "href": "reference/prepare_performance_data_times.html",
-    "title": "prepare_performance_data_times",
-    "section": "",
-    "text": "prepare_performance_data_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}],\n    stratified_by=['probability_threshold'],\n    by=0.01,\n)\nPrepare performance data with a time dimension.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nMapping from dataset name to predicted probabilities (1-D numpy arrays).\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nTrue event labels. Can be a single array aligned to pooled probabilities or a dictionary mapping each dataset name to its true-label array. Labels are expected to be integers (e.g., 0/1 for binary, or competing event codes).\nrequired\n\n\ntimes\nUnion[np.ndarray, Dict[str, np.ndarray]]\nEvent or censoring times corresponding to reals. Either a single array or a dictionary keyed like probs when multiple datasets are provided.\nrequired\n\n\nfixed_time_horizons\nlist[float]\nFixed time horizons (same units as times) at which to evaluate performance.\nrequired\n\n\nheuristics_sets\nlist[Dict]\nList of heuristic dictionaries controlling censoring/competing-event handling. Default is a single heuristic set: [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n[{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}]\n\n\nstratified_by\nSequence[str]\nStratification variables used to create combinations/breaks. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nby\nfloat\nStep width for probability-threshold breaks (used to create the grid of cutoffs). Defaults to 0.01.\n0.01\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npl.DataFrame\nA Polars DataFrame containing performance metrics computed across probability thresholds and fixed time horizons. Columns include the probability cutoff, fixed time horizon, heuristic identifiers, and AJ-derived performance measures.\n\n\n\n\n\n\n&gt;&gt;&gt; import numpy as np\n&gt;&gt;&gt; probs_dict_test = {\n...     \"small_data_set\": np.array(\n...         [0.9, 0.85, 0.95, 0.88, 0.6, 0.7, 0.51, 0.2, 0.1, 0.33]\n...     )\n... }\n&gt;&gt;&gt; reals_dict_test = [1, 1, 1, 1, 0, 2, 1, 2, 0, 1]\n&gt;&gt;&gt; times_dict_test = [24.1, 9.7, 49.9, 18.6, 34.8, 14.2, 39.2, 46.0, 31.5, 4.3]\n&gt;&gt;&gt; fixed_time_horizons = [10.0, 20.0, 30.0, 40.0, 50.0]\n&gt;&gt;&gt; prepare_performance_data_times(\n...     probs_dict_test,\n...     reals_dict_test,\n...     times_dict_test,\n...     fixed_time_horizons,\n...     by = 0.1\n... )",
-    "crumbs": [
-      "Performance Data",
-      "prepare_performance_data_times"
-    ]
-  },
-  {
-    "objectID": "reference/prepare_performance_data_times.html#parameters",
-    "href": "reference/prepare_performance_data_times.html#parameters",
-    "title": "prepare_performance_data_times",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nMapping from dataset name to predicted probabilities (1-D numpy arrays).\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nTrue event labels. Can be a single array aligned to pooled probabilities or a dictionary mapping each dataset name to its true-label array. Labels are expected to be integers (e.g., 0/1 for binary, or competing event codes).\nrequired\n\n\ntimes\nUnion[np.ndarray, Dict[str, np.ndarray]]\nEvent or censoring times corresponding to reals. Either a single array or a dictionary keyed like probs when multiple datasets are provided.\nrequired\n\n\nfixed_time_horizons\nlist[float]\nFixed time horizons (same units as times) at which to evaluate performance.\nrequired\n\n\nheuristics_sets\nlist[Dict]\nList of heuristic dictionaries controlling censoring/competing-event handling. Default is a single heuristic set: [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n[{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}]\n\n\nstratified_by\nSequence[str]\nStratification variables used to create combinations/breaks. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nby\nfloat\nStep width for probability-threshold breaks (used to create the grid of cutoffs). Defaults to 0.01.\n0.01",
-    "crumbs": [
-      "Performance Data",
-      "prepare_performance_data_times"
-    ]
-  },
-  {
-    "objectID": "reference/prepare_performance_data_times.html#returns",
-    "href": "reference/prepare_performance_data_times.html#returns",
-    "title": "prepare_performance_data_times",
-    "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\npl.DataFrame\nA Polars DataFrame containing performance metrics computed across probability thresholds and fixed time horizons. Columns include the probability cutoff, fixed time horizon, heuristic identifiers, and AJ-derived performance measures.",
-    "crumbs": [
-      "Performance Data",
-      "prepare_performance_data_times"
-    ]
-  },
-  {
-    "objectID": "reference/prepare_performance_data_times.html#examples",
-    "href": "reference/prepare_performance_data_times.html#examples",
-    "title": "prepare_performance_data_times",
-    "section": "",
-    "text": "&gt;&gt;&gt; import numpy as np\n&gt;&gt;&gt; probs_dict_test = {\n...     \"small_data_set\": np.array(\n...         [0.9, 0.85, 0.95, 0.88, 0.6, 0.7, 0.51, 0.2, 0.1, 0.33]\n...     )\n... }\n&gt;&gt;&gt; reals_dict_test = [1, 1, 1, 1, 0, 2, 1, 2, 0, 1]\n&gt;&gt;&gt; times_dict_test = [24.1, 9.7, 49.9, 18.6, 34.8, 14.2, 39.2, 46.0, 31.5, 4.3]\n&gt;&gt;&gt; fixed_time_horizons = [10.0, 20.0, 30.0, 40.0, 50.0]\n&gt;&gt;&gt; prepare_performance_data_times(\n...     probs_dict_test,\n...     reals_dict_test,\n...     times_dict_test,\n...     fixed_time_horizons,\n...     by = 0.1\n... )",
-    "crumbs": [
-      "Performance Data",
-      "prepare_performance_data_times"
     ]
   }
 ]
