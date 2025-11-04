@@ -48,10 +48,17 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Quartodoc build
+      working-directory: docs
+      run: uv run quartodoc build
+
+    - name: Clean any leftover Quarto publish worktree
+      run: rm -rf .quarto
   
     - name: Render and Publish
       working-directory: docs
-      run: uv run quarto publish gh-pages --no-browser --token "${{ secrets.GITHUB_TOKEN }}"
+      run: uv run quarto publish gh-pages --no-browser --no-prompt --token "${{ secrets.GITHUB_TOKEN }}"
 
     - name: Publish package
       if: github.ref == 'refs/heads/main' && matrix.python-version == '3.10'
