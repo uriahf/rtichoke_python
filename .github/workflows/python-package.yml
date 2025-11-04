@@ -53,13 +53,13 @@ jobs:
       working-directory: docs
       run: uv run quartodoc build
 
+    - name: Clean any leftover Quarto publish worktree
+      run: rm -rf .quarto
+  
     - name: Render and Publish
-      uses: quarto-dev/quarto-actions/publish@v2
-      with:
-          target: gh-pages
-      env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+      working-directory: docs
+      run: uv run quarto publish gh-pages --no-browser --no-prompt --token "${{ secrets.GITHUB_TOKEN }}"
+
     - name: Publish package
       if: github.ref == 'refs/heads/main' && matrix.python-version == '3.10'
       run: uv publish
