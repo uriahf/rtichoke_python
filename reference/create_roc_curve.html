@@ -307,16 +307,93 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    probs,</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    reals,</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    by<span class="op">=</span><span class="fl">0.01</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    stratified_by<span class="op">=</span><span class="st">'probability_threshold'</span>,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    size<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    stratified_by<span class="op">=</span>[<span class="st">'probability_threshold'</span>],</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    size<span class="op">=</span><span class="dv">600</span>,</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    color_values<span class="op">=</span>[<span class="st">'#1b9e77'</span>, <span class="st">'#d95f02'</span>, <span class="st">'#7570b3'</span>, <span class="st">'#e7298a'</span>, <span class="st">'#07004D'</span>, <span class="st">'#E6AB02'</span>, <span class="st">'#FE5F55'</span>, <span class="st">'#54494B'</span>, <span class="st">'#006E90'</span>, <span class="st">'#BC96E6'</span>, <span class="st">'#52050A'</span>, <span class="st">'#1F271B'</span>, <span class="st">'#BE7C4D'</span>, <span class="st">'#63768D'</span>, <span class="st">'#08A045'</span>, <span class="st">'#320A28'</span>, <span class="st">'#82FF9E'</span>, <span class="st">'#2176FF'</span>, <span class="st">'#D1603D'</span>, <span class="st">'#585123'</span>],</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    url_api<span class="op">=</span><span class="st">'http://localhost:4242/'</span>,</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Create ROC Curve</p>
-<p>Args: probs (Dict[str, List[float]]): <em>description</em> reals (Dict[str, List[int]]): <em>description</em> by (float, optional): <em>description</em>. Defaults to 0.01. stratified_by (str, optional): <em>description</em>. Defaults to “probability_threshold”. size (Optional[int], optional): <em>description</em>. Defaults to None. color_values (List[str], optional): <em>description</em>. Defaults to None. url_api (<em>type</em>, optional): <em>description</em>. Defaults to “http://localhost:4242/”.</p>
-<p>Returns: Figure: <em>description</em></p>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Create ROC Curve.</p>
+<section id="parameters" class="level2 doc-section doc-section-parameters">
+<h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 3%">
+<col style="width: 10%">
+<col style="width: 35%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>probs</td>
+<td>Dict[str, np.ndarray]</td>
+<td>Dictionary mapping a label or group name to an array of predicted probabilities for the positive class.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>reals</td>
+<td>Union[np.ndarray, Dict[str, np.ndarray]]</td>
+<td>Ground-truth binary labels (0/1) as a single array, or a dictionary mapping the same label/group keys used in <code>probs</code> to arrays of ground-truth labels.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>by</td>
+<td>float</td>
+<td>Resolution for probability thresholds when computing the curve (step size). Default is 0.01.</td>
+<td><code>0.01</code></td>
+</tr>
+<tr class="even">
+<td>stratified_by</td>
+<td>Sequence[str]</td>
+<td>Sequence of column names to stratify the performance data by. Default is [“probability_threshold”].</td>
+<td><code>['probability_threshold']</code></td>
+</tr>
+<tr class="odd">
+<td>size</td>
+<td>int</td>
+<td>Plot size in pixels (width and height). Default is 600.</td>
+<td><code>600</code></td>
+</tr>
+<tr class="even">
+<td>color_values</td>
+<td>List[str]</td>
+<td>List of color hex strings to use for the plotted lines. If not provided, a default palette is used.</td>
+<td><code>['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level2 doc-section doc-section-returns">
+<h2 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>Figure</td>
+<td>A Plotly <code>Figure</code> containing the ROC curve(s).</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes" class="level2 doc-section doc-section-notes">
+<h2 class="doc-section doc-section-notes anchored" data-anchor-id="notes">Notes</h2>
+<p>The function delegates computation and plotting to <code>_create_rtichoke_plotly_curve_binary</code> and returns the resulting Plotly figure.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
