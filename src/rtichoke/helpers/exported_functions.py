@@ -13,6 +13,11 @@ from rtichoke.helpers.plotly_helper_functions import (
 # TODO: Fix zoom for plotly curves
 
 
+def create_plotly_curve_polars(rtichoke_curve_dict):
+    # non_interactive_curve_list = []
+    return None
+
+
 def create_plotly_curve(rtichoke_curve_dict):
     """
 
