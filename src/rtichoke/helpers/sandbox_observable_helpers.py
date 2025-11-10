@@ -824,21 +824,50 @@ def _create_list_data_to_adjust_binary(
     by,
 ) -> Dict[str, pl.DataFrame]:
     reference_group_labels = list(probs_dict.keys())
-    num_reals = len(reals_dict)
+
+    if isinstance(reals_dict, dict):
+        num_keys_reals = len(reals_dict)
+    else:
+        num_keys_reals = 1
 
     reference_group_enum = pl.Enum(reference_group_labels)
 
     strata_enum_dtype = aj_data_combinations.schema["strata"]
 
-    data_to_adjust = pl.DataFrame(
-        {
-            "reference_group": np.repeat(reference_group_labels, num_reals),
-            "probs": np.concatenate(
-                [probs_dict[group] for group in reference_group_labels]
-            ),
-            "reals": np.tile(np.asarray(reals_dict), len(reference_group_labels)),
-        }
-    ).with_columns(pl.col("reference_group").cast(reference_group_enum))
+    if len(probs_dict) == 1:
+        probs_array = np.asarray(probs_dict[reference_group_labels[0]])
+
+        data_to_adjust = pl.DataFrame(
+            {
+                "reference_group": np.repeat(reference_group_labels, len(probs_array)),
+                "probs": probs_array,
+                "reals": reals_dict,
+            }
+        ).with_columns(pl.col("reference_group").cast(reference_group_enum))
+
+    elif num_keys_reals == 1:
+        data_to_adjust = pl.DataFrame(
+            {
+                "reference_group": np.repeat(reference_group_labels, len(reals_dict)),
+                "probs": np.concatenate(
+                    [probs_dict[group] for group in reference_group_labels]
+                ),
+                "reals": np.tile(np.asarray(reals_dict), len(reference_group_labels)),
+            }
+        ).with_columns(pl.col("reference_group").cast(reference_group_enum))
+
+    elif isinstance(reals_dict, dict):
+        data_to_adjust = (
+            pl.DataFrame(
+                {
+                    "reference_group": list(probs_dict.keys()),
+                    "probs": list(probs_dict.values()),
+                    "reals": list(reals_dict.values()),
+                }
+            )
+            .explode(["probs", "reals"])
+            .with_columns(pl.col("reference_group").cast(reference_group_enum))
+        )
 
     data_to_adjust = add_cutoff_strata(
         data_to_adjust, by=by, stratified_by=stratified_by
@@ -873,7 +902,6 @@ def _create_list_data_to_adjust_binary(
         .alias("reals_labels")
     )
 
-    # Partition by reference_group
     list_data_to_adjust = {
         group[0]: df
         for group, df in data_to_adjust.partition_by(
@@ -1029,7 +1057,7 @@ def _create_adjusted_data_binary(
 
     adjusted_data_binary = (
         long_df.group_by(["strata", "stratified_by", "reference_group", "reals_labels"])
-        .agg(pl.sum("reals").alias("reals_estimate"))
+        .agg(pl.count().alias("reals_estimate"))
         .join(pl.DataFrame({"chosen_cutoff": breaks}), how="cross")
     )
 
