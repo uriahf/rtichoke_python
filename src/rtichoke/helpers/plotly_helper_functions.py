@@ -1192,7 +1192,7 @@ def _create_curve_layout(
             "x": 0.5,
             "y": 1.3,
         },
-        "height": size,
+        "height": size + 50,
         "width": size,
         "updatemenus": [
             {
