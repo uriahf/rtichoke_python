@@ -1183,6 +1183,7 @@ def _create_curve_layout(
     curve_layout = {
         "xaxis": {"showgrid": False},
         "yaxis": {"showgrid": False},
+        "template": "none",
         "plot_bgcolor": "rgba(0, 0, 0, 0)",
         "paper_bgcolor": "rgba(0, 0, 0, 0)",
         "showlegend": True,
@@ -1197,6 +1198,7 @@ def _create_curve_layout(
         },
         "height": size + 50,
         "width": size,
+        "hoverlabel": {"bgcolor": "rgba(0,0,0,0)", "bordercolor": "rgba(0,0,0,0)"},
         "updatemenus": [
             {
                 "type": "buttons",
