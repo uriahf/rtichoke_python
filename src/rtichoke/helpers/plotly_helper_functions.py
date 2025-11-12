@@ -1184,6 +1184,7 @@ def _create_curve_layout(
         "xaxis": {"showgrid": False},
         "yaxis": {"showgrid": False},
         "plot_bgcolor": "rgba(0, 0, 0, 0)",
+        "paper_bgcolor": "rgba(0, 0, 0, 0)",
         "showlegend": True,
         "legend": {
             "orientation": "h",
@@ -1191,8 +1192,10 @@ def _create_curve_layout(
             "yanchor": "top",
             "x": 0.5,
             "y": 1.3,
+            "bgcolor": "rgba(0, 0, 0, 0)",
+            "bordercolor": "rgba(0, 0, 0, 0)",
         },
-        "height": size,
+        "height": size + 50,
         "width": size,
         "updatemenus": [
             {
