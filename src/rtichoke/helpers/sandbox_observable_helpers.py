@@ -1204,7 +1204,8 @@ def _cast_and_join_adjusted_data_binary(
                 )
             ).alias("classification_outcome")
         )
-    )
+    ).with_columns(pl.col("reals_estimate").fill_null(0))
+
     return final_adjusted_data_polars
 
 
@@ -1563,6 +1564,17 @@ def _calculate_cumulative_aj_data_binary(aj_data: pl.DataFrame) -> pl.DataFrame:
         .agg([pl.col("reals_estimate").sum()])
         .pivot(on="classification_outcome", values="reals_estimate")
         .with_columns(
+            [
+                pl.col(col).fill_null(0)
+                for col in [
+                    "true_positives",
+                    "true_negatives",
+                    "false_positives",
+                    "false_negatives",
+                ]
+            ]
+        )
+        .with_columns(
             (pl.col("true_positives") + pl.col("false_positives")).alias(
                 "predicted_positives"
             ),
@@ -1678,8 +1690,11 @@ def _turn_cumulative_aj_to_performance_data(
         (pl.col("true_negatives") / pl.col("real_negatives")).alias("specificity"),
         (pl.col("true_positives") / pl.col("predicted_positives")).alias("ppv"),
         (pl.col("true_negatives") / pl.col("predicted_negatives")).alias("npv"),
+        (pl.col("false_positives") / pl.col("real_negatives")).alias(
+            "false_positive_rate"
+        ),
         (
-            (pl.col("true_positives") / pl.col("real_positives"))
+            (pl.col("true_positives") / pl.col("predicted_positives"))
             / (pl.col("real_positives") / pl.col("n"))
         ).alias("lift"),
         pl.when(pl.col("stratified_by") == "probability_threshold")
@@ -1691,6 +1706,15 @@ def _turn_cumulative_aj_to_performance_data(
         )
         .otherwise(None)
         .alias("net_benefit"),
+        pl.when(pl.col("stratified_by") == "probability_threshold")
+        .then(
+            100 * (pl.col("true_negatives") / pl.col("n"))
+            - (pl.col("false_negatives") / pl.col("n"))
+            * (1 - pl.col("chosen_cutoff"))
+            / pl.col("chosen_cutoff")
+        )
+        .otherwise(None)
+        .alias("net_benefit_interventions_avoided"),
         pl.when(pl.col("stratified_by") == "probability_threshold")
         .then(pl.col("predicted_positives") / pl.col("n"))
         .otherwise(pl.col("chosen_cutoff"))
