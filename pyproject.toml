@@ -22,7 +22,7 @@ dependencies = [
     "marimo>=0.17.0",
 ]
 name = "rtichoke"
-version = "0.1.17"
+version = "0.1.18"
 description = "interactive visualizations for performance of predictive models"
 readme = "README.md"
 
