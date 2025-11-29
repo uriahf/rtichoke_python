@@ -900,12 +900,23 @@ def _check_if_multiple_populations_are_being_validated(
     return aj_estimates["aj_estimate"].unique().len() > 1
 
 
-def _infer_performance_data_type(performance_data: pl.DataFrame) -> str:
-    if "model" in performance_data.columns:
-        return "several models"
-    if "population" in performance_data.columns:
+def _check_if_multiple_models_are_being_validated(aj_estimates: pl.DataFrame) -> bool:
+    return aj_estimates["reference_group"].unique().len() > 1
+
+
+def _infer_performance_data_type(
+    aj_estimates_from_performance_data: pl.DataFrame, multiple_populations: bool
+) -> str:
+    multiple_models = _check_if_multiple_models_are_being_validated(
+        aj_estimates_from_performance_data
+    )
+
+    if multiple_populations:
         return "several populations"
-    return "single model"
+    elif multiple_models:
+        return "several models"
+    else:
+        return "single model"
 
 
 def _bold_hover_metrics(text: str, metrics: Sequence[str]) -> str:
@@ -1060,7 +1071,23 @@ def _create_rtichoke_curve_list_binary(
 
     x_metric, y_metric, x_label, y_label = _CURVE_CONFIG[curve]
 
-    perf_dat_type = _infer_performance_data_type(performance_data)
+    aj_estimates_from_performance_data = _get_aj_estimates_from_performance_data(
+        performance_data
+    )
+
+    multiple_populations = _check_if_multiple_populations_are_being_validated(
+        aj_estimates_from_performance_data
+    )
+
+    multiple_models = _check_if_multiple_models_are_being_validated(
+        aj_estimates_from_performance_data
+    )
+
+    perf_dat_type = _infer_performance_data_type(
+        aj_estimates_from_performance_data, multiple_populations
+    )
+
+    multiple_reference_groups = multiple_populations or multiple_models
 
     performance_data_with_hover_text = _add_hover_text_to_performance_data(
         performance_data.sort("chosen_cutoff"),
@@ -1072,14 +1099,6 @@ def _create_rtichoke_curve_list_binary(
 
     performance_data_ready_for_curve = _select_and_rename_necessary_variables(
         performance_data_with_hover_text, x_metric, y_metric
-    )
-
-    aj_estimates_from_performance_data = _get_aj_estimates_from_performance_data(
-        performance_data
-    )
-
-    multiple_populations = _check_if_multiple_populations_are_being_validated(
-        aj_estimates_from_performance_data
     )
 
     reference_data = _create_reference_lines_data(
@@ -1142,7 +1161,9 @@ def _create_rtichoke_curve_list_binary(
             ]
         },
         **{
-            variant_key: (palette[group_index] if multiple_populations else "#000000")
+            variant_key: (
+                palette[group_index] if multiple_reference_groups else "#000000"
+            )
             for group_index, reference_group in enumerate(reference_group_keys)
             for variant_key in [
                 reference_group,
@@ -1165,7 +1186,7 @@ def _create_rtichoke_curve_list_binary(
         "reference_data": reference_data,
         "cutoffs": cutoffs,
         "colors_dictionary": colors_dictionary,
-        "multiple_populations": multiple_populations,
+        "multiple_reference_groups": multiple_reference_groups,
     }
 
     return rtichoke_curve_list
@@ -1244,7 +1265,7 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
                 "size": 12,
                 "color": (
                     rtichoke_curve_list["colors_dictionary"].get(group)
-                    if rtichoke_curve_list["multiple_populations"]
+                    if rtichoke_curve_list["multiple_reference_groups"]
                     else "#f6e3be"
                 ),
                 "line": {"width": 3, "color": "black"},
