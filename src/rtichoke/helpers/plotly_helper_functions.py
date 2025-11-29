@@ -1054,6 +1054,15 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
                 "width": 2,
                 "color": rtichoke_curve_list["colors_dictionary"].get(group),
             },
+            hoverlabel=dict(
+                bgcolor=rtichoke_curve_list["colors_dictionary"].get(
+                    group
+                ),  # <-- background = trace color
+                bordercolor=rtichoke_curve_list["colors_dictionary"].get(
+                    group
+                ),  # <-- border = trace color
+                font_color="white",  # <-- or "black" if your colors are light
+            ),
             showlegend=True,
         )
         for group in rtichoke_curve_list["reference_group_keys"]
@@ -1075,6 +1084,15 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
             },
             name=f"{group} @ cutoff",
             legendgroup=group,
+            hoverlabel=dict(
+                bgcolor=rtichoke_curve_list["colors_dictionary"].get(
+                    group
+                ),  # <-- background = trace color
+                bordercolor=rtichoke_curve_list["colors_dictionary"].get(
+                    group
+                ),  # <-- border = trace color
+                font_color="white",  # <-- or "black" if your colors are light
+            ),
             showlegend=False,
             hovertemplate=f"{group}<br>x=%{{x:.4f}}<br>y=%{{y:.4f}}<extra></extra>",
         )
@@ -1096,6 +1114,11 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
                 dash="dot",
                 color=rtichoke_curve_list["colors_dictionary"].get(group),
                 width=1.5,
+            ),
+            hoverlabel=dict(
+                bgcolor=rtichoke_curve_list["colors_dictionary"].get(group),
+                bordercolor=rtichoke_curve_list["colors_dictionary"].get(group),
+                font_color="white",
             ),
             hoverinfo="text",
             text=rtichoke_curve_list["reference_data"]
@@ -1183,7 +1206,7 @@ def _create_curve_layout(
     curve_layout = {
         "xaxis": {"showgrid": False},
         "yaxis": {"showgrid": False},
-        "template": "none",
+        "template": "plotly",
         "plot_bgcolor": "rgba(0, 0, 0, 0)",
         "paper_bgcolor": "rgba(0, 0, 0, 0)",
         "showlegend": True,
@@ -1198,7 +1221,7 @@ def _create_curve_layout(
         },
         "height": size + 50,
         "width": size,
-        "hoverlabel": {"bgcolor": "rgba(0,0,0,0)", "bordercolor": "rgba(0,0,0,0)"},
+        # "hoverlabel": {"bgcolor": "rgba(0,0,0,0)", "bordercolor": "rgba(0,0,0,0)"},
         "updatemenus": [
             {
                 "type": "buttons",
