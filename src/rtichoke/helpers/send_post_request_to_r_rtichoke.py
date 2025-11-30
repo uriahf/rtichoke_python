@@ -2,7 +2,7 @@
 A module for sending post requests to rtichoke r api
 """
 
-import requests
+# import requests
 import pandas as pd
 from rtichoke.helpers.exported_functions import create_plotly_curve
 
@@ -18,9 +18,10 @@ def send_requests_to_rtichoke_r(dictionary_to_send, url_api, endpoint):
     Returns:
         _type_: _description_
     """
-    rtichoke_response = requests.post(f"{url_api}{endpoint}", json=dictionary_to_send)
+    pass
+    # rtichoke_response = requests.post(f"{url_api}{endpoint}", json=dictionary_to_send)
 
-    return rtichoke_response
+    # return rtichoke_response
 
 
 def create_rtichoke_curve(
