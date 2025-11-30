@@ -21,10 +21,10 @@ quartodoc:
       contents:
         - prepare_performance_data
         - prepare_performance_data_times
-    - title: Calibration
-      desc: Functions for Calibration.
-      contents:
-        - create_calibration_curve
+    # - title: Calibration
+      # desc: Functions for Calibration.
+      # contents:
+        # - create_calibration_curve
     - title: Discrimination
       desc: Functions for Discrimination.
       contents:
