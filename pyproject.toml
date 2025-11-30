@@ -6,23 +6,14 @@ license = {text = "MIT"}
 requires-python = ">=3.9"
 dependencies = [
     "plotly<6.0.0,>=5.13.1",
-    "ipython<9.0.0,>=8.11.0",
-    "nbformat<6.0.0,>=5.7.3",
-    "sphinx-autoapi<3.0.0,>=2.1.0",
-    "sphinx-rtd-theme<2.0.0,>=1.2.0",
-    "importlib>=1.0.4",
-    "quartodoc>=0.9.1",
-    "papermill>=2.6.0",
     "polars>=1.28.0",
-    "pyarrow>=20.0.0",
-    "ty>=0.0.1a5",
     "pandas>=2.2.3",
     "typing>=3.7.4.3",
     "polarstate==0.1.8",
     "marimo>=0.17.0",
 ]
 name = "rtichoke"
-version = "0.1.18"
+version = "0.1.20"
 description = "interactive visualizations for performance of predictive models"
 readme = "README.md"
 
@@ -44,6 +35,7 @@ dev = [
     "ty>=0.0.1a12",
     "scikit-learn>=1.6.1",
     "polarstate>=0.1.6",
+    "quartodoc>=0.11.1",
 ]
 
 [tool.uv.workspace]
