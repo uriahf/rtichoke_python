@@ -29,10 +29,12 @@ from rtichoke.utility.decision import plot_decision_curve as plot_decision_curve
 
 from rtichoke.performance_data.performance_data import (
     prepare_performance_data as prepare_performance_data,
+    prepare_binned_classification_data as prepare_binned_classification_data,
 )
 
 from rtichoke.performance_data.performance_data_times import (
     prepare_performance_data_times as prepare_performance_data_times,
+    prepare_binned_classification_data_times as prepare_binned_classification_data_times,
 )
 
 from rtichoke.summary_report.summary_report import (
