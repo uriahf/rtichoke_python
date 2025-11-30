@@ -312,7 +312,7 @@
     "href": "reference/index.html",
     "title": "Function reference",
     "section": "",
-    "text": "Functions for creating performance data.\n\n\n\nprepare_performance_data\nPrepare performance data for binary classification.\n\n\nprepare_performance_data_times\nPrepare performance data with a time dimension.\n\n\n\n\n\n\nFunctions for Calibration.\n\n\n\ncreate_calibration_curve\nCreates Calibration Curve\n\n\n\n\n\n\nFunctions for Discrimination.\n\n\n\ncreate_roc_curve\nCreate ROC Curve.\n\n\ncreate_precision_recall_curve\nCreate Precision-Recall Curve.\n\n\ncreate_gains_curve\nCreate Gains Curve.\n\n\ncreate_lift_curve\nCreate Lift Curve.\n\n\nplot_roc_curve\nPlot ROC curve from performance data.\n\n\nplot_precision_recall_curve\nPlot Precision-Recall curve from performance data.\n\n\nplot_gains_curve\nPlot Gains curve from performance data.\n\n\nplot_lift_curve\nPlot Lift curve from performance data.\n\n\n\n\n\n\nFunctions for Utility.\n\n\n\ncreate_decision_curve\nCreate Decision Curve\n\n\nplot_decision_curve\nPlot Decision Curve",
+    "text": "Functions for creating performance data.\n\n\n\nprepare_performance_data\nPrepare performance data for binary classification.\n\n\nprepare_performance_data_times\nPrepare performance data with a time dimension.\n\n\n\n\n\n\nFunctions for Discrimination.\n\n\n\ncreate_roc_curve\nCreate ROC Curve.\n\n\ncreate_precision_recall_curve\nCreate Precision-Recall Curve.\n\n\ncreate_gains_curve\nCreate Gains Curve.\n\n\ncreate_lift_curve\nCreate Lift Curve.\n\n\nplot_roc_curve\nPlot ROC curve from performance data.\n\n\nplot_precision_recall_curve\nPlot Precision-Recall curve from performance data.\n\n\nplot_gains_curve\nPlot Gains curve from performance data.\n\n\nplot_lift_curve\nPlot Lift curve from performance data.\n\n\n\n\n\n\nFunctions for Utility.\n\n\n\ncreate_decision_curve\nCreate Decision Curve\n\n\nplot_decision_curve\nPlot Decision Curve",
     "crumbs": [
       "Function reference"
     ]
@@ -323,16 +323,6 @@
     "title": "Function reference",
     "section": "",
     "text": "Functions for creating performance data.\n\n\n\nprepare_performance_data\nPrepare performance data for binary classification.\n\n\nprepare_performance_data_times\nPrepare performance data with a time dimension.",
-    "crumbs": [
-      "Function reference"
-    ]
-  },
-  {
-    "objectID": "reference/index.html#calibration",
-    "href": "reference/index.html#calibration",
-    "title": "Function reference",
-    "section": "",
-    "text": "Functions for Calibration.\n\n\n\ncreate_calibration_curve\nCreates Calibration Curve",
     "crumbs": [
       "Function reference"
     ]
@@ -406,11 +396,7 @@
     "href": "reference/create_calibration_curve.html",
     "title": "create_calibration_curve",
     "section": "",
-    "text": "create_calibration_curve\ncreate_calibration_curve(\n    probs,\n    reals,\n    calibration_type='discrete',\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nCreates Calibration Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description calibration_type (str, optional): description. Defaults to “discrete”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
-    "crumbs": [
-      "Calibration",
-      "create_calibration_curve"
-    ]
+    "text": "create_calibration_curve\ncreate_calibration_curve(\n    probs,\n    reals,\n    calibration_type='discrete',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreates Calibration Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description calibration_type (str, optional): description. Defaults to “discrete”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description"
   },
   {
     "objectID": "reference/plot_gains_curve.html",
