@@ -53,13 +53,13 @@ def _create_rtichoke_plotly_curve_binary(
 
 def _plot_rtichoke_curve_binary(
     performance_data: pl.DataFrame,
-    stratified_by: Sequence[str] = ["probability_threshold"],
+    stratified_by: str = "probability_threshold",
     curve: str = "roc",
     size: int = 600,
 ) -> go.Figure:
     rtichoke_curve_list = _create_rtichoke_curve_list_binary(
         performance_data=performance_data,
-        stratified_by=stratified_by[0],
+        stratified_by=stratified_by,
         curve=curve,
         size=size,
     )
