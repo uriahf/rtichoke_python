@@ -301,7 +301,40 @@
     "href": "reference/plot_decision_curve.html",
     "title": "plot_decision_curve",
     "section": "",
-    "text": "plot_decision_curve\nplot_decision_curve(\n    performance_data,\n    decision_type,\n    min_p_threshold=0,\n    max_p_threshold=1,\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nPlot Decision Curve\nArgs: performance_data (DataFrame): description decision_type (str): description min_p_threshold (int, optional): description. Defaults to 0. max_p_threshold (int, optional): description. Defaults to 1. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "text": "plot_decision_curve(\n    performance_data,\n    decision_type='conventional',\n    min_p_threshold=0,\n    max_p_threshold=1,\n    stratified_by=['probability_threshold'],\n    size=600,\n)\nPlot Decision Curve from performance data.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame containing performance metrics for the Decision curve. Expected columns include (but may not be limited to) probability_threshold and decision-curve metrics, plus any stratification columns.\nrequired\n\n\ndecision_type\nstr\n\"conventional\" for decision curves, otherwise the “interventions avoided” variant will be used.\n'conventional'\n\n\nmin_p_threshold\nfloat\nMinimum probability threshold to include in the curve. Default is 0.\n0\n\n\nmax_p_threshold\nfloat\nMaximum probability threshold to include in the curve. Default is 1.\n1\n\n\nstratified_by\nSequence[str]\nSequence of column names used for stratification in the performance_data. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Decision plot.\n\n\n\n\n\n\nThis function wraps _plot_rtichoke_curve_binary to produce a ready-to-render Plotly figure from precomputed performance data. Additional keyword arguments (min_p_threshold, max_p_threshold) are forwarded to the helper.",
+    "crumbs": [
+      "Utility",
+      "plot_decision_curve"
+    ]
+  },
+  {
+    "objectID": "reference/plot_decision_curve.html#parameters",
+    "href": "reference/plot_decision_curve.html#parameters",
+    "title": "plot_decision_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame containing performance metrics for the Decision curve. Expected columns include (but may not be limited to) probability_threshold and decision-curve metrics, plus any stratification columns.\nrequired\n\n\ndecision_type\nstr\n\"conventional\" for decision curves, otherwise the “interventions avoided” variant will be used.\n'conventional'\n\n\nmin_p_threshold\nfloat\nMinimum probability threshold to include in the curve. Default is 0.\n0\n\n\nmax_p_threshold\nfloat\nMaximum probability threshold to include in the curve. Default is 1.\n1\n\n\nstratified_by\nSequence[str]\nSequence of column names used for stratification in the performance_data. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600",
+    "crumbs": [
+      "Utility",
+      "plot_decision_curve"
+    ]
+  },
+  {
+    "objectID": "reference/plot_decision_curve.html#returns",
+    "href": "reference/plot_decision_curve.html#returns",
+    "title": "plot_decision_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Decision plot.",
+    "crumbs": [
+      "Utility",
+      "plot_decision_curve"
+    ]
+  },
+  {
+    "objectID": "reference/plot_decision_curve.html#notes",
+    "href": "reference/plot_decision_curve.html#notes",
+    "title": "plot_decision_curve",
+    "section": "",
+    "text": "This function wraps _plot_rtichoke_curve_binary to produce a ready-to-render Plotly figure from precomputed performance data. Additional keyword arguments (min_p_threshold, max_p_threshold) are forwarded to the helper.",
     "crumbs": [
       "Utility",
       "plot_decision_curve"
@@ -312,7 +345,7 @@
     "href": "reference/index.html",
     "title": "Function reference",
     "section": "",
-    "text": "Functions for creating performance data.\n\n\n\nprepare_performance_data\nPrepare performance data for binary classification.\n\n\nprepare_performance_data_times\nPrepare performance data with a time dimension.\n\n\n\n\n\n\nFunctions for Discrimination.\n\n\n\ncreate_roc_curve\nCreate ROC Curve.\n\n\ncreate_precision_recall_curve\nCreate Precision-Recall Curve.\n\n\ncreate_gains_curve\nCreate Gains Curve.\n\n\ncreate_lift_curve\nCreate Lift Curve.\n\n\nplot_roc_curve\nPlot ROC curve from performance data.\n\n\nplot_precision_recall_curve\nPlot Precision-Recall curve from performance data.\n\n\nplot_gains_curve\nPlot Gains curve from performance data.\n\n\nplot_lift_curve\nPlot Lift curve from performance data.\n\n\n\n\n\n\nFunctions for Utility.\n\n\n\ncreate_decision_curve\nCreate Decision Curve\n\n\nplot_decision_curve\nPlot Decision Curve",
+    "text": "Functions for creating performance data.\n\n\n\nprepare_performance_data\nPrepare performance data for binary classification.\n\n\nprepare_performance_data_times\nPrepare performance data with a time dimension.\n\n\n\n\n\n\nFunctions for Discrimination.\n\n\n\ncreate_roc_curve\nCreate ROC Curve.\n\n\ncreate_precision_recall_curve\nCreate Precision-Recall Curve.\n\n\ncreate_gains_curve\nCreate Gains Curve.\n\n\ncreate_lift_curve\nCreate Lift Curve.\n\n\nplot_roc_curve\nPlot ROC curve from performance data.\n\n\nplot_precision_recall_curve\nPlot Precision-Recall curve from performance data.\n\n\nplot_gains_curve\nPlot Gains curve from performance data.\n\n\nplot_lift_curve\nPlot Lift curve from performance data.\n\n\n\n\n\n\nFunctions for Utility.\n\n\n\ncreate_decision_curve\nCreate Decision Curve.\n\n\nplot_decision_curve\nPlot Decision Curve from performance data.",
     "crumbs": [
       "Function reference"
     ]
@@ -342,7 +375,7 @@
     "href": "reference/index.html#utility",
     "title": "Function reference",
     "section": "",
-    "text": "Functions for Utility.\n\n\n\ncreate_decision_curve\nCreate Decision Curve\n\n\nplot_decision_curve\nPlot Decision Curve",
+    "text": "Functions for Utility.\n\n\n\ncreate_decision_curve\nCreate Decision Curve.\n\n\nplot_decision_curve\nPlot Decision Curve from performance data.",
     "crumbs": [
       "Function reference"
     ]
@@ -498,7 +531,40 @@
     "href": "reference/create_decision_curve.html",
     "title": "create_decision_curve",
     "section": "",
-    "text": "create_decision_curve\ncreate_decision_curve(\n    probs,\n    reals,\n    decision_type='conventional',\n    min_p_threshold=0,\n    max_p_threshold=1,\n    by=0.01,\n    stratified_by='probability_threshold',\n    size=None,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n    url_api='http://localhost:4242/',\n)\nCreate Decision Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description decision_type (str, optional): description. Defaults to “conventional”. min_p_threshold (float, optional): description. Defaults to 0. max_p_threshold (float, optional): description. Defaults to 1. by (float, optional): description. Defaults to 0.01. stratified_by (str, optional): description. Defaults to “probability_threshold”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "text": "create_decision_curve(\n    probs,\n    reals,\n    decision_type='conventional',\n    min_p_threshold=0,\n    max_p_threshold=1,\n    by=0.01,\n    stratified_by=['probability_threshold'],\n    size=600,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n)\nCreate Decision Curve.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nDictionary mapping a label or group name to an array of predicted probabilities for the positive class.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nGround-truth binary labels (0/1) as a single array, or a dictionary mapping the same label/group keys used in probs to arrays of ground-truth labels.\nrequired\n\n\ndecision_type\nstr\nEither \"conventional\" (decision curve) or another value that implies the “interventions avoided” variant. Default is \"conventional\".\n'conventional'\n\n\nmin_p_threshold\nfloat\nMinimum probability threshold to include in the curve. Default is 0.\n0\n\n\nmax_p_threshold\nfloat\nMaximum probability threshold to include in the curve. Default is 1.\n1\n\n\nby\nfloat\nResolution for probability thresholds when computing the curve (step size). Default is 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nSequence of column names to stratify the performance data by. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\ncolor_values\nList[str]\nList of color hex strings to use for the plotted lines. If not provided, a default palette is used.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Decision curve.\n\n\n\n\n\n\nThe function selects the appropriate curve name based on decision_type and delegates computation and plotting to _create_rtichoke_plotly_curve_binary. Additional keyword arguments (like min_p_threshold and max_p_threshold) are forwarded to the helper.",
+    "crumbs": [
+      "Utility",
+      "create_decision_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_decision_curve.html#parameters",
+    "href": "reference/create_decision_curve.html#parameters",
+    "title": "create_decision_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nDictionary mapping a label or group name to an array of predicted probabilities for the positive class.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nGround-truth binary labels (0/1) as a single array, or a dictionary mapping the same label/group keys used in probs to arrays of ground-truth labels.\nrequired\n\n\ndecision_type\nstr\nEither \"conventional\" (decision curve) or another value that implies the “interventions avoided” variant. Default is \"conventional\".\n'conventional'\n\n\nmin_p_threshold\nfloat\nMinimum probability threshold to include in the curve. Default is 0.\n0\n\n\nmax_p_threshold\nfloat\nMaximum probability threshold to include in the curve. Default is 1.\n1\n\n\nby\nfloat\nResolution for probability thresholds when computing the curve (step size). Default is 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nSequence of column names to stratify the performance data by. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\ncolor_values\nList[str]\nList of color hex strings to use for the plotted lines. If not provided, a default palette is used.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']",
+    "crumbs": [
+      "Utility",
+      "create_decision_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_decision_curve.html#returns",
+    "href": "reference/create_decision_curve.html#returns",
+    "title": "create_decision_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Decision curve.",
+    "crumbs": [
+      "Utility",
+      "create_decision_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_decision_curve.html#notes",
+    "href": "reference/create_decision_curve.html#notes",
+    "title": "create_decision_curve",
+    "section": "",
+    "text": "The function selects the appropriate curve name based on decision_type and delegates computation and plotting to _create_rtichoke_plotly_curve_binary. Additional keyword arguments (like min_p_threshold and max_p_threshold) are forwarded to the helper.",
     "crumbs": [
       "Utility",
       "create_decision_curve"
