@@ -56,12 +56,16 @@ def _plot_rtichoke_curve_binary(
     stratified_by: str = "probability_threshold",
     curve: str = "roc",
     size: int = 600,
+    min_p_threshold: float = 0,
+    max_p_threshold: float = 1,
 ) -> go.Figure:
     rtichoke_curve_list = _create_rtichoke_curve_list_binary(
         performance_data=performance_data,
         stratified_by=stratified_by,
         curve=curve,
         size=size,
+        min_p_threshold=min_p_threshold,
+        max_p_threshold=max_p_threshold,
     )
 
     fig = _create_plotly_curve_binary(rtichoke_curve_list)
