@@ -1,8 +1,11 @@
 """rtichoke is a package for interactive vizualization of performance metrics"""
 
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 
-__version__ = version("rtichoke")
+try:
+    __version__ = version("rtichoke")
+except PackageNotFoundError:
+    __version__ = "0.0.0"
 
 from rtichoke.discrimination.roc import create_roc_curve as create_roc_curve
 from rtichoke.discrimination.roc import plot_roc_curve as plot_roc_curve
@@ -20,21 +23,15 @@ from rtichoke.discrimination.precision_recall import (
 from rtichoke.discrimination.gains import create_gains_curve as create_gains_curve
 from rtichoke.discrimination.gains import plot_gains_curve as plot_gains_curve
 
-# from rtichoke.calibration.calibration import (
-#     create_calibration_curve as create_calibration_curve,
-# )
-
 from rtichoke.utility.decision import create_decision_curve as create_decision_curve
 from rtichoke.utility.decision import plot_decision_curve as plot_decision_curve
 
 from rtichoke.performance_data.performance_data import (
     prepare_performance_data as prepare_performance_data,
-    prepare_binned_classification_data as prepare_binned_classification_data,
 )
 
 from rtichoke.performance_data.performance_data_times import (
     prepare_performance_data_times as prepare_performance_data_times,
-    prepare_binned_classification_data_times as prepare_binned_classification_data_times,
 )
 
 from rtichoke.summary_report.summary_report import (
@@ -50,7 +47,6 @@ __all__ = [
     "plot_precision_recall_curve",
     "create_gains_curve",
     "plot_gains_curve",
-    "create_calibration_curve",
     "create_decision_curve",
     "plot_decision_curve",
     "prepare_performance_data",
