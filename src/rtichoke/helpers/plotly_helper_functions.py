@@ -902,9 +902,10 @@ def _get_aj_estimates_from_performance_data_times(
     performance_data: pl.DataFrame,
 ) -> pl.DataFrame:
     return (
-        performance_data.select(
-            "reference_group", "fixed_time_horizon", "real_positives", "n"
+        performance_data.filter(
+            (pl.col("chosen_cutoff") == 0) | (pl.col("chosen_cutoff") == 1)
         )
+        .select("reference_group", "fixed_time_horizon", "real_positives", "n")
         .unique()
         .with_columns((pl.col("real_positives") / pl.col("n")).alias("aj_estimate"))
         .select(
