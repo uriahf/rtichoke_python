@@ -912,7 +912,7 @@ def _create_list_data_to_adjust_binary(
     return list_data_to_adjust
 
 
-def create_list_data_to_adjust(
+def _create_list_data_to_adjust(
     aj_data_combinations: pl.DataFrame,
     probs_dict: Dict[str, np.ndarray],
     reals_dict: Union[np.ndarray, Dict[str, np.ndarray]],
@@ -922,25 +922,70 @@ def create_list_data_to_adjust(
 ) -> Dict[str, pl.DataFrame]:
     # reference_groups = list(probs_dict.keys())
     reference_group_labels = list(probs_dict.keys())
-    num_reals = len(reals_dict)
+
+    if isinstance(reals_dict, dict):
+        num_keys_reals = len(reals_dict)
+    else:
+        num_keys_reals = 1
+
+    # num_reals = len(reals_dict)
 
     reference_group_enum = pl.Enum(reference_group_labels)
 
     strata_enum_dtype = aj_data_combinations.schema["strata"]
 
-    # Flatten and ensure list format
-    data_to_adjust = pl.DataFrame(
-        {
-            "reference_group": np.repeat(reference_group_labels, num_reals),
-            "probs": np.concatenate(
-                [probs_dict[group] for group in reference_group_labels]
-            ),
-            "reals": np.tile(np.asarray(reals_dict), len(reference_group_labels)),
-            "times": np.tile(np.asarray(times_dict), len(reference_group_labels)),
-        }
-    ).with_columns(pl.col("reference_group").cast(reference_group_enum))
+    if len(probs_dict) == 1:
+        probs_array = np.asarray(probs_dict[reference_group_labels[0]])
 
-    # Apply strata
+        if isinstance(reals_dict, dict):
+            reals_array = np.asarray(reals_dict[0])
+        else:
+            reals_array = np.asarray(reals_dict)
+
+        if isinstance(times_dict, dict):
+            times_array = np.asarray(times_dict[0])
+        else:
+            times_array = np.asarray(times_dict)
+
+        data_to_adjust = pl.DataFrame(
+            {
+                "reference_group": np.repeat(reference_group_labels, len(probs_array)),
+                "probs": probs_array,
+                "reals": reals_array,
+                "times": times_array,
+            }
+        ).with_columns(pl.col("reference_group").cast(reference_group_enum))
+
+    elif num_keys_reals == 1:
+        reals_array = np.asarray(reals_dict)
+        times_array = np.asarray(times_dict)
+        n = len(reals_array)
+
+        data_to_adjust = pl.DataFrame(
+            {
+                "reference_group": np.repeat(reference_group_labels, n),
+                "probs": np.concatenate(
+                    [np.asarray(probs_dict[g]) for g in reference_group_labels]
+                ),
+                "reals": np.tile(reals_array, len(reference_group_labels)),
+                "times": np.tile(times_array, len(reference_group_labels)),
+            }
+        ).with_columns(pl.col("reference_group").cast(reference_group_enum))
+
+    elif isinstance(reals_dict, dict) and isinstance(times_dict, dict):
+        data_to_adjust = (
+            pl.DataFrame(
+                {
+                    "reference_group": reference_group_labels,
+                    "probs": list(probs_dict.values()),
+                    "reals": list(reals_dict.values()),
+                    "times": list(times_dict.values()),
+                }
+            )
+            .explode(["probs", "reals", "times"])
+            .with_columns(pl.col("reference_group").cast(reference_group_enum))
+        )
+
     data_to_adjust = add_cutoff_strata(
         data_to_adjust, by=by, stratified_by=stratified_by
     )
@@ -1637,6 +1682,7 @@ def _calculate_cumulative_aj_data(aj_data: pl.DataFrame) -> pl.DataFrame:
         )
         .agg([pl.col("reals_estimate").sum()])
         .pivot(on="classification_outcome", values="reals_estimate")
+        .fill_null(0)
         .with_columns(
             (pl.col("true_positives") + pl.col("false_positives")).alias(
                 "predicted_positives"

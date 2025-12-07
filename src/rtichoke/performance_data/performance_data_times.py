@@ -8,7 +8,7 @@ from collections.abc import Sequence
 from rtichoke.helpers.sandbox_observable_helpers import (
     create_breaks_values,
     create_aj_data_combinations,
-    create_list_data_to_adjust,
+    _create_list_data_to_adjust,
     create_adjusted_data,
     cast_and_join_adjusted_data,
     _calculate_cumulative_aj_data,
@@ -154,7 +154,7 @@ def prepare_binned_classification_data_times(
         risk_set_scope=risk_set_scope,
     )
 
-    list_data_to_adjust = create_list_data_to_adjust(
+    list_data_to_adjust = _create_list_data_to_adjust(
         aj_data_combinations,
         probs,
         reals,
@@ -175,6 +175,6 @@ def prepare_binned_classification_data_times(
     final_adjusted_data = cast_and_join_adjusted_data(
         aj_data_combinations,
         adjusted_data,
-    )
+    ).with_columns(pl.col("reals_estimate").fill_null(0.0))
 
     return final_adjusted_data

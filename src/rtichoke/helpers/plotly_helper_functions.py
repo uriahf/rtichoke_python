@@ -898,6 +898,24 @@ def _get_aj_estimates_from_performance_data(
     )
 
 
+def _get_aj_estimates_from_performance_data_times(
+    performance_data: pl.DataFrame,
+) -> pl.DataFrame:
+    return (
+        performance_data.select(
+            "reference_group", "fixed_time_horizon", "real_positives", "n"
+        )
+        .unique()
+        .with_columns((pl.col("real_positives") / pl.col("n")).alias("aj_estimate"))
+        .select(
+            pl.col("reference_group"),
+            pl.col("fixed_time_horizon"),
+            pl.col("aj_estimate"),
+        )
+        .sort(by=["reference_group", "fixed_time_horizon"])
+    )
+
+
 def _check_if_multiple_populations_are_being_validated(
     aj_estimates: pl.DataFrame,
 ) -> bool:
@@ -1056,6 +1074,48 @@ def _add_hover_text_to_performance_data(
     return performance_data.with_columns(
         [pl.col(pl.FLOAT_DTYPES).round(3), hover_text_expr.alias("text")]
     )
+
+
+def _create_rtichoke_curve_list_times(
+    performance_data: pl.DataFrame,
+    stratified_by: str,
+    size: int = 500,
+    color_value=None,
+    curve="roc",
+    min_p_threshold=0,
+    max_p_threshold=1,
+) -> dict[str, Any]:
+    animation_slider_cutoff_prefix = (
+        "Prob. Threshold: "
+        if stratified_by == "probability_threshold"
+        else "Predicted Positives (Rate):"
+    )
+
+    x_metric, y_metric, x_label, y_label = _CURVE_CONFIG[curve]
+
+    aj_estimates_from_performance_data = _get_aj_estimates_from_performance_data_times(
+        performance_data
+    )
+
+    print("aj_estimates_from_performance_data", aj_estimates_from_performance_data)
+
+    reference_group_keys = performance_data["reference_group"].unique().to_list()
+
+    rtichoke_curve_list = {
+        "size": size,
+        # "axes_ranges": axes_ranges,
+        "x_label": x_label,
+        "y_label": y_label,
+        "animation_slider_cutoff_prefix": animation_slider_cutoff_prefix,
+        "reference_group_keys": reference_group_keys,
+        # "performance_data_ready_for_curve": performance_data_ready_for_curve,
+        # "reference_data": reference_data,
+        # "cutoffs": cutoffs,
+        # "colors_dictionary": colors_dictionary,
+        # "multiple_reference_groups": multiple_reference_groups,
+    }
+
+    return rtichoke_curve_list
 
 
 def _create_rtichoke_curve_list_binary(
