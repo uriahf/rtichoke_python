@@ -23,6 +23,41 @@ _HOVER_LABELS = {
 }
 
 
+def _create_rtichoke_plotly_curve_times(
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    times: Union[np.ndarray, Dict[str, np.ndarray]],
+    by: float = 0.01,
+    stratified_by: Sequence[str] = ["probability_threshold"],
+    size: int = 600,
+    color_values=None,
+    curve: str = "roc",
+    min_p_threshold: float = 0,
+    max_p_threshold: float = 1,
+) -> go.Figure:
+    from rtichoke.performance_data.performance_data_times import (
+        prepare_performance_data_times,
+    )
+
+    performance_data = prepare_performance_data_times(
+        probs=probs,
+        reals=reals,
+        times=times,
+        stratified_by=stratified_by,
+        by=by,
+        fixed_time_horizons=np.unique(times).tolist(),
+    )
+
+    fig = _plot_rtichoke_curve_times(
+        performance_data=performance_data,
+        stratified_by=stratified_by[0],
+        curve=curve,
+        size=size,
+    )
+
+    return fig
+
+
 def _create_rtichoke_plotly_curve_binary(
     probs: Dict[str, np.ndarray],
     reals: Union[np.ndarray, Dict[str, np.ndarray]],
@@ -47,6 +82,28 @@ def _create_rtichoke_plotly_curve_binary(
         curve=curve,
         size=size,
     )
+
+    return fig
+
+
+def _plot_rtichoke_curve_times(
+    performance_data: pl.DataFrame,
+    stratified_by: str = "probability_threshold",
+    curve: str = "roc",
+    size: int = 600,
+    min_p_threshold: float = 0,
+    max_p_threshold: float = 1,
+) -> go.Figure:
+    rtichoke_curve_list = _create_rtichoke_curve_list_times(
+        performance_data=performance_data,
+        stratified_by=stratified_by,
+        curve=curve,
+        size=size,
+        min_p_threshold=min_p_threshold,
+        max_p_threshold=max_p_threshold,
+    )
+
+    fig = _create_plotly_curve_times(rtichoke_curve_list)
 
     return fig
 
@@ -242,16 +299,24 @@ def _create_reference_lines_data(
     max_p_threshold: float = 1.0,
 ) -> pl.DataFrame:
     curve = curve.strip().lower()
+    has_time_horizon = "fixed_time_horizon" in aj_estimates_from_performance_data.columns
+
     # --- ROC ---
     if curve == "roc":
         x = _grid(0.0, 1.0, 0.01)
-        return pl.DataFrame(
+        df = pl.DataFrame(
             {
                 "reference_group": pl.Series(["random_guess"] * len(x)),
                 "x": x,
                 "y": x,
             }
-        ).with_columns(
+        )
+        if has_time_horizon:
+            df = df.join(
+                aj_estimates_from_performance_data.select("fixed_time_horizon").unique(),
+                how="cross",
+            )
+        return df.with_columns(
             pl.format(
                 "<b>Random Guess</b><br>Sensitivity: {}<br>1 - Specificity: {}",
                 pl.col("y"),
@@ -1386,13 +1451,18 @@ def _create_rtichoke_curve_list_binary(
 def _select_and_rename_necessary_variables(
     performance_data: pl.DataFrame, x_perf_metric: str, y_perf_metric: str
 ) -> pl.DataFrame:
-    return performance_data.select(
+
+    cols = [
         pl.col("reference_group"),
         pl.col("chosen_cutoff"),
         pl.col(x_perf_metric).alias("x"),
         pl.col(y_perf_metric).alias("y"),
         pl.col("text"),
-    )
+    ]
+    if "fixed_time_horizon" in performance_data.columns:
+        cols.append(pl.col("fixed_time_horizon"))
+
+    return performance_data.select(cols)
 
 
 def _create_slider_dict(animation_slider_prefic: str, steps: dict) -> dict[str, Any]:
@@ -1569,6 +1639,205 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
         data=non_interactive_curve + initial_interactive_markers + reference_traces,
         layout=curve_layout,
     )
+
+
+def _create_plotly_curve_times(rtichoke_curve_list: dict[str, Any]) -> go.Figure:
+    fig = go.Figure()
+
+    time_horizons = sorted(
+        rtichoke_curve_list["performance_data_ready_for_curve"][
+            "fixed_time_horizon"
+        ].unique()
+    )
+    for i, th in enumerate(time_horizons):
+        visible = i == 0
+        df_th = rtichoke_curve_list["performance_data_ready_for_curve"].filter(
+            pl.col("fixed_time_horizon") == th
+        )
+        ref_df_th = rtichoke_curve_list["reference_data"].filter(
+            pl.col("fixed_time_horizon") == th
+        )
+
+        for group in rtichoke_curve_list["reference_group_keys"]:
+            df_group = df_th.filter(pl.col("reference_group") == group)
+            fig.add_trace(
+                go.Scatter(
+                    x=df_group["x"].to_list(),
+                    y=df_group["y"].to_list(),
+                    text=df_group["text"],
+                    mode="markers+lines",
+                    name=group,
+                    legendgroup=group,
+                    line={
+                        "width": 2,
+                        "color": rtichoke_curve_list["colors_dictionary"].get(group),
+                    },
+                    hoverlabel=dict(
+                        bgcolor=rtichoke_curve_list["colors_dictionary"].get(group),
+                        bordercolor=rtichoke_curve_list["colors_dictionary"].get(group),
+                        font_color="white",
+                    ),
+                    hoverinfo="text",
+                    showlegend=(i == 0),
+                    visible=visible,
+                )
+            )
+
+        for group in rtichoke_curve_list["reference_group_keys"]:
+            fig.add_trace(
+                go.Scatter(
+                    x=[],
+                    y=[],
+                    mode="markers",
+                    marker={
+                        "size": 12,
+                        "color": (
+                            rtichoke_curve_list["colors_dictionary"].get(group)
+                            if rtichoke_curve_list["multiple_reference_groups"]
+                            else "#f6e3be"
+                        ),
+                        "line": {"width": 3, "color": "black"},
+                    },
+                    name=f"{group} @ cutoff",
+                    legendgroup=group,
+                    hoverlabel=dict(
+                        bgcolor=rtichoke_curve_list["colors_dictionary"].get(group),
+                        bordercolor=rtichoke_curve_list["colors_dictionary"].get(group),
+                        font_color="white",
+                    ),
+                    showlegend=False,
+                    hoverinfo="text",
+                    visible=visible,
+                )
+            )
+
+        for group in rtichoke_curve_list["colors_dictionary"].keys():
+            ref_df_group = ref_df_th.filter(pl.col("reference_group") == group)
+            fig.add_trace(
+                go.Scatter(
+                    x=ref_df_group["x"].to_list(),
+                    y=ref_df_group["y"].to_list(),
+                    mode="lines",
+                    name=group,
+                    legendgroup=group,
+                    line=dict(
+                        dash="dot",
+                        color=rtichoke_curve_list["colors_dictionary"].get(group),
+                        width=1.5,
+                    ),
+                    hoverlabel=dict(
+                        bgcolor=rtichoke_curve_list["colors_dictionary"].get(group),
+                        bordercolor=rtichoke_curve_list["colors_dictionary"].get(group),
+                        font_color="white",
+                    ),
+                    hoverinfo="text",
+                    text=ref_df_group["text"].to_list(),
+                    showlegend=False,
+                    visible=visible,
+                )
+            )
+
+    num_traces_per_th = (
+        len(rtichoke_curve_list["reference_group_keys"]) * 2
+        + len(rtichoke_curve_list["colors_dictionary"].keys())
+    )
+
+    steps = []
+    for i, th in enumerate(time_horizons):
+        visibility = [False] * len(fig.data)
+        for j in range(num_traces_per_th):
+            visibility[i * num_traces_per_th + j] = True
+
+        step = dict(
+            method="update",
+            args=[
+                {"visible": visibility},
+            ],
+            label=str(th),
+        )
+        steps.append(step)
+
+    time_horizon_slider = dict(
+        active=0,
+        yanchor="top",
+        xanchor="left",
+        currentvalue={
+            "font": {"size": 20},
+            "prefix": "Time Horizon: ",
+            "visible": True,
+            "xanchor": "left",
+        },
+        transition={"duration": 300, "easing": "linear"},
+        pad={"b": 10, "t": 50},
+        len=0.9,
+        x=0.1,
+        y=0,
+        steps=steps,
+    )
+
+    def xy_at_cutoff(group, c, th):
+        row = (
+            rtichoke_curve_list["performance_data_ready_for_curve"]
+            .filter(
+                (pl.col("reference_group") == group)
+                & (pl.col("chosen_cutoff") == c)
+                & (pl.col("fixed_time_horizon") == th)
+                & pl.col("x").is_not_null()
+                & pl.col("y").is_not_null()
+            )
+            .select(["x", "y"])
+            .limit(1)
+        )
+        if row.height == 0:
+            return None, None
+        r = row.row(0)
+        return r[0], r[1]
+
+    num_groups = len(rtichoke_curve_list["reference_group_keys"])
+    marker_indices = [
+        i * num_traces_per_th + j + num_groups
+        for i in range(len(time_horizons))
+        for j in range(num_groups)
+    ]
+
+    cutoff_steps = []
+    for cutoff in rtichoke_curve_list["cutoffs"]:
+        x_vals = []
+        y_vals = []
+
+        for i, th in enumerate(time_horizons):
+            for group in rtichoke_curve_list["reference_group_keys"]:
+                x, y = xy_at_cutoff(group, cutoff, th)
+                x_vals.append([x] if x is not None else [])
+                y_vals.append([y] if y is not None else [])
+
+        cutoff_step = {
+            "method": "restyle",
+            "args": [
+                {"x": x_vals, "y": y_vals},
+                marker_indices,
+            ],
+            "label": f"{cutoff:g}",
+        }
+        cutoff_steps.append(cutoff_step)
+
+    cutoff_slider = _create_slider_dict(
+        rtichoke_curve_list["animation_slider_cutoff_prefix"], cutoff_steps
+    )
+    cutoff_slider["y"] = -0.15
+
+    curve_layout = _create_curve_layout(
+        size=rtichoke_curve_list["size"],
+        slider_dict=cutoff_slider,
+        axes_ranges=rtichoke_curve_list["axes_ranges"],
+        x_label=rtichoke_curve_list["x_label"],
+        y_label=rtichoke_curve_list["y_label"],
+    )
+    curve_layout["sliders"] = [time_horizon_slider, cutoff_slider]
+
+    fig.update_layout(curve_layout)
+
+    return fig
 
 
 def _create_curve_layout(

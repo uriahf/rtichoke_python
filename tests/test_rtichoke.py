@@ -158,3 +158,23 @@ def _expected_aj_df(neg, pos, comp, include_comp=True):
     cols.append("estimate_origin")
 
     return pl.DataFrame(data)[cols]
+
+
+def test_create_plotly_curve_times():
+    """
+    Test that the create_plotly_curve_times function returns a plot with two sliders
+    """
+    from rtichoke.discrimination.roc import create_roc_curve_times
+    import numpy as np
+
+    probs = {"model_1": np.random.rand(100)}
+    reals = np.random.randint(0, 2, 100)
+    times = np.random.randint(0, 100, 100).astype(float)
+
+    fig = create_roc_curve_times(
+        probs=probs,
+        reals=reals,
+        times=times,
+    )
+
+    assert len(fig.layout.sliders) == 2
