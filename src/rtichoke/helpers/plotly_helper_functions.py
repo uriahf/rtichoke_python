@@ -898,6 +898,38 @@ def _get_aj_estimates_from_performance_data(
     )
 
 
+def _get_aj_estimates_from_performance_data_times(
+    performance_data: pl.DataFrame,
+) -> pl.DataFrame:
+    return (
+        performance_data.filter(
+            (pl.col("chosen_cutoff") == 0) | (pl.col("chosen_cutoff") == 1)
+        )
+        .select("reference_group", "fixed_time_horizon", "real_positives", "n")
+        .unique()
+        .with_columns((pl.col("real_positives") / pl.col("n")).alias("aj_estimate"))
+        .select(
+            pl.col("reference_group"),
+            pl.col("fixed_time_horizon"),
+            pl.col("aj_estimate"),
+        )
+        .sort(by=["reference_group", "fixed_time_horizon"])
+    )
+
+
+def _check_if_multiple_populations_are_being_validated_times(
+    aj_estimates: pl.DataFrame,
+) -> bool:
+    max_val = (
+        aj_estimates.group_by("fixed_time_horizon")
+        .agg(pl.col("aj_estimate").n_unique().alias("num_populations"))[
+            "num_populations"
+        ]
+        .max()
+    )
+    return max_val is not None and max_val > 1
+
+
 def _check_if_multiple_populations_are_being_validated(
     aj_estimates: pl.DataFrame,
 ) -> bool:
@@ -906,6 +938,21 @@ def _check_if_multiple_populations_are_being_validated(
 
 def _check_if_multiple_models_are_being_validated(aj_estimates: pl.DataFrame) -> bool:
     return aj_estimates["reference_group"].unique().len() > 1
+
+
+def _infer_performance_data_type_times(
+    aj_estimates_from_performance_data: pl.DataFrame, multiple_populations: bool
+) -> str:
+    multiple_models = _check_if_multiple_populations_are_being_validated_times(
+        aj_estimates_from_performance_data
+    )
+
+    if multiple_populations:
+        return "several populations"
+    elif multiple_models:
+        return "several models"
+    else:
+        return "single model"
 
 
 def _infer_performance_data_type(
@@ -1056,6 +1103,146 @@ def _add_hover_text_to_performance_data(
     return performance_data.with_columns(
         [pl.col(pl.FLOAT_DTYPES).round(3), hover_text_expr.alias("text")]
     )
+
+
+def _create_rtichoke_curve_list_times(
+    performance_data: pl.DataFrame,
+    stratified_by: str,
+    size: int = 500,
+    color_value=None,
+    curve="roc",
+    min_p_threshold=0,
+    max_p_threshold=1,
+) -> dict[str, Any]:
+    animation_slider_cutoff_prefix = (
+        "Prob. Threshold: "
+        if stratified_by == "probability_threshold"
+        else "Predicted Positives (Rate):"
+    )
+
+    x_metric, y_metric, x_label, y_label = _CURVE_CONFIG[curve]
+
+    aj_estimates_from_performance_data = _get_aj_estimates_from_performance_data_times(
+        performance_data
+    )
+
+    print("aj_estimates_from_performance_data", aj_estimates_from_performance_data)
+
+    multiple_populations = _check_if_multiple_populations_are_being_validated_times(
+        aj_estimates_from_performance_data
+    )
+
+    multiple_models = _check_if_multiple_models_are_being_validated(
+        aj_estimates_from_performance_data
+    )
+
+    perf_dat_type = _infer_performance_data_type_times(
+        aj_estimates_from_performance_data, multiple_populations
+    )
+
+    multiple_reference_groups = multiple_populations or multiple_models
+
+    performance_data_with_hover_text = _add_hover_text_to_performance_data(
+        performance_data.sort("chosen_cutoff"),
+        performance_metric_x=x_metric,
+        performance_metric_y=y_metric,
+        stratified_by=stratified_by,
+        perf_dat_type=perf_dat_type,
+    )
+
+    performance_data_ready_for_curve = _select_and_rename_necessary_variables(
+        performance_data_with_hover_text, x_metric, y_metric
+    )
+
+    reference_data = _create_reference_lines_data(
+        curve=curve,
+        aj_estimates_from_performance_data=aj_estimates_from_performance_data,
+        multiple_populations=multiple_populations,
+        min_p_threshold=min_p_threshold,
+        max_p_threshold=max_p_threshold,
+    )
+
+    axes_ranges = extract_axes_ranges(
+        performance_data_ready_for_curve,
+        curve=curve,
+        min_p_threshold=min_p_threshold,
+        max_p_threshold=max_p_threshold,
+    )
+
+    reference_group_keys = performance_data["reference_group"].unique().to_list()
+
+    cutoffs = (
+        performance_data_ready_for_curve.select(pl.col("chosen_cutoff"))
+        .drop_nulls()
+        .unique()
+        .sort("chosen_cutoff")
+        .to_series()
+        .to_list()
+    )
+
+    palette = [
+        "#1b9e77",
+        "#d95f02",
+        "#7570b3",
+        "#e7298a",
+        "#07004D",
+        "#E6AB02",
+        "#FE5F55",
+        "#54494B",
+        "#006E90",
+        "#BC96E6",
+        "#52050A",
+        "#1F271B",
+        "#BE7C4D",
+        "#63768D",
+        "#08A045",
+        "#320A28",
+        "#82FF9E",
+        "#2176FF",
+        "#D1603D",
+        "#585123",
+    ]
+
+    colors_dictionary = {
+        **{
+            key: "#BEBEBE"
+            for key in [
+                "random_guess",
+                "perfect_model",
+                "treat_none",
+                "treat_all",
+            ]
+        },
+        **{
+            variant_key: (
+                palette[group_index] if multiple_reference_groups else "#000000"
+            )
+            for group_index, reference_group in enumerate(reference_group_keys)
+            for variant_key in [
+                reference_group,
+                f"random_guess_{reference_group}",
+                f"perfect_model_{reference_group}",
+                f"treat_none_{reference_group}",
+                f"treat_all_{reference_group}",
+            ]
+        },
+    }
+
+    rtichoke_curve_list = {
+        "size": size,
+        "axes_ranges": axes_ranges,
+        "x_label": x_label,
+        "y_label": y_label,
+        "animation_slider_cutoff_prefix": animation_slider_cutoff_prefix,
+        "reference_group_keys": reference_group_keys,
+        "performance_data_ready_for_curve": performance_data_ready_for_curve,
+        "reference_data": reference_data,
+        "cutoffs": cutoffs,
+        "colors_dictionary": colors_dictionary,
+        "multiple_reference_groups": multiple_reference_groups,
+    }
+
+    return rtichoke_curve_list
 
 
 def _create_rtichoke_curve_list_binary(

@@ -4,7 +4,7 @@ A module for Summary Report
 
 from rtichoke.helpers.send_post_request_to_r_rtichoke import send_requests_to_rtichoke_r
 from rtichoke.helpers.sandbox_observable_helpers import (
-    create_list_data_to_adjust,
+    _create_list_data_to_adjust,
 )
 import subprocess
 
@@ -67,8 +67,8 @@ def create_data_for_summary_report(probs, reals, times, fixed_time_horizons):
     stratified_by = ["probability_threshold", "ppcr"]
     by = 0.1
 
-    list_data_to_adjust_polars = create_list_data_to_adjust(
-        probs, reals, times, stratified_by=stratified_by, by=by
+    list_data_to_adjust_polars = _create_list_data_to_adjust(
+        probs, reals, times, stratified_by=stratified_by, by=by, times_dict={}
     )
 
     return list_data_to_adjust_polars
