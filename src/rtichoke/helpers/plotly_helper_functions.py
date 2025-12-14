@@ -1656,35 +1656,40 @@ def _create_plotly_curve_times(rtichoke_curve_list: dict[str, Any]) -> go.Figure
         )
     )
 
-    cutoff_steps = [
-        {
-            "method": "restyle",
-            "args": [
-                {
-                    "x": [
-                        [xy[0]] if xy[0] is not None else []
-                        for xy in marker_points_at_cutoff
-                    ],
-                    "y": [
-                        [xy[1]] if xy[1] is not None else []
-                        for xy in marker_points_at_cutoff
-                    ],
-                },
-                cutoff_target_indices,
-            ],
-            "label": f"{cutoff:g}",
-        }
-        for cutoff in rtichoke_curve_list["cutoffs"]
-        for marker_points_at_cutoff in [
-            [
-                _xy_at_cutoff(group, cutoff, fixed_time_horizon)
-                if cutoff is not None
-                else (None, None)
-                for fixed_time_horizon in rtichoke_curve_list["fixed_time_horizons"]
-                for group in rtichoke_curve_list["reference_group_keys"]
-            ]
+    def marker_values_for_cutoff(
+        cutoff: float,
+    ) -> tuple[list[list], list[list], list[list]]:
+        marker_values = [
+            _xy_at_cutoff(group, cutoff, fixed_time_horizon)
+            if cutoff is not None
+            else (None, None, None)
+            for fixed_time_horizon in rtichoke_curve_list["fixed_time_horizons"]
+            for group in rtichoke_curve_list["reference_group_keys"]
         ]
-    ]
+
+        xs = [[x] if x is not None else [] for x, _, _ in marker_values]
+        ys = [[y] if y is not None else [] for _, y, _ in marker_values]
+        texts = [[text] if text is not None else [] for _, _, text in marker_values]
+
+        return xs, ys, texts
+
+    cutoff_steps = []
+    for cutoff in rtichoke_curve_list["cutoffs"]:
+        xs, ys, texts = marker_values_for_cutoff(cutoff)
+        cutoff_steps.append(
+            {
+                "method": "restyle",
+                "args": [
+                    {
+                        "x": xs,
+                        "y": ys,
+                        "text": texts,
+                    },
+                    cutoff_target_indices,
+                ],
+                "label": f"{cutoff:g}",
+            }
+        )
 
     steps_fixed_time_horizon = []
     total_traces = num_curve_traces + num_marker_traces + len(reference_traces)
