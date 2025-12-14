@@ -1744,6 +1744,10 @@ def _create_plotly_curve_times(rtichoke_curve_list: dict[str, Any]) -> go.Figure
 
 
 def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figure:
+    initial_cutoff = (
+        rtichoke_curve_list["cutoffs"][0] if rtichoke_curve_list["cutoffs"] else None
+    )
+
     non_interactive_curve = [
         go.Scatter(
             x=rtichoke_curve_list["performance_data_ready_for_curve"]
@@ -1773,11 +1777,53 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
         for group in rtichoke_curve_list["reference_group_keys"]
     ]
 
+    def xy_at_cutoff(group, c):
+        row = (
+            rtichoke_curve_list["performance_data_ready_for_curve"]
+            .filter(
+                (pl.col("reference_group") == group)
+                & (pl.col("chosen_cutoff") == c)
+                & pl.col("x").is_not_null()
+                & pl.col("y").is_not_null()
+            )
+            .select(["x", "y", "text"])
+            .limit(1)
+        )
+        if row.height == 0:
+            return None, None, None
+        r = row.row(0)
+        return r[0], r[1], r[2]
+
+    def marker_values_for_cutoff(
+        cutoff: float,
+    ) -> tuple[list[list], list[list], list[list]]:
+        marker_values = [
+            xy_at_cutoff(group, cutoff)
+            for group in rtichoke_curve_list["reference_group_keys"]
+        ]
+
+        xs = [[x] if x is not None else [] for x, _, _ in marker_values]
+        ys = [[y] if y is not None else [] for _, y, _ in marker_values]
+        texts = [[text] if text is not None else [] for _, _, text in marker_values]
+
+        return xs, ys, texts
+
+    initial_xs, initial_ys, initial_texts = (
+        marker_values_for_cutoff(initial_cutoff)
+        if initial_cutoff is not None
+        else (
+            [[] for _ in rtichoke_curve_list["reference_group_keys"]],
+            [[] for _ in rtichoke_curve_list["reference_group_keys"]],
+            [[] for _ in rtichoke_curve_list["reference_group_keys"]],
+        )
+    )
+
     initial_interactive_markers = [
         go.Scatter(
-            x=[],
-            y=[],
-            text=[],
+            x=initial_xs[idx],
+            y=initial_ys[idx],
+            text=initial_texts[idx],
+            hovertext=initial_texts[idx],
             mode="markers",
             marker={
                 "size": 12,
@@ -1798,7 +1844,7 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
             showlegend=False,
             hoverinfo="text",
         )
-        for group in rtichoke_curve_list["reference_group_keys"]
+        for idx, group in enumerate(rtichoke_curve_list["reference_group_keys"])
     ]
 
     reference_traces = [
@@ -1838,47 +1884,24 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
         )
     )
 
-    def xy_at_cutoff(group, c):
-        row = (
-            rtichoke_curve_list["performance_data_ready_for_curve"]
-            .filter(
-                (pl.col("reference_group") == group)
-                & (pl.col("chosen_cutoff") == c)
-                & pl.col("x").is_not_null()
-                & pl.col("y").is_not_null()
-            )
-            .select(["x", "y", "text"])
-            .limit(1)
+    steps = []
+    for cutoff in rtichoke_curve_list["cutoffs"]:
+        xs, ys, texts = marker_values_for_cutoff(cutoff)
+        steps.append(
+            {
+                "method": "restyle",
+                "args": [
+                    {
+                        "x": xs,
+                        "y": ys,
+                        "text": texts,
+                        "hovertext": texts,
+                    },
+                    dyn_idx,
+                ],
+                "label": f"{cutoff:g}",
+            }
         )
-        if row.height == 0:
-            return None, None, None
-        r = row.row(0)
-        return r[0], r[1], r[2]
-
-    steps = [
-        {
-            "method": "restyle",
-            "args": [
-                {
-                    "x": [
-                        [xy_at_cutoff(group, cutoff)[0]]
-                        if xy_at_cutoff(group, cutoff)[0] is not None
-                        else []
-                        for group in rtichoke_curve_list["reference_group_keys"]
-                    ],
-                    "y": [
-                        [xy_at_cutoff(group, cutoff)[1]]
-                        if xy_at_cutoff(group, cutoff)[1] is not None
-                        else []
-                        for group in rtichoke_curve_list["reference_group_keys"]
-                    ],
-                },
-                dyn_idx,
-            ],
-            "label": f"{cutoff:g}",
-        }
-        for cutoff in rtichoke_curve_list["cutoffs"]
-    ]
 
     slider_dict = _create_slider_dict(
         rtichoke_curve_list["animation_slider_prefix"], steps
