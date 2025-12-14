@@ -1823,7 +1823,7 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
             x=initial_xs[idx],
             y=initial_ys[idx],
             text=initial_texts[idx],
-            hovertext=initial_texts[idx],
+            # hovertext=initial_texts[idx],
             mode="markers",
             marker={
                 "size": 12,
@@ -1837,9 +1837,15 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
             name=f"{group} @ cutoff",
             legendgroup=group,
             hoverlabel=dict(
-                bgcolor=rtichoke_curve_list["colors_dictionary"].get(group),
-                bordercolor=rtichoke_curve_list["colors_dictionary"].get(group),
-                font_color="white",
+                bgcolor="#f6e3be"
+                if not rtichoke_curve_list["multiple_reference_groups"]
+                else rtichoke_curve_list["colors_dictionary"].get(group),
+                bordercolor="#f6e3be"
+                if not rtichoke_curve_list["multiple_reference_groups"]
+                else rtichoke_curve_list["colors_dictionary"].get(group),
+                font_color="black"
+                if not rtichoke_curve_list["multiple_reference_groups"]
+                else "white",
             ),
             showlegend=False,
             hoverinfo="text",
@@ -1895,7 +1901,7 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
                         "x": xs,
                         "y": ys,
                         "text": texts,
-                        "hovertext": texts,
+                        # "hovertext": texts,
                     },
                     dyn_idx,
                 ],
