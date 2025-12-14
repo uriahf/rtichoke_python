@@ -6,7 +6,12 @@ from typing import Dict, List, Sequence, Union
 from plotly.graph_objs._figure import Figure
 from rtichoke.helpers.plotly_helper_functions import (
     _create_rtichoke_plotly_curve_binary,
+    _create_plotly_curve_times,
     _plot_rtichoke_curve_binary,
+    _create_rtichoke_curve_list_times,
+)
+from rtichoke.performance_data.performance_data_times import (
+    prepare_performance_data_times,
 )
 import numpy as np
 import polars as pl
@@ -161,4 +166,70 @@ def plot_decision_curve(
         min_p_threshold=min_p_threshold,
         max_p_threshold=max_p_threshold,
     )
+    return fig
+
+
+def create_decision_curve_times(
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    times: Union[np.ndarray, Dict[str, np.ndarray]],
+    fixed_time_horizons: list[float],
+    decision_type: str = "conventional",
+    heuristics_sets: list[Dict] = [
+        {
+            "censoring_heuristic": "adjusted",
+            "competing_heuristic": "adjusted_as_negative",
+        }
+    ],
+    min_p_threshold: float = 0,
+    max_p_threshold: float = 1,
+    by: float = 0.01,
+    stratified_by: Sequence[str] = ["probability_threshold"],
+    size: int = 600,
+    color_values: List[str] = [
+        "#1b9e77",
+        "#d95f02",
+        "#7570b3",
+        "#e7298a",
+        "#07004D",
+        "#E6AB02",
+        "#FE5F55",
+        "#54494B",
+        "#006E90",
+        "#BC96E6",
+        "#52050A",
+        "#1F271B",
+        "#BE7C4D",
+        "#63768D",
+        "#08A045",
+        "#320A28",
+        "#82FF9E",
+        "#2176FF",
+        "#D1603D",
+        "#585123",
+    ],
+) -> Figure:
+    """Create time-dependent Decision Curve."""
+
+    if decision_type == "conventional":
+        curve = "decision"
+    else:
+        curve = "interventions avoided"
+
+    performance_data_times = prepare_performance_data_times(
+        probs,
+        reals,
+        times,
+        by=by,
+        fixed_time_horizons=fixed_time_horizons,
+        heuristics_sets=heuristics_sets,
+        stratified_by=["probability_threshold"],
+    )
+
+    rtichoke_curve_list_times = _create_rtichoke_curve_list_times(
+        performance_data_times, stratified_by="probability_threshold", curve=curve
+    )
+
+    fig = _create_plotly_curve_times(rtichoke_curve_list_times)
+
     return fig

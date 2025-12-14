@@ -24,7 +24,10 @@ from rtichoke.discrimination.gains import plot_gains_curve as plot_gains_curve
 #     create_calibration_curve as create_calibration_curve,
 # )
 
-from rtichoke.utility.decision import create_decision_curve as create_decision_curve
+from rtichoke.utility.decision import (
+    create_decision_curve as create_decision_curve,
+    create_decision_curve_times as create_decision_curve_times,
+)
 from rtichoke.utility.decision import plot_decision_curve as plot_decision_curve
 
 from rtichoke.performance_data.performance_data import (
