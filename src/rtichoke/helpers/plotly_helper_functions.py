@@ -222,18 +222,19 @@ def _perfect_gains_expr(x_col: str = "x", p_col: str = "p") -> pl.Expr:
 
 
 def _perfect_gains_series(x: pl.Series, p: float) -> pl.Series:
-    if p <= 0.0:
-        return pl.Series(np.full(len(x), np.nan), dtype=pl.Float64)
-    if p >= 1.0:
-        return x.cast(pl.Float64)
-    df = pl.DataFrame({"x": x})
-    return df.select(
-        pl.when(pl.col("x") <= p)
-        .then(pl.col("x") / p)
-        .otherwise(1.0)
-        .cast(pl.Float64)
-        .alias("y")
-    ).to_series()
+    if p < 0.0 or p > 1.0:
+        raise ValueError(f"Prevalence p must be in [0,1], but got {p}")
+
+    if p == 0.0:
+        # No positive cases, so gains is undefined (or zero)
+        return pl.Series(np.full(len(x), 0.0), dtype=pl.Float64)
+
+    # For a perfect model, we identify all positive cases first.
+    # The proportion of the population we need to select is p.
+    # So, for x (proportion of population selected) up to p,
+    # the gains (sensitivity) is x/p.
+    # Once x > p, we have found all positive cases, so gains is 1.0.
+    return x.map_elements(lambda val: min(val / p, 1.0) if p > 0 else 0, return_dtype=pl.Float64)
 
 
 def _odds_expr(x_col: str = "x") -> pl.Expr:
@@ -689,7 +690,7 @@ def create_non_interactive_curve_polars(
         y=performance_data_ready_for_curve["y"],
         mode="markers+lines",
         hoverinfo="text",
-        # hovertext=performance_data_ready_for_curve["text"],
+        hovertext=performance_data_ready_for_curve["text"],
         name=reference_group,
         legendgroup=reference_group,
         line={"width": 2, "color": reference_group_color},
@@ -1725,10 +1726,15 @@ def _create_plotly_curve_times(rtichoke_curve_list: dict[str, Any]) -> go.Figure
         y_label=rtichoke_curve_list["y_label"],
     )
 
-    return go.Figure(
+    fig = go.Figure(
         data=non_interactive_curve + marker_traces + reference_traces,
         layout=curve_layout,
     )
+    fig.update_layout(template="plotly_white")
+    fig.update_xaxes(showline=True, linewidth=1, linecolor="black", mirror=True)
+    fig.update_yaxes(showline=True, linewidth=1, linecolor="black", mirror=True)
+
+    return fig
 
 
 def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figure:
@@ -1879,10 +1885,15 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
         y_label=rtichoke_curve_list["y_label"],
     )
 
-    return go.Figure(
+    fig = go.Figure(
         data=non_interactive_curve + initial_interactive_markers + reference_traces,
         layout=curve_layout,
     )
+    fig.update_layout(template="plotly_white")
+    fig.update_xaxes(showline=True, linewidth=1, linecolor="black", mirror=True)
+    fig.update_yaxes(showline=True, linewidth=1, linecolor="black", mirror=True)
+
+    return fig
 
 
 def _create_curve_layout(
@@ -1915,32 +1926,10 @@ def _create_curve_layout(
         "template": "plotly",
         "plot_bgcolor": "rgba(0, 0, 0, 0)",
         "paper_bgcolor": "rgba(0, 0, 0, 0)",
-        "showlegend": True,
-        "legend": {
-            "orientation": "h",
-            "xanchor": "center",
-            "yanchor": "top",
-            "x": 0.5,
-            "y": 1.3,
-            "bgcolor": "rgba(0, 0, 0, 0)",
-            "bordercolor": "rgba(0, 0, 0, 0)",
-        },
+        "showlegend": False,
         "height": size + 100,
         "width": size,
         # "hoverlabel": {"bgcolor": "rgba(0,0,0,0)", "bordercolor": "rgba(0,0,0,0)"},
-        "updatemenus": [
-            {
-                "type": "buttons",
-                "buttons": [
-                    {
-                        "label": "Play",
-                        "method": "animate",
-                        "visible": False,
-                        "args": [None, {"frame": {"duration": 500, "redraw": False}}],
-                    }
-                ],
-            }
-        ],
         "sliders": sliders,
     }
 
@@ -1966,8 +1955,8 @@ def _create_interactive_marker_polars(
         x=[performance_data_ready_for_curve["x"][k]],
         y=[performance_data_ready_for_curve["y"][k]],
         mode="markers",
-        # hoverinfo="text",
-        # hovertext=[performance_data_ready_for_curve["text"].values.tolist()[k]],
+        hoverinfo="text",
+        hovertext=[performance_data_ready_for_curve["text"][k]],
         name=reference_group,
         legendgroup=reference_group,
         showlegend=False,
