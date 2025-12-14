@@ -1531,7 +1531,7 @@ def _create_plotly_curve_times(rtichoke_curve_list: dict[str, Any]) -> go.Figure
 
     def _xy_at_cutoff(
         group: str, cutoff: float, fixed_time_horizon: float
-    ) -> tuple[Any, Any]:
+    ) -> tuple[Any, Any, Any]:
         row = (
             rtichoke_curve_list["performance_data_ready_for_curve"]
             .filter(
@@ -1541,13 +1541,13 @@ def _create_plotly_curve_times(rtichoke_curve_list: dict[str, Any]) -> go.Figure
                 & pl.col("x").is_not_null()
                 & pl.col("y").is_not_null()
             )
-            .select(["x", "y"])
+            .select(["x", "y", "text"])
             .limit(1)
         )
         if row.height == 0:
-            return None, None
+            return None, None, None
         r = row.row(0)
-        return r[0], r[1]
+        return r[0], r[1], r[2]
 
     non_interactive_curve = []
     for fixed_time_horizon in rtichoke_curve_list["fixed_time_horizons"]:
@@ -1581,10 +1581,10 @@ def _create_plotly_curve_times(rtichoke_curve_list: dict[str, Any]) -> go.Figure
     marker_traces: list[go.Scatter] = []
     for fixed_time_horizon in rtichoke_curve_list["fixed_time_horizons"]:
         for group in rtichoke_curve_list["reference_group_keys"]:
-            x_val, y_val = (
+            x_val, y_val, text_val = (
                 _xy_at_cutoff(group, initial_cutoff, fixed_time_horizon)
                 if initial_cutoff is not None
-                else (None, None)
+                else (None, None, None)
             )
             marker_traces.append(
                 go.Scatter(
@@ -1596,19 +1596,26 @@ def _create_plotly_curve_times(rtichoke_curve_list: dict[str, Any]) -> go.Figure
                         "color": (
                             rtichoke_curve_list["colors_dictionary"].get(group)
                             if rtichoke_curve_list["multiple_reference_groups"]
-                            else "#f6e3be",
+                            else "#f6e3be"
                         ),
                         "line": {"width": 3, "color": "black"},
                     },
                     name=f"{group} @ cutoff",
                     legendgroup=group,
                     hoverlabel=dict(
-                        bgcolor=rtichoke_curve_list["colors_dictionary"].get(group),
-                        bordercolor=rtichoke_curve_list["colors_dictionary"].get(group),
-                        font_color="white",
+                        bgcolor="#f6e3be"
+                        if not rtichoke_curve_list["multiple_reference_groups"]
+                        else rtichoke_curve_list["colors_dictionary"].get(group),
+                        bordercolor="#f6e3be"
+                        if not rtichoke_curve_list["multiple_reference_groups"]
+                        else rtichoke_curve_list["colors_dictionary"].get(group),
+                        font_color="black"
+                        if not rtichoke_curve_list["multiple_reference_groups"]
+                        else "white",
                     ),
                     showlegend=False,
                     hoverinfo="text",
+                    text=text_val,
                     visible=fixed_time_horizon == initial_fixed_time_horizon,
                 )
             )
@@ -1765,6 +1772,7 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
         go.Scatter(
             x=[],
             y=[],
+            text=[],
             mode="markers",
             marker={
                 "size": 12,
@@ -1834,13 +1842,13 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
                 & pl.col("x").is_not_null()
                 & pl.col("y").is_not_null()
             )
-            .select(["x", "y"])
+            .select(["x", "y", "text"])
             .limit(1)
         )
         if row.height == 0:
-            return None, None
-        r = row.row(0)  # (x, y)
-        return r[0], r[1]
+            return None, None, None
+        r = row.row(0)
+        return r[0], r[1], r[2]
 
     steps = [
         {
