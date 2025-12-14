@@ -8,6 +8,9 @@ import math
 from typing import Any, Dict, Union, Sequence
 import numpy as np
 from rtichoke.performance_data.performance_data import prepare_performance_data
+from rtichoke.performance_data.performance_data_times import (
+    prepare_performance_data_times,
+)
 
 _HOVER_LABELS = {
     "false_positive_rate": "1 - Specificity (FPR)",
@@ -47,6 +50,44 @@ def _create_rtichoke_plotly_curve_binary(
         curve=curve,
         size=size,
     )
+
+    return fig
+
+
+def _create_rtichoke_plotly_curve_times(
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    times: Union[np.ndarray, Dict[str, np.ndarray]],
+    fixed_time_horizons: list[float],
+    heuristics_sets: list[Dict] = [
+        {
+            "censoring_heuristic": "adjusted",
+            "competing_heuristic": "adjusted_as_negative",
+        }
+    ],
+    min_p_threshold: float = 0,
+    max_p_threshold: float = 1,
+    by: float = 0.01,
+    stratified_by: Sequence[str] = ["probability_threshold"],
+    size: int = 600,
+    color_values=None,
+    curve: str = "roc",
+) -> go.Figure:
+    performance_data = prepare_performance_data_times(
+        probs,
+        reals,
+        times,
+        by=by,
+        fixed_time_horizons=fixed_time_horizons,
+        heuristics_sets=heuristics_sets,
+        stratified_by=stratified_by,
+    )
+
+    rtichoke_curve_list_times = _create_rtichoke_curve_list_times(
+        performance_data, stratified_by=stratified_by[0], curve=curve
+    )
+
+    fig = _create_plotly_curve_times(rtichoke_curve_list_times)
 
     return fig
 

@@ -6,12 +6,8 @@ from typing import Dict, List, Sequence, Union
 from plotly.graph_objs._figure import Figure
 from rtichoke.helpers.plotly_helper_functions import (
     _create_rtichoke_plotly_curve_binary,
-    _create_plotly_curve_times,
+    _create_rtichoke_plotly_curve_times,
     _plot_rtichoke_curve_binary,
-    _create_rtichoke_curve_list_times,
-)
-from rtichoke.performance_data.performance_data_times import (
-    prepare_performance_data_times,
 )
 import numpy as np
 import polars as pl
@@ -216,20 +212,19 @@ def create_decision_curve_times(
     else:
         curve = "interventions avoided"
 
-    performance_data_times = prepare_performance_data_times(
+    fig = _create_rtichoke_plotly_curve_times(
         probs,
         reals,
         times,
-        by=by,
         fixed_time_horizons=fixed_time_horizons,
         heuristics_sets=heuristics_sets,
-        stratified_by=["probability_threshold"],
+        by=by,
+        stratified_by=stratified_by,
+        size=size,
+        color_values=color_values,
+        curve=curve,
+        min_p_threshold=min_p_threshold,
+        max_p_threshold=max_p_threshold,
     )
-
-    rtichoke_curve_list_times = _create_rtichoke_curve_list_times(
-        performance_data_times, stratified_by="probability_threshold", curve=curve
-    )
-
-    fig = _create_plotly_curve_times(rtichoke_curve_list_times)
 
     return fig
