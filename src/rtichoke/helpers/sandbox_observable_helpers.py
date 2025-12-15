@@ -1,4 +1,4 @@
-from lifelines import AalenJohansenFitter
+# from lifelines import AalenJohansenFitter
 import pandas as pd
 import numpy as np
 import polars as pl
@@ -15,93 +15,93 @@ def _enum_dataframe(column_name: str, values: Sequence[str]) -> pl.DataFrame:
     return pl.DataFrame({column_name: pl.Series(values, dtype=enum_dtype)})
 
 
-def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
-    """
-    Python implementation of the R extract_aj_estimate function for Aalen-Johansen estimation.
+# def extract_aj_estimate(data_to_adjust, fixed_time_horizons):
+#     """
+#     Python implementation of the R extract_aj_estimate function for Aalen-Johansen estimation.
 
-    Parameters:
-    data_to_adjust (pd.DataFrame): DataFrame containing survival data
-    fixed_time_horizons (list or float): Time points at which to evaluate the survival
+#     Parameters:
+#     data_to_adjust (pd.DataFrame): DataFrame containing survival data
+#     fixed_time_horizons (list or float): Time points at which to evaluate the survival
 
-    Returns:
-    pd.DataFrame: DataFrame with Aalen-Johansen estimates
-    """
+#     Returns:
+#     pd.DataFrame: DataFrame with Aalen-Johansen estimates
+#     """
 
-    # Ensure fixed_time_horizons is a list
-    if not isinstance(fixed_time_horizons, list):
-        fixed_time_horizons = [fixed_time_horizons]
+#     # Ensure fixed_time_horizons is a list
+#     if not isinstance(fixed_time_horizons, list):
+#         fixed_time_horizons = [fixed_time_horizons]
 
-    # Create a categorical version of reals for stratification
-    data = data_to_adjust.copy()
-    data["reals_cat"] = pd.Categorical(
-        data["reals_labels"],
-        categories=[
-            "real_negatives",
-            "real_positives",
-            "real_competing",
-            "real_censored",
-        ],
-        ordered=True,
-    )
+#     # Create a categorical version of reals for stratification
+#     data = data_to_adjust.copy()
+#     data["reals_cat"] = pd.Categorical(
+#         data["reals_labels"],
+#         categories=[
+#             "real_negatives",
+#             "real_positives",
+#             "real_competing",
+#             "real_censored",
+#         ],
+#         ordered=True,
+#     )
 
-    # Get unique strata values
-    strata_values = data["strata"].unique()
+#     # Get unique strata values
+#     strata_values = data["strata"].unique()
 
-    event_map = {
-        "real_negatives": 0,  # Treat as censored
-        "real_positives": 1,  # Event of interest
-        "real_competing": 2,  # Competing risk
-        "real_censored": 0,  # Censored
-    }
+#     event_map = {
+#         "real_negatives": 0,  # Treat as censored
+#         "real_positives": 1,  # Event of interest
+#         "real_competing": 2,  # Competing risk
+#         "real_censored": 0,  # Censored
+#     }
 
-    data["event_code"] = data["reals_labels"].map(event_map)
+#     data["event_code"] = data["reals_labels"].map(event_map)
 
-    # Initialize result dataframes
-    results = []
+#     # Initialize result dataframes
+#     results = []
 
-    # For each stratum, fit Aalen-Johansen model
-    for stratum in strata_values:
-        # Filter data for current stratum
-        stratum_data = data.loc[data["strata"] == stratum]
+#     # For each stratum, fit Aalen-Johansen model
+#     for stratum in strata_values:
+#         # Filter data for current stratum
+#         stratum_data = data.loc[data["strata"] == stratum]
 
-        # Initialize Aalen-Johansen fitter
-        ajf = AalenJohansenFitter()
-        ajf_competing = AalenJohansenFitter()
+#         # Initialize Aalen-Johansen fitter
+#         ajf = AalenJohansenFitter()
+#         ajf_competing = AalenJohansenFitter()
 
-        # Fit the model
-        ajf.fit(stratum_data["times"], stratum_data["event_code"], event_of_interest=1)
+#         # Fit the model
+#         ajf.fit(stratum_data["times"], stratum_data["event_code"], event_of_interest=1)
 
-        ajf_competing.fit(
-            stratum_data["times"], stratum_data["event_code"], event_of_interest=2
-        )
+#         ajf_competing.fit(
+#             stratum_data["times"], stratum_data["event_code"], event_of_interest=2
+#         )
 
-        # Calculate cumulative incidence at fixed time horizons
-        for t in fixed_time_horizons:
-            n = len(stratum_data)
-            real_positives_est = ajf.predict(t)
-            real_competing_est = ajf_competing.predict(t)
-            real_negatives_est = 1 - real_positives_est - real_competing_est
+#         # Calculate cumulative incidence at fixed time horizons
+#         for t in fixed_time_horizons:
+#             n = len(stratum_data)
+#             real_positives_est = ajf.predict(t)
+#             real_competing_est = ajf_competing.predict(t)
+#             real_negatives_est = 1 - real_positives_est - real_competing_est
 
-            states = ["real_negatives", "real_positives", "real_competing"]
-            estimates = [real_negatives_est, real_positives_est, real_competing_est]
+#             states = ["real_negatives", "real_positives", "real_competing"]
+#             estimates = [real_negatives_est, real_positives_est, real_competing_est]
 
-            for state, estimate in zip(states, estimates):
-                results.append(
-                    {
-                        "strata": stratum,
-                        "reals": state,
-                        "fixed_time_horizon": t,
-                        "reals_estimate": estimate * n,
-                    }
-                )
+#             for state, estimate in zip(states, estimates):
+#                 results.append(
+#                     {
+#                         "strata": stratum,
+#                         "reals": state,
+#                         "fixed_time_horizon": t,
+#                         "reals_estimate": estimate * n,
+#                     }
+#                 )
 
-    # Convert to DataFrame
-    result_df = pd.DataFrame(results)
+#     # Convert to DataFrame
+#     result_df = pd.DataFrame(results)
 
-    # Convert strata to categorical if needed
-    result_df["strata"] = pd.Categorical(result_df["strata"])
+#     # Convert strata to categorical if needed
+#     result_df["strata"] = pd.Categorical(result_df["strata"])
 
-    return result_df
+#     return result_df
 
 
 def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFrame:
