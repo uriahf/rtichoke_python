@@ -25,6 +25,21 @@ _HOVER_LABELS = {
     "ppcr": "Predicted Positives",
 }
 
+DEFAULT_MODEBAR_BUTTONS_TO_REMOVE = [
+    "zoom2d",
+    "pan2d",
+    "select2d",
+    "lasso2d",
+    "zoomIn2d",
+    "zoomOut2d",
+    "autoScale2d",
+    "resetScale2d",
+    "hoverClosestCartesian",
+    "hoverCompareCartesian",
+    "toggleSpikelines",
+    "toImage",
+]
+
 
 def _create_rtichoke_plotly_curve_binary(
     probs: Dict[str, np.ndarray],
@@ -1987,6 +2002,7 @@ def _create_curve_layout(
             }
         ],
         "sliders": sliders,
+        "modebar": {"remove": list(DEFAULT_MODEBAR_BUTTONS_TO_REMOVE)},
     }
 
     if axes_ranges is not None:
