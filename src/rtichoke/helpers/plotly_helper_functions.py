@@ -1573,7 +1573,7 @@ def _create_plotly_curve_times(rtichoke_curve_list: dict[str, Any]) -> go.Figure
                         font_color="white",
                     ),
                     hoverinfo="text",
-                    showlegend=fixed_time_horizon == initial_fixed_time_horizon,
+                    showlegend=rtichoke_curve_list["multiple_reference_groups"],
                     visible=fixed_time_horizon == initial_fixed_time_horizon,
                 )
             )
@@ -1735,6 +1735,7 @@ def _create_plotly_curve_times(rtichoke_curve_list: dict[str, Any]) -> go.Figure
         axes_ranges=rtichoke_curve_list["axes_ranges"],
         x_label=rtichoke_curve_list["x_label"],
         y_label=rtichoke_curve_list["y_label"],
+        show_legend=rtichoke_curve_list["multiple_reference_groups"],
     )
 
     return go.Figure(
@@ -1772,7 +1773,7 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
                 font_color="white",
             ),
             hoverinfo="text",
-            showlegend=True,
+            showlegend=rtichoke_curve_list["multiple_reference_groups"],
         )
         for group in rtichoke_curve_list["reference_group_keys"]
     ]
@@ -1919,6 +1920,7 @@ def _create_plotly_curve_binary(rtichoke_curve_list: dict[str, Any]) -> go.Figur
         axes_ranges=rtichoke_curve_list["axes_ranges"],
         x_label=rtichoke_curve_list["x_label"],
         y_label=rtichoke_curve_list["y_label"],
+        show_legend=rtichoke_curve_list["multiple_reference_groups"],
     )
 
     return go.Figure(
@@ -1933,6 +1935,7 @@ def _create_curve_layout(
     axes_ranges: dict[str, list[float]] | None = None,
     x_label: str | None = None,
     y_label: str | None = None,
+    show_legend: bool = True,
 ) -> dict[str, Any]:
     sliders = slider_dict if isinstance(slider_dict, list) else [slider_dict]
 
