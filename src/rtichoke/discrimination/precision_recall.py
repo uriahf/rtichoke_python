@@ -5,6 +5,7 @@ A module for Precision-Recall Curves using Plotly helpers
 from typing import Dict, List, Sequence, Union
 from plotly.graph_objs._figure import Figure
 from rtichoke.helpers.plotly_helper_functions import (
+    _create_rtichoke_plotly_curve_times,
     _create_rtichoke_plotly_curve_binary,
     _plot_rtichoke_curve_binary,
 )
@@ -122,4 +123,59 @@ def plot_precision_recall_curve(
         size=size,
         curve="precision recall",
     )
+    return fig
+
+
+def create_precision_recall_curve_times(
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    times: Union[np.ndarray, Dict[str, np.ndarray]],
+    fixed_time_horizons: list[float],
+    heuristics_sets: list[Dict] = [
+        {
+            "censoring_heuristic": "adjusted",
+            "competing_heuristic": "adjusted_as_negative",
+        }
+    ],
+    by: float = 0.01,
+    stratified_by: Sequence[str] = ["probability_threshold"],
+    size: int = 600,
+    color_values: List[str] = [
+        "#1b9e77",
+        "#d95f02",
+        "#7570b3",
+        "#e7298a",
+        "#07004D",
+        "#E6AB02",
+        "#FE5F55",
+        "#54494B",
+        "#006E90",
+        "#BC96E6",
+        "#52050A",
+        "#1F271B",
+        "#BE7C4D",
+        "#63768D",
+        "#08A045",
+        "#320A28",
+        "#82FF9E",
+        "#2176FF",
+        "#D1603D",
+        "#585123",
+    ],
+) -> Figure:
+    """Create time-dependent Lift Curve."""
+
+    fig = _create_rtichoke_plotly_curve_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=fixed_time_horizons,
+        heuristics_sets=heuristics_sets,
+        by=by,
+        stratified_by=stratified_by,
+        size=size,
+        color_values=color_values,
+        curve="precision recall",
+    )
+
     return fig
