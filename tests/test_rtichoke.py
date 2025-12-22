@@ -158,3 +158,25 @@ def _expected_aj_df(neg, pos, comp, include_comp=True):
     cols.append("estimate_origin")
 
     return pl.DataFrame(data)[cols]
+
+
+import numpy as np
+import plotly.graph_objects as go
+from rtichoke.calibration.calibration import (
+    _create_plotly_curve_from_calibration_curve_list,
+    _create_calibration_curve_list
+)
+
+def test_create_calibration_curve_with_histogram():
+    # Sample data
+    probs = {"model_1": np.random.rand(100)}
+    reals = {"model_1": np.random.randint(0, 2, 100)}
+
+    # Generate calibration curve list
+    calibration_curve_list = _create_calibration_curve_list(probs, reals)
+
+    # Create the plotly figure
+    fig = _create_plotly_curve_from_calibration_curve_list(calibration_curve_list, calibration_type="discrete")
+
+    # Check if a histogram (bar trace) is present
+    assert any(isinstance(trace, go.Bar) for trace in fig.data), "Histogram is missing in discrete calibration curve"
