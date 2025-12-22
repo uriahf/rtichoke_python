@@ -127,9 +127,9 @@ def create_plotly_curve_from_calibration_curve_list(
 
     calibration_curve.add_trace(
         go.Scatter(
-            x=calibration_curve_list["reference_data"]["x"].values.tolist(),
-            y=calibration_curve_list["reference_data"]["y"].values.tolist(),
-            hovertext=calibration_curve_list["reference_data"]["text"].values.tolist(),
+            x=calibration_curve_list["reference_data"]["x"],
+            y=calibration_curve_list["reference_data"]["y"],
+            hovertext=calibration_curve_list["reference_data"]["text"],
             name="Perfectly Calibrated",
             legendgroup="Perfectly Calibrated",
             hoverinfo="text",
@@ -400,12 +400,14 @@ def _create_calibration_curve_list(
 ) -> Dict[str, Any]:
     deciles_data = _make_deciles_dat_binary(probs, reals)
 
-    performance_type = _check_performance_type_by_probs_and_reals
+    performance_type = _check_performance_type_by_probs_and_reals(probs, reals)
+
+    reference_data = _create_reference_data_for_calibration_curve()
 
     calibration_curve_list = {
         "deciles_dat": deciles_data,
         # "smooth_dat": smooth_dat,
-        # "reference_data": reference_data,
+        "reference_data": reference_data,
         # "histogram_for_calibration": histogram_for_calibration,
         # "histogram_opacity": [0.4],
         # "axes_ranges": axes_ranges,
@@ -418,3 +420,19 @@ def _create_calibration_curve_list(
     }
 
     return calibration_curve_list
+
+
+def _create_reference_data_for_calibration_curve() -> pl.DataFrame:
+    x_ref = np.linspace(0, 1, 101)
+    reference_data = pl.DataFrame({"x": x_ref, "y": x_ref})
+    reference_data = reference_data.with_columns(
+        pl.concat_str(
+            [
+                pl.lit("<b>Perfectly Calibrated</b><br>Predicted: "),
+                pl.col("x").round(3).cast(pl.Utf8),
+                pl.lit("<br>Observed: "),
+                pl.col("y").round(3).cast(pl.Utf8),
+            ]
+        ).alias("text")
+    )
+    return reference_data
