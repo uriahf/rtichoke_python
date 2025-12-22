@@ -12,13 +12,14 @@ dependencies = [
     "polarstate==0.1.8",
     "marimo>=0.17.0",
     "pyarrow>=21.0.0",
+    "statsmodels>=0.14.2",
 ]
 name = "rtichoke"
 version = "0.1.25"
 description = "interactive visualizations for performance of predictive models"
 readme = "README.md"
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "jupyter<2.0.0,>=1.0.0",
     "myst-nb<1.0.0,>=0.17.1; python_version ~= \"3.9\"",
@@ -37,6 +38,7 @@ dev = [
     "scikit-learn>=1.6.1",
     "polarstate>=0.1.6",
     "quartodoc>=0.11.1",
+    "pytest>=7.3.0",
 ]
 
 [tool.uv.workspace]

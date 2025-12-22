@@ -460,6 +460,8 @@ def _create_calibration_curve_list(
         reference_groups, color_values, performance_type
     )
 
+    smooth_dat = _calculate_smooth_curve(deciles_data, performance_type)
+
     print("histogram for calibration")
 
     histogram_for_calibration = _create_histogram_for_calibration(probs)
@@ -471,7 +473,7 @@ def _create_calibration_curve_list(
 
     calibration_curve_list = {
         "deciles_dat": deciles_data,
-        # "smooth_dat": smooth_dat,
+        "smooth_dat": smooth_dat,
         "reference_data": reference_data,
         "histogram_for_calibration": histogram_for_calibration,
         # "histogram_opacity": [0.4],
@@ -509,15 +511,28 @@ def _calculate_smooth_curve(
     smooth_frames = []
     for group in deciles_dat["reference_group"].unique():
         group_data = deciles_dat.filter(pl.col("reference_group") == group)
-        # Assuming lowess is available from statsmodels
-        from statsmodels.nonparametric.smoothers_lowess import lowess
 
-        smoothed = lowess(group_data["y"], group_data["x"], frac=0.5)
-        smooth_df = pl.DataFrame({"x": smoothed[:, 0], "y": smoothed[:, 1]})
+        if group_data["x"].n_unique() == 1:
+            smooth_df = pl.DataFrame(
+                {
+                    "x": group_data["x"].unique(),
+                    "y": group_data["y"].mean(),
+                }
+            )
+        else:
+            # Assuming lowess is available from statsmodels
+            from statsmodels.nonparametric.smoothers_lowess import lowess
+
+            x_vals = np.arange(0, 1.01, 0.01)
+            smoothed_y = lowess(
+                group_data["y"], group_data["x"], it=0, xvals=x_vals
+            )
+            smooth_df = pl.DataFrame({"x": x_vals, "y": smoothed_y})
+
         smooth_df = smooth_df.with_columns(pl.lit(group).alias("reference_group"))
         smooth_frames.append(smooth_df)
 
-    smooth_dat = pl.concat(smooth_frames)
+    smooth_dat = pl.concat(smooth_frames).drop_nulls()
 
     if performance_type != "one model":
         smooth_dat = smooth_dat.with_columns(
