@@ -147,9 +147,12 @@ def _create_plotly_curve_from_calibration_curve_list(
     )
 
     if calibration_type == "discrete":
-        print(calibration_curve_list["deciles_dat"])
-
-        for reference_group in calibration_curve_list["colors_dictionary"].keys():
+        reference_groups = [
+            k
+            for k in calibration_curve_list["colors_dictionary"].keys()
+            if k != "reference_line"
+        ]
+        for reference_group in reference_groups:
             dec_sub = calibration_curve_list["deciles_dat"].filter(
                 pl.col("reference_group") == reference_group
             )
@@ -173,6 +176,32 @@ def _create_plotly_curve_from_calibration_curve_list(
                     },
                 ),
                 row=1,
+                col=1,
+            )
+
+        hist = calibration_curve_list["histogram_for_calibration"]
+
+        for reference_group in reference_groups:
+            hist_sub = hist.filter(pl.col("reference_group") == reference_group)
+            if hist_sub.height == 0:
+                continue
+
+            calibration_curve.add_trace(
+                go.Bar(
+                    x=hist_sub.get_column("mids").to_list(),
+                    y=hist_sub.get_column("counts").to_list(),
+                    hovertext=hist_sub.get_column("text").to_list(),
+                    name=reference_group,
+                    width=0.01,
+                    legendgroup=reference_group,
+                    hoverinfo="text",
+                    marker_color=calibration_curve_list["colors_dictionary"][
+                        reference_group
+                    ][0],
+                    showlegend=False,
+                    opacity=0.4,
+                ),
+                row=2,
                 col=1,
             )
 
