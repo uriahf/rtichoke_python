@@ -91,7 +91,7 @@ def create_calibration_curve(
     # return calibration_curve
 
 
-def create_plotly_curve_from_calibration_curve_list(
+def _create_plotly_curve_from_calibration_curve_list(
     calibration_curve_list: Dict[str, Any], calibration_type: str = "discrete"
 ) -> Figure:
     """Create plotly curve from calibration curve list
@@ -129,14 +129,14 @@ def create_plotly_curve_from_calibration_curve_list(
         go.Scatter(
             x=calibration_curve_list["reference_data"]["x"],
             y=calibration_curve_list["reference_data"]["y"],
-            hovertext=calibration_curve_list["reference_data"]["text"],
+            # hovertext=calibration_curve_list["reference_data"]["text"],
             name="Perfectly Calibrated",
             legendgroup="Perfectly Calibrated",
-            hoverinfo="text",
+            # hoverinfo="text",
             line={
                 "width": 2,
                 "dash": "dot",
-                "color": calibration_curve_list["group_colors_vec"]["reference_line"][
+                "color": calibration_curve_list["colors_dictionary"]["reference_line"][
                     0
                 ],
             },
@@ -147,42 +147,37 @@ def create_plotly_curve_from_calibration_curve_list(
     )
 
     if calibration_type == "discrete":
-        for reference_group in list(calibration_curve_list["group_colors_vec"].keys()):
-            if any(
-                calibration_curve_list["deciles_dat"]["reference_group"]
-                == reference_group
-            ):
-                calibration_curve.add_trace(
-                    go.Scatter(
-                        x=calibration_curve_list["deciles_dat"]["x"][
-                            calibration_curve_list["deciles_dat"]["reference_group"]
-                            == reference_group
-                        ].values.tolist(),
-                        y=calibration_curve_list["deciles_dat"]["y"][
-                            calibration_curve_list["deciles_dat"]["reference_group"]
-                            == reference_group
-                        ].values.tolist(),
-                        hovertext=calibration_curve_list["deciles_dat"]["text"][
-                            calibration_curve_list["deciles_dat"]["reference_group"]
-                            == reference_group
-                        ].values.tolist(),
-                        name=reference_group,
-                        legendgroup=reference_group,
-                        hoverinfo="text",
-                        mode="lines+markers",
-                        marker={
-                            "size": 10,
-                            "color": calibration_curve_list["group_colors_vec"][
-                                reference_group
-                            ][0],
-                        },
-                    ),
-                    row=1,
-                    col=1,
-                )
+        print(calibration_curve_list["deciles_dat"])
+
+        for reference_group in calibration_curve_list["colors_dictionary"].keys():
+            dec_sub = calibration_curve_list["deciles_dat"].filter(
+                pl.col("reference_group") == reference_group
+            )
+
+            print(dec_sub)
+
+            calibration_curve.add_trace(
+                go.Scatter(
+                    x=dec_sub.get_column("x").to_list(),
+                    y=dec_sub.get_column("y").to_list(),
+                    # hovertext=dec_sub.get_column("text").to_list(),
+                    name=reference_group,
+                    legendgroup=reference_group,
+                    # hoverinfo="text",
+                    mode="lines+markers",
+                    marker={
+                        "size": 10,
+                        "color": calibration_curve_list["colors_dictionary"][
+                            reference_group
+                        ][0],
+                    },
+                ),
+                row=1,
+                col=1,
+            )
 
     if calibration_type == "smooth":
-        for reference_group in list(calibration_curve_list["group_colors_vec"].keys()):
+        for reference_group in list(calibration_curve_list["colors_dictionary"].keys()):
             if any(
                 calibration_curve_list["smooth_dat"]["reference_group"]
                 == reference_group
@@ -192,22 +187,22 @@ def create_plotly_curve_from_calibration_curve_list(
                         x=calibration_curve_list["smooth_dat"]["x"][
                             calibration_curve_list["smooth_dat"]["reference_group"]
                             == reference_group
-                        ].values.tolist(),
+                        ],
                         y=calibration_curve_list["smooth_dat"]["y"][
                             calibration_curve_list["smooth_dat"]["reference_group"]
                             == reference_group
-                        ].values.tolist(),
-                        hovertext=calibration_curve_list["smooth_dat"]["text"][
-                            calibration_curve_list["smooth_dat"]["reference_group"]
-                            == reference_group
-                        ].values.tolist(),
+                        ],
+                        # hovertext=calibration_curve_list["smooth_dat"]["text"][
+                        #     calibration_curve_list["smooth_dat"]["reference_group"]
+                        #     == reference_group
+                        # ],
                         name=reference_group,
                         legendgroup=reference_group,
-                        hoverinfo="text",
+                        # hoverinfo="text",
                         mode="lines",
                         marker={
                             "size": 10,
-                            "color": calibration_curve_list["group_colors_vec"][
+                            "color": calibration_curve_list["colors_dictionary"][
                                 reference_group
                             ][0],
                         },
@@ -216,7 +211,7 @@ def create_plotly_curve_from_calibration_curve_list(
                     col=1,
                 )
 
-    for reference_group in list(calibration_curve_list["group_colors_vec"].keys()):
+    for reference_group in list(calibration_curve_list["colors_dictionary"].keys()):
         if any(
             calibration_curve_list["histogram_for_calibration"]["reference_group"]
             == reference_group
@@ -228,26 +223,26 @@ def create_plotly_curve_from_calibration_curve_list(
                             "reference_group"
                         ]
                         == reference_group
-                    ].values.tolist(),
+                    ],
                     y=calibration_curve_list["histogram_for_calibration"]["counts"][
                         calibration_curve_list["histogram_for_calibration"][
                             "reference_group"
                         ]
                         == reference_group
-                    ].values.tolist(),
-                    hovertext=calibration_curve_list["histogram_for_calibration"][
-                        "text"
-                    ][
-                        calibration_curve_list["histogram_for_calibration"][
-                            "reference_group"
-                        ]
-                        == reference_group
-                    ].values.tolist(),
+                    ],
+                    # hovertext=calibration_curve_list["histogram_for_calibration"][
+                    #     "text"
+                    # ][
+                    #     calibration_curve_list["histogram_for_calibration"][
+                    #         "reference_group"
+                    #     ]
+                    #     == reference_group
+                    # ],
                     name=reference_group,
                     width=0.01,
                     legendgroup=reference_group,
-                    hoverinfo="text",
-                    marker_color=calibration_curve_list["group_colors_vec"][
+                    # hoverinfo="text",
+                    marker_color=calibration_curve_list["colors_dictionary"][
                         reference_group
                     ][0],
                     showlegend=False,
@@ -372,8 +367,8 @@ def _make_deciles_dat_binary(
         .agg(
             [
                 pl.len().alias("n"),
-                pl.mean("prob").alias("pred_mean"),
-                pl.mean("real").alias("real_mean"),
+                pl.mean("prob").alias("x"),
+                pl.mean("real").alias("y"),
             ]
         )
         .sort(["reference_group", "model", "decile"])
@@ -395,14 +390,41 @@ def _check_performance_type_by_probs_and_reals(
 def _create_calibration_curve_list(
     probs: Dict[str, np.ndarray],
     reals: Union[np.ndarray, Dict[str, np.ndarray]],
-    color_values: List[str],
-    size: Optional[int],
+    size: int = 600,
+    color_values: List[str] = [
+        "#1b9e77",
+        "#d95f02",
+        "#7570b3",
+        "#e7298a",
+        "#07004D",
+        "#E6AB02",
+        "#FE5F55",
+        "#54494B",
+        "#006E90",
+        "#BC96E6",
+        "#52050A",
+        "#1F271B",
+        "#BE7C4D",
+        "#63768D",
+        "#08A045",
+        "#320A28",
+        "#82FF9E",
+        "#2176FF",
+        "#D1603D",
+        "#585123",
+    ],
 ) -> Dict[str, Any]:
     deciles_data = _make_deciles_dat_binary(probs, reals)
 
     performance_type = _check_performance_type_by_probs_and_reals(probs, reals)
 
     reference_data = _create_reference_data_for_calibration_curve()
+
+    reference_groups = deciles_data["reference_group"].unique().to_list()
+
+    colors_dictionary = _create_colors_dictionary_for_calibration(
+        reference_groups, color_values, performance_type
+    )
 
     calibration_curve_list = {
         "deciles_dat": deciles_data,
@@ -411,10 +433,7 @@ def _create_calibration_curve_list(
         # "histogram_for_calibration": histogram_for_calibration,
         # "histogram_opacity": [0.4],
         # "axes_ranges": axes_ranges,
-        # "group_colors_vec": {
-        #     "reference_line": ["#737373"],
-        #     **group_colors_vec,
-        # },
+        "colors_dictionary": colors_dictionary,
         "performance_type": [performance_type],
         # "size": [(size_value, size_value)],
     }
@@ -436,3 +455,21 @@ def _create_reference_data_for_calibration_curve() -> pl.DataFrame:
         ).alias("text")
     )
     return reference_data
+
+
+def _create_colors_dictionary_for_calibration(
+    reference_groups: List[str],
+    color_values: List[str],
+    performance_type: str = "one model",
+) -> Dict[str, List[str]]:
+    if performance_type == "one model":
+        colors = ["black"]
+    else:
+        colors = color_values[: len(reference_groups)]
+
+    return {
+        "reference_line": ["#BEBEBE"],
+        **{
+            group: [colors[i % len(colors)]] for i, group in enumerate(reference_groups)
+        },
+    }
