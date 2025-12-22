@@ -2,12 +2,15 @@
 A module for Calibration Curves
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 # import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from plotly.graph_objs._figure import Figure
+import polars as pl
+import numpy as np
+
 # from rtichoke.helpers.send_post_request_to_r_rtichoke import send_requests_to_rtichoke_r
 
 
@@ -284,3 +287,96 @@ def create_plotly_curve_from_calibration_curve_list(
     )
 
     return calibration_curve
+
+
+def _make_deciles_dat_binary(
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    n_bins: int = 10,
+    reference_group_name_if_array: str = "overall",
+) -> pl.DataFrame:
+    if isinstance(reals, dict):
+        reference_groups_keys = list(reals.keys())
+        y_list = [
+            np.asarray(reals[reference_group]).ravel()
+            for reference_group in reference_groups_keys
+        ]
+        lengths = np.array([len(y) for y in y_list], dtype=np.int64)
+        offsets = np.concatenate([np.array([0], dtype=np.int64), np.cumsum(lengths)])
+        n_total = int(offsets[-1])
+
+        frames: list[pl.DataFrame] = []
+        for model, p_all in probs.items():
+            p_all = np.asarray(p_all).ravel()
+            if p_all.shape[0] != n_total:
+                raise ValueError(
+                    f"probs['{model}'] length={p_all.shape[0]} does not match "
+                    f"sum of population sizes={n_total}."
+                )
+
+            for i, pop in enumerate(reference_groups_keys):
+                start = int(offsets[i])
+                end = int(offsets[i + 1])
+
+                frames.append(
+                    pl.DataFrame(
+                        {
+                            "reference_group": pop,
+                            "model": model,
+                            "prob": p_all[start:end].astype(float, copy=False),
+                            "real": y_list[i].astype(float, copy=False),
+                        }
+                    )
+                )
+
+        df = pl.concat(frames, how="vertical")
+
+    else:
+        y = np.asarray(reals).ravel()
+        n = y.shape[0]
+        frames = []
+        for model, p in probs.items():
+            p = np.asarray(p).ravel()
+            if p.shape[0] != n:
+                raise ValueError(
+                    f"probs['{model}'] length={p.shape[0]} does not match reals length={n}."
+                )
+            frames.append(
+                pl.DataFrame(
+                    {
+                        "reference_group": reference_group_name_if_array,
+                        "model": model,
+                        "prob": p.astype(float, copy=False),
+                        "real": y.astype(float, copy=False),
+                    }
+                )
+            )
+
+        df = pl.concat(frames, how="vertical")
+
+    labels = [str(i) for i in range(1, n_bins + 1)]
+
+    df = df.with_columns(
+        [
+            pl.col("prob").cast(pl.Float64),
+            pl.col("real").cast(pl.Float64),
+            pl.col("prob")
+            .qcut(n_bins, labels=labels)
+            .over(["reference_group", "model"])
+            .alias("decile"),
+        ]
+    ).with_columns(pl.col("decile").cast(pl.Int32))
+
+    deciles_data = (
+        df.group_by(["reference_group", "model", "decile"])
+        .agg(
+            [
+                pl.len().alias("n"),
+                pl.mean("prob").alias("pred_mean"),
+                pl.mean("real").alias("real_mean"),
+            ]
+        )
+        .sort(["reference_group", "model", "decile"])
+    )
+
+    return deciles_data
