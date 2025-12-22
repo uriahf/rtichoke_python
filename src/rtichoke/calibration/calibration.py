@@ -426,16 +426,21 @@ def _create_calibration_curve_list(
         reference_groups, color_values, performance_type
     )
 
+    histogram_for_calibration = _create_histogram_for_calibration(probs)
+
+    limits = _define_limits_for_calibration_plot(deciles_data)
+    axes_ranges = {"xaxis": limits, "yaxis": limits}
+
     calibration_curve_list = {
         "deciles_dat": deciles_data,
         # "smooth_dat": smooth_dat,
         "reference_data": reference_data,
-        # "histogram_for_calibration": histogram_for_calibration,
+        "histogram_for_calibration": histogram_for_calibration,
         # "histogram_opacity": [0.4],
-        # "axes_ranges": axes_ranges,
+        "axes_ranges": axes_ranges,
         "colors_dictionary": colors_dictionary,
         "performance_type": [performance_type],
-        # "size": [(size_value, size_value)],
+        "size": [(size, size)],
     }
 
     return calibration_curve_list
@@ -473,3 +478,40 @@ def _create_colors_dictionary_for_calibration(
             group: [colors[i % len(colors)]] for i, group in enumerate(reference_groups)
         },
     }
+
+
+def _create_histogram_for_calibration(probs: Dict[str, np.ndarray]) -> pl.DataFrame:
+    hist_dfs = []
+    for group, prob_values in probs.items():
+        counts, mids = np.histogram(prob_values, bins=np.arange(0, 1.01, 0.01))
+        hist_df = pl.DataFrame(
+            {"mids": mids[:-1] + 0.005, "counts": counts, "reference_group": group}
+        )
+        hist_df = hist_df.with_columns(
+            (
+                pl.col("counts").cast(str)
+                + " observations in ["
+                + (pl.col("mids") - 0.005).round(3).cast(str)
+                + ", "
+                + (pl.col("mids") + 0.005).round(3).cast(str)
+                + "]"
+            ).alias("text")
+        )
+        hist_dfs.append(hist_df)
+
+        histogram_for_calibration = pl.concat(hist_dfs)
+
+        return histogram_for_calibration
+
+
+def _define_limits_for_calibration_plot(deciles_dat: pl.DataFrame) -> List[float]:
+    if deciles_dat.height == 1:
+        lower_bound, upper_bound = 0.0, 1.0
+    else:
+        lower_bound = float(max(0, min(deciles_dat["x"].min(), deciles_dat["y"].min())))
+        upper_bound = float(max(deciles_dat["x"].max(), deciles_dat["y"].max()))
+
+    return [
+        lower_bound - (upper_bound - lower_bound) * 0.05,
+        upper_bound + (upper_bound - lower_bound) * 0.05,
+    ]
