@@ -129,10 +129,10 @@ def _create_plotly_curve_from_calibration_curve_list(
         go.Scatter(
             x=calibration_curve_list["reference_data"]["x"],
             y=calibration_curve_list["reference_data"]["y"],
-            # hovertext=calibration_curve_list["reference_data"]["text"],
+            hovertext=calibration_curve_list["reference_data"]["text"],
             name="Perfectly Calibrated",
             legendgroup="Perfectly Calibrated",
-            # hoverinfo="text",
+            hoverinfo="text",
             line={
                 "width": 2,
                 "dash": "dot",
@@ -163,10 +163,10 @@ def _create_plotly_curve_from_calibration_curve_list(
                 go.Scatter(
                     x=dec_sub.get_column("x").to_list(),
                     y=dec_sub.get_column("y").to_list(),
-                    # hovertext=dec_sub.get_column("text").to_list(),
+                    hovertext=dec_sub.get_column("text").to_list(),
                     name=reference_group,
                     legendgroup=reference_group,
-                    # hoverinfo="text",
+                    hoverinfo="text",
                     mode="lines+markers",
                     marker={
                         "size": 10,
@@ -221,13 +221,13 @@ def _create_plotly_curve_from_calibration_curve_list(
                             calibration_curve_list["smooth_dat"]["reference_group"]
                             == reference_group
                         ],
-                        # hovertext=calibration_curve_list["smooth_dat"]["text"][
-                        #     calibration_curve_list["smooth_dat"]["reference_group"]
-                        #     == reference_group
-                        # ],
+                        hovertext=calibration_curve_list["smooth_dat"]["text"][
+                            calibration_curve_list["smooth_dat"]["reference_group"]
+                            == reference_group
+                        ],
                         name=reference_group,
                         legendgroup=reference_group,
-                        # hoverinfo="text",
+                        hoverinfo="text",
                         mode="lines",
                         marker={
                             "size": 10,
@@ -382,6 +382,7 @@ def _make_deciles_dat_binary(
                 pl.len().alias("n"),
                 pl.mean("prob").alias("x"),
                 pl.mean("real").alias("y"),
+                pl.sum("real").alias("n_reals"),
             ]
         )
         .sort(["reference_group", "model", "decile"])
@@ -431,6 +432,49 @@ def _create_calibration_curve_list(
 
     performance_type = _check_performance_type_by_probs_and_reals(probs, reals)
 
+    if performance_type != "one model":
+        deciles_data = deciles_data.with_columns(
+            pl.concat_str(
+                [
+                    pl.lit("<b>"),
+                    pl.col("reference_group"),
+                    pl.lit("</b><br>Predicted: "),
+                    pl.col("x").map_elements(
+                        lambda x: f"{x:.3f}", return_dtype=pl.Utf8
+                    ),
+                    pl.lit("<br>Observed: "),
+                    pl.col("y").map_elements(
+                        lambda y: f"{y:.3f}", return_dtype=pl.Utf8
+                    ),
+                    pl.lit(" ( "),
+                    pl.col("n_reals").cast(pl.Int64).cast(pl.Utf8),
+                    pl.lit(" / "),
+                    pl.col("n").cast(pl.Utf8),
+                    pl.lit(" )"),
+                ]
+            ).alias("text")
+        )
+    else:
+        deciles_data = deciles_data.with_columns(
+            pl.concat_str(
+                [
+                    pl.lit("Predicted: "),
+                    pl.col("x").map_elements(
+                        lambda x: f"{x:.3f}", return_dtype=pl.Utf8
+                    ),
+                    pl.lit("<br>Observed: "),
+                    pl.col("y").map_elements(
+                        lambda y: f"{y:.3f}", return_dtype=pl.Utf8
+                    ),
+                    pl.lit(" ( "),
+                    pl.col("n_reals").cast(pl.Int64).cast(pl.Utf8),
+                    pl.lit(" / "),
+                    pl.col("n").cast(pl.Utf8),
+                    pl.lit(" )"),
+                ]
+            ).alias("text")
+        )
+
     reference_data = _create_reference_data_for_calibration_curve()
 
     reference_groups = deciles_data["reference_group"].unique().to_list()
@@ -470,13 +514,67 @@ def _create_reference_data_for_calibration_curve() -> pl.DataFrame:
         pl.concat_str(
             [
                 pl.lit("<b>Perfectly Calibrated</b><br>Predicted: "),
-                pl.col("x").round(3).cast(pl.Utf8),
+                pl.col("x").map_elements(lambda x: f"{x:.3f}", return_dtype=pl.Utf8),
                 pl.lit("<br>Observed: "),
-                pl.col("y").round(3).cast(pl.Utf8),
+                pl.col("y").map_elements(lambda y: f"{y:.3f}", return_dtype=pl.Utf8),
             ]
         ).alias("text")
     )
     return reference_data
+
+
+def _calculate_smooth_curve(
+    deciles_dat: pl.DataFrame, performance_type: str
+) -> pl.DataFrame:
+    """
+    Calculate the smoothed calibration curve using lowess.
+    """
+    smooth_frames = []
+    for group in deciles_dat["reference_group"].unique():
+        group_data = deciles_dat.filter(pl.col("reference_group") == group)
+        # Assuming lowess is available from statsmodels
+        from statsmodels.nonparametric.smoothers_lowess import lowess
+
+        smoothed = lowess(group_data["y"], group_data["x"], frac=0.5)
+        smooth_df = pl.DataFrame({"x": smoothed[:, 0], "y": smoothed[:, 1]})
+        smooth_df = smooth_df.with_columns(pl.lit(group).alias("reference_group"))
+        smooth_frames.append(smooth_df)
+
+    smooth_dat = pl.concat(smooth_frames)
+
+    if performance_type != "one model":
+        smooth_dat = smooth_dat.with_columns(
+            pl.concat_str(
+                [
+                    pl.lit("<b>"),
+                    pl.col("reference_group"),
+                    pl.lit("</b><br>Predicted: "),
+                    pl.col("x").map_elements(
+                        lambda x: f"{x:.3f}", return_dtype=pl.Utf8
+                    ),
+                    pl.lit("<br>Observed: "),
+                    pl.col("y").map_elements(
+                        lambda y: f"{y:.3f}", return_dtype=pl.Utf8
+                    ),
+                ]
+            ).alias("text")
+        )
+    else:
+        smooth_dat = smooth_dat.with_columns(
+            pl.concat_str(
+                [
+                    pl.lit("Predicted: "),
+                    pl.col("x").map_elements(
+                        lambda x: f"{x:.3f}", return_dtype=pl.Utf8
+                    ),
+                    pl.lit("<br>Observed: "),
+                    pl.col("y").map_elements(
+                        lambda y: f"{y:.3f}", return_dtype=pl.Utf8
+                    ),
+                ]
+            ).alias("text")
+        )
+    return smooth_dat
 
 
 def _create_colors_dictionary_for_calibration(
