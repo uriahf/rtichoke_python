@@ -18,7 +18,7 @@ def create_calibration_curve(
     probs: Dict[str, List[float]],
     reals: Dict[str, List[int]],
     calibration_type: str = "discrete",
-    size: Optional[int] = None,
+    size: Optional[int] = 600,
     color_values: Optional[List[str]] = [
         "#1b9e77",
         "#d95f02",
@@ -41,54 +41,27 @@ def create_calibration_curve(
         "#D1603D",
         "#585123",
     ],
-    url_api: str = "http://localhost:4242/",
 ) -> Figure:
     """Creates Calibration Curve
-
     Args:
         probs (Dict[str, List[float]]): _description_
         reals (Dict[str, List[int]]): _description_
         calibration_type (str, optional): _description_. Defaults to "discrete".
         size (Optional[int], optional): _description_. Defaults to None.
         color_values (List[str], optional): _description_. Defaults to None.
-        url_api (_type_, optional): _description_. Defaults to "http://localhost:4242/".
-
     Returns:
         Figure: _description_
     """
-    pass
 
-    # rtichoke_response = send_requests_to_rtichoke_r(
-    #     dictionary_to_send={
-    #         "probs": probs,
-    #         "reals": reals,
-    #         "size": size,
-    #         "color_values ": color_values,
-    #     },
-    #     url_api=url_api,
-    #     endpoint="create_calibration_curve_list",
-    # )
+    calibration_curve_list = _create_calibration_curve_list(
+        probs, reals, size=size, color_values=color_values
+    )
 
-    # calibration_curve_list = rtichoke_response.json()
+    fig = _create_plotly_curve_from_calibration_curve_list(
+        calibration_curve_list, calibration_type=calibration_type
+    )
 
-    # calibration_curve_list["deciles_dat"] = pd.DataFrame.from_dict(
-    #     calibration_curve_list["deciles_dat"]
-    # )
-    # calibration_curve_list["smooth_dat"] = pd.DataFrame.from_dict(
-    #     calibration_curve_list["smooth_dat"]
-    # )
-    # calibration_curve_list["reference_data"] = pd.DataFrame.from_dict(
-    #     calibration_curve_list["reference_data"]
-    # )
-    # calibration_curve_list["histogram_for_calibration"] = pd.DataFrame.from_dict(
-    #     calibration_curve_list["histogram_for_calibration"]
-    # )
-
-    # calibration_curve = create_plotly_curve_from_calibration_curve_list(
-    #     calibration_curve_list=calibration_curve_list, calibration_type=calibration_type
-    # )
-
-    # return calibration_curve
+    return fig
 
 
 def _create_plotly_curve_from_calibration_curve_list(

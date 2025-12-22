@@ -158,3 +158,25 @@ def _expected_aj_df(neg, pos, comp, include_comp=True):
     cols.append("estimate_origin")
 
     return pl.DataFrame(data)[cols]
+
+
+def test_create_calibration_curve_returns_figure():
+    """
+    Test that create_calibration_curve returns a plotly Figure object
+    with data.
+    """
+    import rtichoke
+    import numpy as np
+    import plotly.graph_objects as go
+
+    probs = {"model_1": np.random.uniform(0, 1, 100).tolist()}
+    reals = {"model_1": np.random.randint(0, 2, 100).tolist()}
+
+    # Call the function
+    fig = rtichoke.create_calibration_curve(probs, reals)
+
+    # Check if the output is a plotly Figure
+    assert isinstance(fig, go.Figure)
+
+    # Check if the figure contains data (at least one trace)
+    assert len(fig.data) > 0
