@@ -211,38 +211,23 @@ def _create_plotly_curve_from_calibration_curve_list(
                     col=1,
                 )
 
-    for reference_group in list(calibration_curve_list["colors_dictionary"].keys()):
-        if any(
-            calibration_curve_list["histogram_for_calibration"]["reference_group"]
-            == reference_group
-        ):
+        hist = calibration_curve_list["histogram_for_calibration"]
+
+        for reference_group in calibration_curve_list["group_colors_vec"].keys():
+            hist_sub = hist.filter(pl.col("reference_group") == reference_group)
+            if hist_sub.height == 0:
+                continue
+
             calibration_curve.add_trace(
                 go.Bar(
-                    x=calibration_curve_list["histogram_for_calibration"]["mids"][
-                        calibration_curve_list["histogram_for_calibration"][
-                            "reference_group"
-                        ]
-                        == reference_group
-                    ],
-                    y=calibration_curve_list["histogram_for_calibration"]["counts"][
-                        calibration_curve_list["histogram_for_calibration"][
-                            "reference_group"
-                        ]
-                        == reference_group
-                    ],
-                    # hovertext=calibration_curve_list["histogram_for_calibration"][
-                    #     "text"
-                    # ][
-                    #     calibration_curve_list["histogram_for_calibration"][
-                    #         "reference_group"
-                    #     ]
-                    #     == reference_group
-                    # ],
+                    x=hist_sub.get_column("mids").to_list(),
+                    y=hist_sub.get_column("counts").to_list(),
+                    hovertext=hist_sub.get_column("text").to_list(),
                     name=reference_group,
                     width=0.01,
                     legendgroup=reference_group,
-                    # hoverinfo="text",
-                    marker_color=calibration_curve_list["colors_dictionary"][
+                    hoverinfo="text",
+                    marker_color=calibration_curve_list["group_colors_vec"][
                         reference_group
                     ][0],
                     showlegend=False,
@@ -288,7 +273,6 @@ def _make_deciles_dat_binary(
     probs: Dict[str, np.ndarray],
     reals: Union[np.ndarray, Dict[str, np.ndarray]],
     n_bins: int = 10,
-    reference_group_name_if_array: str = "overall",
 ) -> pl.DataFrame:
     if isinstance(reals, dict):
         reference_groups_keys = list(reals.keys())
@@ -339,7 +323,7 @@ def _make_deciles_dat_binary(
             frames.append(
                 pl.DataFrame(
                     {
-                        "reference_group": reference_group_name_if_array,
+                        "reference_group": model,
                         "model": model,
                         "prob": p.astype(float, copy=False),
                         "real": y.astype(float, copy=False),
@@ -426,7 +410,11 @@ def _create_calibration_curve_list(
         reference_groups, color_values, performance_type
     )
 
+    print("histogram for calibration")
+
     histogram_for_calibration = _create_histogram_for_calibration(probs)
+
+    print(histogram_for_calibration)
 
     limits = _define_limits_for_calibration_plot(deciles_data)
     axes_ranges = {"xaxis": limits, "yaxis": limits}
@@ -499,9 +487,9 @@ def _create_histogram_for_calibration(probs: Dict[str, np.ndarray]) -> pl.DataFr
         )
         hist_dfs.append(hist_df)
 
-        histogram_for_calibration = pl.concat(hist_dfs)
+    histogram_for_calibration = pl.concat(hist_dfs)
 
-        return histogram_for_calibration
+    return histogram_for_calibration
 
 
 def _define_limits_for_calibration_plot(deciles_dat: pl.DataFrame) -> List[float]:
