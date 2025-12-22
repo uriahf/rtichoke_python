@@ -12,6 +12,7 @@ dependencies = [
     "polarstate==0.1.8",
     "marimo>=0.17.0",
     "pyarrow>=21.0.0",
+    "statsmodels>=0.14.0",
 ]
 name = "rtichoke"
 version = "0.1.25"
