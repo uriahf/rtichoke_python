@@ -380,3 +380,41 @@ def _make_deciles_dat_binary(
     )
 
     return deciles_data
+
+
+def _check_performance_type_by_probs_and_reals(
+    probs: Dict[str, np.ndarray], reals: Union[np.ndarray, Dict[str, np.ndarray]]
+) -> str:
+    if isinstance(reals, dict) and len(reals) > 1:
+        return "multiple populations"
+    if len(probs) > 1:
+        return "multiple models"
+    return "one model"
+
+
+def _create_calibration_curve_list(
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    color_values: List[str],
+    size: Optional[int],
+) -> Dict[str, Any]:
+    deciles_data = _make_deciles_dat_binary(probs, reals)
+
+    performance_type = _check_performance_type_by_probs_and_reals
+
+    calibration_curve_list = {
+        "deciles_dat": deciles_data,
+        # "smooth_dat": smooth_dat,
+        # "reference_data": reference_data,
+        # "histogram_for_calibration": histogram_for_calibration,
+        # "histogram_opacity": [0.4],
+        # "axes_ranges": axes_ranges,
+        # "group_colors_vec": {
+        #     "reference_line": ["#737373"],
+        #     **group_colors_vec,
+        # },
+        "performance_type": [performance_type],
+        # "size": [(size_value, size_value)],
+    }
+
+    return calibration_curve_list
