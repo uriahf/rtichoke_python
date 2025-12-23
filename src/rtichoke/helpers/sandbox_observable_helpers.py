@@ -152,7 +152,7 @@ def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFr
 
             labels = [f"{x:.{decimals}f}" for x in np.linspace(by, 1.0, q)]
 
-            strata_labels = np.array([labels[i] for i in bin_idx], dtype=object)
+            strata_labels = np.array(labels)[bin_idx]
 
             columns_to_add.append(
                 pl.Series("strata_ppcr", strata_labels).cast(pl.Enum(labels))
