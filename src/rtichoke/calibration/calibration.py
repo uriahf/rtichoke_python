@@ -68,6 +68,179 @@ def create_calibration_curve(
     return calibration_curve
 
 
+def create_calibration_curve_times(
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    times: Union[np.ndarray, Dict[str, np.ndarray]],
+    fixed_time_horizons: List[float],
+    heuristics_sets: List[Dict[str, str]],
+    calibration_type: str = "discrete",
+    size: int = 600,
+    color_values: List[str] = [
+        "#1b9e77",
+        "#d95f02",
+        "#7570b3",
+        "#e7298a",
+        "#07004D",
+        "#E6AB02",
+        "#FE5F55",
+        "#54494B",
+        "#006E90",
+        "#BC96E6",
+        "#52050A",
+        "#1F271B",
+        "#BE7C4D",
+        "#63768D",
+        "#08A045",
+        "#320A28",
+        "#82FF9E",
+        "#2176FF",
+        "#D1603D",
+        "#585123",
+    ],
+) -> Figure:
+    """Creates a time-dependent Calibration Curve with a slider for different time horizons."""
+
+    calibration_curve_list_times = _create_calibration_curve_list_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=fixed_time_horizons,
+        heuristics_sets=heuristics_sets,
+        size=size,
+        color_values=color_values,
+    )
+
+    fig = _create_plotly_curve_from_calibration_curve_list_times(
+        calibration_curve_list_times, calibration_type=calibration_type
+    )
+
+    return fig
+
+
+def _create_plotly_curve_from_calibration_curve_list_times(
+    calibration_curve_list: Dict[str, Any], calibration_type: str = "discrete"
+) -> Figure:
+    """
+    Creates a plotly figure for time-dependent calibration curves.
+    """
+    fig = make_subplots(
+        rows=2, cols=1, shared_xaxes=True, x_title="Predicted", row_heights=[0.8, 0.2]
+    )
+
+    initial_horizon = calibration_curve_list["fixed_time_horizons"][0]
+
+    # Add traces for each horizon, initially visible only for the first horizon
+    for horizon in calibration_curve_list["fixed_time_horizons"]:
+        visible = horizon == initial_horizon
+
+        # Reference Line
+        fig.add_trace(
+            go.Scatter(
+                x=calibration_curve_list["reference_data"]["x"],
+                y=calibration_curve_list["reference_data"]["y"],
+                hovertext=calibration_curve_list["reference_data"]["text"],
+                name="Perfectly Calibrated",
+                legendgroup="Perfectly Calibrated",
+                hoverinfo="text",
+                line={"width": 2, "dash": "dot", "color": "#BEBEBE"},
+                showlegend=False,
+                visible=visible,
+            ),
+            row=1, col=1,
+        )
+
+        for group in calibration_curve_list["reference_group_keys"]:
+            color = calibration_curve_list["colors_dictionary"][group][0]
+
+            # Calibration curve (discrete or smooth)
+            if calibration_type == "discrete":
+                data_subset = calibration_curve_list["deciles_dat"].filter(
+                    (pl.col("reference_group") == group) & (pl.col("fixed_time_horizon") == horizon)
+                )
+                mode = "lines+markers"
+            else: # smooth
+                data_subset = calibration_curve_list["smooth_dat"].filter(
+                    (pl.col("reference_group") == group) & (pl.col("fixed_time_horizon") == horizon)
+                )
+                mode = "lines+markers" if data_subset.height == 1 else "lines"
+
+            fig.add_trace(
+                go.Scatter(
+                    x=data_subset["x"],
+                    y=data_subset["y"],
+                    hovertext=data_subset["text"],
+                    name=group,
+                    legendgroup=group,
+                    hoverinfo="text",
+                    mode=mode,
+                    marker={"size": 10, "color": color},
+                    visible=visible,
+                ),
+                row=1, col=1,
+            )
+
+            # Histogram
+            hist_subset = calibration_curve_list["histogram_for_calibration"].filter(
+                (pl.col("reference_group") == group) & (pl.col("fixed_time_horizon") == horizon)
+            )
+            fig.add_trace(
+                go.Bar(
+                    x=hist_subset["mids"],
+                    y=hist_subset["counts"],
+                    hovertext=hist_subset["text"],
+                    name=group,
+                    width=0.01,
+                    legendgroup=group,
+                    hoverinfo="text",
+                    marker_color=color,
+                    showlegend=False,
+                    opacity=0.4,
+                    visible=visible,
+                ),
+                row=2, col=1,
+            )
+
+    # Create slider
+    steps = []
+    num_traces_per_horizon = 1 + 2 * len(calibration_curve_list["reference_group_keys"])
+
+    for i, horizon in enumerate(calibration_curve_list["fixed_time_horizons"]):
+        step = dict(
+            method="restyle",
+            args=[{"visible": [False] * (num_traces_per_horizon * len(calibration_curve_list["fixed_time_horizons"]))}],
+            label=str(horizon),
+        )
+        for j in range(num_traces_per_horizon):
+            step["args"][0]["visible"][i * num_traces_per_horizon + j] = True
+        steps.append(step)
+
+    sliders = [dict(
+        active=0,
+        currentvalue={"prefix": "Time Horizon: "},
+        pad={"t": 50},
+        steps=steps,
+    )]
+
+    # Layout
+    fig.update_layout(
+        sliders=sliders,
+        xaxis={"showgrid": False, "range": calibration_curve_list["axes_ranges"]["xaxis"]},
+        yaxis={"showgrid": False, "range": calibration_curve_list["axes_ranges"]["yaxis"], "title": "Observed"},
+        barmode="overlay",
+        plot_bgcolor="rgba(0, 0, 0, 0)",
+        legend={
+            "orientation": "h", "xanchor": "center", "yanchor": "top",
+            "x": 0.5, "y": 1.3, "bgcolor": "rgba(0, 0, 0, 0)",
+        },
+        showlegend=calibration_curve_list["performance_type"][0] != "one model",
+        width=calibration_curve_list["size"][0][0],
+        height=calibration_curve_list["size"][0][0],
+    )
+
+    return fig
+
+
 def _create_plotly_curve_from_calibration_curve_list(
     calibration_curve_list: Dict[str, Any], calibration_type: str = "discrete"
 ) -> Figure:
@@ -406,51 +579,12 @@ def _create_calibration_curve_list(
     ],
 ) -> Dict[str, Any]:
     deciles_data = _make_deciles_dat_binary(probs, reals)
-
     performance_type = _check_performance_type_by_probs_and_reals(probs, reals)
+    smooth_dat = _calculate_smooth_curve(probs, reals, performance_type)
 
-    if performance_type != "one model":
-        deciles_data = deciles_data.with_columns(
-            pl.concat_str(
-                [
-                    pl.lit("<b>"),
-                    pl.col("reference_group"),
-                    pl.lit("</b><br>Predicted: "),
-                    pl.col("x").map_elements(
-                        lambda x: f"{x:.3f}", return_dtype=pl.Utf8
-                    ),
-                    pl.lit("<br>Observed: "),
-                    pl.col("y").map_elements(
-                        lambda y: f"{y:.3f}", return_dtype=pl.Utf8
-                    ),
-                    pl.lit(" ( "),
-                    pl.col("n_reals").cast(pl.Int64).cast(pl.Utf8),
-                    pl.lit(" / "),
-                    pl.col("n").cast(pl.Utf8),
-                    pl.lit(" )"),
-                ]
-            ).alias("text")
-        )
-    else:
-        deciles_data = deciles_data.with_columns(
-            pl.concat_str(
-                [
-                    pl.lit("Predicted: "),
-                    pl.col("x").map_elements(
-                        lambda x: f"{x:.3f}", return_dtype=pl.Utf8
-                    ),
-                    pl.lit("<br>Observed: "),
-                    pl.col("y").map_elements(
-                        lambda y: f"{y:.3f}", return_dtype=pl.Utf8
-                    ),
-                    pl.lit(" ( "),
-                    pl.col("n_reals").cast(pl.Int64).cast(pl.Utf8),
-                    pl.lit(" / "),
-                    pl.col("n").cast(pl.Utf8),
-                    pl.lit(" )"),
-                ]
-            ).alias("text")
-        )
+    deciles_data, smooth_dat = _add_hover_text_to_calibration_data(
+        deciles_data, smooth_dat, performance_type
+    )
 
     reference_data = _create_reference_data_for_calibration_curve()
 
@@ -588,6 +722,42 @@ def _calculate_smooth_curve(
     return smooth_dat
 
 
+def _add_hover_text_to_calibration_data(
+    deciles_dat: pl.DataFrame,
+    smooth_dat: pl.DataFrame,
+    performance_type: str,
+) -> (pl.DataFrame, pl.DataFrame):
+    """Adds hover text to the deciles and smooth dataframes."""
+    if performance_type != "one model":
+        deciles_dat = deciles_dat.with_columns(
+            pl.concat_str([
+                pl.lit("<b>"), pl.col("reference_group"), pl.lit("</b><br>Predicted: "),
+                pl.col("x").round(3), pl.lit("<br>Observed: "), pl.col("y").round(3),
+                pl.lit(" ( "), pl.col("n_reals"), pl.lit(" / "), pl.col("n"), pl.lit(" )"),
+            ]).alias("text")
+        )
+        smooth_dat = smooth_dat.with_columns(
+             pl.concat_str([
+                pl.lit("<b>"), pl.col("reference_group"), pl.lit("</b><br>Predicted: "),
+                pl.col("x").round(3), pl.lit("<br>Observed: "), pl.col("y").round(3),
+            ]).alias("text")
+        )
+    else:
+        deciles_dat = deciles_dat.with_columns(
+            pl.concat_str([
+                pl.lit("Predicted: "), pl.col("x").round(3), pl.lit("<br>Observed: "),
+                pl.col("y").round(3), pl.lit(" ( "), pl.col("n_reals"),
+                pl.lit(" / "), pl.col("n"), pl.lit(" )"),
+            ]).alias("text")
+        )
+        smooth_dat = smooth_dat.with_columns(
+             pl.concat_str([
+                pl.lit("Predicted: "), pl.col("x").round(3),
+                pl.lit("<br>Observed: "), pl.col("y").round(3),
+            ]).alias("text")
+        )
+    return deciles_dat, smooth_dat
+
 
 def _create_colors_dictionary_for_calibration(
     reference_groups: List[str],
@@ -642,3 +812,216 @@ def _define_limits_for_calibration_plot(deciles_dat: pl.DataFrame) -> List[float
         lower_bound - (upper_bound - lower_bound) * 0.05,
         upper_bound + (upper_bound - lower_bound) * 0.05,
     ]
+
+
+def _build_initial_df_for_times(
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    times: Union[np.ndarray, Dict[str, np.ndarray]],
+) -> pl.DataFrame:
+    """Builds the initial DataFrame for time-dependent calibration curves."""
+
+    # Case 1: Multiple populations (reals is a dict)
+    if isinstance(reals, dict):
+        if not isinstance(times, dict):
+            raise TypeError("If reals is a dict, times must also be a dict.")
+
+        # Unnest reals and times dictionaries into a long DataFrame
+        reals_df = pl.DataFrame(
+            [
+                pl.Series("reference_group", list(reals.keys())),
+                pl.Series("real", list(reals.values())),
+                pl.Series("time", list(times.values())),
+            ]
+        ).explode(["real", "time"])
+
+        # Unnest probs and join
+        probs_df = pl.DataFrame(
+            [
+                pl.Series("model", list(probs.keys())),
+                pl.Series("prob", list(probs.values())),
+            ]
+        ).explode("prob")
+
+        # If one model for many populations, cross join
+        if len(probs) == 1 and len(reals) > 1:
+            return reals_df.join(probs_df, how="cross")
+        else: # otherwise, assume a 1-to-1 mapping on reference_group/model
+            return reals_df.join(probs_df, left_on="reference_group", right_on="model")
+
+    # Case 2: Single population (reals is an array)
+    else:
+        if not isinstance(times, np.ndarray):
+            raise TypeError("If reals is an array, times must also be an array.")
+
+        base_df = pl.DataFrame({"real": reals, "time": times})
+
+        prob_frames = []
+        for model_name, prob_array in probs.items():
+            prob_frames.append(
+                base_df.with_columns(
+                    pl.Series("prob", prob_array),
+                    pl.lit(model_name).alias("reference_group")
+                )
+            )
+        return pl.concat(prob_frames)
+
+
+def _apply_heuristics_and_censoring(
+    df: pl.DataFrame,
+    horizon: float,
+    censoring_heuristic: str,
+    competing_heuristic: str,
+) -> pl.DataFrame:
+    """
+    Applies censoring and competing risk heuristics to the data for a given time horizon.
+    """
+    # Administrative censoring: outcomes after horizon are negative
+    df_adj = df.with_columns(
+        pl.when(pl.col("time") > horizon).then(0).otherwise(pl.col("real")).alias("real")
+    )
+
+    # Heuristics for events before or at horizon
+    if censoring_heuristic == "excluded":
+        df_adj = df_adj.filter(~((pl.col("real") == 0) & (pl.col("time") <= horizon)))
+
+    if competing_heuristic == "excluded":
+        df_adj = df_adj.filter(~((pl.col("real") == 2) & (pl.col("time") <= horizon)))
+    elif competing_heuristic == "adjusted_as_negative":
+        df_adj = df_adj.with_columns(
+            pl.when((pl.col("real") == 2) & (pl.col("time") <= horizon))
+            .then(0)
+            .otherwise(pl.col("real"))
+            .alias("real")
+        )
+    elif competing_heuristic == "adjusted_as_composite":
+        df_adj = df_adj.with_columns(
+            pl.when((pl.col("real") == 2) & (pl.col("time") <= horizon))
+            .then(1)
+            .otherwise(pl.col("real"))
+            .alias("real")
+        )
+
+    return df_adj
+
+
+def _create_calibration_curve_list_times(
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    times: Union[np.ndarray, Dict[str, np.ndarray]],
+    fixed_time_horizons: List[float],
+    heuristics_sets: List[Dict[str, str]],
+    size: int = 600,
+    color_values: List[str] = [
+        "#1b9e77",
+        "#d95f02",
+        "#7570b3",
+        "#e7298a",
+        "#07004D",
+        "#E6AB02",
+        "#FE5F55",
+        "#54494B",
+        "#006E90",
+        "#BC96E6",
+        "#52050A",
+        "#1F271B",
+        "#BE7C4D",
+        "#63768D",
+        "#08A045",
+        "#320A28",
+        "#82FF9E",
+        "#2176FF",
+        "#D1603D",
+        "#585123",
+    ],
+) -> Dict[str, Any]:
+    """
+    Creates the data structures needed for a time-dependent calibration curve plot.
+    """
+    # Part 1: Prepare initial dataframe from inputs
+    initial_df = _build_initial_df_for_times(probs, reals, times)
+
+    # Part 2: Iterate and generate calibration data for each horizon/heuristic
+    all_deciles = []
+    all_smooth = []
+    all_histograms = []
+
+    performance_type = _check_performance_type_by_probs_and_reals(probs, reals)
+
+    for horizon in fixed_time_horizons:
+        for heuristics in heuristics_sets:
+            censoring_heuristic = heuristics["censoring_heuristic"]
+            competing_heuristic = heuristics["competing_heuristic"]
+
+            if censoring_heuristic == "adjusted" or competing_heuristic == "adjusted_as_censored":
+                continue
+
+            df_adj = _apply_heuristics_and_censoring(
+                initial_df, horizon, censoring_heuristic, competing_heuristic
+            )
+
+            if df_adj.height == 0:
+                continue
+
+            # Re-create probs and reals dicts for helpers
+            probs_adj = {
+                group[0]: group_df["prob"].to_numpy()
+                for group, group_df in df_adj.group_by("reference_group")
+            }
+            reals_adj = {
+                group[0]: group_df["real"].to_numpy()
+                for group, group_df in df_adj.group_by("reference_group")
+            }
+            # If single population initially, reals_adj should be an array
+            if not isinstance(reals, dict) and len(probs) == 1:
+                 reals_adj = next(iter(reals_adj.values()))
+
+
+            # Deciles
+            deciles_data = _make_deciles_dat_binary(probs_adj, reals_adj)
+            all_deciles.append(deciles_data.with_columns(pl.lit(horizon).alias("fixed_time_horizon")))
+
+            # Smooth curve
+            smooth_data = _calculate_smooth_curve(probs_adj, reals_adj, performance_type)
+            all_smooth.append(smooth_data.with_columns(pl.lit(horizon).alias("fixed_time_horizon")))
+
+            # Histogram
+            hist_data = _create_histogram_for_calibration(probs_adj)
+            all_histograms.append(hist_data.with_columns(pl.lit(horizon).alias("fixed_time_horizon")))
+
+
+    # Part 3: Combine results and create final dictionary
+    if not all_deciles:
+        raise ValueError("No data remaining after applying heuristics and time horizons.")
+    deciles_dat_final = pl.concat(all_deciles)
+    smooth_dat_final = pl.concat(all_smooth)
+    histogram_final = pl.concat(all_histograms)
+
+    # Add hover text
+    deciles_dat_final, smooth_dat_final = _add_hover_text_to_calibration_data(
+        deciles_dat_final, smooth_dat_final, performance_type
+    )
+
+
+    reference_data = _create_reference_data_for_calibration_curve()
+    reference_groups = deciles_dat_final["reference_group"].unique().to_list()
+    colors_dictionary = _create_colors_dictionary_for_calibration(
+        reference_groups, color_values, performance_type
+    )
+    limits = _define_limits_for_calibration_plot(deciles_dat_final)
+    axes_ranges = {"xaxis": limits, "yaxis": limits}
+
+    calibration_curve_list = {
+        "deciles_dat": deciles_dat_final,
+        "smooth_dat": smooth_dat_final,
+        "reference_data": reference_data,
+        "histogram_for_calibration": histogram_final,
+        "axes_ranges": axes_ranges,
+        "colors_dictionary": colors_dictionary,
+        "performance_type": [performance_type],
+        "size": [(size, size)],
+        "fixed_time_horizons": fixed_time_horizons,
+        "reference_group_keys": reference_groups
+    }
+
+    return calibration_curve_list
