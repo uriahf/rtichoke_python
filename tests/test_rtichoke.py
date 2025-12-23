@@ -2,7 +2,7 @@
 A module for tests
 """
 
-from rtichoke.helpers.sandbox_observable_helpers import (
+from rtichoke.processing.adjustments import (
     extract_aj_estimate_for_strata,
 )
 

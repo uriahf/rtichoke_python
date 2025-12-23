@@ -2,8 +2,10 @@
 A module for Summary Report
 """
 
-from rtichoke.helpers.send_post_request_to_r_rtichoke import send_requests_to_rtichoke_r
-from rtichoke.helpers.sandbox_observable_helpers import (
+from rtichoke.processing.send_post_request_to_r_rtichoke import (
+    send_requests_to_rtichoke_r,
+)
+from rtichoke.processing.transforms import (
     _create_list_data_to_adjust,
 )
 import subprocess

@@ -4,7 +4,7 @@ A module for Creating Plotly Curves from rtichoke curve dictionaries
 
 import plotly.graph_objects as go
 
-from rtichoke.helpers.plotly_helper_functions import (
+from rtichoke.processing.plotly_helper_functions import (
     create_non_interactive_curve,
     create_interactive_marker,
     create_reference_lines_for_plotly,
