@@ -821,50 +821,73 @@ def _build_initial_df_for_times(
 ) -> pl.DataFrame:
     """Builds the initial DataFrame for time-dependent calibration curves."""
 
-    # Case 1: Multiple populations (reals is a dict)
-    if isinstance(reals, dict):
-        if not isinstance(times, dict):
-            raise TypeError("If reals is a dict, times must also be a dict.")
+    # Convert all inputs to dictionaries of arrays to unify processing
+    if not isinstance(reals, dict):
+        reals = {"single_population": np.asarray(reals)}
+    if not isinstance(times, dict):
+        times = {"single_population": np.asarray(times)}
 
-        # Unnest reals and times dictionaries into a long DataFrame
-        reals_df = pl.DataFrame(
-            [
-                pl.Series("reference_group", list(reals.keys())),
-                pl.Series("real", list(reals.values())),
-                pl.Series("time", list(times.values())),
-            ]
-        ).explode(["real", "time"])
+    # Verify matching keys and lengths
+    if reals.keys() != times.keys():
+        raise ValueError("Keys in reals and times dictionaries do not match.")
+    for key in reals:
+        if len(reals[key]) != len(times[key]):
+            raise ValueError(f"Length mismatch for population '{key}' in reals and times.")
 
-        # Unnest probs and join
-        probs_df = pl.DataFrame(
-            [
-                pl.Series("model", list(probs.keys())),
-                pl.Series("prob", list(probs.values())),
-            ]
-        ).explode("prob")
+    # Create a base DataFrame with population data
+    population_frames = []
+    for key in reals:
+        population_frames.append(
+            pl.DataFrame({
+                "reference_group": key,
+                "real": reals[key],
+                "time": times[key],
+            })
+        )
+    base_df = pl.concat(population_frames)
 
-        # If one model for many populations, cross join
-        if len(probs) == 1 and len(reals) > 1:
-            return reals_df.join(probs_df, how="cross")
-        else: # otherwise, assume a 1-to-1 mapping on reference_group/model
-            return reals_df.join(probs_df, left_on="reference_group", right_on="model")
+    # Prepare model predictions
+    # Single model case
+    if len(probs) == 1:
+        model_name, prob_array = next(iter(probs.items()))
+        if len(prob_array) != base_df.height:
+            raise ValueError(f"Length of probabilities for model '{model_name}' does not match total number of observations.")
+        return base_df.with_columns(
+            pl.Series("prob", prob_array),
+            pl.lit(model_name).alias("model")
+        )
 
-    # Case 2: Single population (reals is an array)
+    # Multiple models
     else:
-        if not isinstance(times, np.ndarray):
-            raise TypeError("If reals is an array, times must also be an array.")
-
-        base_df = pl.DataFrame({"real": reals, "time": times})
-
-        prob_frames = []
-        for model_name, prob_array in probs.items():
-            prob_frames.append(
-                base_df.with_columns(
-                    pl.Series("prob", prob_array),
-                    pl.lit(model_name).alias("reference_group")
+        # One model per population (keys must match)
+        if probs.keys() == reals.keys():
+            prob_frames = []
+            for model_name, prob_array in probs.items():
+                pop_df = base_df.filter(pl.col("reference_group") == model_name)
+                if len(prob_array) != pop_df.height:
+                    raise ValueError(f"Length of probabilities for model '{model_name}' does not match population size.")
+                prob_frames.append(
+                    pop_df.with_columns(
+                        pl.Series("prob", prob_array),
+                        pl.lit(model_name).alias("model")
+                    )
                 )
-            )
-        return pl.concat(prob_frames)
+            return pl.concat(prob_frames)
+        # Multiple models on a single population
+        elif len(reals) == 1:
+            final_frames = []
+            for model_name, prob_array in probs.items():
+                if len(prob_array) != base_df.height:
+                     raise ValueError(f"Length of probabilities for model '{model_name}' does not match population size.")
+                final_frames.append(
+                    base_df.with_columns(
+                         pl.Series("prob", prob_array),
+                         pl.lit(model_name).alias("reference_group") # Overwrite reference_group with model name
+                    )
+                )
+            return pl.concat(final_frames)
+
+    raise ValueError("Unsupported combination of probs, reals, and times structures.")
 
 
 def _apply_heuristics_and_censoring(
