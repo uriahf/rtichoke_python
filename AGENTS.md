@@ -67,3 +67,11 @@ Before committing, please ensure that the pre-commit hooks pass. You can run the
 ## Documentation
 
 The documentation for this project is built using `quartodoc`. The documentation is automatically built and deployed via GitHub Actions. There is no need to build the documentation manually.
+
+## Type Checking
+
+This project uses `ty` for type checking. To check for type errors, run the following command:
+
+```bash
+uv run ty check src tests
+```

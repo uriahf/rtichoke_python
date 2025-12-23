@@ -206,13 +206,14 @@ def _create_plotly_curve_from_calibration_curve_list_times(
     num_traces_per_horizon = 1 + 2 * len(calibration_curve_list["reference_group_keys"])
 
     for i, horizon in enumerate(calibration_curve_list["fixed_time_horizons"]):
+        visibility = [False] * (num_traces_per_horizon * len(calibration_curve_list["fixed_time_horizons"]))
+        for j in range(num_traces_per_horizon):
+            visibility[i * num_traces_per_horizon + j] = True
         step = dict(
             method="restyle",
-            args=[{"visible": [False] * (num_traces_per_horizon * len(calibration_curve_list["fixed_time_horizons"]))}],
+            args=[{"visible": visibility}],
             label=str(horizon),
         )
-        for j in range(num_traces_per_horizon):
-            step["args"][0]["visible"][i * num_traces_per_horizon + j] = True
         steps.append(step)
 
     sliders = [dict(
@@ -726,7 +727,7 @@ def _add_hover_text_to_calibration_data(
     deciles_dat: pl.DataFrame,
     smooth_dat: pl.DataFrame,
     performance_type: str,
-) -> (pl.DataFrame, pl.DataFrame):
+) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Adds hover text to the deciles and smooth dataframes."""
     if performance_type != "one model":
         deciles_dat = deciles_dat.with_columns(

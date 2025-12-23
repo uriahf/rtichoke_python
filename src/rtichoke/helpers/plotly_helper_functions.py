@@ -681,6 +681,15 @@ def _create_reference_lines_data(
             (pl.col("x") >= min_p_threshold) & (pl.col("x") <= max_p_threshold)
         )
 
+    return pl.DataFrame(
+        schema={
+            "reference_group": pl.Utf8,
+            "x": pl.Float64,
+            "y": pl.Float64,
+            "text": pl.Utf8,
+        }
+    )
+
 
 def create_non_interactive_curve_polars(
     performance_data_ready_for_curve, reference_group_color, reference_group
@@ -1157,7 +1166,7 @@ def _add_hover_text_to_performance_data(
     )
 
     return performance_data.with_columns(
-        [pl.col(pl.FLOAT_DTYPES).round(3), hover_text_expr.alias("text")]
+        [pl.col(pl.Float64).round(3), hover_text_expr.alias("text")]
     )
 
 
