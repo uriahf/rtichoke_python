@@ -183,43 +183,43 @@ def _create_plotly_curve_from_calibration_curve_list(
             )
 
     if calibration_type == "smooth":
-        for reference_group in list(calibration_curve_list["colors_dictionary"].keys()):
-            if any(
-                calibration_curve_list["smooth_dat"]["reference_group"]
-                == reference_group
-            ):
-                calibration_curve.add_trace(
-                    go.Scatter(
-                        x=calibration_curve_list["smooth_dat"]["x"][
-                            calibration_curve_list["smooth_dat"]["reference_group"]
-                            == reference_group
-                        ],
-                        y=calibration_curve_list["smooth_dat"]["y"][
-                            calibration_curve_list["smooth_dat"]["reference_group"]
-                            == reference_group
-                        ],
-                        hovertext=calibration_curve_list["smooth_dat"]["text"][
-                            calibration_curve_list["smooth_dat"]["reference_group"]
-                            == reference_group
-                        ],
-                        name=reference_group,
-                        legendgroup=reference_group,
-                        hoverinfo="text",
-                        mode="lines",
-                        marker={
-                            "size": 10,
-                            "color": calibration_curve_list["colors_dictionary"][
-                                reference_group
-                            ][0],
-                        },
-                    ),
-                    row=1,
-                    col=1,
-                )
+        smooth_dat = calibration_curve_list["smooth_dat"]
+        reference_groups = [
+            k
+            for k in calibration_curve_list["colors_dictionary"].keys()
+            if k != "reference_line"
+        ]
+
+        for reference_group in reference_groups:
+            smooth_sub = smooth_dat.filter(pl.col("reference_group") == reference_group)
+            if smooth_sub.height == 0:
+                continue
+
+            mode = "lines+markers" if smooth_sub.height == 1 else "lines"
+
+            calibration_curve.add_trace(
+                go.Scatter(
+                    x=smooth_sub.get_column("x").to_list(),
+                    y=smooth_sub.get_column("y").to_list(),
+                    hovertext=smooth_sub.get_column("text").to_list(),
+                    name=reference_group,
+                    legendgroup=reference_group,
+                    hoverinfo="text",
+                    mode=mode,
+                    marker={
+                        "size": 10,
+                        "color": calibration_curve_list["colors_dictionary"][
+                            reference_group
+                        ][0],
+                    },
+                ),
+                row=1,
+                col=1,
+            )
 
         hist = calibration_curve_list["histogram_for_calibration"]
 
-        for reference_group in calibration_curve_list["group_colors_vec"].keys():
+        for reference_group in reference_groups:
             hist_sub = hist.filter(pl.col("reference_group") == reference_group)
             if hist_sub.height == 0:
                 continue
@@ -233,11 +233,11 @@ def _create_plotly_curve_from_calibration_curve_list(
                     width=0.01,
                     legendgroup=reference_group,
                     hoverinfo="text",
-                    marker_color=calibration_curve_list["group_colors_vec"][
+                    marker_color=calibration_curve_list["colors_dictionary"][
                         reference_group
                     ][0],
                     showlegend=False,
-                    opacity=calibration_curve_list["histogram_opacity"][0],
+                    opacity=0.4,
                 ),
                 row=2,
                 col=1,
@@ -346,7 +346,7 @@ def _make_deciles_dat_binary(
             pl.col("prob").cast(pl.Float64),
             pl.col("real").cast(pl.Float64),
             pl.col("prob")
-            .qcut(n_bins, labels=labels)
+            .qcut(n_bins, labels=labels, allow_duplicates=True)
             .over(["reference_group", "model"])
             .alias("decile"),
         ]
@@ -469,9 +469,11 @@ def _create_calibration_curve_list(
     limits = _define_limits_for_calibration_plot(deciles_data)
     axes_ranges = {"xaxis": limits, "yaxis": limits}
 
+    smooth_dat = _calculate_smooth_curve(probs, reals, performance_type)
+
     calibration_curve_list = {
         "deciles_dat": deciles_data,
-        # "smooth_dat": smooth_dat,
+        "smooth_dat": smooth_dat,
         "reference_data": reference_data,
         "histogram_for_calibration": histogram_for_calibration,
         # "histogram_opacity": [0.4],
@@ -501,21 +503,53 @@ def _create_reference_data_for_calibration_curve() -> pl.DataFrame:
 
 
 def _calculate_smooth_curve(
-    deciles_dat: pl.DataFrame, performance_type: str
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    performance_type: str,
 ) -> pl.DataFrame:
     """
     Calculate the smoothed calibration curve using lowess.
     """
-    smooth_frames = []
-    for group in deciles_dat["reference_group"].unique():
-        group_data = deciles_dat.filter(pl.col("reference_group") == group)
-        # Assuming lowess is available from statsmodels
-        from statsmodels.nonparametric.smoothers_lowess import lowess
+    from statsmodels.nonparametric.smoothers_lowess import lowess
 
-        smoothed = lowess(group_data["y"], group_data["x"], frac=0.5)
-        smooth_df = pl.DataFrame({"x": smoothed[:, 0], "y": smoothed[:, 1]})
-        smooth_df = smooth_df.with_columns(pl.lit(group).alias("reference_group"))
-        smooth_frames.append(smooth_df)
+    smooth_frames = []
+
+    # Helper function to process a single probability and real array
+    def process_single_array(p, r, group_name):
+        if len(np.unique(p)) == 1:
+            return pl.DataFrame(
+                {"x": [np.unique(p)[0]], "y": [np.mean(r)], "reference_group": [group_name]}
+            )
+        else:
+            # lowess returns a 2D array where the first column is x and the second is y
+            smoothed = lowess(r, p, it=0)
+            xout = np.linspace(0, 1, 101)
+            yout = np.interp(xout, smoothed[:, 0], smoothed[:, 1])
+            return pl.DataFrame(
+                {"x": xout, "y": yout, "reference_group": [group_name] * len(xout)}
+            )
+
+    if isinstance(reals, dict):
+        for model_name, prob_array in probs.items():
+            # This logic assumes that for multiple populations, one model's probs are evaluated against multiple real outcomes.
+            # This might need adjustment based on the exact structure for multiple models and populations.
+            if len(probs) == 1 and len(reals) > 1: # One model, multiple populations
+                 for pop_name, real_array in reals.items():
+                     frame = process_single_array(prob_array, real_array, pop_name)
+                     smooth_frames.append(frame)
+            else: # Multiple models, potentially multiple populations
+                for group_name in reals.keys():
+                    if group_name in probs:
+                        frame = process_single_array(probs[group_name], reals[group_name], group_name)
+                        smooth_frames.append(frame)
+
+    else: # reals is a single numpy array
+        for group_name, prob_array in probs.items():
+            frame = process_single_array(prob_array, reals, group_name)
+            smooth_frames.append(frame)
+
+    if not smooth_frames:
+        return pl.DataFrame(schema={"x": pl.Float64, "y": pl.Float64, "reference_group": pl.Utf8, "text": pl.Utf8})
 
     smooth_dat = pl.concat(smooth_frames)
 
@@ -552,6 +586,7 @@ def _calculate_smooth_curve(
             ).alias("text")
         )
     return smooth_dat
+
 
 
 def _create_colors_dictionary_for_calibration(
