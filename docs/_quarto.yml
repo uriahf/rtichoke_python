@@ -1,30 +1,30 @@
 project:
   type: website
 
-metadata-files:
-  - _sidebar.yml
-
 website:
   title: "rtichoke"
-  navbar:
-    left:
-      - href: reference/
-        text: Reference
+  sidebar:
+    - id: user-guide
+      title: "User Guide"
+      style: "docked"
+      contents:
+        - text: "Getting Started"
+          href: tutorials/getting_started.qmd
+    - id: api-reference
+      title: "API Reference"
+      style: "docked"
+      contents:
+        - href: reference/index.qmd
+          text: "Reference"
 
 quartodoc:
-  # the name used to import the package you want to create reference docs for
   package: rtichoke
-  sidebar: "_sidebar.yml"
   sections:
     - title: Performance Data
       desc: Functions for creating performance data.
       contents:
         - prepare_performance_data
         - prepare_performance_data_times
-    # - title: Calibration
-      # desc: Functions for Calibration.
-      # contents:
-        # - create_calibration_curve
     - title: Discrimination
       desc: Functions for Discrimination.
       contents:

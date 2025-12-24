@@ -1,0 +1,13 @@
+---
+title: "rtichoke Documentation"
+---
+
+Welcome to the official documentation for `rtichoke`, a Python library for visualizing the performance of predictive models.
+
+## Getting Started
+
+If you're new to `rtichoke`, the best place to start is the **[Getting Started Tutorial](./tutorials/getting_started.qmd)**. It will walk you through the basics of installing the library, preparing your data, and creating your first plot.
+
+## API Reference
+
+For detailed information on the functions and classes provided by `rtichoke`, please refer to the **[API Reference](./reference/index.qmd)**.

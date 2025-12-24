@@ -28,31 +28,37 @@ def prepare_binned_classification_data(
     """
     Prepare probability-binned classification data for binary outcomes.
 
-    This constructs the underlying, binned data across probability thresholds
-    (and any additional stratification variables). It returns the adjusted data
-    before cumulative Aalen–Johansen and performance computations.
+    This function serves as the foundation for many of the performance analysis
+    visualizations. It takes predicted probabilities and true binary outcomes,
+    bins them by probability thresholds, and calculates the number of true
+    positives, false positives, true negatives, and false negatives within each
+    bin. This detailed, binned data can then be used to generate calibration
+    plots or be aggregated to compute various performance metrics.
 
     Parameters
     ----------
     probs : Dict[str, np.ndarray]
-        Mapping from dataset name to predicted probabilities (1-D numpy arrays).
+        A dictionary mapping model or dataset names (str) to their predicted
+        probabilities (1-D numpy arrays).
     reals : Union[np.ndarray, Dict[str, np.ndarray]]
-        True event labels. Can be a single array aligned to pooled probabilities
-        or a dictionary mapping each dataset name to its true-label array. Labels
-        are expected to be binary integers (0/1).
+        The true event labels. This can be a single numpy array that is aligned
+        with all pooled probabilities or a dictionary mapping each dataset name
+        to its corresponding array of true labels. Labels must be binary (0 or 1).
     stratified_by : Sequence[str], optional
-        Stratification variables used to create combinations/breaks. Defaults to
-        ``("probability_threshold",)``.
+        A sequence of strings specifying the variables by which to stratify the
+        data. The default is ``("probability_threshold",)``, which bins the data
+        based on predicted probabilities.
     by : float, optional
-        Step width for probability-threshold breaks (used to create the grid of
-        cutoffs). Defaults to ``0.01``.
+        The step size to use when creating bins for the probability thresholds.
+        This determines the granularity of the analysis. Defaults to ``0.01``.
 
     Returns
     -------
     pl.DataFrame
-        A Polars DataFrame containing probability-binned classification data
-        (one row per combination of dataset / bin / strata). This is the basis
-        for histograms, calibration diagnostics, and performance curves.
+        A Polars DataFrame containing the binned classification data. Each row
+        represents a unique combination of model/dataset, probability bin, and
+        any other stratification variables. It forms the basis for subsequent
+        performance calculations.
     """
     breaks = create_breaks_values(None, "probability_threshold", by)
 
@@ -91,28 +97,40 @@ def prepare_performance_data(
     stratified_by: Sequence[str] = ("probability_threshold",),
     by: float = 0.01,
 ) -> pl.DataFrame:
-    """Prepare performance data for binary classification.
+    """Prepare performance data for binary classification models.
+
+    This function computes a comprehensive set of performance metrics for one
+    or more binary classification models across a range of probability
+    thresholds. It builds upon the binned data from
+    `prepare_binned_classification_data` by cumulatively summing the counts
+    and calculating metrics like sensitivity (TPR), specificity, precision
+    (PPV), and net benefit.
+
+    This resulting dataframe is the primary input for plotting functions like
+    `plot_roc_curve`, `plot_precision_recall_curve`, etc.
 
     Parameters
     ----------
     probs : Dict[str, np.ndarray]
-        Mapping from dataset name to predicted probabilities (1-D numpy arrays).
+        A dictionary mapping model or dataset names (str) to their predicted
+        probabilities (1-D numpy arrays).
     reals : Union[np.ndarray, Dict[str, np.ndarray]]
-        True event labels. Can be a single array aligned to pooled probabilities
-        or a dictionary mapping each dataset name to its true-label array. Labels
-        are expected to be binary integers (0/1).
+        The true event labels. This can be a single numpy array that is aligned
+        with all pooled probabilities or a dictionary mapping each dataset name
+        to its corresponding array of true labels. Labels must be binary (0 or 1).
     stratified_by : Sequence[str], optional
-        Stratification variables used to create combinations/breaks. Defaults to
-        ``("probability_threshold",)``.
+        A sequence of strings specifying the variables by which to stratify the
+        data. The default is ``("probability_threshold",)``.
     by : float, optional
-        Step width for probability-threshold breaks (used to create the grid of
-        cutoffs). Defaults to ``0.01``.
+        The step size for probability thresholds, determining the number of
+        points at which performance is evaluated. Defaults to ``0.01``.
 
     Returns
     -------
     pl.DataFrame
-        A Polars DataFrame containing performance metrics computed across probability
-        thresholds. Columns include the probability cutoff and performance measures.
+        A Polars DataFrame where each row corresponds to a probability cutoff
+        for a given model/dataset. Columns include the cutoff value and a rich
+        set of performance metrics (e.g., `tpr`, `fpr`, `ppv`, `net_benefit`).
 
     Examples
     --------
@@ -123,10 +141,9 @@ def prepare_performance_data(
     ...     )
     ... }
     >>> reals_dict_test = [1, 1, 1, 1, 0, 0, 1, 0, 0, 1]
-
-    >>> prepare_performance_data(
-    ...     probs_dict_test,
-    ...     reals_dict_test,
+    >>> performance_df = prepare_performance_data(
+    ...     probs=probs_dict_test,
+    ...     reals=reals_dict_test,
     ...     by=0.1
     ... )
     """
