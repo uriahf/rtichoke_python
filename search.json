@@ -2,9 +2,9 @@
   {
     "objectID": "tutorials/getting_started.html",
     "href": "tutorials/getting_started.html",
-    "title": "Getting Started with Rtichoke",
+    "title": "Getting Started with rtichoke",
     "section": "",
-    "text": "This tutorial provides a basic introduction to the rtichoke library. We’ll walk through the process of preparing data, creating a decision curve, and visualizing the results.",
+    "text": "This tutorial provides an introduction to the rtichoke library, showing how to visualize model performance for different scenarios.",
     "crumbs": [
       "Getting Started"
     ]
@@ -12,39 +12,19 @@
   {
     "objectID": "tutorials/getting_started.html#import-libraries",
     "href": "tutorials/getting_started.html#import-libraries",
-    "title": "Getting Started with Rtichoke",
+    "title": "Getting Started with rtichoke",
     "section": "1. Import Libraries",
-    "text": "1. Import Libraries\nFirst, let’s import the necessary libraries. We’ll need numpy for data manipulation and rtichoke for the core functionality.\nimport numpy as np\nimport rtichoke as rk",
+    "text": "1. Import Libraries\nFirst, let’s import the necessary libraries. We’ll need numpy for data manipulation and rtichoke for the core functionality.\nimport numpy as np\nimport rtichoke as rk\n\n# For reproducibility\nnp.random.seed(42)",
     "crumbs": [
       "Getting Started"
     ]
   },
   {
-    "objectID": "tutorials/getting_started.html#prepare-your-data",
-    "href": "tutorials/getting_started.html#prepare-your-data",
-    "title": "Getting Started with Rtichoke",
-    "section": "2. Prepare Your Data",
-    "text": "2. Prepare Your Data\nrtichoke expects data in a specific format. You’ll need two main components:\n\nProbabilities (probs): A dictionary where keys are model names and values are NumPy arrays of predicted probabilities.\nReal Outcomes (reals): A NumPy array containing the true binary outcomes (0 or 1).\n\nLet’s create some sample data for two different models:\n# Sample data from the dcurves_example.py script\nprobs_dict = {\n    \"Marker\": np.array([\n        0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.1, 0.2, 0.3, 0.4, 0.5,\n        0.6, 0.7, 0.8, 0.9, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9\n    ]),\n    \"Marker2\": np.array([\n        0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.1, 0.2, 0.3, 0.4, 0.5,\n        0.6, 0.7, 0.8, 0.9, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9\n    ])\n}\nreals = np.array([\n    1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1\n])",
-    "crumbs": [
-      "Getting Started"
-    ]
-  },
-  {
-    "objectID": "tutorials/getting_started.html#create-a-decision-curve",
-    "href": "tutorials/getting_started.html#create-a-decision-curve",
-    "title": "Getting Started with Rtichoke",
-    "section": "3. Create a Decision Curve",
-    "text": "3. Create a Decision Curve\nNow that we have our data, we can create a decision curve. This is a simple one-liner with rtichoke:\nfig = rk.create_decision_curve(\n    probs=probs_dict,\n    reals=reals,\n)",
-    "crumbs": [
-      "Getting Started"
-    ]
-  },
-  {
-    "objectID": "tutorials/getting_started.html#show-the-plot",
-    "href": "tutorials/getting_started.html#show-the-plot",
-    "title": "Getting Started with Rtichoke",
-    "section": "4. Show the Plot",
-    "text": "4. Show the Plot\nFinally, let’s display the plot. Since rtichoke uses Plotly under the hood, you can show the figure just like any other Plotly object.\n# To display the plot in an interactive environment (like a Jupyter notebook)\nfig.show()\nAnd that’s it! You’ve created your first decision curve with rtichoke. From here, you can explore the other curve types and options that the library has to offer.",
+    "objectID": "tutorials/getting_started.html#understanding-the-inputs",
+    "href": "tutorials/getting_started.html#understanding-the-inputs",
+    "title": "Getting Started with rtichoke",
+    "section": "2. Understanding the Inputs",
+    "text": "2. Understanding the Inputs\nrtichoke expects two main inputs for creating performance curves:\n\nprobs (Probabilities): A dictionary where keys are model or population names and values are lists or NumPy arrays of predicted probabilities.\nreals (Outcomes): A dictionary where keys are population names and values are lists or NumPy arrays of the true binary outcomes (0 or 1).\n\nLet’s look at the three main use cases.\n\nUse Case 1: Single Model\nThis is the simplest case, where you want to evaluate the performance of a single predictive model.\nFor this, you provide probs with a single entry for your model and reals with a single entry for the corresponding outcomes.\n# Generate sample data for one model\nprobs_single = {\"Good Model\": np.random.rand(100)}\nreals_single = {\"Population\": np.random.randint(0, 2, 100)}\n\n# Create a ROC curve\nfig = rk.create_roc_curve(\n    probs=probs_single,\n    reals=reals_single,\n)\n\n# In an interactive environment (like a Jupyter notebook),\n# this will display the plot.\nfig.show()\n\n\nUse Case 2: Models Comparison\nOften, you want to compare the performance of several different models on the same population.\nFor this, you provide probs with an entry for each model you want to compare. reals will still have a single entry, since the outcome data is the same for all models.\n# Generate sample data for three models\nprobs_comparison = {\n    \"Good Model\": np.random.rand(100) + 0.1,  # Slightly better\n    \"Bad Model\": np.random.rand(100),\n    \"Random Guess\": np.linspace(0, 1, 100)\n}\nreals_comparison = {\"Population\": np.random.randint(0, 2, 100)}\n\n\n# Create a precision-recall curve to compare the models\nfig = rk.create_precision_recall_curve(\n    probs=probs_comparison,\n    reals=reals_comparison,\n)\n\nfig.show()\n\n\nUse Case 3: Several Populations\nThis is useful when you want to evaluate a single model’s performance across different populations. A common example is comparing performance on a training set versus a testing set to check for overfitting.\nFor this, you provide probs with an entry for each population and reals with a corresponding entry for each population’s outcomes.\n# Generate sample data for train and test sets\nprobs_train = np.random.rand(100)\nreals_train = (probs_train &gt; 0.5).astype(int)\n\nprobs_test = np.random.rand(80)\nreals_test = (probs_test &gt; 0.4).astype(int) # A slightly different relationship\n\nprobs_populations = {\n    \"Train\": probs_train,\n    \"Test\": probs_test\n}\nreals_populations = {\n    \"Train\": reals_train,\n    \"Test\": reals_test\n}\n\n# Create a calibration curve to compare the model's performance\n# on the two populations.\nfig = rk.create_calibration_curve(\n    probs=probs_populations,\n    reals=reals_populations,\n)\n\nfig.show()\nAnd that’s it! You’ve now seen how to create three of the most common evaluation plots with rtichoke. From here, you can explore the other curve types and options that the library has to offer in the API Reference.",
     "crumbs": [
       "Getting Started"
     ]
