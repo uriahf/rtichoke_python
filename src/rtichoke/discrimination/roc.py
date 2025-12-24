@@ -42,39 +42,39 @@ def create_roc_curve(
         "#585123",
     ],
 ) -> Figure:
-    """Create ROC Curve.
+    """Creates a Receiver Operating Characteristic (ROC) curve.
+
+    This function generates an ROC curve, which visualizes the diagnostic
+    ability of a binary classifier system as its discrimination threshold is
+    varied. The curve plots the True Positive Rate (TPR) against the
+    False Positive Rate (FPR) at various threshold settings.
+
+    It first calculates the performance data using the provided probabilities
+    and true labels, and then generates the plot.
 
     Parameters
     ----------
     probs : Dict[str, np.ndarray]
-        Dictionary mapping a label or group name to an array of predicted
-        probabilities for the positive class.
+        A dictionary mapping model or dataset names to 1-D numpy arrays of
+        predicted probabilities.
     reals : Union[np.ndarray, Dict[str, np.ndarray]]
-        Ground-truth binary labels (0/1) as a single array, or a dictionary
-        mapping the same label/group keys used in ``probs`` to arrays of
-        ground-truth labels.
+        The true binary labels (0 or 1). Can be a single array for all
+        probabilities or a dictionary mapping names to label arrays.
     by : float, optional
-        Resolution for probability thresholds when computing the curve
-        (step size). Default is 0.01.
+        The step size for the probability thresholds, controlling the curve's
+        granularity. Defaults to 0.01.
     stratified_by : Sequence[str], optional
-        Sequence of column names to stratify the performance data by.
-        Default is ["probability_threshold"].
+        Variables for stratification. Defaults to ``["probability_threshold"]``.
     size : int, optional
-        Plot size in pixels (width and height). Default is 600.
+        The width and height of the plot in pixels. Defaults to 600.
     color_values : List[str], optional
-        List of color hex strings to use for the plotted lines. If not
-        provided, a default palette is used.
+        A list of hex color strings for the plot lines. A default palette is
+        used if not provided.
 
     Returns
     -------
     Figure
-        A Plotly ``Figure`` containing the ROC curve(s).
-
-    Notes
-    -----
-    The function delegates computation and plotting to
-    ``_create_rtichoke_plotly_curve_binary`` and returns the resulting
-    Plotly figure.
+        A Plotly ``Figure`` object representing the ROC curve.
     """
     fig = _create_rtichoke_plotly_curve_binary(
         probs,
@@ -93,30 +93,28 @@ def plot_roc_curve(
     stratified_by: Sequence[str] = ["probability_threshold"],
     size: int = 600,
 ) -> Figure:
-    """Plot ROC curve from performance data.
+    """Plots an ROC curve from pre-computed performance data.
+
+    This function is useful when you have already computed the performance
+    metrics (TPR, FPR, etc.) and want to generate an ROC plot directly from
+    that data.
 
     Parameters
     ----------
     performance_data : pl.DataFrame
-        A Polars DataFrame containing performance metrics for the ROC curve.
-        Expected columns include (but may not be limited to) ``probability_threshold``,
-        true positive rate (TPR) and false positive rate (FPR), plus any
-        stratification columns.
+        A Polars DataFrame containing the necessary performance metrics. It must
+        include columns for the true positive rate (tpr) and false positive
+        rate (fpr), along with any stratification variables.
     stratified_by : Sequence[str], optional
-        Sequence of column names used for stratification in the
-        ``performance_data``. Default is ["probability_threshold"].
+        The columns in `performance_data` used for stratification. Defaults to
+        ``["probability_threshold"]``.
     size : int, optional
-        Plot size in pixels (width and height). Default is 600.
+        The width and height of the plot in pixels. Defaults to 600.
 
     Returns
     -------
     Figure
-        A Plotly ``Figure`` containing the ROC plot.
-
-    Notes
-    -----
-    This function wraps ``_plot_rtichoke_curve_binary`` to produce a
-    ready-to-render Plotly figure from precomputed performance data.
+        A Plotly ``Figure`` object representing the ROC curve.
     """
     fig = _plot_rtichoke_curve_binary(
         performance_data,
@@ -164,7 +162,38 @@ def create_roc_curve_times(
         "#585123",
     ],
 ) -> Figure:
-    """Create time-dependent Lift Curve."""
+    """Creates a time-dependent Receiver Operating Characteristic (ROC) curve.
+
+    This function generates an ROC curve for time-to-event models. It evaluates
+    the model's performance at specified time horizons, handling censored data
+    and competing risks according to the chosen heuristics.
+
+    Parameters
+    ----------
+    probs : Dict[str, np.ndarray]
+        A dictionary of predicted probabilities.
+    reals : Union[np.ndarray, Dict[str, np.ndarray]]
+        The true event statuses (e.g., 0=censored, 1=event, 2=competing).
+    times : Union[np.ndarray, Dict[str, np.ndarray]]
+        The event or censoring times.
+    fixed_time_horizons : list[float]
+        A list of time points for performance evaluation.
+    heuristics_sets : list[Dict], optional
+        Specifies how to handle censored data and competing events.
+    by : float, optional
+        The step size for probability thresholds. Defaults to 0.01.
+    stratified_by : Sequence[str], optional
+        Variables for stratification. Defaults to ``["probability_threshold"]``.
+    size : int, optional
+        The width and height of the plot in pixels. Defaults to 600.
+    color_values : List[str], optional
+        A list of hex color strings for the plot lines.
+
+    Returns
+    -------
+    Figure
+        A Plotly ``Figure`` object representing the time-dependent ROC curve.
+    """
 
     fig = _create_rtichoke_plotly_curve_times(
         probs,

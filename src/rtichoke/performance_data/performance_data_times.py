@@ -34,39 +34,49 @@ def prepare_performance_data_times(
     stratified_by: Sequence[str] = ("probability_threshold",),
     by: float = 0.01,
 ) -> pl.DataFrame:
-    """Prepare performance data with a time dimension.
+    """Prepare performance data for models with time-to-event outcomes.
+
+    This function calculates a comprehensive set of performance metrics for
+    models predicting time-to-event outcomes. It handles censored data and
+    competing events by applying specified heuristics at different time
+    horizons. The function first bins the data using
+    `prepare_binned_classification_data_times` and then computes cumulative,
+    Aalen-Johansen-based performance metrics.
+
+    The resulting dataframe is the primary input for time-dependent plotting
+    functions.
 
     Parameters
     ----------
     probs : Dict[str, np.ndarray]
-        Mapping from dataset name to predicted probabilities (1-D numpy arrays).
+        A dictionary mapping model or dataset names (str) to their predicted
+        probabilities of an event occurring by a given time.
     reals : Union[np.ndarray, Dict[str, np.ndarray]]
-        True event labels. Can be a single array aligned to pooled probabilities
-        or a dictionary mapping each dataset name to its true-label array. Labels
-        are expected to be integers (e.g., 0/1 for binary, or competing event codes).
+        The true event statuses. Can be a single array or a dictionary.
+        Labels should be integers indicating the outcome (e.g., 0=censored,
+        1=event of interest, 2=competing event).
     times : Union[np.ndarray, Dict[str, np.ndarray]]
-        Event or censoring times corresponding to `reals`. Either a single array
-        or a dictionary keyed like `probs` when multiple datasets are provided.
+        The event or censoring times corresponding to the `reals`. Can be a
+        single array or a dictionary.
     fixed_time_horizons : list[float]
-        Fixed time horizons (same units as `times`) at which to evaluate performance.
+        A list of time points at which to evaluate the model's performance.
     heuristics_sets : list[Dict], optional
-        List of heuristic dictionaries controlling censoring/competing-event handling.
-        Default is a single heuristic set:
+        A list of dictionaries, each specifying how to handle censored data
+        and competing events. The default is
         ``[{"censoring_heuristic": "adjusted",
-            "competing_heuristic": "adjusted_as_negative"}]``
+        "competing_heuristic": "adjusted_as_negative"}]``.
     stratified_by : Sequence[str], optional
-        Stratification variables used to create combinations/breaks. Defaults to
+        Variables by which to stratify the analysis. Defaults to
         ``("probability_threshold",)``.
     by : float, optional
-        Step width for probability-threshold breaks (used to create the grid of
-        cutoffs). Defaults to ``0.01``.
+        The step size for probability thresholds. Defaults to ``0.01``.
 
     Returns
     -------
     pl.DataFrame
-        A Polars DataFrame containing performance metrics computed across probability
-        thresholds and fixed time horizons. Columns include the probability cutoff,
-        fixed time horizon, heuristic identifiers, and AJ-derived performance measures.
+        A Polars DataFrame with performance metrics computed across probability
+        thresholds and time horizons. It includes columns for cutoffs, time
+        points, heuristics, and performance measures.
     """
     # 1. Get the underlying binned time-dependent classification data
     final_adjusted_data = prepare_binned_classification_data_times(
@@ -105,44 +115,42 @@ def prepare_binned_classification_data_times(
     risk_set_scope: Sequence[str] = ["pooled_by_cutoff", "within_stratum"],
 ) -> pl.DataFrame:
     """
-    Prepare probability-binned, time-dependent classification data.
+    Prepare binned, time-dependent classification data.
 
-    This constructs the underlying, binned data across probability thresholds,
-    fixed time horizons, and heuristic sets. It returns the adjusted data
-    before the cumulative Aalen–Johansen and performance-transformation steps.
+    This function constructs the foundational binned data needed for
+    time-to-event performance analysis. It bins predictions by probability
+    thresholds, applies censoring and competing event heuristics, and stratifies
+    the data across specified time horizons. The output is a detailed breakdown
+    of outcomes within each bin, which can be used for calibration or passed to
+    `prepare_performance_data_times` for full performance metric calculation.
 
     Parameters
     ----------
     probs : Dict[str, np.ndarray]
-        Mapping from dataset name to predicted probabilities (1-D numpy arrays).
+        A dictionary mapping model or dataset names (str) to their predicted
+        probabilities.
     reals : Union[np.ndarray, Dict[str, np.ndarray]]
-        True event labels. Can be a single array aligned to pooled probabilities
-        or a dictionary mapping each dataset name to its true-label array. Labels
-        are expected to be integers (e.g., 0/1 for binary, or competing event codes).
+        The true event statuses (e.g., 0=censored, 1=event, 2=competing).
     times : Union[np.ndarray, Dict[str, np.ndarray]]
-        Event or censoring times corresponding to `reals`. Either a single array
-        or a dictionary keyed like `probs` when multiple datasets are provided.
+        The event or censoring times.
     fixed_time_horizons : list[float]
-        Fixed time horizons (same units as `times`) at which to evaluate performance.
+        A list of time points for performance evaluation.
     heuristics_sets : list[Dict], optional
-        List of heuristic dictionaries controlling censoring/competing-event handling.
-        Default is a single heuristic set:
-        ``[{"censoring_heuristic": "adjusted",
-            "competing_heuristic": "adjusted_as_negative"}]``
+        Specifies how to handle censored data and competing events.
     stratified_by : Sequence[str], optional
-        Stratification variables used to create combinations/breaks. Defaults to
-        ``("probability_threshold",)``.
+        Variables for stratification. Defaults to ``("probability_threshold",)``.
     by : float, optional
-        Step width for probability-threshold breaks (used to create the grid of
-        cutoffs). Defaults to ``0.01``.
+        The step size for probability thresholds. Defaults to ``0.01``.
+    risk_set_scope : Sequence[str], optional
+        Defines the scope for risk set calculations. Defaults to
+        ``["pooled_by_cutoff", "within_stratum"]``.
 
     Returns
     -------
     pl.DataFrame
-        A Polars DataFrame containing probability-binned, time-dependent
-        classification data (one row per combination of dataset / bin /
-        time horizon / heuristic / strata). This is the basis for histograms,
-        calibration diagnostics, and time-dependent performance curves.
+        A Polars DataFrame with binned, time-dependent data. Each row
+        represents a unique combination of dataset, bin, time horizon,
+        heuristic, and other strata.
     """
     breaks = create_breaks_values(None, "probability_threshold", by)
 

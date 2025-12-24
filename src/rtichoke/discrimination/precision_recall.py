@@ -42,39 +42,34 @@ def create_precision_recall_curve(
         "#585123",
     ],
 ) -> Figure:
-    """Create Precision-Recall Curve.
+    """Creates a Precision-Recall curve.
+
+    This function generates a Precision-Recall curve, which is a common
+    alternative to the ROC curve, particularly for imbalanced datasets. It
+    plots precision (Positive Predictive Value) against recall (True Positive
+    Rate) for a binary classifier at different probability thresholds.
 
     Parameters
     ----------
     probs : Dict[str, np.ndarray]
-        Dictionary mapping a label or group name to an array of predicted
-        probabilities for the positive class.
+        A dictionary mapping model or dataset names to 1-D numpy arrays of
+        predicted probabilities.
     reals : Union[np.ndarray, Dict[str, np.ndarray]]
-        Ground-truth binary labels (0/1) as a single array, or a dictionary
-        mapping the same label/group keys used in ``probs`` to arrays of
-        ground-truth labels.
+        The true binary labels (0 or 1). Can be a single array or a dictionary
+        mapping names to label arrays.
     by : float, optional
-        Resolution for probability thresholds when computing the curve
-        (step size). Default is 0.01.
+        The step size for the probability thresholds. Defaults to 0.01.
     stratified_by : Sequence[str], optional
-        Sequence of column names to stratify the performance data by.
-        Default is ["probability_threshold"].
+        Variables for stratification. Defaults to ``["probability_threshold"]``.
     size : int, optional
-        Plot size in pixels (width and height). Default is 600.
+        The width and height of the plot in pixels. Defaults to 600.
     color_values : List[str], optional
-        List of color hex strings to use for the plotted lines. If not
-        provided, a default palette is used.
+        A list of hex color strings for the plot lines.
 
     Returns
     -------
     Figure
-        A Plotly ``Figure`` containing the Precision-Recall curve(s).
-
-    Notes
-    -----
-    The function delegates computation and plotting to
-    ``_create_rtichoke_plotly_curve_binary`` and returns the resulting
-    Plotly figure.
+        A Plotly ``Figure`` object representing the Precision-Recall curve.
     """
     fig = _create_rtichoke_plotly_curve_binary(
         probs,
@@ -93,30 +88,26 @@ def plot_precision_recall_curve(
     stratified_by: Sequence[str] = ["probability_threshold"],
     size: int = 600,
 ) -> Figure:
-    """Plot Precision-Recall curve from performance data.
+    """Plots a Precision-Recall curve from pre-computed performance data.
+
+    This function is useful when you have already computed the performance
+    metrics and want to generate a Precision-Recall plot directly.
 
     Parameters
     ----------
     performance_data : pl.DataFrame
-        A Polars DataFrame containing performance metrics for the
-        Precision-Recall curve. Expected columns include (but may not be
-        limited to) ``probability_threshold``, precision and recall values,
-        plus any stratification columns.
+        A Polars DataFrame with the necessary performance metrics, including
+        precision (ppv) and recall (tpr), along with any stratification variables.
     stratified_by : Sequence[str], optional
-        Sequence of column names used for stratification in the
-        ``performance_data``. Default is ["probability_threshold"].
+        The columns in `performance_data` used for stratification. Defaults to
+        ``["probability_threshold"]``.
     size : int, optional
-        Plot size in pixels (width and height). Default is 600.
+        The width and height of the plot in pixels. Defaults to 600.
 
     Returns
     -------
     Figure
-        A Plotly ``Figure`` containing the Precision-Recall plot.
-
-    Notes
-    -----
-    This function wraps ``_plot_rtichoke_curve_binary`` to produce a
-    ready-to-render Plotly figure from precomputed performance data.
+        A Plotly ``Figure`` object representing the Precision-Recall curve.
     """
     fig = _plot_rtichoke_curve_binary(
         performance_data,
@@ -163,7 +154,38 @@ def create_precision_recall_curve_times(
         "#585123",
     ],
 ) -> Figure:
-    """Create time-dependent Lift Curve."""
+    """Creates a time-dependent Precision-Recall curve.
+
+    Generates a Precision-Recall curve for time-to-event models, evaluating
+    performance at specified time horizons. It handles censored data and
+    competing risks based on the provided heuristics.
+
+    Parameters
+    ----------
+    probs : Dict[str, np.ndarray]
+        A dictionary of predicted probabilities.
+    reals : Union[np.ndarray, Dict[str, np.ndarray]]
+        The true event statuses.
+    times : Union[np.ndarray, Dict[str, np.ndarray]]
+        The event or censoring times.
+    fixed_time_horizons : list[float]
+        A list of time points for performance evaluation.
+    heuristics_sets : list[Dict], optional
+        Specifies how to handle censored data and competing events.
+    by : float, optional
+        The step size for probability thresholds. Defaults to 0.01.
+    stratified_by : Sequence[str], optional
+        Variables for stratification. Defaults to ``["probability_threshold"]``.
+    size : int, optional
+        The width and height of the plot in pixels. Defaults to 600.
+    color_values : List[str], optional
+        A list of hex color strings for the plot lines.
+
+    Returns
+    -------
+    Figure
+        A Plotly ``Figure`` object for the time-dependent Precision-Recall curve.
+    """
 
     fig = _create_rtichoke_plotly_curve_times(
         probs,
