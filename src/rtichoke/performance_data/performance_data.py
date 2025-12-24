@@ -5,13 +5,15 @@ A module for Performance Data
 from typing import Dict, Union
 import polars as pl
 from collections.abc import Sequence
-from rtichoke.helpers.sandbox_observable_helpers import (
+from rtichoke.processing.adjustments import _create_adjusted_data_binary
+from rtichoke.processing.combinations import (
     _create_aj_data_combinations_binary,
     create_breaks_values,
-    _create_list_data_to_adjust_binary,
-    _create_adjusted_data_binary,
-    _cast_and_join_adjusted_data_binary,
+)
+from rtichoke.processing.transforms import (
     _calculate_cumulative_aj_data_binary,
+    _cast_and_join_adjusted_data_binary,
+    _create_list_data_to_adjust_binary,
     _turn_cumulative_aj_to_performance_data,
 )
 import numpy as np

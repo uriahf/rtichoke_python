@@ -5,14 +5,16 @@ A module for Performance Data with Time Dimension
 from typing import Dict, Union
 import polars as pl
 from collections.abc import Sequence
-from rtichoke.helpers.sandbox_observable_helpers import (
-    create_breaks_values,
+from rtichoke.processing.adjustments import create_adjusted_data
+from rtichoke.processing.combinations import (
     create_aj_data_combinations,
-    _create_list_data_to_adjust,
-    create_adjusted_data,
-    cast_and_join_adjusted_data,
+    create_breaks_values,
+)
+from rtichoke.processing.transforms import (
     _calculate_cumulative_aj_data,
+    _create_list_data_to_adjust,
     _turn_cumulative_aj_to_performance_data,
+    cast_and_join_adjusted_data,
 )
 
 import numpy as np

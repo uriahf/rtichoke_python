@@ -4,7 +4,7 @@ A module for Lift Curves using Plotly helpers
 
 from typing import Dict, List, Sequence, Union
 from plotly.graph_objs._figure import Figure
-from rtichoke.helpers.plotly_helper_functions import (
+from rtichoke.processing.plotly_helper_functions import (
     _create_rtichoke_plotly_curve_times,
     _create_rtichoke_plotly_curve_binary,
     _plot_rtichoke_curve_binary,
