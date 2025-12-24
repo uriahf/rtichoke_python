@@ -201,14 +201,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="use-case-1-single-model">Use Case 1: Single Model</h3>
 <p>This is the simplest case, where you want to evaluate the performance of a single predictive model.</p>
 <p>For this, you provide <code>probs</code> with a single entry for your model and <code>reals</code> with a single entry for the corresponding outcomes.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate realistic sample data for a "good" model</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate realistic sample data for a model</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>probs_positive_class <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.5</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>probs_negative_class <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.5</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>probs_combined <span class="op">=</span> np.concatenate([probs_positive_class, probs_negative_class])</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>reals_combined <span class="op">=</span> np.concatenate([np.ones(<span class="dv">50</span>), np.zeros(<span class="dv">50</span>)])</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>shuffle_index <span class="op">=</span> np.random.permutation(<span class="dv">100</span>)</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>probs_single <span class="op">=</span> {<span class="st">"Good Model"</span>: probs_combined[shuffle_index]}</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>probs_single <span class="op">=</span> {<span class="st">"Model A"</span>: probs_combined[shuffle_index]}</span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>reals_single <span class="op">=</span> {<span class="st">"Population"</span>: reals_combined[shuffle_index]}</span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a ROC curve</span></span>
@@ -225,23 +225,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="use-case-2-models-comparison">Use Case 2: Models Comparison</h3>
 <p>Often, you want to compare the performance of several different models on the <em>same</em> population.</p>
 <p>For this, you provide <code>probs</code> with an entry for each model you want to compare. <code>reals</code> will still have a single entry, since the outcome data is the same for all models.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate data for a "Good Model", a "Bad Model", and a "Random Guess"</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># The "Good Model" has a clearer separation of probabilities.</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>good_probs_pos <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.4</span> <span class="op">+</span> <span class="fl">0.6</span>  <span class="co"># 0.6 to 1.0</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>good_probs_neg <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.4</span>       <span class="co"># 0.0 to 0.4</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>good_probs <span class="op">=</span> np.concatenate([good_probs_pos, good_probs_neg])</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate data for two different models to compare.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Model A has a clearer separation of probabilities.</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>model_a_probs_pos <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.4</span> <span class="op">+</span> <span class="fl">0.6</span>  <span class="co"># 0.6 to 1.0</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>model_a_probs_neg <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.4</span>       <span class="co"># 0.0 to 0.4</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>model_a_probs <span class="op">=</span> np.concatenate([model_a_probs_pos, model_a_probs_neg])</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># The "Bad Model" has more overlap.</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>bad_probs_pos <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.4</span>  <span class="co"># 0.4 to 0.9</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>bad_probs_neg <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.1</span>  <span class="co"># 0.1 to 0.6</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>bad_probs <span class="op">=</span> np.concatenate([bad_probs_pos, bad_probs_neg])</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Model B has more overlap.</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>model_b_probs_pos <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.4</span>  <span class="co"># 0.4 to 0.9</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>model_b_probs_neg <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.1</span>  <span class="co"># 0.1 to 0.6</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>model_b_probs <span class="op">=</span> np.concatenate([model_b_probs_pos, model_b_probs_neg])</span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>reals_comparison_data <span class="op">=</span> np.concatenate([np.ones(<span class="dv">50</span>), np.zeros(<span class="dv">50</span>)])</span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>shuffle_index_comp <span class="op">=</span> np.random.permutation(<span class="dv">100</span>)</span>
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>probs_comparison <span class="op">=</span> {</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Good Model"</span>: good_probs[shuffle_index_comp],</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Bad Model"</span>: bad_probs[shuffle_index_comp],</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Model A"</span>: model_a_probs[shuffle_index_comp],</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Model B"</span>: model_b_probs[shuffle_index_comp],</span>
 <span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Random Guess"</span>: np.random.rand(<span class="dv">100</span>)</span>
 <span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>reals_comparison <span class="op">=</span> {<span class="st">"Population"</span>: reals_comparison_data[shuffle_index_comp]}</span>

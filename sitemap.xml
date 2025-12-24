@@ -2,70 +2,70 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/tutorials/getting_started.html</loc>
-    <lastmod>2025-12-24T17:24:38.248Z</lastmod>
+    <lastmod>2025-12-24T17:33:42.269Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/create_decision_curve.html</loc>
-    <lastmod>2025-12-24T17:25:15.225Z</lastmod>
+    <lastmod>2025-12-24T17:34:15.686Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/rtichoke.html</loc>
-    <lastmod>2025-12-24T17:24:38.248Z</lastmod>
+    <lastmod>2025-12-24T17:33:42.269Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/plot_precision_recall_curve.html</loc>
-    <lastmod>2025-12-24T17:25:15.203Z</lastmod>
+    <lastmod>2025-12-24T17:34:15.664Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/plot_gains_curve.html</loc>
-    <lastmod>2025-12-24T17:25:15.209Z</lastmod>
+    <lastmod>2025-12-24T17:34:15.670Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve.html</loc>
-    <lastmod>2025-12-24T17:24:38.247Z</lastmod>
+    <lastmod>2025-12-24T17:33:42.268Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/plot_roc_curve.html</loc>
-    <lastmod>2025-12-24T17:25:15.198Z</lastmod>
+    <lastmod>2025-12-24T17:34:15.659Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/index.html</loc>
-    <lastmod>2025-12-24T17:25:15.117Z</lastmod>
+    <lastmod>2025-12-24T17:34:15.579Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/index.html</loc>
-    <lastmod>2025-12-24T17:24:38.246Z</lastmod>
+    <lastmod>2025-12-24T17:33:42.267Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/plot_decision_curve.html</loc>
-    <lastmod>2025-12-24T17:25:15.233Z</lastmod>
+    <lastmod>2025-12-24T17:34:15.693Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/create_lift_curve.html</loc>
-    <lastmod>2025-12-24T17:25:15.192Z</lastmod>
+    <lastmod>2025-12-24T17:34:15.653Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/prepare_performance_data.html</loc>
-    <lastmod>2025-12-24T17:25:15.149Z</lastmod>
+    <lastmod>2025-12-24T17:34:15.611Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/plot_lift_curve.html</loc>
-    <lastmod>2025-12-24T17:25:15.215Z</lastmod>
+    <lastmod>2025-12-24T17:34:15.676Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/prepare_performance_data_times.html</loc>
-    <lastmod>2025-12-24T17:25:15.159Z</lastmod>
+    <lastmod>2025-12-24T17:34:15.620Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/create_precision_recall_curve.html</loc>
-    <lastmod>2025-12-24T17:25:15.175Z</lastmod>
+    <lastmod>2025-12-24T17:34:15.637Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/create_gains_curve.html</loc>
-    <lastmod>2025-12-24T17:25:15.184Z</lastmod>
+    <lastmod>2025-12-24T17:34:15.645Z</lastmod>
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/create_roc_curve.html</loc>
-    <lastmod>2025-12-24T17:25:15.167Z</lastmod>
+    <lastmod>2025-12-24T17:34:15.628Z</lastmod>
   </url>
 </urlset>
