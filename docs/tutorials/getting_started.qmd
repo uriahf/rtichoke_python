@@ -11,9 +11,6 @@ First, let's import the necessary libraries. We'll need `numpy` for data manipul
 ```python
 import numpy as np
 import rtichoke as rk
-
-# For reproducibility
-np.random.seed(42)
 ```
 
 ## 2. Understanding the Inputs
@@ -32,15 +29,10 @@ This is the simplest case, where you want to evaluate the performance of a singl
 For this, you provide `probs` with a single entry for your model and `reals` with a single entry for the corresponding outcomes.
 
 ```python
-# Generate realistic sample data for a model
-probs_positive_class = np.random.rand(50) * 0.5 + 0.5
-probs_negative_class = np.random.rand(50) * 0.5
-probs_combined = np.concatenate([probs_positive_class, probs_negative_class])
-reals_combined = np.concatenate([np.ones(50), np.zeros(50)])
-shuffle_index = np.random.permutation(100)
-
-probs_single = {"Model A": probs_combined[shuffle_index]}
-reals_single = {"Population": reals_combined[shuffle_index]}
+# Sample data for a model. Note that the probabilities for the
+# positive class (1) are generally higher than for the negative class (0).
+probs_single = {"Model A": np.array([0.1, 0.9, 0.4, 0.8, 0.3, 0.7, 0.2, 0.6])}
+reals_single = {"Population": np.array([0, 1, 0, 1, 0, 1, 0, 1])}
 
 # Create a ROC curve
 fig = rk.create_roc_curve(
@@ -60,26 +52,13 @@ Often, you want to compare the performance of several different models on the *s
 For this, you provide `probs` with an entry for each model you want to compare. `reals` will still have a single entry, since the outcome data is the same for all models.
 
 ```python
-# Generate data for two different models to compare.
-# Model A has a clearer separation of probabilities.
-model_a_probs_pos = np.random.rand(50) * 0.4 + 0.6  # 0.6 to 1.0
-model_a_probs_neg = np.random.rand(50) * 0.4       # 0.0 to 0.4
-model_a_probs = np.concatenate([model_a_probs_pos, model_a_probs_neg])
-
-# Model B has more overlap.
-model_b_probs_pos = np.random.rand(50) * 0.5 + 0.4  # 0.4 to 0.9
-model_b_probs_neg = np.random.rand(50) * 0.5 + 0.1  # 0.1 to 0.6
-model_b_probs = np.concatenate([model_b_probs_pos, model_b_probs_neg])
-
-reals_comparison_data = np.concatenate([np.ones(50), np.zeros(50)])
-shuffle_index_comp = np.random.permutation(100)
-
+# Sample data for two models. Model A is better at separating the classes.
 probs_comparison = {
-    "Model A": model_a_probs[shuffle_index_comp],
-    "Model B": model_b_probs[shuffle_index_comp],
-    "Random Guess": np.random.rand(100)
+    "Model A": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),
+    "Model B": np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6]),
+    "Random Guess": np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
 }
-reals_comparison = {"Population": reals_comparison_data[shuffle_index_comp]}
+reals_comparison = {"Population": np.array([0, 1, 0, 1, 0, 1])}
 
 
 # Create a precision-recall curve to compare the models
@@ -98,30 +77,15 @@ This is useful when you want to evaluate a single model's performance across dif
 For this, you provide `probs` with an entry for each population and `reals` with a corresponding entry for each population's outcomes.
 
 ```python
-# Generate sample data for a train and test set.
-# Let's assume the model is slightly overfit, performing better on the train set.
-
-# Train set: clear separation
-train_probs_pos = np.random.rand(50) * 0.4 + 0.6
-train_probs_neg = np.random.rand(50) * 0.4
-train_probs = np.concatenate([train_probs_pos, train_probs_neg])
-train_reals = np.concatenate([np.ones(50), np.zeros(50)])
-train_shuffle = np.random.permutation(100)
-
-# Test set: more overlap
-test_probs_pos = np.random.rand(40) * 0.5 + 0.4
-test_probs_neg = np.random.rand(40) * 0.5 + 0.1
-test_probs = np.concatenate([test_probs_pos, test_probs_neg])
-test_reals = np.concatenate([np.ones(40), np.zeros(40)])
-test_shuffle = np.random.permutation(80)
-
+# Sample data for a train and test set.
+# The model performs slightly better on the train set.
 probs_populations = {
-    "Train": train_probs[train_shuffle],
-    "Test": test_probs[test_shuffle]
+    "Train": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),
+    "Test":  np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6])
 }
 reals_populations = {
-    "Train": train_reals[train_shuffle],
-    "Test": test_reals[test_shuffle]
+    "Train": np.array([0, 1, 0, 1, 0, 1]),
+    "Test":  np.array([0, 1, 0, 1, 0, 0]) # Note one outcome is different
 }
 
 # Create a calibration curve to compare the model's performance

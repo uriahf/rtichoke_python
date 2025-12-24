@@ -30,21 +30,10 @@ Here's a quick example of how to create a ROC curve for a single model:
 import numpy as np
 import rtichoke as rk
 
-# For reproducibility
-np.random.seed(42)
-
-# Generate more realistic sample data for a model
-# Probabilities for the positive class are generally higher
-probs_positive_class = np.random.rand(50) * 0.5 + 0.5  # High probabilities (0.5 to 1.0)
-probs_negative_class = np.random.rand(50) * 0.5       # Low probabilities (0.0 to 0.5)
-
-# Combine and shuffle the data
-probs_combined = np.concatenate([probs_positive_class, probs_negative_class])
-reals_combined = np.concatenate([np.ones(50), np.zeros(50)])
-
-shuffle_index = np.random.permutation(100)
-probs = {'Model A': probs_combined[shuffle_index]}
-reals = {'Population': reals_combined[shuffle_index]}
+# Sample data for a model. Note that the probabilities for the
+# positive class (1) are generally higher than for the negative class (0).
+probs = {'Model A': np.array([0.1, 0.9, 0.4, 0.8, 0.3, 0.7, 0.2, 0.6])}
+reals = {'Population': np.array([0, 1, 0, 1, 0, 1, 0, 1])}
 
 
 # Create the ROC curve
