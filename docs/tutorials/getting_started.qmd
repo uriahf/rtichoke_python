@@ -1,8 +1,8 @@
 ---
-title: "Getting Started with Rtichoke"
+title: "Getting Started with rtichoke"
 ---
 
-This tutorial provides a basic introduction to the `rtichoke` library. We'll walk through the process of preparing data, creating a decision curve, and visualizing the results.
+This tutorial provides an introduction to the `rtichoke` library, showing how to visualize model performance for different scenarios.
 
 ## 1. Import Libraries
 
@@ -13,50 +13,89 @@ import numpy as np
 import rtichoke as rk
 ```
 
-## 2. Prepare Your Data
+## 2. Understanding the Inputs
 
-`rtichoke` expects data in a specific format. You'll need two main components:
+`rtichoke` expects two main inputs for creating performance curves:
 
-*   **Probabilities (`probs`)**: A dictionary where keys are model names and values are NumPy arrays of predicted probabilities.
-*   **Real Outcomes (`reals`)**: A NumPy array containing the true binary outcomes (0 or 1).
+*   **`probs` (Probabilities)**: A dictionary where keys are model or population names and values are lists or NumPy arrays of predicted probabilities.
+*   **`reals` (Outcomes)**: A dictionary where keys are population names and values are lists or NumPy arrays of the true binary outcomes (0 or 1).
 
-Let's create some sample data for two different models:
+Let's look at the three main use cases.
 
-```python
-# Sample data from the dcurves_example.py script
-probs_dict = {
-    "Marker": np.array([
-        0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.1, 0.2, 0.3, 0.4, 0.5,
-        0.6, 0.7, 0.8, 0.9, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9
-    ]),
-    "Marker2": np.array([
-        0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.1, 0.2, 0.3, 0.4, 0.5,
-        0.6, 0.7, 0.8, 0.9, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9
-    ])
-}
-reals = np.array([
-    1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1
-])
-```
+### Use Case 1: Single Model
 
-## 3. Create a Decision Curve
+This is the simplest case, where you want to evaluate the performance of a single predictive model.
 
-Now that we have our data, we can create a decision curve. This is a simple one-liner with `rtichoke`:
+For this, you provide `probs` with a single entry for your model and `reals` with a single entry for the corresponding outcomes.
 
 ```python
-fig = rk.create_decision_curve(
-    probs=probs_dict,
-    reals=reals,
+# Sample data for a model. Note that the probabilities for the
+# positive class (1) are generally higher than for the negative class (0).
+probs_single = {"Model A": np.array([0.1, 0.9, 0.4, 0.8, 0.3, 0.7, 0.2, 0.6])}
+reals_single = {"Population": np.array([0, 1, 0, 1, 0, 1, 0, 1])}
+
+# Create a ROC curve
+fig = rk.create_roc_curve(
+    probs=probs_single,
+    reals=reals_single,
 )
-```
 
-## 4. Show the Plot
-
-Finally, let's display the plot. Since `rtichoke` uses Plotly under the hood, you can show the figure just like any other Plotly object.
-
-```python
-# To display the plot in an interactive environment (like a Jupyter notebook)
+# In an interactive environment (like a Jupyter notebook),
+# this will display the plot.
 fig.show()
 ```
 
-And that's it! You've created your first decision curve with `rtichoke`. From here, you can explore the other curve types and options that the library has to offer.
+### Use Case 2: Models Comparison
+
+Often, you want to compare the performance of several different models on the *same* population.
+
+For this, you provide `probs` with an entry for each model you want to compare. `reals` will still have a single entry, since the outcome data is the same for all models.
+
+```python
+# Sample data for two models. Model A is better at separating the classes.
+probs_comparison = {
+    "Model A": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),
+    "Model B": np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6]),
+    "Random Guess": np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+}
+reals_comparison = {"Population": np.array([0, 1, 0, 1, 0, 1])}
+
+
+# Create a precision-recall curve to compare the models
+fig = rk.create_precision_recall_curve(
+    probs=probs_comparison,
+    reals=reals_comparison,
+)
+
+fig.show()
+```
+
+### Use Case 3: Several Populations
+
+This is useful when you want to evaluate a single model's performance across different populations. A common example is comparing performance on a training set versus a testing set to check for overfitting.
+
+For this, you provide `probs` with an entry for each population and `reals` with a corresponding entry for each population's outcomes.
+
+```python
+# Sample data for a train and test set.
+# The model performs slightly better on the train set.
+probs_populations = {
+    "Train": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),
+    "Test":  np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6])
+}
+reals_populations = {
+    "Train": np.array([0, 1, 0, 1, 0, 1]),
+    "Test":  np.array([0, 1, 0, 1, 0, 0]) # Note one outcome is different
+}
+
+# Create a calibration curve to compare the model's performance
+# on the two populations.
+fig = rk.create_calibration_curve(
+    probs=probs_populations,
+    reals=reals_populations,
+)
+
+fig.show()
+```
+
+And that's it! You've now seen how to create three of the most common evaluation plots with `rtichoke`. From here, you can explore the other curve types and options that the library has to offer in the [API Reference](../reference/index.qmd).
