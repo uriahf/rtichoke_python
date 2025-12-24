@@ -184,10 +184,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="import-libraries">1. Import Libraries</h2>
 <p>First, let’s import the necessary libraries. We’ll need <code>numpy</code> for data manipulation and <code>rtichoke</code> for the core functionality.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rtichoke <span class="im">as</span> rk</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># For reproducibility</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">42</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rtichoke <span class="im">as</span> rk</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="understanding-the-inputs" class="level2">
 <h2 class="anchored" data-anchor-id="understanding-the-inputs">2. Understanding the Inputs</h2>
@@ -201,98 +198,65 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="use-case-1-single-model">Use Case 1: Single Model</h3>
 <p>This is the simplest case, where you want to evaluate the performance of a single predictive model.</p>
 <p>For this, you provide <code>probs</code> with a single entry for your model and <code>reals</code> with a single entry for the corresponding outcomes.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate realistic sample data for a model</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>probs_positive_class <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.5</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>probs_negative_class <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.5</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>probs_combined <span class="op">=</span> np.concatenate([probs_positive_class, probs_negative_class])</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>reals_combined <span class="op">=</span> np.concatenate([np.ones(<span class="dv">50</span>), np.zeros(<span class="dv">50</span>)])</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>shuffle_index <span class="op">=</span> np.random.permutation(<span class="dv">100</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>probs_single <span class="op">=</span> {<span class="st">"Model A"</span>: probs_combined[shuffle_index]}</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>reals_single <span class="op">=</span> {<span class="st">"Population"</span>: reals_combined[shuffle_index]}</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a ROC curve</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_roc_curve(</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>probs_single,</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_single,</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># In an interactive environment (like a Jupyter notebook),</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co"># this will display the plot.</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample data for a model. Note that the probabilities for the</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># positive class (1) are generally higher than for the negative class (0).</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>probs_single <span class="op">=</span> {<span class="st">"Model A"</span>: np.array([<span class="fl">0.1</span>, <span class="fl">0.9</span>, <span class="fl">0.4</span>, <span class="fl">0.8</span>, <span class="fl">0.3</span>, <span class="fl">0.7</span>, <span class="fl">0.2</span>, <span class="fl">0.6</span>])}</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>reals_single <span class="op">=</span> {<span class="st">"Population"</span>: np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>])}</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a ROC curve</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_roc_curve(</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>probs_single,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_single,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># In an interactive environment (like a Jupyter notebook),</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># this will display the plot.</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="use-case-2-models-comparison" class="level3">
 <h3 class="anchored" data-anchor-id="use-case-2-models-comparison">Use Case 2: Models Comparison</h3>
 <p>Often, you want to compare the performance of several different models on the <em>same</em> population.</p>
 <p>For this, you provide <code>probs</code> with an entry for each model you want to compare. <code>reals</code> will still have a single entry, since the outcome data is the same for all models.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate data for two different models to compare.</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Model A has a clearer separation of probabilities.</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>model_a_probs_pos <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.4</span> <span class="op">+</span> <span class="fl">0.6</span>  <span class="co"># 0.6 to 1.0</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>model_a_probs_neg <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.4</span>       <span class="co"># 0.0 to 0.4</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>model_a_probs <span class="op">=</span> np.concatenate([model_a_probs_pos, model_a_probs_neg])</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Model B has more overlap.</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>model_b_probs_pos <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.4</span>  <span class="co"># 0.4 to 0.9</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>model_b_probs_neg <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.1</span>  <span class="co"># 0.1 to 0.6</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>model_b_probs <span class="op">=</span> np.concatenate([model_b_probs_pos, model_b_probs_neg])</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>reals_comparison_data <span class="op">=</span> np.concatenate([np.ones(<span class="dv">50</span>), np.zeros(<span class="dv">50</span>)])</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>shuffle_index_comp <span class="op">=</span> np.random.permutation(<span class="dv">100</span>)</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>probs_comparison <span class="op">=</span> {</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Model A"</span>: model_a_probs[shuffle_index_comp],</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Model B"</span>: model_b_probs[shuffle_index_comp],</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Random Guess"</span>: np.random.rand(<span class="dv">100</span>)</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>reals_comparison <span class="op">=</span> {<span class="st">"Population"</span>: reals_comparison_data[shuffle_index_comp]}</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a precision-recall curve to compare the models</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_precision_recall_curve(</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>probs_comparison,</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_comparison,</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample data for two models. Model A is better at separating the classes.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>probs_comparison <span class="op">=</span> {</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Model A"</span>: np.array([<span class="fl">0.1</span>, <span class="fl">0.9</span>, <span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="fl">0.3</span>, <span class="fl">0.7</span>]),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Model B"</span>: np.array([<span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="fl">0.3</span>, <span class="fl">0.7</span>, <span class="fl">0.4</span>, <span class="fl">0.6</span>]),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Random Guess"</span>: np.array([<span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>])</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>reals_comparison <span class="op">=</span> {<span class="st">"Population"</span>: np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>])}</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a precision-recall curve to compare the models</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_precision_recall_curve(</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>probs_comparison,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_comparison,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="use-case-3-several-populations" class="level3">
 <h3 class="anchored" data-anchor-id="use-case-3-several-populations">Use Case 3: Several Populations</h3>
 <p>This is useful when you want to evaluate a single model’s performance across different populations. A common example is comparing performance on a training set versus a testing set to check for overfitting.</p>
 <p>For this, you provide <code>probs</code> with an entry for each population and <code>reals</code> with a corresponding entry for each population’s outcomes.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate sample data for a train and test set.</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Let's assume the model is slightly overfit, performing better on the train set.</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Train set: clear separation</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>train_probs_pos <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.4</span> <span class="op">+</span> <span class="fl">0.6</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>train_probs_neg <span class="op">=</span> np.random.rand(<span class="dv">50</span>) <span class="op">*</span> <span class="fl">0.4</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>train_probs <span class="op">=</span> np.concatenate([train_probs_pos, train_probs_neg])</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>train_reals <span class="op">=</span> np.concatenate([np.ones(<span class="dv">50</span>), np.zeros(<span class="dv">50</span>)])</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>train_shuffle <span class="op">=</span> np.random.permutation(<span class="dv">100</span>)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Test set: more overlap</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>test_probs_pos <span class="op">=</span> np.random.rand(<span class="dv">40</span>) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.4</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>test_probs_neg <span class="op">=</span> np.random.rand(<span class="dv">40</span>) <span class="op">*</span> <span class="fl">0.5</span> <span class="op">+</span> <span class="fl">0.1</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>test_probs <span class="op">=</span> np.concatenate([test_probs_pos, test_probs_neg])</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>test_reals <span class="op">=</span> np.concatenate([np.ones(<span class="dv">40</span>), np.zeros(<span class="dv">40</span>)])</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>test_shuffle <span class="op">=</span> np.random.permutation(<span class="dv">80</span>)</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>probs_populations <span class="op">=</span> {</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: train_probs[train_shuffle],</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: test_probs[test_shuffle]</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>reals_populations <span class="op">=</span> {</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: train_reals[train_shuffle],</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: test_reals[test_shuffle]</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a calibration curve to compare the model's performance</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># on the two populations.</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_calibration_curve(</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>probs_populations,</span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_populations,</span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample data for a train and test set.</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># The model performs slightly better on the train set.</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>probs_populations <span class="op">=</span> {</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: np.array([<span class="fl">0.1</span>, <span class="fl">0.9</span>, <span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="fl">0.3</span>, <span class="fl">0.7</span>]),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>:  np.array([<span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="fl">0.3</span>, <span class="fl">0.7</span>, <span class="fl">0.4</span>, <span class="fl">0.6</span>])</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>reals_populations <span class="op">=</span> {</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>]),</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>:  np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>]) <span class="co"># Note one outcome is different</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a calibration curve to compare the model's performance</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># on the two populations.</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_calibration_curve(</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>probs_populations,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_populations,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>And that’s it! You’ve now seen how to create three of the most common evaluation plots with <code>rtichoke</code>. From here, you can explore the other curve types and options that the library has to offer in the <a href="../reference/index.html">API Reference</a>.</p>
 
 
