@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>create_precision_recall_curve – rtichoke</title>
+<title>Getting Started with Rtichoke – rtichoke</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -111,115 +111,120 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </head>
 
-<body class="fullcontent quarto-light">
+<body class="nav-sidebar docked fullcontent quarto-light">
 
 <div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/getting_started.html">Getting Started</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">User Guide</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/getting_started.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Getting Started</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Getting Started with Rtichoke</h1>
+</div>
 
 
 
+<div class="quarto-title-meta">
 
-<section id="rtichoke.create_precision_recall_curve" class="level1">
-<h1>create_precision_recall_curve</h1>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>create_precision_recall_curve(</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    probs,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    reals,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    by<span class="op">=</span><span class="fl">0.01</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    stratified_by<span class="op">=</span>[<span class="st">'probability_threshold'</span>],</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    size<span class="op">=</span><span class="dv">600</span>,</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    color_values<span class="op">=</span>[<span class="st">'#1b9e77'</span>, <span class="st">'#d95f02'</span>, <span class="st">'#7570b3'</span>, <span class="st">'#e7298a'</span>, <span class="st">'#07004D'</span>, <span class="st">'#E6AB02'</span>, <span class="st">'#FE5F55'</span>, <span class="st">'#54494B'</span>, <span class="st">'#006E90'</span>, <span class="st">'#BC96E6'</span>, <span class="st">'#52050A'</span>, <span class="st">'#1F271B'</span>, <span class="st">'#BE7C4D'</span>, <span class="st">'#63768D'</span>, <span class="st">'#08A045'</span>, <span class="st">'#320A28'</span>, <span class="st">'#82FF9E'</span>, <span class="st">'#2176FF'</span>, <span class="st">'#D1603D'</span>, <span class="st">'#585123'</span>],</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Creates a Precision-Recall curve.</p>
-<p>This function generates a Precision-Recall curve, which is a common alternative to the ROC curve, particularly for imbalanced datasets. It plots precision (Positive Predictive Value) against recall (True Positive Rate) for a binary classifier at different probability thresholds.</p>
-<section id="parameters" class="level2 doc-section doc-section-parameters">
-<h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 3%">
-<col style="width: 11%">
-<col style="width: 26%">
-<col style="width: 57%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>probs</td>
-<td>Dict[str, np.ndarray]</td>
-<td>A dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.</td>
-<td><em>required</em></td>
-</tr>
-<tr class="even">
-<td>reals</td>
-<td>Union[np.ndarray, Dict[str, np.ndarray]]</td>
-<td>The true binary labels (0 or 1). Can be a single array or a dictionary mapping names to label arrays.</td>
-<td><em>required</em></td>
-</tr>
-<tr class="odd">
-<td>by</td>
-<td>float</td>
-<td>The step size for the probability thresholds. Defaults to 0.01.</td>
-<td><code>0.01</code></td>
-</tr>
-<tr class="even">
-<td>stratified_by</td>
-<td>Sequence[str]</td>
-<td>Variables for stratification. Defaults to <code>["probability_threshold"]</code>.</td>
-<td><code>['probability_threshold']</code></td>
-</tr>
-<tr class="odd">
-<td>size</td>
-<td>int</td>
-<td>The width and height of the plot in pixels. Defaults to 600.</td>
-<td><code>600</code></td>
-</tr>
-<tr class="even">
-<td>color_values</td>
-<td>List[str]</td>
-<td>A list of hex color strings for the plot lines.</td>
-<td><code>['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']</code></td>
-</tr>
-</tbody>
-</table>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This tutorial provides a basic introduction to the <code>rtichoke</code> library. We’ll walk through the process of preparing data, creating a decision curve, and visualizing the results.</p>
+<section id="import-libraries" class="level2">
+<h2 class="anchored" data-anchor-id="import-libraries">1. Import Libraries</h2>
+<p>First, let’s import the necessary libraries. We’ll need <code>numpy</code> for data manipulation and <code>rtichoke</code> for the core functionality.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rtichoke <span class="im">as</span> rk</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="returns" class="level2 doc-section doc-section-returns">
-<h2 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 9%">
-<col style="width: 9%">
-<col style="width: 81%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td>Figure</td>
-<td>A Plotly <code>Figure</code> object representing the Precision-Recall curve.</td>
-</tr>
-</tbody>
-</table>
-
-
+<section id="prepare-your-data" class="level2">
+<h2 class="anchored" data-anchor-id="prepare-your-data">2. Prepare Your Data</h2>
+<p><code>rtichoke</code> expects data in a specific format. You’ll need two main components:</p>
+<ul>
+<li><strong>Probabilities (<code>probs</code>)</strong>: A dictionary where keys are model names and values are NumPy arrays of predicted probabilities.</li>
+<li><strong>Real Outcomes (<code>reals</code>)</strong>: A NumPy array containing the true binary outcomes (0 or 1).</li>
+</ul>
+<p>Let’s create some sample data for two different models:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample data from the dcurves_example.py script</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>probs_dict <span class="op">=</span> {</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Marker"</span>: np.array([</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>, <span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>, <span class="fl">0.9</span>, <span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>, <span class="fl">0.9</span>, <span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>, <span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>, <span class="fl">0.9</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    ]),</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Marker2"</span>: np.array([</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>, <span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>, <span class="fl">0.9</span>, <span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        <span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>, <span class="fl">0.9</span>, <span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>, <span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>, <span class="fl">0.9</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    ])</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>reals <span class="op">=</span> np.array([</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
+<section id="create-a-decision-curve" class="level2">
+<h2 class="anchored" data-anchor-id="create-a-decision-curve">3. Create a Decision Curve</h2>
+<p>Now that we have our data, we can create a decision curve. This is a simple one-liner with <code>rtichoke</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_decision_curve(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>probs_dict,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="show-the-plot" class="level2">
+<h2 class="anchored" data-anchor-id="show-the-plot">4. Show the Plot</h2>
+<p>Finally, let’s display the plot. Since <code>rtichoke</code> uses Plotly under the hood, you can show the figure just like any other Plotly object.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># To display the plot in an interactive environment (like a Jupyter notebook)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>And that’s it! You’ve created your first decision curve with <code>rtichoke</code>. From here, you can explore the other curve types and options that the library has to offer.</p>
+
+
 </section>
 
 </main> <!-- /main -->

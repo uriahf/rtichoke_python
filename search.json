@@ -1,523 +1,74 @@
 [
   {
-    "objectID": "reference/create_roc_curve.html",
-    "href": "reference/create_roc_curve.html",
-    "title": "create_roc_curve",
+    "objectID": "tutorials/getting_started.html",
+    "href": "tutorials/getting_started.html",
+    "title": "Getting Started with Rtichoke",
     "section": "",
-    "text": "create_roc_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=['probability_threshold'],\n    size=600,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n)\nCreate ROC Curve.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nDictionary mapping a label or group name to an array of predicted probabilities for the positive class.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nGround-truth binary labels (0/1) as a single array, or a dictionary mapping the same label/group keys used in probs to arrays of ground-truth labels.\nrequired\n\n\nby\nfloat\nResolution for probability thresholds when computing the curve (step size). Default is 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nSequence of column names to stratify the performance data by. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\ncolor_values\nList[str]\nList of color hex strings to use for the plotted lines. If not provided, a default palette is used.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the ROC curve(s).\n\n\n\n\n\n\nThe function delegates computation and plotting to _create_rtichoke_plotly_curve_binary and returns the resulting Plotly figure.",
+    "text": "This tutorial provides a basic introduction to the rtichoke library. We’ll walk through the process of preparing data, creating a decision curve, and visualizing the results.",
     "crumbs": [
-      "Discrimination",
-      "create_roc_curve"
+      "Getting Started"
     ]
   },
   {
-    "objectID": "reference/create_roc_curve.html#parameters",
-    "href": "reference/create_roc_curve.html#parameters",
-    "title": "create_roc_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nDictionary mapping a label or group name to an array of predicted probabilities for the positive class.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nGround-truth binary labels (0/1) as a single array, or a dictionary mapping the same label/group keys used in probs to arrays of ground-truth labels.\nrequired\n\n\nby\nfloat\nResolution for probability thresholds when computing the curve (step size). Default is 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nSequence of column names to stratify the performance data by. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\ncolor_values\nList[str]\nList of color hex strings to use for the plotted lines. If not provided, a default palette is used.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']",
+    "objectID": "tutorials/getting_started.html#import-libraries",
+    "href": "tutorials/getting_started.html#import-libraries",
+    "title": "Getting Started with Rtichoke",
+    "section": "1. Import Libraries",
+    "text": "1. Import Libraries\nFirst, let’s import the necessary libraries. We’ll need numpy for data manipulation and rtichoke for the core functionality.\nimport numpy as np\nimport rtichoke as rk",
     "crumbs": [
-      "Discrimination",
-      "create_roc_curve"
+      "Getting Started"
     ]
   },
   {
-    "objectID": "reference/create_roc_curve.html#returns",
-    "href": "reference/create_roc_curve.html#returns",
-    "title": "create_roc_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the ROC curve(s).",
+    "objectID": "tutorials/getting_started.html#prepare-your-data",
+    "href": "tutorials/getting_started.html#prepare-your-data",
+    "title": "Getting Started with Rtichoke",
+    "section": "2. Prepare Your Data",
+    "text": "2. Prepare Your Data\nrtichoke expects data in a specific format. You’ll need two main components:\n\nProbabilities (probs): A dictionary where keys are model names and values are NumPy arrays of predicted probabilities.\nReal Outcomes (reals): A NumPy array containing the true binary outcomes (0 or 1).\n\nLet’s create some sample data for two different models:\n# Sample data from the dcurves_example.py script\nprobs_dict = {\n    \"Marker\": np.array([\n        0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.1, 0.2, 0.3, 0.4, 0.5,\n        0.6, 0.7, 0.8, 0.9, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9\n    ]),\n    \"Marker2\": np.array([\n        0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.1, 0.2, 0.3, 0.4, 0.5,\n        0.6, 0.7, 0.8, 0.9, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9\n    ])\n}\nreals = np.array([\n    1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1\n])",
     "crumbs": [
-      "Discrimination",
-      "create_roc_curve"
+      "Getting Started"
     ]
   },
   {
-    "objectID": "reference/create_roc_curve.html#notes",
-    "href": "reference/create_roc_curve.html#notes",
-    "title": "create_roc_curve",
-    "section": "",
-    "text": "The function delegates computation and plotting to _create_rtichoke_plotly_curve_binary and returns the resulting Plotly figure.",
+    "objectID": "tutorials/getting_started.html#create-a-decision-curve",
+    "href": "tutorials/getting_started.html#create-a-decision-curve",
+    "title": "Getting Started with Rtichoke",
+    "section": "3. Create a Decision Curve",
+    "text": "3. Create a Decision Curve\nNow that we have our data, we can create a decision curve. This is a simple one-liner with rtichoke:\nfig = rk.create_decision_curve(\n    probs=probs_dict,\n    reals=reals,\n)",
     "crumbs": [
-      "Discrimination",
-      "create_roc_curve"
+      "Getting Started"
     ]
   },
   {
-    "objectID": "reference/create_gains_curve.html",
-    "href": "reference/create_gains_curve.html",
-    "title": "create_gains_curve",
-    "section": "",
-    "text": "create_gains_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=['probability_threshold'],\n    size=600,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n)\nCreate Gains Curve.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nDictionary mapping a label or group name to an array of predicted probabilities for the positive class.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nGround-truth binary labels (0/1) as a single array, or a dictionary mapping the same label/group keys used in probs to arrays of ground-truth labels.\nrequired\n\n\nby\nfloat\nResolution for probability thresholds when computing the curve (step size). Default is 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nSequence of column names to stratify the performance data by. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\ncolor_values\nList[str]\nList of color hex strings to use for the plotted lines. If not provided, a default palette is used.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Gains curve(s).\n\n\n\n\n\n\nThe function delegates computation and plotting to _create_rtichoke_plotly_curve_binary and returns the resulting Plotly figure.",
+    "objectID": "tutorials/getting_started.html#show-the-plot",
+    "href": "tutorials/getting_started.html#show-the-plot",
+    "title": "Getting Started with Rtichoke",
+    "section": "4. Show the Plot",
+    "text": "4. Show the Plot\nFinally, let’s display the plot. Since rtichoke uses Plotly under the hood, you can show the figure just like any other Plotly object.\n# To display the plot in an interactive environment (like a Jupyter notebook)\nfig.show()\nAnd that’s it! You’ve created your first decision curve with rtichoke. From here, you can explore the other curve types and options that the library has to offer.",
     "crumbs": [
-      "Discrimination",
-      "create_gains_curve"
+      "Getting Started"
     ]
   },
   {
-    "objectID": "reference/create_gains_curve.html#parameters",
-    "href": "reference/create_gains_curve.html#parameters",
-    "title": "create_gains_curve",
+    "objectID": "reference/create_decision_curve.html",
+    "href": "reference/create_decision_curve.html",
+    "title": "create_decision_curve",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nDictionary mapping a label or group name to an array of predicted probabilities for the positive class.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nGround-truth binary labels (0/1) as a single array, or a dictionary mapping the same label/group keys used in probs to arrays of ground-truth labels.\nrequired\n\n\nby\nfloat\nResolution for probability thresholds when computing the curve (step size). Default is 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nSequence of column names to stratify the performance data by. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\ncolor_values\nList[str]\nList of color hex strings to use for the plotted lines. If not provided, a default palette is used.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']",
-    "crumbs": [
-      "Discrimination",
-      "create_gains_curve"
-    ]
+    "text": "create_decision_curve(\n    probs,\n    reals,\n    decision_type='conventional',\n    min_p_threshold=0,\n    max_p_threshold=1,\n    by=0.01,\n    stratified_by=['probability_threshold'],\n    size=600,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n)\nCreates a Decision Curve.\nDecision Curve Analysis is a method for evaluating and comparing prediction models that incorporates the clinical consequences of a decision. The curve plots the net benefit of a model against the probability threshold used to determine positive cases. This helps to assess the real-world utility of a model.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe true binary labels (0 or 1).\nrequired\n\n\ndecision_type\nstr\nType of decision curve. \"conventional\" for a standard decision curve or another value for the “interventions avoided” variant. Defaults to \"conventional\".\n'conventional'\n\n\nmin_p_threshold\nfloat\nThe minimum probability threshold to plot. Defaults to 0.\n0\n\n\nmax_p_threshold\nfloat\nThe maximum probability threshold to plot. Defaults to 1.\n1\n\n\nby\nfloat\nThe step size for the probability thresholds. Defaults to 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nVariables for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\ncolor_values\nList[str]\nA list of hex color strings for the plot lines.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Decision Curve."
   },
   {
-    "objectID": "reference/create_gains_curve.html#returns",
-    "href": "reference/create_gains_curve.html#returns",
-    "title": "create_gains_curve",
+    "objectID": "reference/create_decision_curve.html#parameters",
+    "href": "reference/create_decision_curve.html#parameters",
+    "title": "create_decision_curve",
     "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Gains curve(s).",
-    "crumbs": [
-      "Discrimination",
-      "create_gains_curve"
-    ]
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe true binary labels (0 or 1).\nrequired\n\n\ndecision_type\nstr\nType of decision curve. \"conventional\" for a standard decision curve or another value for the “interventions avoided” variant. Defaults to \"conventional\".\n'conventional'\n\n\nmin_p_threshold\nfloat\nThe minimum probability threshold to plot. Defaults to 0.\n0\n\n\nmax_p_threshold\nfloat\nThe maximum probability threshold to plot. Defaults to 1.\n1\n\n\nby\nfloat\nThe step size for the probability thresholds. Defaults to 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nVariables for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\ncolor_values\nList[str]\nA list of hex color strings for the plot lines.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']"
   },
   {
-    "objectID": "reference/create_gains_curve.html#notes",
-    "href": "reference/create_gains_curve.html#notes",
-    "title": "create_gains_curve",
+    "objectID": "reference/create_decision_curve.html#returns",
+    "href": "reference/create_decision_curve.html#returns",
+    "title": "create_decision_curve",
     "section": "",
-    "text": "The function delegates computation and plotting to _create_rtichoke_plotly_curve_binary and returns the resulting Plotly figure.",
-    "crumbs": [
-      "Discrimination",
-      "create_gains_curve"
-    ]
-  },
-  {
-    "objectID": "reference/create_precision_recall_curve.html",
-    "href": "reference/create_precision_recall_curve.html",
-    "title": "create_precision_recall_curve",
-    "section": "",
-    "text": "create_precision_recall_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=['probability_threshold'],\n    size=600,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n)\nCreate Precision-Recall Curve.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nDictionary mapping a label or group name to an array of predicted probabilities for the positive class.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nGround-truth binary labels (0/1) as a single array, or a dictionary mapping the same label/group keys used in probs to arrays of ground-truth labels.\nrequired\n\n\nby\nfloat\nResolution for probability thresholds when computing the curve (step size). Default is 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nSequence of column names to stratify the performance data by. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\ncolor_values\nList[str]\nList of color hex strings to use for the plotted lines. If not provided, a default palette is used.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Precision-Recall curve(s).\n\n\n\n\n\n\nThe function delegates computation and plotting to _create_rtichoke_plotly_curve_binary and returns the resulting Plotly figure.",
-    "crumbs": [
-      "Discrimination",
-      "create_precision_recall_curve"
-    ]
-  },
-  {
-    "objectID": "reference/create_precision_recall_curve.html#parameters",
-    "href": "reference/create_precision_recall_curve.html#parameters",
-    "title": "create_precision_recall_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nDictionary mapping a label or group name to an array of predicted probabilities for the positive class.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nGround-truth binary labels (0/1) as a single array, or a dictionary mapping the same label/group keys used in probs to arrays of ground-truth labels.\nrequired\n\n\nby\nfloat\nResolution for probability thresholds when computing the curve (step size). Default is 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nSequence of column names to stratify the performance data by. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\ncolor_values\nList[str]\nList of color hex strings to use for the plotted lines. If not provided, a default palette is used.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']",
-    "crumbs": [
-      "Discrimination",
-      "create_precision_recall_curve"
-    ]
-  },
-  {
-    "objectID": "reference/create_precision_recall_curve.html#returns",
-    "href": "reference/create_precision_recall_curve.html#returns",
-    "title": "create_precision_recall_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Precision-Recall curve(s).",
-    "crumbs": [
-      "Discrimination",
-      "create_precision_recall_curve"
-    ]
-  },
-  {
-    "objectID": "reference/create_precision_recall_curve.html#notes",
-    "href": "reference/create_precision_recall_curve.html#notes",
-    "title": "create_precision_recall_curve",
-    "section": "",
-    "text": "The function delegates computation and plotting to _create_rtichoke_plotly_curve_binary and returns the resulting Plotly figure.",
-    "crumbs": [
-      "Discrimination",
-      "create_precision_recall_curve"
-    ]
-  },
-  {
-    "objectID": "reference/prepare_performance_data_times.html",
-    "href": "reference/prepare_performance_data_times.html",
-    "title": "prepare_performance_data_times",
-    "section": "",
-    "text": "prepare_performance_data_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}],\n    stratified_by=('probability_threshold',),\n    by=0.01,\n)\nPrepare performance data with a time dimension.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nMapping from dataset name to predicted probabilities (1-D numpy arrays).\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nTrue event labels. Can be a single array aligned to pooled probabilities or a dictionary mapping each dataset name to its true-label array. Labels are expected to be integers (e.g., 0/1 for binary, or competing event codes).\nrequired\n\n\ntimes\nUnion[np.ndarray, Dict[str, np.ndarray]]\nEvent or censoring times corresponding to reals. Either a single array or a dictionary keyed like probs when multiple datasets are provided.\nrequired\n\n\nfixed_time_horizons\nlist[float]\nFixed time horizons (same units as times) at which to evaluate performance.\nrequired\n\n\nheuristics_sets\nlist[Dict]\nList of heuristic dictionaries controlling censoring/competing-event handling. Default is a single heuristic set: [{\"censoring_heuristic\": \"adjusted\",     \"competing_heuristic\": \"adjusted_as_negative\"}]\n[{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}]\n\n\nstratified_by\nSequence[str]\nStratification variables used to create combinations/breaks. Defaults to (\"probability_threshold\",).\n('probability_threshold',)\n\n\nby\nfloat\nStep width for probability-threshold breaks (used to create the grid of cutoffs). Defaults to 0.01.\n0.01\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npl.DataFrame\nA Polars DataFrame containing performance metrics computed across probability thresholds and fixed time horizons. Columns include the probability cutoff, fixed time horizon, heuristic identifiers, and AJ-derived performance measures.",
-    "crumbs": [
-      "Performance Data",
-      "prepare_performance_data_times"
-    ]
-  },
-  {
-    "objectID": "reference/prepare_performance_data_times.html#parameters",
-    "href": "reference/prepare_performance_data_times.html#parameters",
-    "title": "prepare_performance_data_times",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nMapping from dataset name to predicted probabilities (1-D numpy arrays).\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nTrue event labels. Can be a single array aligned to pooled probabilities or a dictionary mapping each dataset name to its true-label array. Labels are expected to be integers (e.g., 0/1 for binary, or competing event codes).\nrequired\n\n\ntimes\nUnion[np.ndarray, Dict[str, np.ndarray]]\nEvent or censoring times corresponding to reals. Either a single array or a dictionary keyed like probs when multiple datasets are provided.\nrequired\n\n\nfixed_time_horizons\nlist[float]\nFixed time horizons (same units as times) at which to evaluate performance.\nrequired\n\n\nheuristics_sets\nlist[Dict]\nList of heuristic dictionaries controlling censoring/competing-event handling. Default is a single heuristic set: [{\"censoring_heuristic\": \"adjusted\",     \"competing_heuristic\": \"adjusted_as_negative\"}]\n[{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}]\n\n\nstratified_by\nSequence[str]\nStratification variables used to create combinations/breaks. Defaults to (\"probability_threshold\",).\n('probability_threshold',)\n\n\nby\nfloat\nStep width for probability-threshold breaks (used to create the grid of cutoffs). Defaults to 0.01.\n0.01",
-    "crumbs": [
-      "Performance Data",
-      "prepare_performance_data_times"
-    ]
-  },
-  {
-    "objectID": "reference/prepare_performance_data_times.html#returns",
-    "href": "reference/prepare_performance_data_times.html#returns",
-    "title": "prepare_performance_data_times",
-    "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\npl.DataFrame\nA Polars DataFrame containing performance metrics computed across probability thresholds and fixed time horizons. Columns include the probability cutoff, fixed time horizon, heuristic identifiers, and AJ-derived performance measures.",
-    "crumbs": [
-      "Performance Data",
-      "prepare_performance_data_times"
-    ]
-  },
-  {
-    "objectID": "reference/plot_lift_curve.html",
-    "href": "reference/plot_lift_curve.html",
-    "title": "plot_lift_curve",
-    "section": "",
-    "text": "plot_lift_curve(\n    performance_data,\n    stratified_by=['probability_threshold'],\n    size=600,\n)\nPlot Lift curve from performance data.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame containing performance metrics for the Lift curve. Expected columns include (but may not be limited to) probability_threshold and lift-related metrics, plus any stratification columns.\nrequired\n\n\nstratified_by\nSequence[str]\nSequence of column names used for stratification in the performance_data. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Lift plot.\n\n\n\n\n\n\nThis function wraps _plot_rtichoke_curve_binary to produce a ready-to-render Plotly figure from precomputed performance data.",
-    "crumbs": [
-      "Discrimination",
-      "plot_lift_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_lift_curve.html#parameters",
-    "href": "reference/plot_lift_curve.html#parameters",
-    "title": "plot_lift_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame containing performance metrics for the Lift curve. Expected columns include (but may not be limited to) probability_threshold and lift-related metrics, plus any stratification columns.\nrequired\n\n\nstratified_by\nSequence[str]\nSequence of column names used for stratification in the performance_data. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600",
-    "crumbs": [
-      "Discrimination",
-      "plot_lift_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_lift_curve.html#returns",
-    "href": "reference/plot_lift_curve.html#returns",
-    "title": "plot_lift_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Lift plot.",
-    "crumbs": [
-      "Discrimination",
-      "plot_lift_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_lift_curve.html#notes",
-    "href": "reference/plot_lift_curve.html#notes",
-    "title": "plot_lift_curve",
-    "section": "",
-    "text": "This function wraps _plot_rtichoke_curve_binary to produce a ready-to-render Plotly figure from precomputed performance data.",
-    "crumbs": [
-      "Discrimination",
-      "plot_lift_curve"
-    ]
-  },
-  {
-    "objectID": "reference/prepare_performance_data.html",
-    "href": "reference/prepare_performance_data.html",
-    "title": "prepare_performance_data",
-    "section": "",
-    "text": "prepare_performance_data(\n    probs,\n    reals,\n    stratified_by=('probability_threshold',),\n    by=0.01,\n)\nPrepare performance data for binary classification.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nMapping from dataset name to predicted probabilities (1-D numpy arrays).\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nTrue event labels. Can be a single array aligned to pooled probabilities or a dictionary mapping each dataset name to its true-label array. Labels are expected to be binary integers (0/1).\nrequired\n\n\nstratified_by\nSequence[str]\nStratification variables used to create combinations/breaks. Defaults to (\"probability_threshold\",).\n('probability_threshold',)\n\n\nby\nfloat\nStep width for probability-threshold breaks (used to create the grid of cutoffs). Defaults to 0.01.\n0.01\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npl.DataFrame\nA Polars DataFrame containing performance metrics computed across probability thresholds. Columns include the probability cutoff and performance measures.\n\n\n\n\n\n\n&gt;&gt;&gt; import numpy as np\n&gt;&gt;&gt; probs_dict_test = {\n...     \"small_data_set\": np.array(\n...         [0.9, 0.85, 0.95, 0.88, 0.6, 0.7, 0.51, 0.2, 0.1, 0.33]\n...     )\n... }\n&gt;&gt;&gt; reals_dict_test = [1, 1, 1, 1, 0, 0, 1, 0, 0, 1]\n&gt;&gt;&gt; prepare_performance_data(\n...     probs_dict_test,\n...     reals_dict_test,\n...     by=0.1\n... )",
-    "crumbs": [
-      "Performance Data",
-      "prepare_performance_data"
-    ]
-  },
-  {
-    "objectID": "reference/prepare_performance_data.html#parameters",
-    "href": "reference/prepare_performance_data.html#parameters",
-    "title": "prepare_performance_data",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nMapping from dataset name to predicted probabilities (1-D numpy arrays).\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nTrue event labels. Can be a single array aligned to pooled probabilities or a dictionary mapping each dataset name to its true-label array. Labels are expected to be binary integers (0/1).\nrequired\n\n\nstratified_by\nSequence[str]\nStratification variables used to create combinations/breaks. Defaults to (\"probability_threshold\",).\n('probability_threshold',)\n\n\nby\nfloat\nStep width for probability-threshold breaks (used to create the grid of cutoffs). Defaults to 0.01.\n0.01",
-    "crumbs": [
-      "Performance Data",
-      "prepare_performance_data"
-    ]
-  },
-  {
-    "objectID": "reference/prepare_performance_data.html#returns",
-    "href": "reference/prepare_performance_data.html#returns",
-    "title": "prepare_performance_data",
-    "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\npl.DataFrame\nA Polars DataFrame containing performance metrics computed across probability thresholds. Columns include the probability cutoff and performance measures.",
-    "crumbs": [
-      "Performance Data",
-      "prepare_performance_data"
-    ]
-  },
-  {
-    "objectID": "reference/prepare_performance_data.html#examples",
-    "href": "reference/prepare_performance_data.html#examples",
-    "title": "prepare_performance_data",
-    "section": "",
-    "text": "&gt;&gt;&gt; import numpy as np\n&gt;&gt;&gt; probs_dict_test = {\n...     \"small_data_set\": np.array(\n...         [0.9, 0.85, 0.95, 0.88, 0.6, 0.7, 0.51, 0.2, 0.1, 0.33]\n...     )\n... }\n&gt;&gt;&gt; reals_dict_test = [1, 1, 1, 1, 0, 0, 1, 0, 0, 1]\n&gt;&gt;&gt; prepare_performance_data(\n...     probs_dict_test,\n...     reals_dict_test,\n...     by=0.1\n... )",
-    "crumbs": [
-      "Performance Data",
-      "prepare_performance_data"
-    ]
-  },
-  {
-    "objectID": "reference/create_lift_curve.html",
-    "href": "reference/create_lift_curve.html",
-    "title": "create_lift_curve",
-    "section": "",
-    "text": "create_lift_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=['probability_threshold'],\n    size=600,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n)\nCreate Lift Curve.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nDictionary mapping a label or group name to an array of predicted probabilities for the positive class.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nGround-truth binary labels (0/1) as a single array, or a dictionary mapping the same label/group keys used in probs to arrays of ground-truth labels.\nrequired\n\n\nby\nfloat\nResolution for probability thresholds when computing the curve (step size). Default is 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nSequence of column names to stratify the performance data by. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\ncolor_values\nList[str]\nList of color hex strings to use for the plotted lines. If not provided, a default palette is used.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Lift curve(s).\n\n\n\n\n\n\nThe function delegates computation and plotting to _create_rtichoke_plotly_curve_binary and returns the resulting Plotly figure.",
-    "crumbs": [
-      "Discrimination",
-      "create_lift_curve"
-    ]
-  },
-  {
-    "objectID": "reference/create_lift_curve.html#parameters",
-    "href": "reference/create_lift_curve.html#parameters",
-    "title": "create_lift_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nDictionary mapping a label or group name to an array of predicted probabilities for the positive class.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nGround-truth binary labels (0/1) as a single array, or a dictionary mapping the same label/group keys used in probs to arrays of ground-truth labels.\nrequired\n\n\nby\nfloat\nResolution for probability thresholds when computing the curve (step size). Default is 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nSequence of column names to stratify the performance data by. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\ncolor_values\nList[str]\nList of color hex strings to use for the plotted lines. If not provided, a default palette is used.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']",
-    "crumbs": [
-      "Discrimination",
-      "create_lift_curve"
-    ]
-  },
-  {
-    "objectID": "reference/create_lift_curve.html#returns",
-    "href": "reference/create_lift_curve.html#returns",
-    "title": "create_lift_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Lift curve(s).",
-    "crumbs": [
-      "Discrimination",
-      "create_lift_curve"
-    ]
-  },
-  {
-    "objectID": "reference/create_lift_curve.html#notes",
-    "href": "reference/create_lift_curve.html#notes",
-    "title": "create_lift_curve",
-    "section": "",
-    "text": "The function delegates computation and plotting to _create_rtichoke_plotly_curve_binary and returns the resulting Plotly figure.",
-    "crumbs": [
-      "Discrimination",
-      "create_lift_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_decision_curve.html",
-    "href": "reference/plot_decision_curve.html",
-    "title": "plot_decision_curve",
-    "section": "",
-    "text": "plot_decision_curve(\n    performance_data,\n    decision_type='conventional',\n    min_p_threshold=0,\n    max_p_threshold=1,\n    stratified_by=['probability_threshold'],\n    size=600,\n)\nPlot Decision Curve from performance data.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame containing performance metrics for the Decision curve. Expected columns include (but may not be limited to) probability_threshold and decision-curve metrics, plus any stratification columns.\nrequired\n\n\ndecision_type\nstr\n\"conventional\" for decision curves, otherwise the “interventions avoided” variant will be used.\n'conventional'\n\n\nmin_p_threshold\nfloat\nMinimum probability threshold to include in the curve. Default is 0.\n0\n\n\nmax_p_threshold\nfloat\nMaximum probability threshold to include in the curve. Default is 1.\n1\n\n\nstratified_by\nSequence[str]\nSequence of column names used for stratification in the performance_data. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Decision plot.\n\n\n\n\n\n\nThis function wraps _plot_rtichoke_curve_binary to produce a ready-to-render Plotly figure from precomputed performance data. Additional keyword arguments (min_p_threshold, max_p_threshold) are forwarded to the helper.",
-    "crumbs": [
-      "Utility",
-      "plot_decision_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_decision_curve.html#parameters",
-    "href": "reference/plot_decision_curve.html#parameters",
-    "title": "plot_decision_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame containing performance metrics for the Decision curve. Expected columns include (but may not be limited to) probability_threshold and decision-curve metrics, plus any stratification columns.\nrequired\n\n\ndecision_type\nstr\n\"conventional\" for decision curves, otherwise the “interventions avoided” variant will be used.\n'conventional'\n\n\nmin_p_threshold\nfloat\nMinimum probability threshold to include in the curve. Default is 0.\n0\n\n\nmax_p_threshold\nfloat\nMaximum probability threshold to include in the curve. Default is 1.\n1\n\n\nstratified_by\nSequence[str]\nSequence of column names used for stratification in the performance_data. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600",
-    "crumbs": [
-      "Utility",
-      "plot_decision_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_decision_curve.html#returns",
-    "href": "reference/plot_decision_curve.html#returns",
-    "title": "plot_decision_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Decision plot.",
-    "crumbs": [
-      "Utility",
-      "plot_decision_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_decision_curve.html#notes",
-    "href": "reference/plot_decision_curve.html#notes",
-    "title": "plot_decision_curve",
-    "section": "",
-    "text": "This function wraps _plot_rtichoke_curve_binary to produce a ready-to-render Plotly figure from precomputed performance data. Additional keyword arguments (min_p_threshold, max_p_threshold) are forwarded to the helper.",
-    "crumbs": [
-      "Utility",
-      "plot_decision_curve"
-    ]
-  },
-  {
-    "objectID": "reference/index.html",
-    "href": "reference/index.html",
-    "title": "Function reference",
-    "section": "",
-    "text": "Functions for creating performance data.\n\n\n\nprepare_performance_data\nPrepare performance data for binary classification.\n\n\nprepare_performance_data_times\nPrepare performance data with a time dimension.\n\n\n\n\n\n\nFunctions for Discrimination.\n\n\n\ncreate_roc_curve\nCreate ROC Curve.\n\n\ncreate_precision_recall_curve\nCreate Precision-Recall Curve.\n\n\ncreate_gains_curve\nCreate Gains Curve.\n\n\ncreate_lift_curve\nCreate Lift Curve.\n\n\nplot_roc_curve\nPlot ROC curve from performance data.\n\n\nplot_precision_recall_curve\nPlot Precision-Recall curve from performance data.\n\n\nplot_gains_curve\nPlot Gains curve from performance data.\n\n\nplot_lift_curve\nPlot Lift curve from performance data.\n\n\n\n\n\n\nFunctions for Utility.\n\n\n\ncreate_decision_curve\nCreate Decision Curve.\n\n\nplot_decision_curve\nPlot Decision Curve from performance data.",
-    "crumbs": [
-      "Function reference"
-    ]
-  },
-  {
-    "objectID": "reference/index.html#performance-data",
-    "href": "reference/index.html#performance-data",
-    "title": "Function reference",
-    "section": "",
-    "text": "Functions for creating performance data.\n\n\n\nprepare_performance_data\nPrepare performance data for binary classification.\n\n\nprepare_performance_data_times\nPrepare performance data with a time dimension.",
-    "crumbs": [
-      "Function reference"
-    ]
-  },
-  {
-    "objectID": "reference/index.html#discrimination",
-    "href": "reference/index.html#discrimination",
-    "title": "Function reference",
-    "section": "",
-    "text": "Functions for Discrimination.\n\n\n\ncreate_roc_curve\nCreate ROC Curve.\n\n\ncreate_precision_recall_curve\nCreate Precision-Recall Curve.\n\n\ncreate_gains_curve\nCreate Gains Curve.\n\n\ncreate_lift_curve\nCreate Lift Curve.\n\n\nplot_roc_curve\nPlot ROC curve from performance data.\n\n\nplot_precision_recall_curve\nPlot Precision-Recall curve from performance data.\n\n\nplot_gains_curve\nPlot Gains curve from performance data.\n\n\nplot_lift_curve\nPlot Lift curve from performance data.",
-    "crumbs": [
-      "Function reference"
-    ]
-  },
-  {
-    "objectID": "reference/index.html#utility",
-    "href": "reference/index.html#utility",
-    "title": "Function reference",
-    "section": "",
-    "text": "Functions for Utility.\n\n\n\ncreate_decision_curve\nCreate Decision Curve.\n\n\nplot_decision_curve\nPlot Decision Curve from performance data.",
-    "crumbs": [
-      "Function reference"
-    ]
-  },
-  {
-    "objectID": "reference/plot_roc_curve.html",
-    "href": "reference/plot_roc_curve.html",
-    "title": "plot_roc_curve",
-    "section": "",
-    "text": "plot_roc_curve(\n    performance_data,\n    stratified_by=['probability_threshold'],\n    size=600,\n)\nPlot ROC curve from performance data.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame containing performance metrics for the ROC curve. Expected columns include (but may not be limited to) probability_threshold, true positive rate (TPR) and false positive rate (FPR), plus any stratification columns.\nrequired\n\n\nstratified_by\nSequence[str]\nSequence of column names used for stratification in the performance_data. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the ROC plot.\n\n\n\n\n\n\nThis function wraps _plot_rtichoke_curve_binary to produce a ready-to-render Plotly figure from precomputed performance data.",
-    "crumbs": [
-      "Discrimination",
-      "plot_roc_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_roc_curve.html#parameters",
-    "href": "reference/plot_roc_curve.html#parameters",
-    "title": "plot_roc_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame containing performance metrics for the ROC curve. Expected columns include (but may not be limited to) probability_threshold, true positive rate (TPR) and false positive rate (FPR), plus any stratification columns.\nrequired\n\n\nstratified_by\nSequence[str]\nSequence of column names used for stratification in the performance_data. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600",
-    "crumbs": [
-      "Discrimination",
-      "plot_roc_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_roc_curve.html#returns",
-    "href": "reference/plot_roc_curve.html#returns",
-    "title": "plot_roc_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the ROC plot.",
-    "crumbs": [
-      "Discrimination",
-      "plot_roc_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_roc_curve.html#notes",
-    "href": "reference/plot_roc_curve.html#notes",
-    "title": "plot_roc_curve",
-    "section": "",
-    "text": "This function wraps _plot_rtichoke_curve_binary to produce a ready-to-render Plotly figure from precomputed performance data.",
-    "crumbs": [
-      "Discrimination",
-      "plot_roc_curve"
-    ]
-  },
-  {
-    "objectID": "reference/create_calibration_curve.html",
-    "href": "reference/create_calibration_curve.html",
-    "title": "create_calibration_curve",
-    "section": "",
-    "text": "create_calibration_curve\ncreate_calibration_curve(\n    probs,\n    reals,\n    calibration_type='discrete',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreates Calibration Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description calibration_type (str, optional): description. Defaults to “discrete”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description"
-  },
-  {
-    "objectID": "reference/plot_gains_curve.html",
-    "href": "reference/plot_gains_curve.html",
-    "title": "plot_gains_curve",
-    "section": "",
-    "text": "plot_gains_curve(\n    performance_data,\n    stratified_by=['probability_threshold'],\n    size=600,\n)\nPlot Gains curve from performance data.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame containing performance metrics for the Gains curve. Expected columns include (but may not be limited to) probability_threshold and gains-related metrics, plus any stratification columns.\nrequired\n\n\nstratified_by\nSequence[str]\nSequence of column names used for stratification in the performance_data. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Gains plot.\n\n\n\n\n\n\nThis function wraps _plot_rtichoke_curve_binary to produce a ready-to-render Plotly figure from precomputed performance data.",
-    "crumbs": [
-      "Discrimination",
-      "plot_gains_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_gains_curve.html#parameters",
-    "href": "reference/plot_gains_curve.html#parameters",
-    "title": "plot_gains_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame containing performance metrics for the Gains curve. Expected columns include (but may not be limited to) probability_threshold and gains-related metrics, plus any stratification columns.\nrequired\n\n\nstratified_by\nSequence[str]\nSequence of column names used for stratification in the performance_data. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600",
-    "crumbs": [
-      "Discrimination",
-      "plot_gains_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_gains_curve.html#returns",
-    "href": "reference/plot_gains_curve.html#returns",
-    "title": "plot_gains_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Gains plot.",
-    "crumbs": [
-      "Discrimination",
-      "plot_gains_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_gains_curve.html#notes",
-    "href": "reference/plot_gains_curve.html#notes",
-    "title": "plot_gains_curve",
-    "section": "",
-    "text": "This function wraps _plot_rtichoke_curve_binary to produce a ready-to-render Plotly figure from precomputed performance data.",
-    "crumbs": [
-      "Discrimination",
-      "plot_gains_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_precision_recall_curve.html",
-    "href": "reference/plot_precision_recall_curve.html",
-    "title": "plot_precision_recall_curve",
-    "section": "",
-    "text": "plot_precision_recall_curve(\n    performance_data,\n    stratified_by=['probability_threshold'],\n    size=600,\n)\nPlot Precision-Recall curve from performance data.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame containing performance metrics for the Precision-Recall curve. Expected columns include (but may not be limited to) probability_threshold, precision and recall values, plus any stratification columns.\nrequired\n\n\nstratified_by\nSequence[str]\nSequence of column names used for stratification in the performance_data. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Precision-Recall plot.\n\n\n\n\n\n\nThis function wraps _plot_rtichoke_curve_binary to produce a ready-to-render Plotly figure from precomputed performance data.",
-    "crumbs": [
-      "Discrimination",
-      "plot_precision_recall_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_precision_recall_curve.html#parameters",
-    "href": "reference/plot_precision_recall_curve.html#parameters",
-    "title": "plot_precision_recall_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame containing performance metrics for the Precision-Recall curve. Expected columns include (but may not be limited to) probability_threshold, precision and recall values, plus any stratification columns.\nrequired\n\n\nstratified_by\nSequence[str]\nSequence of column names used for stratification in the performance_data. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600",
-    "crumbs": [
-      "Discrimination",
-      "plot_precision_recall_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_precision_recall_curve.html#returns",
-    "href": "reference/plot_precision_recall_curve.html#returns",
-    "title": "plot_precision_recall_curve",
-    "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Precision-Recall plot.",
-    "crumbs": [
-      "Discrimination",
-      "plot_precision_recall_curve"
-    ]
-  },
-  {
-    "objectID": "reference/plot_precision_recall_curve.html#notes",
-    "href": "reference/plot_precision_recall_curve.html#notes",
-    "title": "plot_precision_recall_curve",
-    "section": "",
-    "text": "This function wraps _plot_rtichoke_curve_binary to produce a ready-to-render Plotly figure from precomputed performance data.",
-    "crumbs": [
-      "Discrimination",
-      "plot_precision_recall_curve"
-    ]
+    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Decision Curve."
   },
   {
     "objectID": "reference/rtichoke.html",
@@ -527,47 +78,309 @@
     "text": "rtichoke\nrtichoke"
   },
   {
-    "objectID": "reference/create_decision_curve.html",
-    "href": "reference/create_decision_curve.html",
-    "title": "create_decision_curve",
+    "objectID": "reference/plot_precision_recall_curve.html",
+    "href": "reference/plot_precision_recall_curve.html",
+    "title": "plot_precision_recall_curve",
     "section": "",
-    "text": "create_decision_curve(\n    probs,\n    reals,\n    decision_type='conventional',\n    min_p_threshold=0,\n    max_p_threshold=1,\n    by=0.01,\n    stratified_by=['probability_threshold'],\n    size=600,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n)\nCreate Decision Curve.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nDictionary mapping a label or group name to an array of predicted probabilities for the positive class.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nGround-truth binary labels (0/1) as a single array, or a dictionary mapping the same label/group keys used in probs to arrays of ground-truth labels.\nrequired\n\n\ndecision_type\nstr\nEither \"conventional\" (decision curve) or another value that implies the “interventions avoided” variant. Default is \"conventional\".\n'conventional'\n\n\nmin_p_threshold\nfloat\nMinimum probability threshold to include in the curve. Default is 0.\n0\n\n\nmax_p_threshold\nfloat\nMaximum probability threshold to include in the curve. Default is 1.\n1\n\n\nby\nfloat\nResolution for probability thresholds when computing the curve (step size). Default is 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nSequence of column names to stratify the performance data by. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\ncolor_values\nList[str]\nList of color hex strings to use for the plotted lines. If not provided, a default palette is used.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Decision curve.\n\n\n\n\n\n\nThe function selects the appropriate curve name based on decision_type and delegates computation and plotting to _create_rtichoke_plotly_curve_binary. Additional keyword arguments (like min_p_threshold and max_p_threshold) are forwarded to the helper.",
+    "text": "plot_precision_recall_curve(\n    performance_data,\n    stratified_by=['probability_threshold'],\n    size=600,\n)\nPlots a Precision-Recall curve from pre-computed performance data.\nThis function is useful when you have already computed the performance metrics and want to generate a Precision-Recall plot directly.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame with the necessary performance metrics, including precision (ppv) and recall (tpr), along with any stratification variables.\nrequired\n\n\nstratified_by\nSequence[str]\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Precision-Recall curve."
+  },
+  {
+    "objectID": "reference/plot_precision_recall_curve.html#parameters",
+    "href": "reference/plot_precision_recall_curve.html#parameters",
+    "title": "plot_precision_recall_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame with the necessary performance metrics, including precision (ppv) and recall (tpr), along with any stratification variables.\nrequired\n\n\nstratified_by\nSequence[str]\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600"
+  },
+  {
+    "objectID": "reference/plot_precision_recall_curve.html#returns",
+    "href": "reference/plot_precision_recall_curve.html#returns",
+    "title": "plot_precision_recall_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Precision-Recall curve."
+  },
+  {
+    "objectID": "reference/plot_gains_curve.html",
+    "href": "reference/plot_gains_curve.html",
+    "title": "plot_gains_curve",
+    "section": "",
+    "text": "plot_gains_curve(\n    performance_data,\n    stratified_by=['probability_threshold'],\n    size=600,\n)\nPlots a Gains curve from pre-computed performance data.\nThis function is useful for plotting a Gains curve directly from a DataFrame that already contains the necessary performance metrics.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame with performance metrics. It must include columns for the percentage of the population targeted and the corresponding gain, along with any stratification variables.\nrequired\n\n\nstratified_by\nSequence[str]\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Gains curve."
+  },
+  {
+    "objectID": "reference/plot_gains_curve.html#parameters",
+    "href": "reference/plot_gains_curve.html#parameters",
+    "title": "plot_gains_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame with performance metrics. It must include columns for the percentage of the population targeted and the corresponding gain, along with any stratification variables.\nrequired\n\n\nstratified_by\nSequence[str]\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600"
+  },
+  {
+    "objectID": "reference/plot_gains_curve.html#returns",
+    "href": "reference/plot_gains_curve.html#returns",
+    "title": "plot_gains_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Gains curve."
+  },
+  {
+    "objectID": "reference/create_calibration_curve.html",
+    "href": "reference/create_calibration_curve.html",
+    "title": "create_calibration_curve",
+    "section": "",
+    "text": "create_calibration_curve\ncreate_calibration_curve(\n    probs,\n    reals,\n    calibration_type='discrete',\n    size=None,\n    color_values=None,\n    url_api='http://localhost:4242/',\n)\nCreates Calibration Curve\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description calibration_type (str, optional): description. Defaults to “discrete”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description"
+  },
+  {
+    "objectID": "reference/plot_roc_curve.html",
+    "href": "reference/plot_roc_curve.html",
+    "title": "plot_roc_curve",
+    "section": "",
+    "text": "plot_roc_curve(\n    performance_data,\n    stratified_by=['probability_threshold'],\n    size=600,\n)\nPlots an ROC curve from pre-computed performance data.\nThis function is useful when you have already computed the performance metrics (TPR, FPR, etc.) and want to generate an ROC plot directly from that data.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame containing the necessary performance metrics. It must include columns for the true positive rate (tpr) and false positive rate (fpr), along with any stratification variables.\nrequired\n\n\nstratified_by\nSequence[str]\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the ROC curve."
+  },
+  {
+    "objectID": "reference/plot_roc_curve.html#parameters",
+    "href": "reference/plot_roc_curve.html#parameters",
+    "title": "plot_roc_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame containing the necessary performance metrics. It must include columns for the true positive rate (tpr) and false positive rate (fpr), along with any stratification variables.\nrequired\n\n\nstratified_by\nSequence[str]\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600"
+  },
+  {
+    "objectID": "reference/plot_roc_curve.html#returns",
+    "href": "reference/plot_roc_curve.html#returns",
+    "title": "plot_roc_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the ROC curve."
+  },
+  {
+    "objectID": "reference/index.html",
+    "href": "reference/index.html",
+    "title": "Function reference",
+    "section": "",
+    "text": "Functions for creating performance data.\n\n\n\nprepare_performance_data\nPrepare performance data for binary classification models.\n\n\nprepare_performance_data_times\nPrepare performance data for models with time-to-event outcomes.\n\n\n\n\n\n\nFunctions for Discrimination.\n\n\n\ncreate_roc_curve\nCreates a Receiver Operating Characteristic (ROC) curve.\n\n\ncreate_precision_recall_curve\nCreates a Precision-Recall curve.\n\n\ncreate_gains_curve\nCreates a Gains curve.\n\n\ncreate_lift_curve\nCreates a Lift curve.\n\n\nplot_roc_curve\nPlots an ROC curve from pre-computed performance data.\n\n\nplot_precision_recall_curve\nPlots a Precision-Recall curve from pre-computed performance data.\n\n\nplot_gains_curve\nPlots a Gains curve from pre-computed performance data.\n\n\nplot_lift_curve\nPlots a Lift curve from pre-computed performance data.\n\n\n\n\n\n\nFunctions for Utility.\n\n\n\ncreate_decision_curve\nCreates a Decision Curve.\n\n\nplot_decision_curve\nPlots a Decision Curve from pre-computed performance data.",
     "crumbs": [
-      "Utility",
-      "create_decision_curve"
+      "Reference"
     ]
   },
   {
-    "objectID": "reference/create_decision_curve.html#parameters",
-    "href": "reference/create_decision_curve.html#parameters",
-    "title": "create_decision_curve",
+    "objectID": "reference/index.html#performance-data",
+    "href": "reference/index.html#performance-data",
+    "title": "Function reference",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nDictionary mapping a label or group name to an array of predicted probabilities for the positive class.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nGround-truth binary labels (0/1) as a single array, or a dictionary mapping the same label/group keys used in probs to arrays of ground-truth labels.\nrequired\n\n\ndecision_type\nstr\nEither \"conventional\" (decision curve) or another value that implies the “interventions avoided” variant. Default is \"conventional\".\n'conventional'\n\n\nmin_p_threshold\nfloat\nMinimum probability threshold to include in the curve. Default is 0.\n0\n\n\nmax_p_threshold\nfloat\nMaximum probability threshold to include in the curve. Default is 1.\n1\n\n\nby\nfloat\nResolution for probability thresholds when computing the curve (step size). Default is 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nSequence of column names to stratify the performance data by. Default is [“probability_threshold”].\n['probability_threshold']\n\n\nsize\nint\nPlot size in pixels (width and height). Default is 600.\n600\n\n\ncolor_values\nList[str]\nList of color hex strings to use for the plotted lines. If not provided, a default palette is used.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']",
+    "text": "Functions for creating performance data.\n\n\n\nprepare_performance_data\nPrepare performance data for binary classification models.\n\n\nprepare_performance_data_times\nPrepare performance data for models with time-to-event outcomes.",
     "crumbs": [
-      "Utility",
-      "create_decision_curve"
+      "Reference"
     ]
   },
   {
-    "objectID": "reference/create_decision_curve.html#returns",
-    "href": "reference/create_decision_curve.html#returns",
-    "title": "create_decision_curve",
+    "objectID": "reference/index.html#discrimination",
+    "href": "reference/index.html#discrimination",
+    "title": "Function reference",
     "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure containing the Decision curve.",
+    "text": "Functions for Discrimination.\n\n\n\ncreate_roc_curve\nCreates a Receiver Operating Characteristic (ROC) curve.\n\n\ncreate_precision_recall_curve\nCreates a Precision-Recall curve.\n\n\ncreate_gains_curve\nCreates a Gains curve.\n\n\ncreate_lift_curve\nCreates a Lift curve.\n\n\nplot_roc_curve\nPlots an ROC curve from pre-computed performance data.\n\n\nplot_precision_recall_curve\nPlots a Precision-Recall curve from pre-computed performance data.\n\n\nplot_gains_curve\nPlots a Gains curve from pre-computed performance data.\n\n\nplot_lift_curve\nPlots a Lift curve from pre-computed performance data.",
     "crumbs": [
-      "Utility",
-      "create_decision_curve"
+      "Reference"
     ]
   },
   {
-    "objectID": "reference/create_decision_curve.html#notes",
-    "href": "reference/create_decision_curve.html#notes",
-    "title": "create_decision_curve",
+    "objectID": "reference/index.html#utility",
+    "href": "reference/index.html#utility",
+    "title": "Function reference",
     "section": "",
-    "text": "The function selects the appropriate curve name based on decision_type and delegates computation and plotting to _create_rtichoke_plotly_curve_binary. Additional keyword arguments (like min_p_threshold and max_p_threshold) are forwarded to the helper.",
+    "text": "Functions for Utility.\n\n\n\ncreate_decision_curve\nCreates a Decision Curve.\n\n\nplot_decision_curve\nPlots a Decision Curve from pre-computed performance data.",
     "crumbs": [
-      "Utility",
-      "create_decision_curve"
+      "Reference"
     ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "rtichoke Documentation",
+    "section": "",
+    "text": "Welcome to the official documentation for rtichoke, a Python library for visualizing the performance of predictive models."
+  },
+  {
+    "objectID": "index.html#getting-started",
+    "href": "index.html#getting-started",
+    "title": "rtichoke Documentation",
+    "section": "Getting Started",
+    "text": "Getting Started\nIf you’re new to rtichoke, the best place to start is the Getting Started Tutorial. It will walk you through the basics of installing the library, preparing your data, and creating your first plot."
+  },
+  {
+    "objectID": "index.html#api-reference",
+    "href": "index.html#api-reference",
+    "title": "rtichoke Documentation",
+    "section": "API Reference",
+    "text": "API Reference\nFor detailed information on the functions and classes provided by rtichoke, please refer to the API Reference."
+  },
+  {
+    "objectID": "reference/plot_decision_curve.html",
+    "href": "reference/plot_decision_curve.html",
+    "title": "plot_decision_curve",
+    "section": "",
+    "text": "plot_decision_curve(\n    performance_data,\n    decision_type='conventional',\n    min_p_threshold=0,\n    max_p_threshold=1,\n    stratified_by=['probability_threshold'],\n    size=600,\n)\nPlots a Decision Curve from pre-computed performance data.\nThis function is useful for plotting a Decision Curve directly from a DataFrame that already contains the necessary performance metrics.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame with performance metrics, including net benefit and probability thresholds.\nrequired\n\n\ndecision_type\nstr\nType of decision curve to plot. Defaults to \"conventional\".\n'conventional'\n\n\nmin_p_threshold\nfloat\nThe minimum probability threshold to plot. Defaults to 0.\n0\n\n\nmax_p_threshold\nfloat\nThe maximum probability threshold to plot. Defaults to 1.\n1\n\n\nstratified_by\nSequence[str]\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Decision Curve."
+  },
+  {
+    "objectID": "reference/plot_decision_curve.html#parameters",
+    "href": "reference/plot_decision_curve.html#parameters",
+    "title": "plot_decision_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame with performance metrics, including net benefit and probability thresholds.\nrequired\n\n\ndecision_type\nstr\nType of decision curve to plot. Defaults to \"conventional\".\n'conventional'\n\n\nmin_p_threshold\nfloat\nThe minimum probability threshold to plot. Defaults to 0.\n0\n\n\nmax_p_threshold\nfloat\nThe maximum probability threshold to plot. Defaults to 1.\n1\n\n\nstratified_by\nSequence[str]\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600"
+  },
+  {
+    "objectID": "reference/plot_decision_curve.html#returns",
+    "href": "reference/plot_decision_curve.html#returns",
+    "title": "plot_decision_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Decision Curve."
+  },
+  {
+    "objectID": "reference/create_lift_curve.html",
+    "href": "reference/create_lift_curve.html",
+    "title": "create_lift_curve",
+    "section": "",
+    "text": "create_lift_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=['probability_threshold'],\n    size=600,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n)\nCreates a Lift curve.\nA Lift curve is a visual tool used to evaluate the performance of a classification model. It shows how much better the model is at identifying positive outcomes compared to a random guess. The “lift” is the ratio of the results obtained with the model to the results from a random selection.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe true binary labels (0 or 1).\nrequired\n\n\nby\nfloat\nThe step size for the probability thresholds. Defaults to 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nVariables for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\ncolor_values\nList[str]\nA list of hex color strings for the plot lines.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Lift curve."
+  },
+  {
+    "objectID": "reference/create_lift_curve.html#parameters",
+    "href": "reference/create_lift_curve.html#parameters",
+    "title": "create_lift_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe true binary labels (0 or 1).\nrequired\n\n\nby\nfloat\nThe step size for the probability thresholds. Defaults to 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nVariables for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\ncolor_values\nList[str]\nA list of hex color strings for the plot lines.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']"
+  },
+  {
+    "objectID": "reference/create_lift_curve.html#returns",
+    "href": "reference/create_lift_curve.html#returns",
+    "title": "create_lift_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Lift curve."
+  },
+  {
+    "objectID": "reference/prepare_performance_data.html",
+    "href": "reference/prepare_performance_data.html",
+    "title": "prepare_performance_data",
+    "section": "",
+    "text": "prepare_performance_data(\n    probs,\n    reals,\n    stratified_by=('probability_threshold',),\n    by=0.01,\n)\nPrepare performance data for binary classification models.\nThis function computes a comprehensive set of performance metrics for one or more binary classification models across a range of probability thresholds. It builds upon the binned data from prepare_binned_classification_data by cumulatively summing the counts and calculating metrics like sensitivity (TPR), specificity, precision (PPV), and net benefit.\nThis resulting dataframe is the primary input for plotting functions like plot_roc_curve, plot_precision_recall_curve, etc.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nA dictionary mapping model or dataset names (str) to their predicted probabilities (1-D numpy arrays).\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe true event labels. This can be a single numpy array that is aligned with all pooled probabilities or a dictionary mapping each dataset name to its corresponding array of true labels. Labels must be binary (0 or 1).\nrequired\n\n\nstratified_by\nSequence[str]\nA sequence of strings specifying the variables by which to stratify the data. The default is (\"probability_threshold\",).\n('probability_threshold',)\n\n\nby\nfloat\nThe step size for probability thresholds, determining the number of points at which performance is evaluated. Defaults to 0.01.\n0.01\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npl.DataFrame\nA Polars DataFrame where each row corresponds to a probability cutoff for a given model/dataset. Columns include the cutoff value and a rich set of performance metrics (e.g., tpr, fpr, ppv, net_benefit).\n\n\n\n\n\n\n&gt;&gt;&gt; import numpy as np\n&gt;&gt;&gt; probs_dict_test = {\n...     \"small_data_set\": np.array(\n...         [0.9, 0.85, 0.95, 0.88, 0.6, 0.7, 0.51, 0.2, 0.1, 0.33]\n...     )\n... }\n&gt;&gt;&gt; reals_dict_test = [1, 1, 1, 1, 0, 0, 1, 0, 0, 1]\n&gt;&gt;&gt; performance_df = prepare_performance_data(\n...     probs=probs_dict_test,\n...     reals=reals_dict_test,\n...     by=0.1\n... )"
+  },
+  {
+    "objectID": "reference/prepare_performance_data.html#parameters",
+    "href": "reference/prepare_performance_data.html#parameters",
+    "title": "prepare_performance_data",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nA dictionary mapping model or dataset names (str) to their predicted probabilities (1-D numpy arrays).\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe true event labels. This can be a single numpy array that is aligned with all pooled probabilities or a dictionary mapping each dataset name to its corresponding array of true labels. Labels must be binary (0 or 1).\nrequired\n\n\nstratified_by\nSequence[str]\nA sequence of strings specifying the variables by which to stratify the data. The default is (\"probability_threshold\",).\n('probability_threshold',)\n\n\nby\nfloat\nThe step size for probability thresholds, determining the number of points at which performance is evaluated. Defaults to 0.01.\n0.01"
+  },
+  {
+    "objectID": "reference/prepare_performance_data.html#returns",
+    "href": "reference/prepare_performance_data.html#returns",
+    "title": "prepare_performance_data",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\npl.DataFrame\nA Polars DataFrame where each row corresponds to a probability cutoff for a given model/dataset. Columns include the cutoff value and a rich set of performance metrics (e.g., tpr, fpr, ppv, net_benefit)."
+  },
+  {
+    "objectID": "reference/prepare_performance_data.html#examples",
+    "href": "reference/prepare_performance_data.html#examples",
+    "title": "prepare_performance_data",
+    "section": "",
+    "text": "&gt;&gt;&gt; import numpy as np\n&gt;&gt;&gt; probs_dict_test = {\n...     \"small_data_set\": np.array(\n...         [0.9, 0.85, 0.95, 0.88, 0.6, 0.7, 0.51, 0.2, 0.1, 0.33]\n...     )\n... }\n&gt;&gt;&gt; reals_dict_test = [1, 1, 1, 1, 0, 0, 1, 0, 0, 1]\n&gt;&gt;&gt; performance_df = prepare_performance_data(\n...     probs=probs_dict_test,\n...     reals=reals_dict_test,\n...     by=0.1\n... )"
+  },
+  {
+    "objectID": "reference/plot_lift_curve.html",
+    "href": "reference/plot_lift_curve.html",
+    "title": "plot_lift_curve",
+    "section": "",
+    "text": "plot_lift_curve(\n    performance_data,\n    stratified_by=['probability_threshold'],\n    size=600,\n)\nPlots a Lift curve from pre-computed performance data.\nThis function is useful for plotting a Lift curve directly from a DataFrame that already contains the necessary performance metrics.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame with performance metrics. It must include columns for the lift values and the percentage of the population targeted, along with any stratification variables.\nrequired\n\n\nstratified_by\nSequence[str]\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Lift curve."
+  },
+  {
+    "objectID": "reference/plot_lift_curve.html#parameters",
+    "href": "reference/plot_lift_curve.html#parameters",
+    "title": "plot_lift_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nperformance_data\npl.DataFrame\nA Polars DataFrame with performance metrics. It must include columns for the lift values and the percentage of the population targeted, along with any stratification variables.\nrequired\n\n\nstratified_by\nSequence[str]\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600"
+  },
+  {
+    "objectID": "reference/plot_lift_curve.html#returns",
+    "href": "reference/plot_lift_curve.html#returns",
+    "title": "plot_lift_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Lift curve."
+  },
+  {
+    "objectID": "reference/prepare_performance_data_times.html",
+    "href": "reference/prepare_performance_data_times.html",
+    "title": "prepare_performance_data_times",
+    "section": "",
+    "text": "prepare_performance_data_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}],\n    stratified_by=('probability_threshold',),\n    by=0.01,\n)\nPrepare performance data for models with time-to-event outcomes.\nThis function calculates a comprehensive set of performance metrics for models predicting time-to-event outcomes. It handles censored data and competing events by applying specified heuristics at different time horizons. The function first bins the data using prepare_binned_classification_data_times and then computes cumulative, Aalen-Johansen-based performance metrics.\nThe resulting dataframe is the primary input for time-dependent plotting functions.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nA dictionary mapping model or dataset names (str) to their predicted probabilities of an event occurring by a given time.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe true event statuses. Can be a single array or a dictionary. Labels should be integers indicating the outcome (e.g., 0=censored, 1=event of interest, 2=competing event).\nrequired\n\n\ntimes\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe event or censoring times corresponding to the reals. Can be a single array or a dictionary.\nrequired\n\n\nfixed_time_horizons\nlist[float]\nA list of time points at which to evaluate the model’s performance.\nrequired\n\n\nheuristics_sets\nlist[Dict]\nA list of dictionaries, each specifying how to handle censored data and competing events. The default is [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}].\n[{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}]\n\n\nstratified_by\nSequence[str]\nVariables by which to stratify the analysis. Defaults to (\"probability_threshold\",).\n('probability_threshold',)\n\n\nby\nfloat\nThe step size for probability thresholds. Defaults to 0.01.\n0.01\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npl.DataFrame\nA Polars DataFrame with performance metrics computed across probability thresholds and time horizons. It includes columns for cutoffs, time points, heuristics, and performance measures."
+  },
+  {
+    "objectID": "reference/prepare_performance_data_times.html#parameters",
+    "href": "reference/prepare_performance_data_times.html#parameters",
+    "title": "prepare_performance_data_times",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nA dictionary mapping model or dataset names (str) to their predicted probabilities of an event occurring by a given time.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe true event statuses. Can be a single array or a dictionary. Labels should be integers indicating the outcome (e.g., 0=censored, 1=event of interest, 2=competing event).\nrequired\n\n\ntimes\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe event or censoring times corresponding to the reals. Can be a single array or a dictionary.\nrequired\n\n\nfixed_time_horizons\nlist[float]\nA list of time points at which to evaluate the model’s performance.\nrequired\n\n\nheuristics_sets\nlist[Dict]\nA list of dictionaries, each specifying how to handle censored data and competing events. The default is [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}].\n[{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}]\n\n\nstratified_by\nSequence[str]\nVariables by which to stratify the analysis. Defaults to (\"probability_threshold\",).\n('probability_threshold',)\n\n\nby\nfloat\nThe step size for probability thresholds. Defaults to 0.01.\n0.01"
+  },
+  {
+    "objectID": "reference/prepare_performance_data_times.html#returns",
+    "href": "reference/prepare_performance_data_times.html#returns",
+    "title": "prepare_performance_data_times",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\npl.DataFrame\nA Polars DataFrame with performance metrics computed across probability thresholds and time horizons. It includes columns for cutoffs, time points, heuristics, and performance measures."
+  },
+  {
+    "objectID": "reference/create_precision_recall_curve.html",
+    "href": "reference/create_precision_recall_curve.html",
+    "title": "create_precision_recall_curve",
+    "section": "",
+    "text": "create_precision_recall_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=['probability_threshold'],\n    size=600,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n)\nCreates a Precision-Recall curve.\nThis function generates a Precision-Recall curve, which is a common alternative to the ROC curve, particularly for imbalanced datasets. It plots precision (Positive Predictive Value) against recall (True Positive Rate) for a binary classifier at different probability thresholds.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe true binary labels (0 or 1). Can be a single array or a dictionary mapping names to label arrays.\nrequired\n\n\nby\nfloat\nThe step size for the probability thresholds. Defaults to 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nVariables for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\ncolor_values\nList[str]\nA list of hex color strings for the plot lines.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Precision-Recall curve."
+  },
+  {
+    "objectID": "reference/create_precision_recall_curve.html#parameters",
+    "href": "reference/create_precision_recall_curve.html#parameters",
+    "title": "create_precision_recall_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe true binary labels (0 or 1). Can be a single array or a dictionary mapping names to label arrays.\nrequired\n\n\nby\nfloat\nThe step size for the probability thresholds. Defaults to 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nVariables for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\ncolor_values\nList[str]\nA list of hex color strings for the plot lines.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']"
+  },
+  {
+    "objectID": "reference/create_precision_recall_curve.html#returns",
+    "href": "reference/create_precision_recall_curve.html#returns",
+    "title": "create_precision_recall_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Precision-Recall curve."
+  },
+  {
+    "objectID": "reference/create_gains_curve.html",
+    "href": "reference/create_gains_curve.html",
+    "title": "create_gains_curve",
+    "section": "",
+    "text": "create_gains_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=['probability_threshold'],\n    size=600,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n)\nCreates a Gains curve.\nA Gains curve is a marketing and business analytics tool that evaluates the performance of a predictive model. It shows the percentage of positive outcomes (the “gain”) that can be captured by targeting a certain percentage of the population, sorted by predicted probability.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe true binary labels (0 or 1).\nrequired\n\n\nby\nfloat\nThe step size for the probability thresholds. Defaults to 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nVariables for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\ncolor_values\nList[str]\nA list of hex color strings for the plot lines.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Gains curve."
+  },
+  {
+    "objectID": "reference/create_gains_curve.html#parameters",
+    "href": "reference/create_gains_curve.html#parameters",
+    "title": "create_gains_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe true binary labels (0 or 1).\nrequired\n\n\nby\nfloat\nThe step size for the probability thresholds. Defaults to 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nVariables for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\ncolor_values\nList[str]\nA list of hex color strings for the plot lines.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']"
+  },
+  {
+    "objectID": "reference/create_gains_curve.html#returns",
+    "href": "reference/create_gains_curve.html#returns",
+    "title": "create_gains_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the Gains curve."
+  },
+  {
+    "objectID": "reference/create_roc_curve.html",
+    "href": "reference/create_roc_curve.html",
+    "title": "create_roc_curve",
+    "section": "",
+    "text": "create_roc_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=['probability_threshold'],\n    size=600,\n    color_values=['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'],\n)\nCreates a Receiver Operating Characteristic (ROC) curve.\nThis function generates an ROC curve, which visualizes the diagnostic ability of a binary classifier system as its discrimination threshold is varied. The curve plots the True Positive Rate (TPR) against the False Positive Rate (FPR) at various threshold settings.\nIt first calculates the performance data using the provided probabilities and true labels, and then generates the plot.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe true binary labels (0 or 1). Can be a single array for all probabilities or a dictionary mapping names to label arrays.\nrequired\n\n\nby\nfloat\nThe step size for the probability thresholds, controlling the curve’s granularity. Defaults to 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nVariables for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\ncolor_values\nList[str]\nA list of hex color strings for the plot lines. A default palette is used if not provided.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the ROC curve."
+  },
+  {
+    "objectID": "reference/create_roc_curve.html#parameters",
+    "href": "reference/create_roc_curve.html#parameters",
+    "title": "create_roc_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nprobs\nDict[str, np.ndarray]\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\nrequired\n\n\nreals\nUnion[np.ndarray, Dict[str, np.ndarray]]\nThe true binary labels (0 or 1). Can be a single array for all probabilities or a dictionary mapping names to label arrays.\nrequired\n\n\nby\nfloat\nThe step size for the probability thresholds, controlling the curve’s granularity. Defaults to 0.01.\n0.01\n\n\nstratified_by\nSequence[str]\nVariables for stratification. Defaults to [\"probability_threshold\"].\n['probability_threshold']\n\n\nsize\nint\nThe width and height of the plot in pixels. Defaults to 600.\n600\n\n\ncolor_values\nList[str]\nA list of hex color strings for the plot lines. A default palette is used if not provided.\n['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']"
+  },
+  {
+    "objectID": "reference/create_roc_curve.html#returns",
+    "href": "reference/create_roc_curve.html#returns",
+    "title": "create_roc_curve",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\nFigure\nA Plotly Figure object representing the ROC curve."
   }
 ]

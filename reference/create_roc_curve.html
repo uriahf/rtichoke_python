@@ -77,15 +77,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-1331f0d9b4b52cbbd89540b4a4264c49.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-1331f0d9b4b52cbbd89540b4a4264c49.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-1331f0d9b4b52cbbd89540b4a4264c49.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-2041ce29c4eca8a233abee98b700a985.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-2041ce29c4eca8a233abee98b700a985.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-2041ce29c4eca8a233abee98b700a985.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
-  "location": "navbar",
+  "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
-  "panel-placement": "end",
-  "type": "overlay",
+  "panel-placement": "start",
+  "type": "textbox",
   "limit": 50,
   "keyboard-shortcut": [
     "f",
@@ -111,169 +111,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </head>
 
-<body class="nav-sidebar floating nav-fixed fullcontent quarto-light">
+<body class="fullcontent quarto-light">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
-      <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="../index.html">
-    <span class="navbar-title">rtichoke</span>
-    </a>
-  </div>
-            <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-  <span class="navbar-toggler-icon"></span>
-</button>
-          <div class="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="navbar-nav navbar-nav-scroll me-auto">
-  <li class="nav-item">
-    <a class="nav-link" href="../reference/"> 
-<span class="menu-text">Reference</span></a>
-  </li>  
-</ul>
-          </div> <!-- /navcollapse -->
-            <div class="quarto-navbar-tools">
-</div>
-      </div> <!-- /container-fluid -->
-    </nav>
-  <nav class="quarto-secondary-nav">
-    <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-        <i class="bi bi-layout-text-sidebar-reverse"></i>
-      </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../reference/create_roc_curve.html">Discrimination</a></li><li class="breadcrumb-item"><a href="../reference/create_roc_curve.html">create_roc_curve</a></li></ol></nav>
-        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-        </a>
-    </div>
-  </nav>
-</header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
-    <div class="sidebar-menu-container"> 
-    <ul class="list-unstyled mt-1">
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Function reference</span></a>
-  </div>
-</li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
- <span class="menu-text">Performance Data</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_performance_data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">prepare_performance_data</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_performance_data_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">prepare_performance_data_times</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
- <span class="menu-text">Discrimination</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_roc_curve.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">create_roc_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_precision_recall_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_precision_recall_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_gains_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_gains_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_lift_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_lift_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_roc_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_roc_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_precision_recall_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_precision_recall_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_gains_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_gains_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_lift_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_lift_curve</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
- <span class="menu-text">Utility</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_decision_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_decision_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_decision_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_decision_curve</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-    </ul>
-    </div>
-</nav>
-<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../reference/create_roc_curve.html">Discrimination</a></li><li class="breadcrumb-item"><a href="../reference/create_roc_curve.html">create_roc_curve</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
 
 
 
@@ -288,15 +135,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    size<span class="op">=</span><span class="dv">600</span>,</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    color_values<span class="op">=</span>[<span class="st">'#1b9e77'</span>, <span class="st">'#d95f02'</span>, <span class="st">'#7570b3'</span>, <span class="st">'#e7298a'</span>, <span class="st">'#07004D'</span>, <span class="st">'#E6AB02'</span>, <span class="st">'#FE5F55'</span>, <span class="st">'#54494B'</span>, <span class="st">'#006E90'</span>, <span class="st">'#BC96E6'</span>, <span class="st">'#52050A'</span>, <span class="st">'#1F271B'</span>, <span class="st">'#BE7C4D'</span>, <span class="st">'#63768D'</span>, <span class="st">'#08A045'</span>, <span class="st">'#320A28'</span>, <span class="st">'#82FF9E'</span>, <span class="st">'#2176FF'</span>, <span class="st">'#D1603D'</span>, <span class="st">'#585123'</span>],</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Create ROC Curve.</p>
+<p>Creates a Receiver Operating Characteristic (ROC) curve.</p>
+<p>This function generates an ROC curve, which visualizes the diagnostic ability of a binary classifier system as its discrimination threshold is varied. The curve plots the True Positive Rate (TPR) against the False Positive Rate (FPR) at various threshold settings.</p>
+<p>It first calculates the performance data using the provided probabilities and true labels, and then generates the plot.</p>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
 <h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 3%">
-<col style="width: 10%">
-<col style="width: 35%">
-<col style="width: 50%">
+<col style="width: 11%">
+<col style="width: 30%">
+<col style="width: 54%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -310,37 +159,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td>probs</td>
 <td>Dict[str, np.ndarray]</td>
-<td>Dictionary mapping a label or group name to an array of predicted probabilities for the positive class.</td>
+<td>A dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td>reals</td>
 <td>Union[np.ndarray, Dict[str, np.ndarray]]</td>
-<td>Ground-truth binary labels (0/1) as a single array, or a dictionary mapping the same label/group keys used in <code>probs</code> to arrays of ground-truth labels.</td>
+<td>The true binary labels (0 or 1). Can be a single array for all probabilities or a dictionary mapping names to label arrays.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="odd">
 <td>by</td>
 <td>float</td>
-<td>Resolution for probability thresholds when computing the curve (step size). Default is 0.01.</td>
+<td>The step size for the probability thresholds, controlling the curve’s granularity. Defaults to 0.01.</td>
 <td><code>0.01</code></td>
 </tr>
 <tr class="even">
 <td>stratified_by</td>
 <td>Sequence[str]</td>
-<td>Sequence of column names to stratify the performance data by. Default is [“probability_threshold”].</td>
+<td>Variables for stratification. Defaults to <code>["probability_threshold"]</code>.</td>
 <td><code>['probability_threshold']</code></td>
 </tr>
 <tr class="odd">
 <td>size</td>
 <td>int</td>
-<td>Plot size in pixels (width and height). Default is 600.</td>
+<td>The width and height of the plot in pixels. Defaults to 600.</td>
 <td><code>600</code></td>
 </tr>
 <tr class="even">
 <td>color_values</td>
 <td>List[str]</td>
-<td>List of color hex strings to use for the plotted lines. If not provided, a default palette is used.</td>
+<td>A list of hex color strings for the plot lines. A default palette is used if not provided.</td>
 <td><code>['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']</code></td>
 </tr>
 </tbody>
@@ -349,6 +198,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="returns" class="level2 doc-section doc-section-returns">
 <h2 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h2>
 <table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 77%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -360,14 +214,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td></td>
 <td>Figure</td>
-<td>A Plotly <code>Figure</code> containing the ROC curve(s).</td>
+<td>A Plotly <code>Figure</code> object representing the ROC curve.</td>
 </tr>
 </tbody>
 </table>
-</section>
-<section id="notes" class="level2 doc-section doc-section-notes">
-<h2 class="doc-section doc-section-notes anchored" data-anchor-id="notes">Notes</h2>
-<p>The function delegates computation and plotting to <code>_create_rtichoke_plotly_curve_binary</code> and returns the resulting Plotly figure.</p>
 
 
 </section>
