@@ -32,9 +32,15 @@ This is the simplest case, where you want to evaluate the performance of a singl
 For this, you provide `probs` with a single entry for your model and `reals` with a single entry for the corresponding outcomes.
 
 ```python
-# Generate sample data for one model
-probs_single = {"Good Model": np.random.rand(100)}
-reals_single = {"Population": np.random.randint(0, 2, 100)}
+# Generate realistic sample data for a "good" model
+probs_positive_class = np.random.rand(50) * 0.5 + 0.5
+probs_negative_class = np.random.rand(50) * 0.5
+probs_combined = np.concatenate([probs_positive_class, probs_negative_class])
+reals_combined = np.concatenate([np.ones(50), np.zeros(50)])
+shuffle_index = np.random.permutation(100)
+
+probs_single = {"Good Model": probs_combined[shuffle_index]}
+reals_single = {"Population": reals_combined[shuffle_index]}
 
 # Create a ROC curve
 fig = rk.create_roc_curve(
@@ -54,13 +60,26 @@ Often, you want to compare the performance of several different models on the *s
 For this, you provide `probs` with an entry for each model you want to compare. `reals` will still have a single entry, since the outcome data is the same for all models.
 
 ```python
-# Generate sample data for three models
+# Generate data for a "Good Model", a "Bad Model", and a "Random Guess"
+# The "Good Model" has a clearer separation of probabilities.
+good_probs_pos = np.random.rand(50) * 0.4 + 0.6  # 0.6 to 1.0
+good_probs_neg = np.random.rand(50) * 0.4       # 0.0 to 0.4
+good_probs = np.concatenate([good_probs_pos, good_probs_neg])
+
+# The "Bad Model" has more overlap.
+bad_probs_pos = np.random.rand(50) * 0.5 + 0.4  # 0.4 to 0.9
+bad_probs_neg = np.random.rand(50) * 0.5 + 0.1  # 0.1 to 0.6
+bad_probs = np.concatenate([bad_probs_pos, bad_probs_neg])
+
+reals_comparison_data = np.concatenate([np.ones(50), np.zeros(50)])
+shuffle_index_comp = np.random.permutation(100)
+
 probs_comparison = {
-    "Good Model": np.random.rand(100) + 0.1,  # Slightly better
-    "Bad Model": np.random.rand(100),
-    "Random Guess": np.linspace(0, 1, 100)
+    "Good Model": good_probs[shuffle_index_comp],
+    "Bad Model": bad_probs[shuffle_index_comp],
+    "Random Guess": np.random.rand(100)
 }
-reals_comparison = {"Population": np.random.randint(0, 2, 100)}
+reals_comparison = {"Population": reals_comparison_data[shuffle_index_comp]}
 
 
 # Create a precision-recall curve to compare the models
@@ -79,20 +98,30 @@ This is useful when you want to evaluate a single model's performance across dif
 For this, you provide `probs` with an entry for each population and `reals` with a corresponding entry for each population's outcomes.
 
 ```python
-# Generate sample data for train and test sets
-probs_train = np.random.rand(100)
-reals_train = (probs_train > 0.5).astype(int)
+# Generate sample data for a train and test set.
+# Let's assume the model is slightly overfit, performing better on the train set.
 
-probs_test = np.random.rand(80)
-reals_test = (probs_test > 0.4).astype(int) # A slightly different relationship
+# Train set: clear separation
+train_probs_pos = np.random.rand(50) * 0.4 + 0.6
+train_probs_neg = np.random.rand(50) * 0.4
+train_probs = np.concatenate([train_probs_pos, train_probs_neg])
+train_reals = np.concatenate([np.ones(50), np.zeros(50)])
+train_shuffle = np.random.permutation(100)
+
+# Test set: more overlap
+test_probs_pos = np.random.rand(40) * 0.5 + 0.4
+test_probs_neg = np.random.rand(40) * 0.5 + 0.1
+test_probs = np.concatenate([test_probs_pos, test_probs_neg])
+test_reals = np.concatenate([np.ones(40), np.zeros(40)])
+test_shuffle = np.random.permutation(80)
 
 probs_populations = {
-    "Train": probs_train,
-    "Test": probs_test
+    "Train": train_probs[train_shuffle],
+    "Test": test_probs[test_shuffle]
 }
 reals_populations = {
-    "Train": reals_train,
-    "Test": reals_test
+    "Train": train_reals[train_shuffle],
+    "Test": test_reals[test_shuffle]
 }
 
 # Create a calibration curve to compare the model's performance
