@@ -33,7 +33,7 @@ import rtichoke as rk
 # For reproducibility
 np.random.seed(42)
 
-# Generate more realistic sample data for a "good" model
+# Generate more realistic sample data for a model
 # Probabilities for the positive class are generally higher
 probs_positive_class = np.random.rand(50) * 0.5 + 0.5  # High probabilities (0.5 to 1.0)
 probs_negative_class = np.random.rand(50) * 0.5       # Low probabilities (0.0 to 0.5)
@@ -43,8 +43,8 @@ probs_combined = np.concatenate([probs_positive_class, probs_negative_class])
 reals_combined = np.concatenate([np.ones(50), np.zeros(50)])
 
 shuffle_index = np.random.permutation(100)
-probs = {'My Model': probs_combined[shuffle_index]}
-reals = {'My Population': reals_combined[shuffle_index]}
+probs = {'Model A': probs_combined[shuffle_index]}
+reals = {'Population': reals_combined[shuffle_index]}
 
 
 # Create the ROC curve

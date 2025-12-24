@@ -32,14 +32,14 @@ This is the simplest case, where you want to evaluate the performance of a singl
 For this, you provide `probs` with a single entry for your model and `reals` with a single entry for the corresponding outcomes.
 
 ```python
-# Generate realistic sample data for a "good" model
+# Generate realistic sample data for a model
 probs_positive_class = np.random.rand(50) * 0.5 + 0.5
 probs_negative_class = np.random.rand(50) * 0.5
 probs_combined = np.concatenate([probs_positive_class, probs_negative_class])
 reals_combined = np.concatenate([np.ones(50), np.zeros(50)])
 shuffle_index = np.random.permutation(100)
 
-probs_single = {"Good Model": probs_combined[shuffle_index]}
+probs_single = {"Model A": probs_combined[shuffle_index]}
 reals_single = {"Population": reals_combined[shuffle_index]}
 
 # Create a ROC curve
@@ -60,23 +60,23 @@ Often, you want to compare the performance of several different models on the *s
 For this, you provide `probs` with an entry for each model you want to compare. `reals` will still have a single entry, since the outcome data is the same for all models.
 
 ```python
-# Generate data for a "Good Model", a "Bad Model", and a "Random Guess"
-# The "Good Model" has a clearer separation of probabilities.
-good_probs_pos = np.random.rand(50) * 0.4 + 0.6  # 0.6 to 1.0
-good_probs_neg = np.random.rand(50) * 0.4       # 0.0 to 0.4
-good_probs = np.concatenate([good_probs_pos, good_probs_neg])
+# Generate data for two different models to compare.
+# Model A has a clearer separation of probabilities.
+model_a_probs_pos = np.random.rand(50) * 0.4 + 0.6  # 0.6 to 1.0
+model_a_probs_neg = np.random.rand(50) * 0.4       # 0.0 to 0.4
+model_a_probs = np.concatenate([model_a_probs_pos, model_a_probs_neg])
 
-# The "Bad Model" has more overlap.
-bad_probs_pos = np.random.rand(50) * 0.5 + 0.4  # 0.4 to 0.9
-bad_probs_neg = np.random.rand(50) * 0.5 + 0.1  # 0.1 to 0.6
-bad_probs = np.concatenate([bad_probs_pos, bad_probs_neg])
+# Model B has more overlap.
+model_b_probs_pos = np.random.rand(50) * 0.5 + 0.4  # 0.4 to 0.9
+model_b_probs_neg = np.random.rand(50) * 0.5 + 0.1  # 0.1 to 0.6
+model_b_probs = np.concatenate([model_b_probs_pos, model_b_probs_neg])
 
 reals_comparison_data = np.concatenate([np.ones(50), np.zeros(50)])
 shuffle_index_comp = np.random.permutation(100)
 
 probs_comparison = {
-    "Good Model": good_probs[shuffle_index_comp],
-    "Bad Model": bad_probs[shuffle_index_comp],
+    "Model A": model_a_probs[shuffle_index_comp],
+    "Model B": model_b_probs[shuffle_index_comp],
     "Random Guess": np.random.rand(100)
 }
 reals_comparison = {"Population": reals_comparison_data[shuffle_index_comp]}
