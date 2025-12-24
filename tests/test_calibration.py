@@ -1,7 +1,6 @@
-
 import numpy as np
-import polars as pl
 from rtichoke.calibration.calibration import create_calibration_curve
+
 
 def test_create_calibration_curve_smooth():
     probs = {"model_1": np.linspace(0, 1, 100)}

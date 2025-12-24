@@ -2,8 +2,8 @@ import pandas as pd
 import polars as pl
 from polarstate import predict_aj_estimates
 from polarstate import prepare_event_table
-from typing import Dict
 from collections.abc import Sequence
+from rtichoke.processing.transforms import assign_and_explode_polars
 
 
 def create_aj_data(

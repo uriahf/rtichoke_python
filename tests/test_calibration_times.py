@@ -1,14 +1,15 @@
-import pytest
 import numpy as np
-import polars as pl
 from rtichoke.calibration import create_calibration_curve_times
+
 
 def test_create_calibration_curve_times():
     probs = {"model_1": np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])}
     reals = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
     times = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     fixed_time_horizons = [5, 10]
-    heuristics_sets = [{"censoring_heuristic": "excluded", "competing_heuristic": "excluded"}]
+    heuristics_sets = [
+        {"censoring_heuristic": "excluded", "competing_heuristic": "excluded"}
+    ]
 
     fig = create_calibration_curve_times(
         probs,

@@ -1,7 +1,7 @@
 import numpy as np
 import polars as pl
 from typing import Dict, Union
-from collections.abc import Sequence
+from rtichoke.processing.combinations import create_breaks_values
 
 
 def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFrame:
