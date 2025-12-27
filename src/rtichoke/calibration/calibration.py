@@ -329,8 +329,6 @@ def _create_plotly_curve_from_calibration_curve_list(
                 pl.col("reference_group") == reference_group
             )
 
-            print(dec_sub)
-
             calibration_curve.add_trace(
                 go.Scatter(
                     x=dec_sub.get_column("x").to_list(),
@@ -438,8 +436,6 @@ def _create_plotly_curve_from_calibration_curve_list(
                 col=1,
             )
 
-    print(calibration_curve_list["axes_ranges"]["xaxis"])
-
     calibration_curve.update_xaxes(
         zeroline=True,
         range=calibration_curve_list["axes_ranges"]["xaxis"],
@@ -457,10 +453,6 @@ def _create_plotly_curve_from_calibration_curve_list(
         col=1,
     )
     calibration_curve.update_yaxes(title="Observed", row=1, col=1)
-
-    print("size")
-    print(calibration_curve_list["size"])
-    print(calibration_curve_list["size"][0])
 
     calibration_curve.update_layout(
         width=calibration_curve_list["size"][0][0],
@@ -539,10 +531,7 @@ def _make_deciles_dat_binary(
             pl.col("prob").cast(pl.Float64),
             pl.col("real").cast(pl.Float64),
             (
-                (
-                    pl.col("prob").rank("ordinal").over(["reference_group", "model"])
-                    - 1
-                )
+                (pl.col("prob").rank("ordinal").over(["reference_group", "model"]) - 1)
                 * n_bins
                 // pl.count().over(["reference_group", "model"])
                 + 1
@@ -619,11 +608,7 @@ def _create_calibration_curve_list(
         reference_groups, color_values, performance_type
     )
 
-    print("histogram for calibration")
-
     histogram_for_calibration = _create_histogram_for_calibration(probs)
-
-    print(histogram_for_calibration)
 
     limits = _define_limits_for_calibration_plot(deciles_data)
     axes_ranges = {"xaxis": limits, "yaxis": limits}
