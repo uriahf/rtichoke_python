@@ -534,18 +534,21 @@ def _make_deciles_dat_binary(
 
         df = pl.concat(frames, how="vertical")
 
-    labels = [str(i) for i in range(1, n_bins + 1)]
-
     df = df.with_columns(
         [
             pl.col("prob").cast(pl.Float64),
             pl.col("real").cast(pl.Float64),
-            pl.col("prob")
-            .qcut(n_bins, labels=labels, allow_duplicates=True)
-            .over(["reference_group", "model"])
-            .alias("decile"),
+            (
+                (
+                    pl.col("prob").rank("ordinal").over(["reference_group", "model"])
+                    - 1
+                )
+                * n_bins
+                // pl.count().over(["reference_group", "model"])
+                + 1
+            ).alias("decile"),
         ]
-    ).with_columns(pl.col("decile").cast(pl.Int32))
+    )
 
     deciles_data = (
         df.group_by(["reference_group", "model", "decile"])
