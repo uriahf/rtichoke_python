@@ -2,7 +2,7 @@
 A module for Calibration Curves
 """
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, cast
 
 # import pandas as pd
 import plotly.graph_objects as go
@@ -247,6 +247,7 @@ def _create_plotly_curve_from_calibration_curve_list_times(
         },
         barmode="overlay",
         plot_bgcolor="rgba(0, 0, 0, 0)",
+        paper_bgcolor="rgba(0, 0, 0, 0)",
         legend={
             "orientation": "h",
             "xanchor": "center",
@@ -285,6 +286,7 @@ def _create_plotly_curve_from_calibration_curve_list(
             "yaxis": {"showgrid": False},
             "barmode": "overlay",
             "plot_bgcolor": "rgba(0, 0, 0, 0)",
+            "paper_bgcolor": "rgba(0, 0, 0, 0)",
             "legend": {
                 "orientation": "h",
                 "xanchor": "center",
@@ -470,7 +472,7 @@ def _make_deciles_dat_binary(
     if isinstance(reals, dict):
         reference_groups_keys = list(reals.keys())
         y_list = [
-            np.asarray(reals[reference_group]).ravel()
+            np.asarray(reals[str(reference_group)]).ravel()
             for reference_group in reference_groups_keys
         ]
         lengths = np.array([len(y) for y in y_list], dtype=np.int64)
@@ -533,7 +535,7 @@ def _make_deciles_dat_binary(
             (
                 (pl.col("prob").rank("ordinal").over(["reference_group", "model"]) - 1)
                 * n_bins
-                // pl.count().over(["reference_group", "model"])
+                // pl.len().over(["reference_group", "model"])
                 + 1
             ).alias("decile"),
         ]
@@ -602,7 +604,7 @@ def _create_calibration_curve_list(
 
     reference_data = _create_reference_data_for_calibration_curve()
 
-    reference_groups = deciles_data["reference_group"].unique().to_list()
+    reference_groups = list(probs.keys())
 
     colors_dictionary = _create_colors_dictionary_for_calibration(
         reference_groups, color_values, performance_type
@@ -689,7 +691,9 @@ def _calculate_smooth_curve(
                 for group_name in reals.keys():
                     if group_name in probs:
                         frame = process_single_array(
-                            probs[group_name], reals[group_name], group_name
+                            probs[str(group_name)],
+                            reals[str(group_name)],
+                            str(group_name),
                         )
                         smooth_frames.append(frame)
 
@@ -856,8 +860,21 @@ def _define_limits_for_calibration_plot(deciles_dat: pl.DataFrame) -> List[float
     if deciles_dat.height == 1:
         lower_bound, upper_bound = 0.0, 1.0
     else:
-        lower_bound = float(max(0, min(deciles_dat["x"].min(), deciles_dat["y"].min())))
-        upper_bound = float(max(deciles_dat["x"].max(), deciles_dat["y"].max()))
+        lower_bound = float(
+            max(
+                0,
+                min(
+                    cast(float, deciles_dat["x"].min()),
+                    cast(float, deciles_dat["y"].min()),
+                ),
+            )
+        )
+        upper_bound = float(
+            max(
+                cast(float, deciles_dat["x"].max()),
+                cast(float, deciles_dat["y"].max()),
+            )
+        )
 
     return [
         lower_bound - (upper_bound - lower_bound) * 0.05,
@@ -1101,7 +1118,7 @@ def _create_calibration_curve_list_times(
     )
 
     reference_data = _create_reference_data_for_calibration_curve()
-    reference_groups = deciles_dat_final["reference_group"].unique().to_list()
+    reference_groups = list(probs.keys())
     colors_dictionary = _create_colors_dictionary_for_calibration(
         reference_groups, color_values, performance_type
     )
