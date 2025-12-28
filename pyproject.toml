@@ -15,7 +15,7 @@ dependencies = [
     "polars>=1.31.0",
 ]
 name = "rtichoke"
-version = "0.1.27"
+version = "0.1.28"
 description = "interactive visualizations for performance of predictive models"
 readme = "README.md"
 
