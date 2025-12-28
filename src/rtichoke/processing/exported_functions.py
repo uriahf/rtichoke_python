@@ -148,6 +148,7 @@ def create_plotly_curve(rtichoke_curve_dict):
         "y": 0,
         "steps": [],
     }
+    sliders_dict["steps"] = []
 
     for k in range(
         len(

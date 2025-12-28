@@ -5,7 +5,7 @@ A module for helpers related to plotly
 import plotly.graph_objects as go
 import polars as pl
 import math
-from typing import Any, Dict, Union, Sequence
+from typing import Any, Dict, Union, Sequence, cast
 import numpy as np
 from rtichoke.performance_data.performance_data import prepare_performance_data
 from rtichoke.performance_data.performance_data_times import (
@@ -329,8 +329,8 @@ def _create_reference_lines_data(
             # random-guess (y=1 unless all p==0 -> NaN)
             all_zero = (
                 aj_df["p"].len() > 0
-                and float(aj_df["p"].max()) == 0.0
-                and float(aj_df["p"].min()) == 0.0
+                and float(cast(float, aj_df["p"].max())) == 0.0
+                and float(cast(float, aj_df["p"].min())) == 0.0
             )
             rand_y = pl.Series(
                 np.full(len(x_s), np.nan) if all_zero else np.ones(len(x_s)),
@@ -992,7 +992,7 @@ def _check_if_multiple_populations_are_being_validated_times(
         ]
         .max()
     )
-    return max_val is not None and max_val > 1
+    return max_val is not None and float(cast(float, max_val)) > 1
 
 
 def _check_if_multiple_populations_are_being_validated(
@@ -1977,10 +1977,21 @@ def _create_curve_layout(
                 "b": max(80, base_pad.get("b", 0)),
                 **base_pad,
             }
+    xaxis: dict[str, Any] = {"showgrid": False}
+    yaxis: dict[str, Any] = {"showgrid": False}
+
+    if axes_ranges is not None:
+        xaxis["range"] = axes_ranges["xaxis"]
+        yaxis["range"] = axes_ranges["yaxis"]
+
+    if x_label:
+        xaxis["title"] = {"text": x_label}
+    if y_label:
+        yaxis["title"] = {"text": y_label}
 
     curve_layout = {
-        "xaxis": {"showgrid": False},
-        "yaxis": {"showgrid": False},
+        "xaxis": xaxis,
+        "yaxis": yaxis,
         "template": "plotly",
         "plot_bgcolor": "rgba(0, 0, 0, 0)",
         "paper_bgcolor": "rgba(0, 0, 0, 0)",
@@ -2013,15 +2024,6 @@ def _create_curve_layout(
         "sliders": sliders,
         "modebar": {"remove": list(DEFAULT_MODEBAR_BUTTONS_TO_REMOVE)},
     }
-
-    if axes_ranges is not None:
-        curve_layout["xaxis"]["range"] = axes_ranges["xaxis"]
-        curve_layout["yaxis"]["range"] = axes_ranges["yaxis"]
-
-    if x_label:
-        curve_layout["xaxis"]["title"] = {"text": x_label}
-    if y_label:
-        curve_layout["yaxis"]["title"] = {"text": y_label}
 
     return curve_layout
 

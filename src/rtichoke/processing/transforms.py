@@ -67,13 +67,13 @@ def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFr
 
 def pivot_longer_strata(data: pl.DataFrame) -> pl.DataFrame:
     # Identify id_vars and value_vars
-    id_vars = [col for col in data.columns if not col.startswith("strata_")]
-    value_vars = [col for col in data.columns if col.startswith("strata_")]
+    index_cols = [col for col in data.columns if not col.startswith("strata_")]
+    on_cols = [col for col in data.columns if col.startswith("strata_")]
 
-    # Perform the melt (equivalent to pandas.melt)
-    data_long = data.melt(
-        id_vars=id_vars,
-        value_vars=value_vars,
+    # Perform the unpivot (equivalent to pandas.melt)
+    data_long = data.unpivot(
+        index=index_cols,
+        on=on_cols,
         variable_name="stratified_by",
         value_name="strata",
     )
@@ -257,12 +257,12 @@ def _create_list_data_to_adjust(
         probs_array = np.asarray(probs_dict[reference_group_labels[0]])
 
         if isinstance(reals_dict, dict):
-            reals_array = np.asarray(reals_dict[0])
+            reals_array = np.asarray(reals_dict[reference_group_labels[0]])
         else:
             reals_array = np.asarray(reals_dict)
 
         if isinstance(times_dict, dict):
-            times_array = np.asarray(times_dict[0])
+            times_array = np.asarray(times_dict[reference_group_labels[0]])
         else:
             times_array = np.asarray(times_dict)
 
