@@ -927,7 +927,9 @@ def _build_initial_df_for_times(
                 f"Length of probabilities for model '{model_name}' does not match total number of observations."
             )
         return base_df.with_columns(
-            pl.Series("prob", prob_array), pl.lit(model_name).alias("model")
+            pl.Series("prob", prob_array),
+            pl.lit(model_name).alias("model"),
+            pl.lit(model_name).alias("reference_group"),
         )
 
     # Multiple models
@@ -1071,17 +1073,37 @@ def _create_calibration_curve_list_times(
                 continue
 
             # Re-create probs and reals dicts for helpers
-            probs_adj = {
-                group[0]: group_df["prob"].to_numpy()
-                for group, group_df in df_adj.group_by("reference_group")
-            }
-            reals_adj = {
-                group[0]: group_df["real"].to_numpy()
-                for group, group_df in df_adj.group_by("reference_group")
-            }
-            # If single population initially, reals_adj should be an array
-            if not isinstance(reals, dict) and len(probs) == 1:
-                reals_adj = next(iter(reals_adj.values()))
+            if not isinstance(reals, dict):
+                # Single population (potentially multiple models)
+                # All models share the same outcomes for the same filtered rows
+                # We can use any model's group to get the real values
+                first_group = df_adj["reference_group"][0]
+                reals_adj = df_adj.filter(pl.col("reference_group") == first_group)[
+                    "real"
+                ].to_numpy()
+                probs_adj = {
+                    group_name: df_adj.filter(pl.col("reference_group") == group_name)[
+                        "prob"
+                    ].to_numpy()
+                    for group_name in probs.keys()
+                }
+            else:
+                # Multiple populations...
+                # Each population might have one or more models.
+                # Reconstruct as a dict of model names (probs) and population names (reals)
+                # as expected by _make_deciles_dat_binary
+                probs_adj = {
+                    model_name: df_adj.filter(pl.col("model") == model_name)[
+                        "prob"
+                    ].to_numpy()
+                    for model_name in probs.keys()
+                }
+                reals_adj = {
+                    pop_name: df_adj.filter(pl.col("reference_group") == pop_name)[
+                        "real"
+                    ].to_numpy()
+                    for pop_name in reals.keys()
+                }
 
             # Deciles
             deciles_data = _make_deciles_dat_binary(probs_adj, reals_adj)
