@@ -1,0 +1,80 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-publish:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Install project and docs dependencies
+        run: uv sync --group docs
+
+      - name: Build Great Docs site
+        run: uv run great-docs build
+
+      - name: Publish documentation
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: great-docs/_site
+          clean: true
+          clean-exclude: |
+            pr-preview/
+
+  preview:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv and Python
+        if: github.event.action != 'closed'
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Quarto
+        if: github.event.action != 'closed'
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Install project and docs dependencies
+        if: github.event.action != 'closed'
+        run: uv sync --group docs
+
+      - name: Build Great Docs preview
+        if: github.event.action != 'closed'
+        run: uv run great-docs build
+
+      - name: Deploy PR preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: great-docs/_site
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: auto

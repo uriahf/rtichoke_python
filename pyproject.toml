@@ -37,11 +37,16 @@ dev = [
     "ty>=0.0.1a12",
     "scikit-learn>=1.6.1",
     "polarstate>=0.1.6",
-    "quartodoc>=0.11.1",
+]
+docs = [
+    "great-docs",
 ]
 
 [tool.uv.workspace]
 members = ["rtichoke"]
+
+[tool.uv.dependency-groups]
+docs = {requires-python = ">=3.11"}
 
 [build-system]
 requires = ["uv_build>=0.7.20,<0.8.0"]

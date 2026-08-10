@@ -1,17 +1,14 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
+# Build and test the Python package. Documentation is handled separately in docs.yml.
 name: Python package
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -19,47 +16,28 @@ jobs:
         python-version: ["3.10"]
     permissions:
       id-token: write
-      contents: write
+      contents: read
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install uv and set the python version
-      uses: astral-sh/setup-uv@v5
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Install uv and set the Python version
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install the project
-      run: uv sync --all-extras --dev
+      - name: Install the project
+        run: uv sync --all-extras --dev
 
-    - name: Build Package
-      run: uv build
+      - name: Build package
+        run: uv build
 
-    - name: Run tests
-      run: uv run pytest tests
+      - name: Run tests
+        run: uv run pytest tests
 
-    - name: Show package version
-      run: grep -r "version" pyproject.toml || grep -r "__version__" rtichoke/ || python -c "import rtichoke; print(rtichoke.__version__)"
-      
-    - name: Set up Quarto
-      uses: quarto-dev/quarto-actions/setup@v2
-  
-    - name: Set Git identity for Quarto publishing
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Show package version
+        run: grep -r "version" pyproject.toml || grep -r "__version__" rtichoke/ || python -c "import rtichoke; print(rtichoke.__version__)"
 
-    - name: Quartodoc build
-      working-directory: docs
-      run: uv run quartodoc build
-
-    - name: Clean any leftover Quarto publish worktree
-      run: rm -rf .quarto
-  
-    - name: Render and Publish
-      working-directory: docs
-      run: uv run quarto publish gh-pages --no-browser --no-prompt --token "${{ secrets.GITHUB_TOKEN }}"
-
-    - name: Publish package
-      if: github.ref == 'refs/heads/main' && matrix.python-version == '3.10'
-      run: uv publish
+      - name: Publish package
+        if: github.ref == 'refs/heads/main' && matrix.python-version == '3.10'
+        run: uv publish

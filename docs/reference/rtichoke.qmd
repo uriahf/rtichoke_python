@@ -1,4 +1,0 @@
-# rtichoke { #rtichoke.rtichoke }
-
-`rtichoke`
-
