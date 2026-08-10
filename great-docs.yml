@@ -1,8 +1,14 @@
 display_name: rtichoke
 parser: numpy
+repo: https://github.com/uriahf/rtichoke_python
 user_guide: user_guide
 homepage: user_guide
 site_url: https://uriahf.github.io/rtichoke_python/
+
+source:
+  enabled: true
+  branch: main
+  placement: usage
 
 reference:
   - title: Performance Data
