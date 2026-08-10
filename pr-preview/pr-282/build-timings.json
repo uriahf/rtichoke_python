@@ -1,0 +1,101 @@
+{
+  "build_time": "2026-08-10T14:10:28Z",
+  "total_seconds": 17.297,
+  "pages": [
+    {
+      "page": "skills.qmd",
+      "seconds": 4.159,
+      "frozen": false
+    },
+    {
+      "page": "contributing.qmd",
+      "seconds": 3.894,
+      "frozen": false
+    },
+    {
+      "page": "package-info.qmd",
+      "seconds": 0.802,
+      "frozen": false
+    },
+    {
+      "page": "reference/create_roc_curve.qmd",
+      "seconds": 0.657,
+      "frozen": false
+    },
+    {
+      "page": "reference/create_precision_recall_curve.qmd",
+      "seconds": 0.633,
+      "frozen": false
+    },
+    {
+      "page": "reference/create_decision_curve.qmd",
+      "seconds": 0.624,
+      "frozen": false
+    },
+    {
+      "page": "reference/create_gains_curve.qmd",
+      "seconds": 0.613,
+      "frozen": false
+    },
+    {
+      "page": "reference/create_lift_curve.qmd",
+      "seconds": 0.605,
+      "frozen": false
+    },
+    {
+      "page": "reference/prepare_performance_data_times.qmd",
+      "seconds": 0.529,
+      "frozen": false
+    },
+    {
+      "page": "reference/prepare_performance_data.qmd",
+      "seconds": 0.499,
+      "frozen": false
+    },
+    {
+      "page": "reference/plot_decision_curve.qmd",
+      "seconds": 0.491,
+      "frozen": false
+    },
+    {
+      "page": "reference/plot_precision_recall_curve.qmd",
+      "seconds": 0.482,
+      "frozen": false
+    },
+    {
+      "page": "reference/plot_roc_curve.qmd",
+      "seconds": 0.482,
+      "frozen": false
+    },
+    {
+      "page": "reference/index.qmd",
+      "seconds": 0.479,
+      "frozen": false
+    },
+    {
+      "page": "reference/plot_gains_curve.qmd",
+      "seconds": 0.476,
+      "frozen": false
+    },
+    {
+      "page": "reference/plot_lift_curve.qmd",
+      "seconds": 0.473,
+      "frozen": false
+    },
+    {
+      "page": "index.qmd",
+      "seconds": 0.471,
+      "frozen": false
+    },
+    {
+      "page": "reference/create_calibration_curve.qmd",
+      "seconds": 0.468,
+      "frozen": false
+    },
+    {
+      "page": "reference/create_summary_report.qmd",
+      "seconds": 0.46,
+      "frozen": false
+    }
+  ]
+}

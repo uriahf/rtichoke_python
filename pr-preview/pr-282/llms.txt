@@ -1,0 +1,37 @@
+# rtichoke
+
+> interactive visualizations for performance of predictive models
+
+## Docs
+
+### API Reference
+
+#### Performance Data
+> Functions for preparing model-performance data.
+
+- [prepare_performance_data](https://uriahf.github.io/rtichoke_python/reference/prepare_performance_data.html): Prepare performance data for binary classification models
+- [prepare_performance_data_times](https://uriahf.github.io/rtichoke_python/reference/prepare_performance_data_times.html): Prepare performance data for models with time-to-event outcomes
+
+#### Discrimination
+> Functions for evaluating discrimination.
+
+- [create_roc_curve](https://uriahf.github.io/rtichoke_python/reference/create_roc_curve.html): Creates a Receiver Operating Characteristic (ROC) curve
+- [plot_roc_curve](https://uriahf.github.io/rtichoke_python/reference/plot_roc_curve.html): Plots an ROC curve from pre-computed performance data
+- [create_precision_recall_curve](https://uriahf.github.io/rtichoke_python/reference/create_precision_recall_curve.html): Creates a Precision-Recall curve
+- [plot_precision_recall_curve](https://uriahf.github.io/rtichoke_python/reference/plot_precision_recall_curve.html): Plots a Precision-Recall curve from pre-computed performance data
+- [create_gains_curve](https://uriahf.github.io/rtichoke_python/reference/create_gains_curve.html): Creates a Gains curve
+- [plot_gains_curve](https://uriahf.github.io/rtichoke_python/reference/plot_gains_curve.html): Plots a Gains curve from pre-computed performance data
+- [create_lift_curve](https://uriahf.github.io/rtichoke_python/reference/create_lift_curve.html): Creates a Lift curve
+- [plot_lift_curve](https://uriahf.github.io/rtichoke_python/reference/plot_lift_curve.html): Plots a Lift curve from pre-computed performance data
+
+#### Calibration and Utility
+> Functions for calibration and decision-curve analysis.
+
+- [create_calibration_curve](https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve.html): Creates Calibration Curve
+- [create_decision_curve](https://uriahf.github.io/rtichoke_python/reference/create_decision_curve.html): Creates a Decision Curve
+- [plot_decision_curve](https://uriahf.github.io/rtichoke_python/reference/plot_decision_curve.html): Plots a Decision Curve from pre-computed performance data
+
+#### Reports
+> Summary reporting helpers.
+
+- [create_summary_report](https://uriahf.github.io/rtichoke_python/reference/create_summary_report.html): Create rtichoke Summary Report
