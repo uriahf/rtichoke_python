@@ -5,6 +5,9 @@ user_guide: user_guide
 homepage: user_guide
 site_url: https://uriahf.github.io/rtichoke_python/
 
+site:
+  css: site.css
+
 source:
   enabled: true
   branch: main
