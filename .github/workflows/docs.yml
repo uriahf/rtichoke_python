@@ -5,81 +5,76 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, reopened, synchronize, closed]
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
+  pull-requests: write
 
 concurrency:
-  group: pages-${{ github.ref }}
+  group: docs-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-publish:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: '3.11'
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-
       - name: Install project and docs dependencies
-        run: |
-          uv sync --all-extras --dev
-          uv pip install great-docs
+        run: uv sync --group docs
 
-      - name: Build documentation
+      - name: Build Great Docs site
         run: uv run great-docs build
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Publish documentation
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          path: great-docs/_site
-
-  deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          branch: gh-pages
+          folder: great-docs/_site
+          clean: true
+          clean-exclude: |
+            pr-preview/
 
   preview:
     if: github.event_name == 'pull_request'
-    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download built docs
-        uses: actions/download-artifact@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv and Python
+        if: github.event.action != 'closed'
+        uses: astral-sh/setup-uv@v5
         with:
-          name: github-pages
-          path: preview-artifact
+          python-version: '3.11'
 
-      - name: Extract Pages artifact
-        run: |
-          mkdir preview-site
-          tar -xf preview-artifact/artifact.tar -C preview-site
+      - name: Set up Quarto
+        if: github.event.action != 'closed'
+        uses: quarto-dev/quarto-actions/setup@v2
 
-      - name: Publish PR preview artifact
-        uses: actions/upload-artifact@v4
+      - name: Install project and docs dependencies
+        if: github.event.action != 'closed'
+        run: uv sync --group docs
+
+      - name: Build Great Docs preview
+        if: github.event.action != 'closed'
+        run: uv run great-docs build
+
+      - name: Deploy PR preview
+        uses: rossjrw/pr-preview-action@v1
         with:
-          name: rtichoke-docs-preview-pr-${{ github.event.pull_request.number }}
-          path: preview-site
-          retention-days: 14
-
-      - name: Preview instructions
-        run: |
-          echo "Rendered documentation is available as the workflow artifact: rtichoke-docs-preview-pr-${{ github.event.pull_request.number }}"
+          source-dir: great-docs/_site
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: auto
