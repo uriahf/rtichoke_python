@@ -42,8 +42,3 @@
 - [create_decision_curve](https://uriahf.github.io/rtichoke_python/reference/create_decision_curve.html): Creates a Decision Curve
 - [create_decision_curve_times](https://uriahf.github.io/rtichoke_python/reference/create_decision_curve_times.html): Creates a time-dependent Decision Curve
 - [plot_decision_curve](https://uriahf.github.io/rtichoke_python/reference/plot_decision_curve.html): Plots a Decision Curve from pre-computed performance data
-
-#### Reports
-> Summary reporting helpers.
-
-- [create_summary_report](https://uriahf.github.io/rtichoke_python/reference/create_summary_report.html): Request an rtichoke summary report from the rtichoke R API

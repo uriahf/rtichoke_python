@@ -59,12 +59,6 @@ Decision-curve analysis for classification and time-to-event models.
 - `create_decision_curve_times`: Creates a time-dependent Decision Curve
 - `plot_decision_curve`: Plots a Decision Curve from pre-computed performance data
 
-### Reports
-
-Summary reporting helpers.
-
-- `create_summary_report`: Request an rtichoke summary report from the rtichoke R API
-
 ## Resources
 
 - [Full documentation](https://uriahf.github.io/rtichoke_python/)

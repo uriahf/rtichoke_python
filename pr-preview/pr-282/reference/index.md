@@ -90,13 +90,3 @@ Creates a time-dependent Decision Curve.
 
 [plot_decision_curve()](plot_decision_curve.md#rtichoke.plot_decision_curve)  
 Plots a Decision Curve from pre-computed performance data.
-
-
-## Reports
-
-
-Summary reporting helpers.
-
-
-[create_summary_report()](create_summary_report.md#rtichoke.create_summary_report)  
-Request an rtichoke summary report from the rtichoke R API.
