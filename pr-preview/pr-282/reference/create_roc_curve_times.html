@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>plot_precision_recall_curve() – rtichoke | rtichoke</title>
+<title>create_roc_curve_times() – rtichoke | rtichoke</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -119,9 +119,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../theme-init.js"></script>
 
 
-  <link rel="alternate" type="text/markdown" href="plot_precision_recall_curve.md">
-  <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/reference/plot_precision_recall_curve.html">
-  <meta name="description" content="Plots a Precision-Recall curve from pre-computed performance data.">
+  <link rel="alternate" type="text/markdown" href="create_roc_curve_times.md">
+  <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/reference/create_roc_curve_times.html">
+  <meta name="description" content="Creates a time-dependent Receiver Operating Characteristic (ROC) curve.">
   <script type="application/ld+json">
 [
   {
@@ -140,23 +140,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "plot_precision_recall_curve - rtichoke",
+    "name": "create_roc_curve_times - rtichoke",
     "isPartOf": {
       "@type": "WebSite",
       "name": "rtichoke"
     },
-    "url": "https://uriahf.github.io/rtichoke_python/reference/plot_precision_recall_curve.html"
+    "url": "https://uriahf.github.io/rtichoke_python/reference/create_roc_curve_times.html"
   }
 ]
 </script>
   <meta property="og:type" content="website">
-  <meta property="og:title" content="plot_precision_recall_curve() – rtichoke | rtichoke">
-  <meta property="og:description" content="Plots a Precision-Recall curve from pre-computed performance data.">
-  <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/reference/plot_precision_recall_curve.html">
+  <meta property="og:title" content="create_roc_curve_times() – rtichoke | rtichoke">
+  <meta property="og:description" content="Creates a time-dependent Receiver Operating Characteristic (ROC) curve.">
+  <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/reference/create_roc_curve_times.html">
   <meta property="og:site_name" content="rtichoke">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="plot_precision_recall_curve() – rtichoke | rtichoke">
-  <meta name="twitter:description" content="Plots a Precision-Recall curve from pre-computed performance data.">
+  <meta name="twitter:title" content="create_roc_curve_times() – rtichoke | rtichoke">
+  <meta name="twitter:description" content="Creates a time-dependent Receiver Operating Characteristic (ROC) curve.">
 </head>
 
 <body class="gd-ref-sidebar nav-sidebar floating nav-fixed doc-api-page quarto-light">
@@ -198,7 +198,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <h1 class="quarto-secondary-nav-title no-breadcrumbs gd-ref-title"><span class="gd-ref-title-prefix">API</span><span class="gd-ref-title-sep">/</span><span class="gd-ref-title-name">plot_precision_recall_curve()</span></h1>
+        <h1 class="quarto-secondary-nav-title no-breadcrumbs gd-ref-title"><span class="gd-ref-title-prefix">API</span><span class="gd-ref-title-sep">/</span><span class="gd-ref-title-name">create_roc_curve_times()</span></h1>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -262,7 +262,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../reference/create_roc_curve_times.html" class="sidebar-item-text sidebar-link">
+  <a href="../reference/create_roc_curve_times.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">create_roc_curve_times</span></a>
   </div>
 </li>
@@ -286,7 +286,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../reference/plot_precision_recall_curve.html" class="sidebar-item-text sidebar-link active">
+  <a href="../reference/plot_precision_recall_curve.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot_precision_recall_curve</span></a>
   </div>
 </li>
@@ -408,7 +408,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h2 class="title" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 1.25rem;"><span class="doc-object-name doc-function doc-label doc-label-function">plot_precision_recall_curve()</span></h2>
+<h2 class="title" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 1.25rem;"><span class="doc-object-name doc-function doc-label doc-label-function">create_roc_curve_times()</span></h2>
 </div>
 
 
@@ -426,35 +426,67 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <div class="doc-subject">
-<p>Plots a Precision-Recall curve from pre-computed performance data.</p>
+<p>Creates a time-dependent Receiver Operating Characteristic (ROC) curve.</p>
 </div>
 <div class="doc-usage-source">
 <p>Usage</p>
-<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/discrimination/precision_recall.py#L86-L117" target="_blank" rel="noopener">Source</a></p>
+<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/discrimination/roc.py#L128-L211" target="_blank" rel="noopener">Source</a></p>
 </div>
 <div class="doc-signature doc-Kind.FUNCTION">
-<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">plot_precision_recall_curve</span>(</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">performance_data</span>, <span class="va">stratified_by</span><span class="op">=</span>[<span class="st">&quot;probability_threshold&quot;</span>], <span class="va">size</span><span class="op">=</span><span class="dv">600</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">create_roc_curve_times</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">probs</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">reals</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">times</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="va">fixed_time_horizons</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">heuristics_sets</span><span class="op">=</span>[{<span class="st">&quot;censoring_heuristic&quot;</span>: <span class="st">&quot;adjusted&quot;</span>, <span class="st">&quot;competing_heuristic&quot;</span>: <span class="st">&quot;adjusted_as_negative&quot;</span>}],</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="va">by</span><span class="op">=</span><span class="fl">0.01</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="va">stratified_by</span><span class="op">=</span>[<span class="st">&quot;probability_threshold&quot;</span>],</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="va">size</span><span class="op">=</span><span class="dv">600</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="va">color_values</span><span class="op">=</span>[<span class="st">&quot;#1b9e77&quot;</span>, <span class="st">&quot;#d95f02&quot;</span>, <span class="st">&quot;#7570b3&quot;</span>, <span class="st">&quot;#e7298a&quot;</span>, <span class="st">&quot;#07004D&quot;</span>, <span class="st">&quot;#E6AB02&quot;</span>, <span class="st">&quot;#FE5F55&quot;</span>, <span class="st">&quot;#54494B&quot;</span>, <span class="st">&quot;#006E90&quot;</span>, <span class="st">&quot;#BC96E6&quot;</span>, <span class="st">&quot;#52050A&quot;</span>, <span class="st">&quot;#1F271B&quot;</span>, <span class="st">&quot;#BE7C4D&quot;</span>, <span class="st">&quot;#63768D&quot;</span>, <span class="st">&quot;#08A045&quot;</span>, <span class="st">&quot;#320A28&quot;</span>, <span class="st">&quot;#82FF9E&quot;</span>, <span class="st">&quot;#2176FF&quot;</span>, <span class="st">&quot;#D1603D&quot;</span>, <span class="st">&quot;#585123&quot;</span>]</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 </div>
 <div class="doc-text">
-<p>This function is useful when you have already computed the performance metrics and want to generate a Precision-Recall plot directly.</p>
+<p>This function generates an ROC curve for time-to-event models. It evaluates the model’s performance at specified time horizons, handling censored data and competing risks according to the chosen heuristics.</p>
 </div>
 <section id="parameters" class="level2 doc-parameters">
 <h2 class="doc-parameters">Parameters</h2>
 <div class="doc-definition-items">
 <dl>
-<dt><code><span class="doc-parameter-name">performance_data</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">pl.DataFrame</span></code></dt>
+<dt><code><span class="doc-parameter-name">probs</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Dict[str, np.ndarray]</span></code></dt>
 <dd>
-<p>A Polars DataFrame with the necessary performance metrics, including precision (ppv) and recall (tpr), along with any stratification variables.</p>
+<p>A dictionary of predicted probabilities.</p>
+</dd>
+<dt><code><span class="doc-parameter-name">reals</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Union[np.ndarray, Dict[str, np.ndarray]]</span></code></dt>
+<dd>
+<p>The true event statuses (e.g., 0=censored, 1=event, 2=competing).</p>
+</dd>
+<dt><code><span class="doc-parameter-name">times</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Union[np.ndarray, Dict[str, np.ndarray]]</span></code></dt>
+<dd>
+<p>The event or censoring times.</p>
+</dd>
+<dt><code><span class="doc-parameter-name">fixed_time_horizons</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">list[float]</span></code></dt>
+<dd>
+<p>A list of time points for performance evaluation.</p>
+</dd>
+<dt><code><span class="doc-parameter-name">heuristics_sets</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">list[Dict]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[{<span class="st">"censoring_heuristic"</span>: <span class="st">"adjusted"</span>, <span class="st">"competing_heuristic"</span>: <span class="st">"adjusted_as_negative"</span>}]<br></span></code></dt>
+<dd>
+<p>Specifies how to handle censored data and competing events.</p>
+</dd>
+<dt><code><span class="doc-parameter-name">by</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">float</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="fl">0.01</span></span></code></dt>
+<dd>
+<p>The step size for probability thresholds. Defaults to 0.01.</p>
 </dd>
 <dt><code><span class="doc-parameter-name">stratified_by</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Sequence[str]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[<span class="st">"probability_threshold"</span>]<br></span></code></dt>
 <dd>
-<p>The columns in <code>performance_data</code> used for stratification. Defaults to <code>["probability_threshold"]</code>.</p>
+<p>Variables for stratification. Defaults to <code>["probability_threshold"]</code>.</p>
 </dd>
 <dt><code><span class="doc-parameter-name">size</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">int</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="dv">600</span></span></code></dt>
 <dd>
-The width and height of the plot in pixels. Defaults to 600.
+<p>The width and height of the plot in pixels. Defaults to 600.</p>
+</dd>
+<dt><code><span class="doc-parameter-name">color_values</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">List[str]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#1b9e77"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#d95f02"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#7570b3"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#e7298a"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#07004D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#E6AB02"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#FE5F55"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#54494B"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#006E90"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#BC96E6"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#52050A"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#1F271B"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#BE7C4D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#63768D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#08A045"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#320A28"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#82FF9E"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#2176FF"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#D1603D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#585123"</span>,<br>]<br></span></code></dt>
+<dd>
+A list of hex color strings for the plot lines.
 </dd>
 </dl>
 </div>
@@ -465,7 +497,7 @@ The width and height of the plot in pixels. Defaults to 600.
 <dl>
 <dt><code> <span class="doc-parameter-annotation">Figure</span></code></dt>
 <dd>
-A Plotly <code>Figure</code> object representing the Precision-Recall curve.
+A Plotly <code>Figure</code> object representing the time-dependent ROC curve.
 </dd>
 </dl>
 </div>

@@ -13,7 +13,7 @@ prepare_performance_data(
 ```
 
 
-This function computes a comprehensive set of performance metrics for one or more binary classification models across a range of probability thresholds. It builds upon the binned data from `prepare_binned_classification_data` by cumulatively summing the counts and calculating metrics like sensitivity (TPR), specificity, precision (PPV), and net benefit.
+This function computes a comprehensive set of performance metrics for one or more binary classification models across a range of probability thresholds. It builds upon the binned data from [prepare_binned_classification_data](prepare_binned_classification_data.md#rtichoke.prepare_binned_classification_data) by cumulatively summing the counts and calculating metrics like sensitivity (TPR), specificity, precision (PPV), and net benefit.
 
 This resulting dataframe is the primary input for plotting functions like [plot_roc_curve](plot_roc_curve.md#rtichoke.plot_roc_curve), [plot_precision_recall_curve](plot_precision_recall_curve.md#rtichoke.plot_precision_recall_curve), etc.
 

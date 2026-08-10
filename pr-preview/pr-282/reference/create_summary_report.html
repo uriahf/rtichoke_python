@@ -121,7 +121,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
   <link rel="alternate" type="text/markdown" href="create_summary_report.md">
   <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/reference/create_summary_report.html">
-  <meta name="description" content="interactive visualizations for performance of predictive models">
+  <meta name="description" content="Request an rtichoke summary report from the rtichoke R API.">
   <script type="application/ld+json">
 [
   {
@@ -151,12 +151,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </script>
   <meta property="og:type" content="website">
   <meta property="og:title" content="create_summary_report() – rtichoke | rtichoke">
-  <meta property="og:description" content="interactive visualizations for performance of predictive models">
+  <meta property="og:description" content="Request an rtichoke summary report from the rtichoke R API.">
   <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/reference/create_summary_report.html">
   <meta property="og:site_name" content="rtichoke">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="create_summary_report() – rtichoke | rtichoke">
-  <meta name="twitter:description" content="interactive visualizations for performance of predictive models">
+  <meta name="twitter:description" content="Request an rtichoke summary report from the rtichoke R API.">
 </head>
 
 <body class="gd-ref-sidebar nav-sidebar floating nav-fixed doc-api-page quarto-light">
@@ -230,8 +230,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../reference/prepare_binned_classification_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">prepare_binned_classification_data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../reference/prepare_performance_data_times.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">prepare_performance_data_times</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/prepare_binned_classification_data_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">prepare_binned_classification_data_times</span></a>
   </div>
 </li>
       </ul>
@@ -250,6 +262,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../reference/create_roc_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_roc_curve_times</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../reference/plot_roc_curve.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot_roc_curve</span></a>
   </div>
@@ -258,6 +276,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="../reference/create_precision_recall_curve.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">create_precision_recall_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_precision_recall_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_precision_recall_curve_times</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -274,6 +298,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../reference/create_gains_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_gains_curve_times</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../reference/plot_gains_curve.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot_gains_curve</span></a>
   </div>
@@ -282,6 +312,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="../reference/create_lift_curve.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">create_lift_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_lift_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_lift_curve_times</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -295,7 +331,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Calibration and Utility</span></a>
+ <span class="menu-text">Calibration</span></a>
 </div>
       <ul id="quarto-sidebar-section-3" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
@@ -306,8 +342,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../reference/create_calibration_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_calibration_curve_times</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Utility</span></a>
+</div>
+      <ul id="quarto-sidebar-section-4" class="list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../reference/create_decision_curve.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">create_decision_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_decision_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_decision_curve_times</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -323,7 +379,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             <a class="sidebar-item-text sidebar-link text-start">
  <span class="menu-text">Reports</span></a>
 </div>
-      <ul id="quarto-sidebar-section-4" class="list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-5" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../reference/create_summary_report.html" class="sidebar-item-text sidebar-link active">
@@ -337,8 +393,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h3 id="toc-title">On this page</h3>
+   
+  <ul class="collapse">
+  <li><a href="#parameters" id="toc-parameters" class="nav-link active" data-scroll-target="#parameters">Parameters</a></li>
+  <li><a href="#returns" id="toc-returns" class="nav-link" data-scroll-target="#returns">Returns</a></li>
+  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes">Notes</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -363,11 +427,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <div class="doc-subject">
-<p>Create rtichoke Summary Report</p>
+<p>Request an rtichoke summary report from the rtichoke R API.</p>
 </div>
 <div class="doc-usage-source">
 <p>Usage</p>
-<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/summary_report/summary_report.py#L14-L27" target="_blank" rel="noopener">Source</a></p>
+<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/summary_report/summary_report.py#L13-L46" target="_blank" rel="noopener">Source</a></p>
 </div>
 <div class="doc-signature doc-Kind.FUNCTION">
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">create_summary_report</span>(
@@ -377,10 +441,44 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 )</span></code></pre></div>
 </div>
 <div class="doc-text">
-<p>Args: probs (<em>type</em>): <em>description</em> reals (<em>type</em>): <em>description</em> url_api (str, optional): <em>description</em>. Defaults to “http://localhost:4242/”.</p>
+<p>The current implementation sends model predictions and observed outcomes to the <a href="create_summary_report.html#rtichoke.create_summary_report" class="gdls-link gdls-code">create_summary_report</a> endpoint exposed by the rtichoke R service. It prints the keys returned by the service and does not currently return a Python report object or write a standalone HTML file.</p>
 </div>
+<section id="parameters" class="level2 doc-parameters">
+<h2 class="doc-parameters">Parameters</h2>
+<div class="doc-definition-items">
+<dl>
+<dt><code><span class="doc-parameter-name">probs</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">dict</span></code></dt>
+<dd>
+<p>Predicted probabilities, typically keyed by model or population name.</p>
+</dd>
+<dt><code><span class="doc-parameter-name">reals</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">dict</span></code></dt>
+<dd>
+<p>Observed binary outcomes, typically keyed by population name.</p>
+</dd>
+<dt><code><span class="doc-parameter-name">url_api</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">str</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="st">"http://localhost:4242/"</span></span></code></dt>
+<dd>
+Base URL of the running rtichoke R API service.
+</dd>
+</dl>
+</div>
+</section>
+<section id="returns" class="level2 doc-returns">
+<h2 class="doc-returns">Returns</h2>
+<div class="doc-definition-items">
+<dl>
+<dt><code> <span class="doc-parameter-annotation">None</span></code></dt>
+<dd>
+The function currently prints information from the API response.
+</dd>
+</dl>
+</div>
+</section>
+<section id="notes" class="level2 doc-notes">
+<h2 class="doc-notes">Notes</h2>
+<p>A running rtichoke R API service is required at <code>url_api</code>. This helper represents the current bridge to the R summary-report implementation; a self-contained Python-native HTML report is not yet implemented here.</p>
 
 
+</section>
 
 </main>
 <hr style="padding: 0; margin: 0;">

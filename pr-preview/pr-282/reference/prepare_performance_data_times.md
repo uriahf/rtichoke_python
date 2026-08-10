@@ -19,7 +19,7 @@ prepare_performance_data_times(
 ```
 
 
-This function calculates a comprehensive set of performance metrics for models predicting time-to-event outcomes. It handles censored data and competing events by applying specified heuristics at different time horizons. The function first bins the data using `prepare_binned_classification_data_times` and then computes cumulative, Aalen-Johansen-based performance metrics.
+This function calculates a comprehensive set of performance metrics for models predicting time-to-event outcomes. It handles censored data and competing events by applying specified heuristics at different time horizons. The function first bins the data using [prepare_binned_classification_data_times](prepare_binned_classification_data_times.md#rtichoke.prepare_binned_classification_data_times) and then computes cumulative, Aalen-Johansen-based performance metrics.
 
 The resulting dataframe is the primary input for time-dependent plotting functions.
 

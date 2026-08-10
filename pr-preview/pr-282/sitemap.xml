@@ -19,7 +19,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve_times.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/create_decision_curve.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://uriahf.github.io/rtichoke_python/reference/create_decision_curve_times.html</loc>
     <lastmod>2026-08-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -31,7 +43,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://uriahf.github.io/rtichoke_python/reference/create_gains_curve_times.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/create_lift_curve.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://uriahf.github.io/rtichoke_python/reference/create_lift_curve_times.html</loc>
     <lastmod>2026-08-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -43,7 +67,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://uriahf.github.io/rtichoke_python/reference/create_precision_recall_curve_times.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/create_roc_curve.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://uriahf.github.io/rtichoke_python/reference/create_roc_curve_times.html</loc>
     <lastmod>2026-08-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -80,6 +116,18 @@
   </url>
   <url>
     <loc>https://uriahf.github.io/rtichoke_python/reference/plot_roc_curve.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://uriahf.github.io/rtichoke_python/reference/prepare_binned_classification_data.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://uriahf.github.io/rtichoke_python/reference/prepare_binned_classification_data_times.html</loc>
     <lastmod>2026-08-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

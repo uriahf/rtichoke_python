@@ -86,7 +86,7 @@ ul.task-list li input[type="checkbox"] {
 
   <link rel="alternate" type="text/markdown" href="index.md">
   <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/reference/">
-  <meta name="description" content="Functions for preparing model-performance data.">
+  <meta name="description" content="Prepare classification and time-to-event data for visualization.">
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -104,12 +104,12 @@ ul.task-list li input[type="checkbox"] {
 </script>
   <meta property="og:type" content="website">
   <meta property="og:title" content="API Reference – rtichoke | rtichoke">
-  <meta property="og:description" content="Functions for preparing model-performance data.">
+  <meta property="og:description" content="Prepare classification and time-to-event data for visualization.">
   <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/reference/">
   <meta property="og:site_name" content="rtichoke">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="API Reference – rtichoke | rtichoke">
-  <meta name="twitter:description" content="Functions for preparing model-performance data.">
+  <meta name="twitter:description" content="Prepare classification and time-to-event data for visualization.">
 </head>
 
 <body class="gd-ref-sidebar nav-sidebar floating nav-fixed doc-reference quarto-light">
@@ -183,8 +183,20 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../reference/prepare_binned_classification_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">prepare_binned_classification_data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../reference/prepare_performance_data_times.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">prepare_performance_data_times</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/prepare_binned_classification_data_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">prepare_binned_classification_data_times</span></a>
   </div>
 </li>
       </ul>
@@ -203,6 +215,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../reference/create_roc_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_roc_curve_times</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../reference/plot_roc_curve.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot_roc_curve</span></a>
   </div>
@@ -211,6 +229,12 @@ ul.task-list li input[type="checkbox"] {
   <div class="sidebar-item-container"> 
   <a href="../reference/create_precision_recall_curve.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">create_precision_recall_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_precision_recall_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_precision_recall_curve_times</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -227,6 +251,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../reference/create_gains_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_gains_curve_times</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../reference/plot_gains_curve.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot_gains_curve</span></a>
   </div>
@@ -235,6 +265,12 @@ ul.task-list li input[type="checkbox"] {
   <div class="sidebar-item-container"> 
   <a href="../reference/create_lift_curve.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">create_lift_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_lift_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_lift_curve_times</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -248,7 +284,7 @@ ul.task-list li input[type="checkbox"] {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Calibration and Utility</span></a>
+ <span class="menu-text">Calibration</span></a>
 </div>
       <ul id="quarto-sidebar-section-3" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
@@ -259,8 +295,28 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../reference/create_calibration_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_calibration_curve_times</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Utility</span></a>
+</div>
+      <ul id="quarto-sidebar-section-4" class="list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../reference/create_decision_curve.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">create_decision_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_decision_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_decision_curve_times</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -276,7 +332,7 @@ ul.task-list li input[type="checkbox"] {
             <a class="sidebar-item-text sidebar-link text-start">
  <span class="menu-text">Reports</span></a>
 </div>
-      <ul id="quarto-sidebar-section-4" class="list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-5" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../reference/create_summary_report.html" class="sidebar-item-text sidebar-link">
@@ -297,7 +353,8 @@ ul.task-list li input[type="checkbox"] {
   <ul class="collapse">
   <li><a href="#performance-data" id="toc-performance-data" class="nav-link active" data-scroll-target="#performance-data">Performance Data</a></li>
   <li><a href="#discrimination" id="toc-discrimination" class="nav-link" data-scroll-target="#discrimination">Discrimination</a></li>
-  <li><a href="#calibration-and-utility" id="toc-calibration-and-utility" class="nav-link" data-scroll-target="#calibration-and-utility">Calibration and Utility</a></li>
+  <li><a href="#calibration" id="toc-calibration" class="nav-link" data-scroll-target="#calibration">Calibration</a></li>
+  <li><a href="#utility" id="toc-utility" class="nav-link" data-scroll-target="#utility">Utility</a></li>
   <li><a href="#reports" id="toc-reports" class="nav-link" data-scroll-target="#reports">Reports</a></li>
   </ul>
 </nav>
@@ -327,28 +384,40 @@ ul.task-list li input[type="checkbox"] {
 <section id="performance-data" class="level2 doc-group">
 <h2 class="doc-group">Performance Data</h2>
 <div class="doc-description">
-<p>Functions for preparing model-performance data.</p>
+<p>Prepare classification and time-to-event data for visualization.</p>
 </div>
 <dl>
 <dt><a href="../reference/prepare_performance_data.html#rtichoke.prepare_performance_data" class="doc-function doc-label doc-label-function">prepare_performance_data()</a></dt>
 <dd>
 <p>Prepare performance data for binary classification models.</p>
 </dd>
+<dt><a href="../reference/prepare_binned_classification_data.html#rtichoke.prepare_binned_classification_data" class="doc-function doc-label doc-label-function">prepare_binned_classification_data()</a></dt>
+<dd>
+<p>Prepare probability-binned classification data for binary outcomes.</p>
+</dd>
 <dt><a href="../reference/prepare_performance_data_times.html#rtichoke.prepare_performance_data_times" class="doc-function doc-label doc-label-function">prepare_performance_data_times()</a></dt>
 <dd>
 <p>Prepare performance data for models with time-to-event outcomes.</p>
+</dd>
+<dt><a href="../reference/prepare_binned_classification_data_times.html#rtichoke.prepare_binned_classification_data_times" class="doc-function doc-label doc-label-function">prepare_binned_classification_data_times()</a></dt>
+<dd>
+<p>Prepare binned, time-dependent classification data.</p>
 </dd>
 </dl>
 </section>
 <section id="discrimination" class="level2 doc-group">
 <h2 class="doc-group">Discrimination</h2>
 <div class="doc-description">
-<p>Functions for evaluating discrimination.</p>
+<p>ROC, precision-recall, gains, and lift visualizations.</p>
 </div>
 <dl>
 <dt><a href="../reference/create_roc_curve.html#rtichoke.create_roc_curve" class="doc-function doc-label doc-label-function">create_roc_curve()</a></dt>
 <dd>
 <p>Creates a Receiver Operating Characteristic (ROC) curve.</p>
+</dd>
+<dt><a href="../reference/create_roc_curve_times.html#rtichoke.create_roc_curve_times" class="doc-function doc-label doc-label-function">create_roc_curve_times()</a></dt>
+<dd>
+<p>Creates a time-dependent Receiver Operating Characteristic (ROC) curve.</p>
 </dd>
 <dt><a href="../reference/plot_roc_curve.html#rtichoke.plot_roc_curve" class="doc-function doc-label doc-label-function">plot_roc_curve()</a></dt>
 <dd>
@@ -358,6 +427,10 @@ ul.task-list li input[type="checkbox"] {
 <dd>
 <p>Creates a Precision-Recall curve.</p>
 </dd>
+<dt><a href="../reference/create_precision_recall_curve_times.html#rtichoke.create_precision_recall_curve_times" class="doc-function doc-label doc-label-function">create_precision_recall_curve_times()</a></dt>
+<dd>
+<p>Creates a time-dependent Precision-Recall curve.</p>
+</dd>
 <dt><a href="../reference/plot_precision_recall_curve.html#rtichoke.plot_precision_recall_curve" class="doc-function doc-label doc-label-function">plot_precision_recall_curve()</a></dt>
 <dd>
 <p>Plots a Precision-Recall curve from pre-computed performance data.</p>
@@ -365,6 +438,10 @@ ul.task-list li input[type="checkbox"] {
 <dt><a href="../reference/create_gains_curve.html#rtichoke.create_gains_curve" class="doc-function doc-label doc-label-function">create_gains_curve()</a></dt>
 <dd>
 <p>Creates a Gains curve.</p>
+</dd>
+<dt><a href="../reference/create_gains_curve_times.html#rtichoke.create_gains_curve_times" class="doc-function doc-label doc-label-function">create_gains_curve_times()</a></dt>
+<dd>
+<p>Creates a time-dependent Gains curve.</p>
 </dd>
 <dt><a href="../reference/plot_gains_curve.html#rtichoke.plot_gains_curve" class="doc-function doc-label doc-label-function">plot_gains_curve()</a></dt>
 <dd>
@@ -374,25 +451,45 @@ ul.task-list li input[type="checkbox"] {
 <dd>
 <p>Creates a Lift curve.</p>
 </dd>
+<dt><a href="../reference/create_lift_curve_times.html#rtichoke.create_lift_curve_times" class="doc-function doc-label doc-label-function">create_lift_curve_times()</a></dt>
+<dd>
+<p>Creates a time-dependent Lift curve.</p>
+</dd>
 <dt><a href="../reference/plot_lift_curve.html#rtichoke.plot_lift_curve" class="doc-function doc-label doc-label-function">plot_lift_curve()</a></dt>
 <dd>
 <p>Plots a Lift curve from pre-computed performance data.</p>
 </dd>
 </dl>
 </section>
-<section id="calibration-and-utility" class="level2 doc-group">
-<h2 class="doc-group">Calibration and Utility</h2>
+<section id="calibration" class="level2 doc-group">
+<h2 class="doc-group">Calibration</h2>
 <div class="doc-description">
-<p>Functions for calibration and decision-curve analysis.</p>
+<p>Calibration visualizations for classification and time-to-event models.</p>
 </div>
 <dl>
 <dt><a href="../reference/create_calibration_curve.html#rtichoke.create_calibration_curve" class="doc-function doc-label doc-label-function">create_calibration_curve()</a></dt>
 <dd>
 <p>Creates Calibration Curve</p>
 </dd>
+<dt><a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="doc-function doc-label doc-label-function">create_calibration_curve_times()</a></dt>
+<dd>
+<p>Creates a time-dependent Calibration Curve with a slider for different time horizons.</p>
+</dd>
+</dl>
+</section>
+<section id="utility" class="level2 doc-group">
+<h2 class="doc-group">Utility</h2>
+<div class="doc-description">
+<p>Decision-curve analysis for classification and time-to-event models.</p>
+</div>
+<dl>
 <dt><a href="../reference/create_decision_curve.html#rtichoke.create_decision_curve" class="doc-function doc-label doc-label-function">create_decision_curve()</a></dt>
 <dd>
 <p>Creates a Decision Curve.</p>
+</dd>
+<dt><a href="../reference/create_decision_curve_times.html#rtichoke.create_decision_curve_times" class="doc-function doc-label doc-label-function">create_decision_curve_times()</a></dt>
+<dd>
+<p>Creates a time-dependent Decision Curve.</p>
 </dd>
 <dt><a href="../reference/plot_decision_curve.html#rtichoke.plot_decision_curve" class="doc-function doc-label doc-label-function">plot_decision_curve()</a></dt>
 <dd>
@@ -408,7 +505,7 @@ ul.task-list li input[type="checkbox"] {
 <dl>
 <dt><a href="../reference/create_summary_report.html#rtichoke.create_summary_report" class="doc-function doc-label doc-label-function">create_summary_report()</a></dt>
 <dd>
-<p>Create rtichoke Summary Report</p>
+<p>Request an rtichoke summary report from the rtichoke R API.</p>
 </dd>
 </dl>
 
