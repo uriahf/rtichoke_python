@@ -12,28 +12,40 @@ source:
 
 reference:
   - title: Performance Data
-    desc: Functions for preparing model-performance data.
+    desc: Prepare classification and time-to-event data for visualization.
     contents:
       - prepare_performance_data
+      - prepare_binned_classification_data
       - prepare_performance_data_times
+      - prepare_binned_classification_data_times
 
   - title: Discrimination
-    desc: Functions for evaluating discrimination.
+    desc: ROC, precision-recall, gains, and lift visualizations.
     contents:
       - create_roc_curve
+      - create_roc_curve_times
       - plot_roc_curve
       - create_precision_recall_curve
+      - create_precision_recall_curve_times
       - plot_precision_recall_curve
       - create_gains_curve
+      - create_gains_curve_times
       - plot_gains_curve
       - create_lift_curve
+      - create_lift_curve_times
       - plot_lift_curve
 
-  - title: Calibration and Utility
-    desc: Functions for calibration and decision-curve analysis.
+  - title: Calibration
+    desc: Calibration visualizations for classification and time-to-event models.
     contents:
       - create_calibration_curve
+      - create_calibration_curve_times
+
+  - title: Utility
+    desc: Decision-curve analysis for classification and time-to-event models.
+    contents:
       - create_decision_curve
+      - create_decision_curve_times
       - plot_decision_curve
 
   - title: Reports
