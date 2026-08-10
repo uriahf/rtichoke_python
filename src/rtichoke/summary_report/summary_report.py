@@ -1,6 +1,6 @@
-"""Summary-report helpers for rtichoke."""
-
-import subprocess
+"""
+A module for Summary Report
+"""
 
 from rtichoke.processing.send_post_request_to_r_rtichoke import (
     send_requests_to_rtichoke_r,
@@ -8,35 +8,16 @@ from rtichoke.processing.send_post_request_to_r_rtichoke import (
 from rtichoke.processing.transforms import (
     _create_list_data_to_adjust,
 )
+import subprocess
 
 
 def create_summary_report(probs, reals, url_api="http://localhost:4242/"):
-    """Request an rtichoke summary report from the rtichoke R API.
+    """Create rtichoke Summary Report
 
-    The current implementation sends model predictions and observed outcomes to
-    the ``create_summary_report`` endpoint exposed by the rtichoke R service.
-    It prints the keys returned by the service and does not currently return a
-    Python report object or write a standalone HTML file.
-
-    Parameters
-    ----------
-    probs : dict
-        Predicted probabilities, typically keyed by model or population name.
-    reals : dict
-        Observed binary outcomes, typically keyed by population name.
-    url_api : str, default="http://localhost:4242/"
-        Base URL of the running rtichoke R API service.
-
-    Returns
-    -------
-    None
-        The function currently prints information from the API response.
-
-    Notes
-    -----
-    A running rtichoke R API service is required at ``url_api``. This helper
-    represents the current bridge to the R summary-report implementation; a
-    self-contained Python-native HTML report is not yet implemented here.
+    Args:
+        probs (_type_): _description_
+        reals (_type_): _description_
+        url_api (str, optional): _description_. Defaults to "http://localhost:4242/".
     """
     rtichoke_response = send_requests_to_rtichoke_r(
         dictionary_to_send={"probs": probs, "reals": reals},
@@ -47,14 +28,27 @@ def create_summary_report(probs, reals, url_api="http://localhost:4242/"):
 
 
 def render_summary_report():
-    """Render the rtichoke summary-report Quarto template.
-
-    This internal helper renders ``aj_estimate_summary_report.qmd`` to
-    ``summary_report.html`` using the Quarto command-line interface.
     """
+    Render the rtichoke Summary Report using Quarto.
+
+    Args:
+        probs (list): A list of probabilities.
+        reals (list): A list of real values.
+        times (list): A list of absolute numbers representing timestamps.
+
+    Example:
+        probs = [0.1, 0.4, 0.8]
+        reals = [0, 1, 1]
+        times = [1, 3, 5]
+        render_summary_report(probs, reals, times)
+
+    This will generate a `summary_report.html` file based on the `summary_report_template.qmd`.
+    """
+    # Define the path to the template and output file
     template_path = "aj_estimate_summary_report.qmd"
     output_path = "summary_report.html"
 
+    # Prepare the command to render the Quarto document
     command = [
         "quarto",
         "render",
@@ -62,14 +56,16 @@ def render_summary_report():
         "--to",
         "html",
         "--output",
-        output_path,
+        output_path,  # ,
+        # "--execute-params",
+        # f"probs={probs},reals={reals},times={times}",
     ]
 
+    # Execute the command
     subprocess.run(command, check=True)
 
 
 def create_data_for_summary_report(probs, reals, times, fixed_time_horizons):
-    """Prepare stratified data used by the summary-report implementation."""
     stratified_by = ["probability_threshold", "ppcr"]
     by = 0.1
 

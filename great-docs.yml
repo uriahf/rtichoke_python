@@ -47,8 +47,3 @@ reference:
       - create_decision_curve
       - create_decision_curve_times
       - plot_decision_curve
-
-  - title: Reports
-    desc: Summary reporting helpers.
-    contents:
-      - create_summary_report
