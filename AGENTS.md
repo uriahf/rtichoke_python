@@ -6,17 +6,17 @@ This document provides guidance for AI agents working on the `rtichoke` reposito
 
 To set up the development environment, follow these steps:
 
-1. **Install `uv`**: If you don't have `uv` installed, please follow the official installation instructions.
-2. **Create a virtual environment**: Use `uv venv` to create a virtual environment.
-3. **Install dependencies**: Install the project dependencies, including the `dev` dependencies, with the following command:
+1. **Install `uv`**.
+2. **Create a virtual environment** with `uv venv`.
+3. **Install development dependencies** with:
 
     ```bash
-    uv pip install -e .[dev]
+    uv sync --dev
     ```
 
 ## Running Tests
 
-The test suite is run using `pytest`. To run the tests, use the following command:
+Run the test suite with:
 
 ```bash
 uv run pytest
@@ -30,9 +30,9 @@ Strive to use a functional programming style as much as possible. Avoid side eff
 
 ### Docstrings
 
-All exported functions must have NumPy-style docstrings. This is to ensure that the documentation is clear, consistent, and can be easily parsed by tools like `quartodoc`.
+All exported functions must have NumPy-style docstrings. Great Docs parses these docstrings to generate the API reference, so parameter, return-value, and usage documentation should remain accurate and user-facing.
 
-Example of a NumPy-style docstring:
+Example:
 
 ```python
 def my_function(param1, param2):
@@ -50,27 +50,35 @@ def my_function(param1, param2):
     bool
         Description of the return value.
     """
-    # function body
     return True
 ```
 
 ## Pre-commit Hooks
 
-This repository uses pre-commit hooks to ensure code quality and consistency. The following hooks are configured:
+This repository uses pre-commit hooks for code quality and consistency, including `ruff-check`, `ruff-format`, and `uv-lock`.
 
-* **`ruff-check`**: A linter to check for common errors and style issues.
-* **`ruff-format`**: A code formatter to ensure a consistent code style.
-* **`uv-lock`**: A hook to keep the `uv.lock` file up to date.
+Run them manually with:
 
-Before committing, please ensure that the pre-commit hooks pass. You can run them manually on all files with `pre-commit run --all-files`.
+```bash
+pre-commit run --all-files
+```
 
 ## Documentation
 
-The documentation for this project is built using `quartodoc`. The documentation is automatically built and deployed via GitHub Actions. There is no need to build the documentation manually.
+Documentation is built with Great Docs and Quarto.
+
+- Great Docs configuration: `great-docs.yml`
+- Narrative guides: `user_guide/`
+- Documentation dependencies: the `docs` dependency group in `pyproject.toml`
+- Local build: `uv sync --group docs` followed by `uv run great-docs build`
+- Pull requests receive a rendered preview under the repository's GitHub Pages site.
+- Merges to `main` publish the production documentation automatically.
+
+Great Docs requires Python 3.11 or newer for documentation builds. This does not change the package's Python >=3.9 runtime support.
 
 ## Type Checking
 
-This project uses `ty` for type checking. To check for type errors, run the following command:
+This project uses `ty` for type checking. Run:
 
 ```bash
 uv run ty check src tests
