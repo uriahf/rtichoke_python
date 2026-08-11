@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="fu">## Calibration gotchas</span></span>
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Calibration currently has stricter dict/dict population alignment than ROC, precision-recall, and decision curves. Differently sized named populations can raise a prediction-length versus population-size mismatch. Do not silently generalize sibling behavior to calibration.</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Matching <span class="in">`probs`</span> / <span class="in">`reals`</span> dictionary keys are paired population-by-population. Different populations may have different sample sizes; lengths only need to match within each population.</span>
 <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span><span class="in">`create_calibration_curve_times()`</span> currently requires <span class="in">`heuristics_sets`</span>; it does not inherit the default used by ROC/PR/decision <span class="in">`_times`</span> functions.</span>
 <span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Do not blindly pass <span class="in">`censoring_heuristic="adjusted"`</span> to time-dependent calibration. The current path can skip all horizons and finish with <span class="in">`No data remaining after applying heuristics and time horizons.`</span> The documented working exclusion-based path uses <span class="in">`censoring_heuristic="excluded"`</span> with <span class="in">`competing_heuristic="adjusted_as_negative"`</span>.</span>
 <span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Prefer floating-point <span class="in">`fixed_time_horizons`</span>, for example <span class="in">`[3.0, 6.0, 9.0]`</span>. Integer horizons can currently leak a Polars <span class="in">`i64`</span> versus <span class="in">`f64`</span> join-key error.</span>
@@ -280,18 +280,16 @@ document.addEventListener('DOMContentLoaded', () => {
 <span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>When a call that works for ROC/PR/decision fails for calibration, first check whether the failure concerns:</span>
 <span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>unequal named population sizes,</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>mismatched population keys or within-population lengths,</span>
 <span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`heuristics_sets`</span>,</span>
 <span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the censoring heuristic,</span>
 <span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>or integer time horizons.</span>
 <span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>Treat these as documented current constraints. Do not work around validation with an undocumented <span class="in">`strict=False`</span>-style assumption or change statistical semantics without first checking the implementation and tests.</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="fu">## Resources</span></span>
 <span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="fu">## Resources</span></span>
-<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Documentation site: https://uriahf.github.io/rtichoke_python/</span>
-<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Full machine-readable documentation: https://uriahf.github.io/rtichoke_python/llms-full.txt</span>
-<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Source repository: https://github.com/uriahf/rtichoke_python</span></code></pre></div>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Documentation site: https://uriahf.github.io/rtichoke_python/</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Full machine-readable documentation: https://uriahf.github.io/rtichoke_python/llms-full.txt</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Source repository: https://github.com/uriahf/rtichoke_python</span></code></pre></div>
 </pre>
 
 
