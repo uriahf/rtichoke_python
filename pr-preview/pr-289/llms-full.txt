@@ -727,7 +727,7 @@ Most `rtichoke` plotting functions use two dictionaries:
 - `reals`: observed outcomes, keyed by population name.
 
 ::: {.callout-tip}
-Similar curve families do not have identical edge-case behavior. Before combining differently sized populations or moving code between ROC/PR/decision and calibration, see [Curve API Compatibility](curve-api-compatibility.html). If a call fails, [Common Errors & Fixes](common-errors.html) is searchable by literal exception text.
+Similar curve families can still differ in defaults and time-dependent handling. See [Curve API Compatibility](curve-api-compatibility.html), and if a call fails, search [Common Errors & Fixes](common-errors.html) by literal exception text.
 :::
 
 ## Single model
@@ -772,16 +772,16 @@ fig.show()
 
 ## Compare populations
 
-To compare a model across populations, provide matching keys in `probs` and `reals`.
+To compare a model across populations, provide matching keys in `probs` and `reals`. Population sizes may differ; each probability vector only needs to match the outcome vector for the same key.
 
 ```python
 probs_populations = {
     "Train": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),
-    "Test": np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6]),
+    "Test": np.array([0.2, 0.8, 0.3, 0.7]),
 }
 reals_populations = {
     "Train": np.array([0, 1, 0, 1, 0, 1]),
-    "Test": np.array([0, 1, 0, 1, 0, 0]),
+    "Test": np.array([0, 1, 0, 0]),
 }
 
 fig = rk.create_calibration_curve(
@@ -792,11 +792,9 @@ fig = rk.create_calibration_curve(
 fig.show()
 ```
 
-::: {.callout-warning}
-The calibration example above deliberately uses equally sized Train and Test populations. The current calibration implementation can reject differently sized populations even when the analogous ROC, precision-recall, or decision-curve call works. See [Curve API Compatibility](curve-api-compatibility.html) for the documented constraint and an intentional failure example.
-:::
+Here, `Train` contains six observations and `Test` contains four. This matching-key contract is supported by calibration as well as the other curve families.
 
-From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The [Naming Conventions](naming-conventions.html) guide explains how the exported function families fit together, while [Curve API Compatibility](curve-api-compatibility.html) documents where those families intentionally or currently differ.
+From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The [Naming Conventions](naming-conventions.html) guide explains how the exported function families fit together, while [Curve API Compatibility](curve-api-compatibility.html) documents where those families still differ.
 
 
 ### Naming Conventions
@@ -859,15 +857,9 @@ This convention is intended to make related functions discoverable without requi
 
 ### Curve API Compatibility
 
-`rtichoke` intentionally exposes parallel function families for discrimination, calibration, and decision-curve analysis. Their interfaces are similar, but they are **not interchangeable in every edge case**.
+`rtichoke` exposes parallel function families for discrimination, calibration, and decision-curve analysis. Their interfaces are similar, but time-dependent defaults and accepted heuristics are not identical.
 
 This page makes those differences explicit so that users — and coding agents reading `llms-full.txt` — can choose the right call without experimentally probing each function.
-
-::: {.callout-important}
-## Calibration is the main exception
-
-The current calibration implementation has stricter multi-population behavior than ROC, precision-recall, and decision curves. In particular, do not assume that an input pattern accepted by a discrimination curve is automatically accepted by a calibration curve.
-:::
 
 ## Capability matrix
 
@@ -876,33 +868,16 @@ The current calibration implementation has stricter multi-population behavior th
 | ROC | Supported | Supported | `adjusted` / `adjusted_as_negative` | Use floating-point values |
 | Precision-recall | Supported | Supported | `adjusted` / `adjusted_as_negative` | Use floating-point values |
 | Decision curve | Supported | Supported | `adjusted` / `adjusted_as_negative` | Use floating-point values |
-| Calibration | Supported when inputs satisfy calibration alignment requirements | **Currently restricted**; differently sized named populations can raise a length-mismatch error | **No default on `create_calibration_curve_times()`**; pass explicitly | Use floating-point values |
-
-The matrix describes the current public behavior. It does **not** claim that every asymmetry is a permanent design decision.
+| Calibration | Supported with matching population keys | Supported | **No default on `create_calibration_curve_times()`**; pass explicitly | Use floating-point values |
 
 ## Calibration with named populations
 
-This symmetric example is supported:
+Matching dictionary keys are paired population-by-population. Each probability vector must match the outcome vector for its own population, but populations may have different sample sizes.
 
 ```python
 import numpy as np
 import rtichoke as rk
 
-probs = {
-    "Train": np.array([0.10, 0.90, 0.20, 0.80, 0.30, 0.70]),
-    "Test": np.array([0.15, 0.85, 0.25, 0.75, 0.35, 0.65]),
-}
-reals = {
-    "Train": np.array([0, 1, 0, 1, 0, 1]),
-    "Test": np.array([0, 1, 0, 1, 0, 0]),
-}
-
-fig = rk.create_calibration_curve(probs=probs, reals=reals)
-```
-
-At present, differently sized named populations are not a drop-in equivalent:
-
-```python
 probs = {
     "Train": np.array([0.10, 0.90, 0.20, 0.80, 0.30, 0.70]),
     "Test": np.array([0.15, 0.85, 0.25, 0.75]),
@@ -912,19 +887,19 @@ reals = {
     "Test": np.array([0, 1, 0, 0]),
 }
 
-# This input shape can raise a length-mismatch error for calibration.
-rk.create_calibration_curve(probs=probs, reals=reals)
+fig = rk.create_calibration_curve(probs=probs, reals=reals)
 ```
 
-If you need to compare calibration across populations of different sizes, create each calibration curve from its own aligned population rather than assuming the ROC/PR multi-population behavior applies to calibration. See [Common Errors & Fixes](common-errors.html) for the failure pattern.
+In this example, Train has six observations and Test has four. That is supported. What matters is:
 
-::: {.callout-note}
-The unequal-population restriction is documented as **current behavior**, not as a statistical recommendation. It should be investigated before adding an escape hatch such as `strict=False` or otherwise changing calibration semantics.
-:::
+```text
+len(probs["Train"]) == len(reals["Train"])
+len(probs["Test"])  == len(reals["Test"])
+```
 
 ## Time-dependent calibration heuristics
 
-`create_calibration_curve_times()` differs from its ROC, precision-recall, and decision-curve siblings in two important ways:
+`create_calibration_curve_times()` still differs from its ROC, precision-recall, and decision-curve siblings in two important ways:
 
 1. `heuristics_sets` is currently required rather than defaulted.
 2. The sibling default `censoring_heuristic="adjusted"` is not a safe value to copy blindly into calibration. In the current calibration path, that choice can remove every requested horizon and end in `No data remaining after applying heuristics and time horizons.`
@@ -968,26 +943,29 @@ This is a usability limitation rather than a conceptual requirement; normalizing
 
 ## Related functions
 
-When moving between curve families, compare the API reference for `create_calibration_curve()`, `create_calibration_curve_times()`, `create_roc_curve_times()`, `create_precision_recall_curve_times()`, and `create_decision_curve_times()` rather than assuming their defaults and accepted input shapes are identical.
+When moving between curve families, compare the API reference for `create_calibration_curve()`, `create_calibration_curve_times()`, `create_roc_curve_times()`, `create_precision_recall_curve_times()`, and `create_decision_curve_times()` rather than assuming their defaults and accepted heuristics are identical.
 
 
 ### Common Errors & Fixes
 
 This page is deliberately keyed by **literal error text**. If an rtichoke call fails, search this page for a distinctive part of the exception before tracing into the implementation.
 
-## `probs['...'] length=... does not match sum of population sizes=...`
+## Population key or length mismatch
 
-### Where this commonly appears
+For matching `probs` and `reals` dictionaries, rtichoke pairs values population-by-population. Different populations may have different sample sizes, but lengths must match within each key.
 
-Calibration calls using dictionaries for both predictions and outcomes, especially when the named populations have different numbers of observations.
+```python
+probs = {
+    "Train": train_probs,
+    "Test": test_probs,
+}
+reals = {
+    "Train": train_outcomes,
+    "Test": test_outcomes,
+}
+```
 
-### Why it happens
-
-The current calibration path has stricter alignment requirements than ROC, precision-recall, and decision curves. An input pattern that works for those sibling functions can therefore fail for `create_calibration_curve()` or `create_calibration_curve_times()`.
-
-### Fix
-
-First verify that every prediction vector corresponds to the intended outcome population. If you are deliberately comparing differently sized populations, do not assume calibration supports the same dict/dict overlay pattern as ROC or PR. Create the calibration result for each aligned population separately.
+Check that the keys match and that each pair has equal length. Unequal Train/Test sample sizes are supported.
 
 See [Curve API Compatibility](curve-api-compatibility.html) for the family-by-family comparison.
 
@@ -1057,5 +1035,5 @@ heuristics_sets = [
 
 ## Still stuck?
 
-Check [Curve API Compatibility](curve-api-compatibility.html) first. The most important debugging rule is that similarly named rtichoke curve functions can still differ in accepted population shapes, heuristic defaults, and time-horizon handling.
+Check [Curve API Compatibility](curve-api-compatibility.html) first. The most important remaining differences are heuristic defaults and time-horizon handling, not unequal population sizes.
 

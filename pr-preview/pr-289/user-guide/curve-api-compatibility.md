@@ -1,12 +1,8 @@
 # Curve API Compatibility
 
-`rtichoke` intentionally exposes parallel function families for discrimination, calibration, and decision-curve analysis. Their interfaces are similar, but they are **not interchangeable in every edge case**.
+`rtichoke` exposes parallel function families for discrimination, calibration, and decision-curve analysis. Their interfaces are similar, but time-dependent defaults and accepted heuristics are not identical.
 
 This page makes those differences explicit so that users -- and coding agents reading `llms-full.txt` -- can choose the right call without experimentally probing each function.
-
-> **Important: Calibration is the main exception**
->
-> The current calibration implementation has stricter multi-population behavior than ROC, precision-recall, and decision curves. In particular, do not assume that an input pattern accepted by a discrimination curve is automatically accepted by a calibration curve.
 
 
 # Capability matrix
@@ -16,34 +12,17 @@ This page makes those differences explicit so that users -- and coding agents re
 | ROC | Supported | Supported | `adjusted` / `adjusted_as_negative` | Use floating-point values |
 | Precision-recall | Supported | Supported | `adjusted` / `adjusted_as_negative` | Use floating-point values |
 | Decision curve | Supported | Supported | `adjusted` / `adjusted_as_negative` | Use floating-point values |
-| Calibration | Supported when inputs satisfy calibration alignment requirements | **Currently restricted**; differently sized named populations can raise a length-mismatch error | **No default on [create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times)**; pass explicitly | Use floating-point values |
-
-The matrix describes the current public behavior. It does **not** claim that every asymmetry is a permanent design decision.
+| Calibration | Supported with matching population keys | Supported | **No default on [create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times)**; pass explicitly | Use floating-point values |
 
 
 # Calibration with named populations
 
-This symmetric example is supported:
+Matching dictionary keys are paired population-by-population. Each probability vector must match the outcome vector for its own population, but populations may have different sample sizes.
 
 ``` python
 import numpy as np
 import rtichoke as rk
 
-probs = {
-    "Train": np.array([0.10, 0.90, 0.20, 0.80, 0.30, 0.70]),
-    "Test": np.array([0.15, 0.85, 0.25, 0.75, 0.35, 0.65]),
-}
-reals = {
-    "Train": np.array([0, 1, 0, 1, 0, 1]),
-    "Test": np.array([0, 1, 0, 1, 0, 0]),
-}
-
-fig = rk.create_calibration_curve(probs=probs, reals=reals)
-```
-
-At present, differently sized named populations are not a drop-in equivalent:
-
-``` python
 probs = {
     "Train": np.array([0.10, 0.90, 0.20, 0.80, 0.30, 0.70]),
     "Test": np.array([0.15, 0.85, 0.25, 0.75]),
@@ -53,20 +32,20 @@ reals = {
     "Test": np.array([0, 1, 0, 0]),
 }
 
-# This input shape can raise a length-mismatch error for calibration.
-rk.create_calibration_curve(probs=probs, reals=reals)
+fig = rk.create_calibration_curve(probs=probs, reals=reals)
 ```
 
-If you need to compare calibration across populations of different sizes, create each calibration curve from its own aligned population rather than assuming the ROC/PR multi-population behavior applies to calibration. See [Common Errors & Fixes](common-errors.md) for the failure pattern.
+In this example, Train has six observations and Test has four. That is supported. What matters is:
 
-> **Note: Note**
->
-> The unequal-population restriction is documented as **current behavior**, not as a statistical recommendation. It should be investigated before adding an escape hatch such as `strict=False` or otherwise changing calibration semantics.
+``` text
+len(probs["Train"]) == len(reals["Train"])
+len(probs["Test"])  == len(reals["Test"])
+```
 
 
 # Time-dependent calibration heuristics
 
-[create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times) differs from its ROC, precision-recall, and decision-curve siblings in two important ways:
+[create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times) still differs from its ROC, precision-recall, and decision-curve siblings in two important ways:
 
 1.  `heuristics_sets` is currently required rather than defaulted.
 2.  The sibling default `censoring_heuristic="adjusted"` is not a safe value to copy blindly into calibration. In the current calibration path, that choice can remove every requested horizon and end in `No data remaining after applying heuristics and time horizons.`
@@ -112,4 +91,4 @@ This is a usability limitation rather than a conceptual requirement; normalizing
 
 # Related functions
 
-When moving between curve families, compare the API reference for [create_calibration_curve()](../reference/create_calibration_curve.md#rtichoke.create_calibration_curve), [create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times), [create_roc_curve_times()](../reference/create_roc_curve_times.md#rtichoke.create_roc_curve_times), [create_precision_recall_curve_times()](../reference/create_precision_recall_curve_times.md#rtichoke.create_precision_recall_curve_times), and [create_decision_curve_times()](../reference/create_decision_curve_times.md#rtichoke.create_decision_curve_times) rather than assuming their defaults and accepted input shapes are identical.
+When moving between curve families, compare the API reference for [create_calibration_curve()](../reference/create_calibration_curve.md#rtichoke.create_calibration_curve), [create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times), [create_roc_curve_times()](../reference/create_roc_curve_times.md#rtichoke.create_roc_curve_times), [create_precision_recall_curve_times()](../reference/create_precision_recall_curve_times.md#rtichoke.create_precision_recall_curve_times), and [create_decision_curve_times()](../reference/create_decision_curve_times.md#rtichoke.create_decision_curve_times) rather than assuming their defaults and accepted heuristics are identical.

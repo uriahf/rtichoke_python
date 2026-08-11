@@ -256,23 +256,18 @@ document.addEventListener('DOMContentLoaded', () => {
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#probs...-length...-does-not-match-sum-of-population-sizes..." id="toc-probs...-length...-does-not-match-sum-of-population-sizes..." class="nav-link active" data-scroll-target="#probs...-length...-does-not-match-sum-of-population-sizes..."><code>probs['...'] length=... does not match sum of population sizes=...</code></a>
+  <li><a href="#population-key-or-length-mismatch" id="toc-population-key-or-length-mismatch" class="nav-link active" data-scroll-target="#population-key-or-length-mismatch">Population key or length mismatch</a></li>
+  <li><a href="#no-data-remaining-after-applying-heuristics-and-time-horizons." id="toc-no-data-remaining-after-applying-heuristics-and-time-horizons." class="nav-link" data-scroll-target="#no-data-remaining-after-applying-heuristics-and-time-horizons."><code>No data remaining after applying heuristics and time horizons.</code></a>
   <ul class="collapse">
   <li><a href="#where-this-commonly-appears" id="toc-where-this-commonly-appears" class="nav-link" data-scroll-target="#where-this-commonly-appears">Where this commonly appears</a></li>
   <li><a href="#why-it-happens" id="toc-why-it-happens" class="nav-link" data-scroll-target="#why-it-happens">Why it happens</a></li>
   <li><a href="#fix" id="toc-fix" class="nav-link" data-scroll-target="#fix">Fix</a></li>
   </ul></li>
-  <li><a href="#no-data-remaining-after-applying-heuristics-and-time-horizons." id="toc-no-data-remaining-after-applying-heuristics-and-time-horizons." class="nav-link" data-scroll-target="#no-data-remaining-after-applying-heuristics-and-time-horizons."><code>No data remaining after applying heuristics and time horizons.</code></a>
+  <li><a href="#polars-join-key-datatype-mismatch-i64-versus-f64" id="toc-polars-join-key-datatype-mismatch-i64-versus-f64" class="nav-link" data-scroll-target="#polars-join-key-datatype-mismatch-i64-versus-f64">Polars join-key datatype mismatch: <code>i64</code> versus <code>f64</code></a>
   <ul class="collapse">
   <li><a href="#where-this-commonly-appears-1" id="toc-where-this-commonly-appears-1" class="nav-link" data-scroll-target="#where-this-commonly-appears-1">Where this commonly appears</a></li>
   <li><a href="#why-it-happens-1" id="toc-why-it-happens-1" class="nav-link" data-scroll-target="#why-it-happens-1">Why it happens</a></li>
   <li><a href="#fix-1" id="toc-fix-1" class="nav-link" data-scroll-target="#fix-1">Fix</a></li>
-  </ul></li>
-  <li><a href="#polars-join-key-datatype-mismatch-i64-versus-f64" id="toc-polars-join-key-datatype-mismatch-i64-versus-f64" class="nav-link" data-scroll-target="#polars-join-key-datatype-mismatch-i64-versus-f64">Polars join-key datatype mismatch: <code>i64</code> versus <code>f64</code></a>
-  <ul class="collapse">
-  <li><a href="#where-this-commonly-appears-2" id="toc-where-this-commonly-appears-2" class="nav-link" data-scroll-target="#where-this-commonly-appears-2">Where this commonly appears</a></li>
-  <li><a href="#why-it-happens-2" id="toc-why-it-happens-2" class="nav-link" data-scroll-target="#why-it-happens-2">Why it happens</a></li>
-  <li><a href="#fix-2" id="toc-fix-2" class="nav-link" data-scroll-target="#fix-2">Fix</a></li>
   </ul></li>
   <li><a href="#why-is-heuristics_sets-missing" id="toc-why-is-heuristics_sets-missing" class="nav-link" data-scroll-target="#why-is-heuristics_sets-missing">Why is <code>heuristics_sets</code> missing?</a></li>
   <li><a href="#still-stuck" id="toc-still-stuck" class="nav-link" data-scroll-target="#still-stuck">Still stuck?</a></li>
@@ -302,59 +297,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <p>This page is deliberately keyed by <strong>literal error text</strong>. If an rtichoke call fails, search this page for a distinctive part of the exception before tracing into the implementation.</p>
-<section id="probs...-length...-does-not-match-sum-of-population-sizes..." class="level1">
-<h1><code>probs['...'] length=... does not match sum of population sizes=...</code></h1>
-<section id="where-this-commonly-appears" class="level2">
-<h2 class="anchored" data-anchor-id="where-this-commonly-appears">Where this commonly appears</h2>
-<p>Calibration calls using dictionaries for both predictions and outcomes, especially when the named populations have different numbers of observations.</p>
-</section>
-<section id="why-it-happens" class="level2">
-<h2 class="anchored" data-anchor-id="why-it-happens">Why it happens</h2>
-<p>The current calibration path has stricter alignment requirements than ROC, precision-recall, and decision curves. An input pattern that works for those sibling functions can therefore fail for <a href="../reference/create_calibration_curve.html#rtichoke.create_calibration_curve" class="gdls-link gdls-code">create_calibration_curve()</a> or <a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a>.</p>
-</section>
-<section id="fix" class="level2">
-<h2 class="anchored" data-anchor-id="fix">Fix</h2>
-<p>First verify that every prediction vector corresponds to the intended outcome population. If you are deliberately comparing differently sized populations, do not assume calibration supports the same dict/dict overlay pattern as ROC or PR. Create the calibration result for each aligned population separately.</p>
+<section id="population-key-or-length-mismatch" class="level1">
+<h1>Population key or length mismatch</h1>
+<p>For matching <code>probs</code> and <code>reals</code> dictionaries, rtichoke pairs values population-by-population. Different populations may have different sample sizes, but lengths must match within each key.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>probs <span class="op">=</span> {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: train_probs,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: test_probs,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>reals <span class="op">=</span> {</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: train_outcomes,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: test_outcomes,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Check that the keys match and that each pair has equal length. Unequal Train/Test sample sizes are supported.</p>
 <p>See <a href="curve-api-compatibility.html">Curve API Compatibility</a> for the family-by-family comparison.</p>
-</section>
 </section>
 <section id="no-data-remaining-after-applying-heuristics-and-time-horizons." class="level1">
 <h1><code>No data remaining after applying heuristics and time horizons.</code></h1>
-<section id="where-this-commonly-appears-1" class="level2">
-<h2 class="anchored" data-anchor-id="where-this-commonly-appears-1">Where this commonly appears</h2>
+<section id="where-this-commonly-appears" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-commonly-appears">Where this commonly appears</h2>
 <p><a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a>.</p>
 </section>
-<section id="why-it-happens-1" class="level2">
-<h2 class="anchored" data-anchor-id="why-it-happens-1">Why it happens</h2>
+<section id="why-it-happens" class="level2">
+<h2 class="anchored" data-anchor-id="why-it-happens">Why it happens</h2>
 <p>One current failure mode is passing the heuristic combination used as the default by ROC/PR/decision time-dependent functions. In calibration, <code>censoring_heuristic="adjusted"</code> can skip every horizon, leaving no data to plot. The final exception does not currently explain which heuristic caused the removal.</p>
 </section>
-<section id="fix-1" class="level2">
-<h2 class="anchored" data-anchor-id="fix-1">Fix</h2>
+<section id="fix" class="level2">
+<h2 class="anchored" data-anchor-id="fix">Fix</h2>
 <p>Pass the calibration heuristic explicitly. For the currently working exclusion-based path:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>heuristics_sets <span class="op">=</span> [</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    {</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"censoring_heuristic"</span>: <span class="st">"excluded"</span>,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"competing_heuristic"</span>: <span class="st">"adjusted_as_negative"</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>heuristics_sets <span class="op">=</span> [</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"censoring_heuristic"</span>: <span class="st">"excluded"</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"competing_heuristic"</span>: <span class="st">"adjusted_as_negative"</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div>
 <p>Do not infer calibration defaults from <a href="../reference/create_roc_curve_times.html#rtichoke.create_roc_curve_times" class="gdls-link gdls-code">create_roc_curve_times()</a>, <a href="../reference/create_precision_recall_curve_times.html#rtichoke.create_precision_recall_curve_times" class="gdls-link gdls-code">create_precision_recall_curve_times()</a>, or <a href="../reference/create_decision_curve_times.html#rtichoke.create_decision_curve_times" class="gdls-link gdls-code">create_decision_curve_times()</a>.</p>
 </section>
 </section>
 <section id="polars-join-key-datatype-mismatch-i64-versus-f64" class="level1">
 <h1>Polars join-key datatype mismatch: <code>i64</code> versus <code>f64</code></h1>
-<section id="where-this-commonly-appears-2" class="level2">
-<h2 class="anchored" data-anchor-id="where-this-commonly-appears-2">Where this commonly appears</h2>
+<section id="where-this-commonly-appears-1" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-commonly-appears-1">Where this commonly appears</h2>
 <p>Time-dependent functions when integer values are supplied in <code>fixed_time_horizons</code>, for example:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>fixed_time_horizons<span class="op">=</span>[<span class="dv">3</span>, <span class="dv">6</span>, <span class="dv">9</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fixed_time_horizons<span class="op">=</span>[<span class="dv">3</span>, <span class="dv">6</span>, <span class="dv">9</span>]</span></code></pre></div>
 </section>
-<section id="why-it-happens-2" class="level2">
-<h2 class="anchored" data-anchor-id="why-it-happens-2">Why it happens</h2>
+<section id="why-it-happens-1" class="level2">
+<h2 class="anchored" data-anchor-id="why-it-happens-1">Why it happens</h2>
 <p>The current internal time-horizon data can be floating point, while integer literals create integer-typed join keys. The resulting Polars error leaks an implementation detail instead of explaining the rtichoke input requirement.</p>
 </section>
-<section id="fix-2" class="level2">
-<h2 class="anchored" data-anchor-id="fix-2">Fix</h2>
+<section id="fix-1" class="level2">
+<h2 class="anchored" data-anchor-id="fix-1">Fix</h2>
 <p>Use floating-point horizons:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fixed_time_horizons<span class="op">=</span>[<span class="fl">3.0</span>, <span class="fl">6.0</span>, <span class="fl">9.0</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fixed_time_horizons<span class="op">=</span>[<span class="fl">3.0</span>, <span class="fl">6.0</span>, <span class="fl">9.0</span>]</span></code></pre></div>
 <p>Internal numeric normalization is a candidate for a future defensive code fix.</p>
 </section>
 </section>
@@ -362,16 +355,16 @@ document.addEventListener('DOMContentLoaded', () => {
 <h1>Why is <code>heuristics_sets</code> missing?</h1>
 <p>If Python reports that <a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> is missing the required <code>heuristics_sets</code> argument, that is currently expected API behavior. Unlike the ROC, precision-recall, and decision-curve <code>_times</code> functions, calibration does not currently provide a default.</p>
 <p>Pass it explicitly rather than copying a sibling default:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>heuristics_sets <span class="op">=</span> [</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    {</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"censoring_heuristic"</span>: <span class="st">"excluded"</span>,</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"competing_heuristic"</span>: <span class="st">"adjusted_as_negative"</span>,</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>heuristics_sets <span class="op">=</span> [</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"censoring_heuristic"</span>: <span class="st">"excluded"</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"competing_heuristic"</span>: <span class="st">"adjusted_as_negative"</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div>
 </section>
 <section id="still-stuck" class="level1">
 <h1>Still stuck?</h1>
-<p>Check <a href="curve-api-compatibility.html">Curve API Compatibility</a> first. The most important debugging rule is that similarly named rtichoke curve functions can still differ in accepted population shapes, heuristic defaults, and time-horizon handling.</p>
+<p>Check <a href="curve-api-compatibility.html">Curve API Compatibility</a> first. The most important remaining differences are heuristic defaults and time-horizon handling, not unequal population sizes.</p>
 
 
 </section>

@@ -3,22 +3,22 @@
 This page is deliberately keyed by **literal error text**. If an rtichoke call fails, search this page for a distinctive part of the exception before tracing into the implementation.
 
 
-# `probs['...'] length=... does not match sum of population sizes=...`
+# Population key or length mismatch
 
+For matching `probs` and `reals` dictionaries, rtichoke pairs values population-by-population. Different populations may have different sample sizes, but lengths must match within each key.
 
-## Where this commonly appears
+``` python
+probs = {
+    "Train": train_probs,
+    "Test": test_probs,
+}
+reals = {
+    "Train": train_outcomes,
+    "Test": test_outcomes,
+}
+```
 
-Calibration calls using dictionaries for both predictions and outcomes, especially when the named populations have different numbers of observations.
-
-
-## Why it happens
-
-The current calibration path has stricter alignment requirements than ROC, precision-recall, and decision curves. An input pattern that works for those sibling functions can therefore fail for [create_calibration_curve()](../reference/create_calibration_curve.md#rtichoke.create_calibration_curve) or [create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times).
-
-
-## Fix
-
-First verify that every prediction vector corresponds to the intended outcome population. If you are deliberately comparing differently sized populations, do not assume calibration supports the same dict/dict overlay pattern as ROC or PR. Create the calibration result for each aligned population separately.
+Check that the keys match and that each pair has equal length. Unequal Train/Test sample sizes are supported.
 
 See [Curve API Compatibility](curve-api-compatibility.md) for the family-by-family comparison.
 
@@ -98,4 +98,4 @@ heuristics_sets = [
 
 # Still stuck?
 
-Check [Curve API Compatibility](curve-api-compatibility.md) first. The most important debugging rule is that similarly named rtichoke curve functions can still differ in accepted population shapes, heuristic defaults, and time-horizon handling.
+Check [Curve API Compatibility](curve-api-compatibility.md) first. The most important remaining differences are heuristic defaults and time-horizon handling, not unequal population sizes.

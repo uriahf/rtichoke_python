@@ -321,7 +321,7 @@ Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Similar curve families do not have identical edge-case behavior. Before combining differently sized populations or moving code between ROC/PR/decision and calibration, see <a href="curve-api-compatibility.html">Curve API Compatibility</a>. If a call fails, <a href="common-errors.html">Common Errors &amp; Fixes</a> is searchable by literal exception text.</p>
+<p>Similar curve families can still differ in defaults and time-dependent handling. See <a href="curve-api-compatibility.html">Curve API Compatibility</a>, and if a call fails, search <a href="common-errors.html">Common Errors &amp; Fixes</a> by literal exception text.</p>
 </div>
 </div>
 </section>
@@ -362,14 +362,14 @@ Tip
 </section>
 <section id="compare-populations" class="level1">
 <h1>Compare populations</h1>
-<p>To compare a model across populations, provide matching keys in <code>probs</code> and <code>reals</code>.</p>
+<p>To compare a model across populations, provide matching keys in <code>probs</code> and <code>reals</code>. Population sizes may differ; each probability vector only needs to match the outcome vector for the same key.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>probs_populations <span class="op">=</span> {</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: np.array([<span class="fl">0.1</span>, <span class="fl">0.9</span>, <span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="fl">0.3</span>, <span class="fl">0.7</span>]),</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: np.array([<span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="fl">0.3</span>, <span class="fl">0.7</span>, <span class="fl">0.4</span>, <span class="fl">0.6</span>]),</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: np.array([<span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="fl">0.3</span>, <span class="fl">0.7</span>]),</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>reals_populations <span class="op">=</span> {</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>]),</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>]),</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>]),</span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_calibration_curve(</span>
@@ -378,20 +378,8 @@ Tip
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code></pre></div>
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Warning
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The calibration example above deliberately uses equally sized Train and Test populations. The current calibration implementation can reject differently sized populations even when the analogous ROC, precision-recall, or decision-curve call works. See <a href="curve-api-compatibility.html">Curve API Compatibility</a> for the documented constraint and an intentional failure example.</p>
-</div>
-</div>
-<p>From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The <a href="naming-conventions.html">Naming Conventions</a> guide explains how the exported function families fit together, while <a href="curve-api-compatibility.html">Curve API Compatibility</a> documents where those families intentionally or currently differ.</p>
+<p>Here, <code>Train</code> contains six observations and <code>Test</code> contains four. This matching-key contract is supported by calibration as well as the other curve families.</p>
+<p>From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The <a href="naming-conventions.html">Naming Conventions</a> guide explains how the exported function families fit together, while <a href="curve-api-compatibility.html">Curve API Compatibility</a> documents where those families still differ.</p>
 <div class="gd-meta-sidebar">
 <section id="links" class="level3">
 <h3 class="anchored" data-anchor-id="links">Links</h3>

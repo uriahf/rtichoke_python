@@ -287,21 +287,8 @@ document.addEventListener('DOMContentLoaded', () => {
 </header>
 
 
-<p><code>rtichoke</code> intentionally exposes parallel function families for discrimination, calibration, and decision-curve analysis. Their interfaces are similar, but they are <strong>not interchangeable in every edge case</strong>.</p>
+<p><code>rtichoke</code> exposes parallel function families for discrimination, calibration, and decision-curve analysis. Their interfaces are similar, but time-dependent defaults and accepted heuristics are not identical.</p>
 <p>This page makes those differences explicit so that users — and coding agents reading <code>llms-full.txt</code> — can choose the right call without experimentally probing each function.</p>
-<div class="callout callout-style-default callout-important callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Calibration is the main exception
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The current calibration implementation has stricter multi-population behavior than ROC, precision-recall, and decision curves. In particular, do not assume that an input pattern accepted by a discrimination curve is automatically accepted by a calibration curve.</p>
-</div>
-</div>
 <section id="capability-matrix" class="level1">
 <h1>Capability matrix</h1>
 <table class="caption-top table">
@@ -338,61 +325,37 @@ document.addEventListener('DOMContentLoaded', () => {
 </tr>
 <tr class="even">
 <td>Calibration</td>
-<td>Supported when inputs satisfy calibration alignment requirements</td>
-<td><strong>Currently restricted</strong>; differently sized named populations can raise a length-mismatch error</td>
+<td>Supported with matching population keys</td>
+<td>Supported</td>
 <td><strong>No default on <a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a></strong>; pass explicitly</td>
 <td>Use floating-point values</td>
 </tr>
 </tbody>
 </table>
-<p>The matrix describes the current public behavior. It does <strong>not</strong> claim that every asymmetry is a permanent design decision.</p>
 </section>
 <section id="calibration-with-named-populations" class="level1">
 <h1>Calibration with named populations</h1>
-<p>This symmetric example is supported:</p>
+<p>Matching dictionary keys are paired population-by-population. Each probability vector must match the outcome vector for its own population, but populations may have different sample sizes.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rtichoke <span class="im">as</span> rk</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>probs <span class="op">=</span> {</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: np.array([<span class="fl">0.10</span>, <span class="fl">0.90</span>, <span class="fl">0.20</span>, <span class="fl">0.80</span>, <span class="fl">0.30</span>, <span class="fl">0.70</span>]),</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: np.array([<span class="fl">0.15</span>, <span class="fl">0.85</span>, <span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="fl">0.35</span>, <span class="fl">0.65</span>]),</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: np.array([<span class="fl">0.15</span>, <span class="fl">0.85</span>, <span class="fl">0.25</span>, <span class="fl">0.75</span>]),</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>reals <span class="op">=</span> {</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>]),</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>]),</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>]),</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_calibration_curve(probs<span class="op">=</span>probs, reals<span class="op">=</span>reals)</span></code></pre></div>
-<p>At present, differently sized named populations are not a drop-in equivalent:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>probs <span class="op">=</span> {</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: np.array([<span class="fl">0.10</span>, <span class="fl">0.90</span>, <span class="fl">0.20</span>, <span class="fl">0.80</span>, <span class="fl">0.30</span>, <span class="fl">0.70</span>]),</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: np.array([<span class="fl">0.15</span>, <span class="fl">0.85</span>, <span class="fl">0.25</span>, <span class="fl">0.75</span>]),</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>reals <span class="op">=</span> {</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>]),</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>]),</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># This input shape can raise a length-mismatch error for calibration.</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>rk.create_calibration_curve(probs<span class="op">=</span>probs, reals<span class="op">=</span>reals)</span></code></pre></div>
-<p>If you need to compare calibration across populations of different sizes, create each calibration curve from its own aligned population rather than assuming the ROC/PR multi-population behavior applies to calibration. See <a href="common-errors.html">Common Errors &amp; Fixes</a> for the failure pattern.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The unequal-population restriction is documented as <strong>current behavior</strong>, not as a statistical recommendation. It should be investigated before adding an escape hatch such as <code>strict=False</code> or otherwise changing calibration semantics.</p>
-</div>
-</div>
+<p>In this example, Train has six observations and Test has four. That is supported. What matters is:</p>
+<pre class="text"><code>len(probs["Train"]) == len(reals["Train"])
+len(probs["Test"])  == len(reals["Test"])</code></pre>
 </section>
 <section id="time-dependent-calibration-heuristics" class="level1">
 <h1>Time-dependent calibration heuristics</h1>
-<p><a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> differs from its ROC, precision-recall, and decision-curve siblings in two important ways:</p>
+<p><a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> still differs from its ROC, precision-recall, and decision-curve siblings in two important ways:</p>
 <ol type="1">
 <li><code>heuristics_sets</code> is currently required rather than defaulted.</li>
 <li>The sibling default <code>censoring_heuristic="adjusted"</code> is not a safe value to copy blindly into calibration. In the current calibration path, that choice can remove every requested horizon and end in <code>No data remaining after applying heuristics and time horizons.</code></li>
@@ -425,7 +388,7 @@ Note
 </section>
 <section id="related-functions" class="level1">
 <h1>Related functions</h1>
-<p>When moving between curve families, compare the API reference for <a href="../reference/create_calibration_curve.html#rtichoke.create_calibration_curve" class="gdls-link gdls-code">create_calibration_curve()</a>, <a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a>, <a href="../reference/create_roc_curve_times.html#rtichoke.create_roc_curve_times" class="gdls-link gdls-code">create_roc_curve_times()</a>, <a href="../reference/create_precision_recall_curve_times.html#rtichoke.create_precision_recall_curve_times" class="gdls-link gdls-code">create_precision_recall_curve_times()</a>, and <a href="../reference/create_decision_curve_times.html#rtichoke.create_decision_curve_times" class="gdls-link gdls-code">create_decision_curve_times()</a> rather than assuming their defaults and accepted input shapes are identical.</p>
+<p>When moving between curve families, compare the API reference for <a href="../reference/create_calibration_curve.html#rtichoke.create_calibration_curve" class="gdls-link gdls-code">create_calibration_curve()</a>, <a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a>, <a href="../reference/create_roc_curve_times.html#rtichoke.create_roc_curve_times" class="gdls-link gdls-code">create_roc_curve_times()</a>, <a href="../reference/create_precision_recall_curve_times.html#rtichoke.create_precision_recall_curve_times" class="gdls-link gdls-code">create_precision_recall_curve_times()</a>, and <a href="../reference/create_decision_curve_times.html#rtichoke.create_decision_curve_times" class="gdls-link gdls-code">create_decision_curve_times()</a> rather than assuming their defaults and accepted heuristics are identical.</p>
 
 
 </section>
