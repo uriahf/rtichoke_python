@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from rtichoke.calibration import create_calibration_curve_times
 
 
@@ -53,3 +54,23 @@ def test_create_calibration_curve_times_unequal_size_populations():
     )
 
     assert {trace.name for trace in fig.data if trace.name} >= {"Train", "Test"}
+
+
+def test_create_calibration_curve_times_rejects_adjusted_censoring():
+    probs = {"model_1": np.array([0.1, 0.2, 0.3, 0.4])}
+    reals = np.array([0, 1, 0, 1])
+    times = np.array([1.0, 2.0, 3.0, 4.0])
+
+    with pytest.raises(ValueError, match="does not support censoring_heuristic='adjusted'"):
+        create_calibration_curve_times(
+            probs,
+            reals,
+            times,
+            fixed_time_horizons=[2.0],
+            heuristics_sets=[
+                {
+                    "censoring_heuristic": "adjusted",
+                    "competing_heuristic": "adjusted_as_negative",
+                }
+            ],
+        )
