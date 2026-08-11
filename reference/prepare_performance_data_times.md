@@ -37,7 +37,7 @@ The true event statuses. Can be a single array or a dictionary. Labels should be
 The event or censoring times corresponding to the `reals`. Can be a single array or a dictionary.
 
 `fixed_time_horizons: list[float]`  
-A list of time points at which to evaluate the model's performance.
+A list of numeric time points at which to evaluate the model's performance. Integer inputs are accepted and normalized to floats.
 
 `heuristics_sets: list[Dict] = [{``"censoring_heuristic": `<span class="st">`"adjusted"``, ``"competing_heuristic"``: ``"adjusted_as_negative"``}]`\
 </span>  
