@@ -158,4 +158,6 @@ def prepare_performance_data(
 
     performance_data = _turn_cumulative_aj_to_performance_data(cumulative_aj_data)
 
-    return performance_data
+    return performance_data.sort(
+        ["reference_group", "stratified_by", "chosen_cutoff"]
+    )
