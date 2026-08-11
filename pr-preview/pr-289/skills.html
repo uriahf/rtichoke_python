@@ -273,8 +273,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Matching <span class="in">`probs`</span> / <span class="in">`reals`</span> dictionary keys are paired population-by-population. Different populations may have different sample sizes; lengths only need to match within each population.</span>
 <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span><span class="in">`create_calibration_curve_times()`</span> currently requires <span class="in">`heuristics_sets`</span>; it does not inherit the default used by ROC/PR/decision <span class="in">`_times`</span> functions.</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Do not blindly pass <span class="in">`censoring_heuristic="adjusted"`</span> to time-dependent calibration. The current path can skip all horizons and finish with <span class="in">`No data remaining after applying heuristics and time horizons.`</span> The documented working exclusion-based path uses <span class="in">`censoring_heuristic="excluded"`</span> with <span class="in">`competing_heuristic="adjusted_as_negative"`</span>.</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Prefer floating-point <span class="in">`fixed_time_horizons`</span>, for example <span class="in">`[3.0, 6.0, 9.0]`</span>. Integer horizons can currently leak a Polars <span class="in">`i64`</span> versus <span class="in">`f64`</span> join-key error.</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Time-dependent calibration rejects <span class="in">`censoring_heuristic="adjusted"`</span> and <span class="in">`competing_heuristic="adjusted_as_censored"`</span> with an actionable <span class="in">`Unsupported calibration heuristics`</span> error. A supported exclusion-based path uses <span class="in">`censoring_heuristic="excluded"`</span> with <span class="in">`competing_heuristic="adjusted_as_negative"`</span>.</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span><span class="in">`fixed_time_horizons`</span> accepts numeric values. Integer horizons such as <span class="in">`[3, 6, 9]`</span> are normalized to floats at the shared time-dependent processing boundary.</span>
 <span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="fu">## Debugging rule</span></span>
 <span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>mismatched population keys or within-population lengths,</span>
 <span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`heuristics_sets`</span>,</span>
 <span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>the censoring heuristic,</span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>or integer time horizons.</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>or unsupported calibration heuristics.</span>
 <span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="fu">## Resources</span></span>
 <span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>

@@ -24,8 +24,8 @@ Similar names do not guarantee identical edge-case behavior.
 
 1. Matching `probs` / `reals` dictionary keys are paired population-by-population. Different populations may have different sample sizes; lengths only need to match within each population.
 2. `create_calibration_curve_times()` currently requires `heuristics_sets`; it does not inherit the default used by ROC/PR/decision `_times` functions.
-3. Do not blindly pass `censoring_heuristic="adjusted"` to time-dependent calibration. The current path can skip all horizons and finish with `No data remaining after applying heuristics and time horizons.` The documented working exclusion-based path uses `censoring_heuristic="excluded"` with `competing_heuristic="adjusted_as_negative"`.
-4. Prefer floating-point `fixed_time_horizons`, for example `[3.0, 6.0, 9.0]`. Integer horizons can currently leak a Polars `i64` versus `f64` join-key error.
+3. Time-dependent calibration rejects `censoring_heuristic="adjusted"` and `competing_heuristic="adjusted_as_censored"` with an actionable `Unsupported calibration heuristics` error. A supported exclusion-based path uses `censoring_heuristic="excluded"` with `competing_heuristic="adjusted_as_negative"`.
+4. `fixed_time_horizons` accepts numeric values. Integer horizons such as `[3, 6, 9]` are normalized to floats at the shared time-dependent processing boundary.
 
 ## Debugging rule
 
@@ -34,7 +34,7 @@ When a call that works for ROC/PR/decision fails for calibration, first check wh
 - mismatched population keys or within-population lengths,
 - `heuristics_sets`,
 - the censoring heuristic,
-- or integer time horizons.
+- or unsupported calibration heuristics.
 
 ## Resources
 

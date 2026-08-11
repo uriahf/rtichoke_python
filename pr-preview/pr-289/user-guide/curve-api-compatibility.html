@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <li><a href="#capability-matrix" id="toc-capability-matrix" class="nav-link active" data-scroll-target="#capability-matrix">Capability matrix</a></li>
   <li><a href="#calibration-with-named-populations" id="toc-calibration-with-named-populations" class="nav-link" data-scroll-target="#calibration-with-named-populations">Calibration with named populations</a></li>
   <li><a href="#time-dependent-calibration-heuristics" id="toc-time-dependent-calibration-heuristics" class="nav-link" data-scroll-target="#time-dependent-calibration-heuristics">Time-dependent calibration heuristics</a></li>
-  <li><a href="#time-horizons-prefer-floats" id="toc-time-horizons-prefer-floats" class="nav-link" data-scroll-target="#time-horizons-prefer-floats">Time horizons: prefer floats</a></li>
+  <li><a href="#numeric-time-horizons" id="toc-numeric-time-horizons" class="nav-link" data-scroll-target="#numeric-time-horizons">Numeric time horizons</a></li>
   <li><a href="#related-functions" id="toc-related-functions" class="nav-link" data-scroll-target="#related-functions">Related functions</a></li>
   </ul>
 </nav>
@@ -307,28 +307,28 @@ document.addEventListener('DOMContentLoaded', () => {
 <td>Supported</td>
 <td>Supported</td>
 <td><code>adjusted</code> / <code>adjusted_as_negative</code></td>
-<td>Use floating-point values</td>
+<td>Integer and floating-point values supported</td>
 </tr>
 <tr class="even">
 <td>Precision-recall</td>
 <td>Supported</td>
 <td>Supported</td>
 <td><code>adjusted</code> / <code>adjusted_as_negative</code></td>
-<td>Use floating-point values</td>
+<td>Integer and floating-point values supported</td>
 </tr>
 <tr class="odd">
 <td>Decision curve</td>
 <td>Supported</td>
 <td>Supported</td>
 <td><code>adjusted</code> / <code>adjusted_as_negative</code></td>
-<td>Use floating-point values</td>
+<td>Integer and floating-point values supported</td>
 </tr>
 <tr class="even">
 <td>Calibration</td>
 <td>Supported with matching population keys</td>
 <td>Supported</td>
 <td><strong>No default on <a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a></strong>; pass explicitly</td>
-<td>Use floating-point values</td>
+<td>Integer and floating-point values supported</td>
 </tr>
 </tbody>
 </table>
@@ -358,7 +358,7 @@ len(probs["Test"])  == len(reals["Test"])</code></pre>
 <p><a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> still differs from its ROC, precision-recall, and decision-curve siblings in two important ways:</p>
 <ol type="1">
 <li><code>heuristics_sets</code> is currently required rather than defaulted.</li>
-<li>The sibling default <code>censoring_heuristic="adjusted"</code> is not a safe value to copy blindly into calibration. In the current calibration path, that choice can remove every requested horizon and end in <code>No data remaining after applying heuristics and time horizons.</code></li>
+<li>Calibration explicitly rejects <code>censoring_heuristic="adjusted"</code> and <code>competing_heuristic="adjusted_as_censored"</code> with an <code>Unsupported calibration heuristics</code> error instead of silently skipping every requested horizon.</li>
 </ol>
 <p>Pass the calibration heuristic explicitly. For the currently working exclusion-based path:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>heuristics_sets <span class="op">=</span> [</span>
@@ -376,15 +376,9 @@ len(probs["Test"])  == len(reals["Test"])</code></pre>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    heuristics_sets<span class="op">=</span>heuristics_sets,</span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 </section>
-<section id="time-horizons-prefer-floats" class="level1">
-<h1>Time horizons: prefer floats</h1>
-<p>Use floating-point horizons such as <code>[3.0, 6.0, 9.0]</code>, not <code>[3, 6, 9]</code>. The current implementation can otherwise expose an internal Polars join-key datatype mismatch (<code>i64</code> versus <code>f64</code>) rather than a rtichoke-specific validation message.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Prefer</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>fixed_time_horizons <span class="op">=</span> [<span class="fl">3.0</span>, <span class="fl">6.0</span>, <span class="fl">9.0</span>]</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Avoid for now</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>fixed_time_horizons <span class="op">=</span> [<span class="dv">3</span>, <span class="dv">6</span>, <span class="dv">9</span>]</span></code></pre></div>
-<p>This is a usability limitation rather than a conceptual requirement; normalizing numeric horizons internally is a good candidate for a small future code fix.</p>
+<section id="numeric-time-horizons" class="level1">
+<h1>Numeric time horizons</h1>
+<p><code>fixed_time_horizons</code> accepts integer or floating-point numeric values. Integer horizons are normalized to floats at the shared time-dependent processing boundary, so <code>[3, 6, 9]</code> and <code>[3.0, 6.0, 9.0]</code> are equivalent.</p>
 </section>
 <section id="related-functions" class="level1">
 <h1>Related functions</h1>

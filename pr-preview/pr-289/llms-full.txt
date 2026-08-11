@@ -123,7 +123,8 @@ times : Union[np.ndarray, Dict[str, np.ndarray]]
     The event or censoring times corresponding to the `reals`. Can be a
     single array or a dictionary.
 fixed_time_horizons : list[float]
-    A list of time points at which to evaluate the model's performance.
+    A list of numeric time points at which to evaluate the model's
+    performance. Integer inputs are accepted and normalized to floats.
 heuristics_sets : list[Dict], optional
     A list of dictionaries, each specifying how to handle censored data
     and competing events. The default is
@@ -163,7 +164,8 @@ reals : Union[np.ndarray, Dict[str, np.ndarray]]
 times : Union[np.ndarray, Dict[str, np.ndarray]]
     The event or censoring times.
 fixed_time_horizons : list[float]
-    A list of time points for performance evaluation.
+    A list of numeric time points for performance evaluation. Integer
+    inputs are accepted and normalized to floats.
 heuristics_sets : list[Dict], optional
     Specifies how to handle censored data and competing events.
 stratified_by : Sequence[str], optional
@@ -865,10 +867,10 @@ This page makes those differences explicit so that users — and coding agents r
 
 | Function family | Multiple named populations | Unequal population sizes with `dict`/`dict` inputs | Time-dependent heuristic default | `fixed_time_horizons` |
 |---|---|---|---|---|
-| ROC | Supported | Supported | `adjusted` / `adjusted_as_negative` | Use floating-point values |
-| Precision-recall | Supported | Supported | `adjusted` / `adjusted_as_negative` | Use floating-point values |
-| Decision curve | Supported | Supported | `adjusted` / `adjusted_as_negative` | Use floating-point values |
-| Calibration | Supported with matching population keys | Supported | **No default on `create_calibration_curve_times()`**; pass explicitly | Use floating-point values |
+| ROC | Supported | Supported | `adjusted` / `adjusted_as_negative` | Integer and floating-point values supported |
+| Precision-recall | Supported | Supported | `adjusted` / `adjusted_as_negative` | Integer and floating-point values supported |
+| Decision curve | Supported | Supported | `adjusted` / `adjusted_as_negative` | Integer and floating-point values supported |
+| Calibration | Supported with matching population keys | Supported | **No default on `create_calibration_curve_times()`**; pass explicitly | Integer and floating-point values supported |
 
 ## Calibration with named populations
 
@@ -902,7 +904,7 @@ len(probs["Test"])  == len(reals["Test"])
 `create_calibration_curve_times()` still differs from its ROC, precision-recall, and decision-curve siblings in two important ways:
 
 1. `heuristics_sets` is currently required rather than defaulted.
-2. The sibling default `censoring_heuristic="adjusted"` is not a safe value to copy blindly into calibration. In the current calibration path, that choice can remove every requested horizon and end in `No data remaining after applying heuristics and time horizons.`
+2. Calibration explicitly rejects `censoring_heuristic="adjusted"` and `competing_heuristic="adjusted_as_censored"` with an `Unsupported calibration heuristics` error instead of silently skipping every requested horizon.
 
 Pass the calibration heuristic explicitly. For the currently working exclusion-based path:
 
@@ -927,19 +929,9 @@ fig = rk.create_calibration_curve_times(
 )
 ```
 
-## Time horizons: prefer floats
+## Numeric time horizons
 
-Use floating-point horizons such as `[3.0, 6.0, 9.0]`, not `[3, 6, 9]`. The current implementation can otherwise expose an internal Polars join-key datatype mismatch (`i64` versus `f64`) rather than a rtichoke-specific validation message.
-
-```python
-# Prefer
-fixed_time_horizons = [3.0, 6.0, 9.0]
-
-# Avoid for now
-fixed_time_horizons = [3, 6, 9]
-```
-
-This is a usability limitation rather than a conceptual requirement; normalizing numeric horizons internally is a good candidate for a small future code fix.
+`fixed_time_horizons` accepts integer or floating-point numeric values. Integer horizons are normalized to floats at the shared time-dependent processing boundary, so `[3, 6, 9]` and `[3.0, 6.0, 9.0]` are equivalent.
 
 ## Related functions
 
