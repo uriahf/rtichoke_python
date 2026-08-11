@@ -1,0 +1,11 @@
+{
+  "skills": [
+    {
+      "name": "rtichoke",
+      "description": "interactive visualizations for performance of predictive models. Use when writing Python code that uses the rtichoke package.",
+      "files": [
+        "SKILL.md"
+      ]
+    }
+  ]
+}
