@@ -66,7 +66,7 @@ Plots a Lift curve from pre-computed performance data.
 ## Calibration
 
 
-Calibration visualizations for classification and time-to-event models. See the Curve API Compatibility guide for current multi-population and time-heuristic constraints.
+Calibration visualizations for classification and time-to-event models. See Curve API Compatibility for time-dependent heuristic and horizon differences.
 
 
 [create_calibration_curve()](create_calibration_curve.md#rtichoke.create_calibration_curve)  
