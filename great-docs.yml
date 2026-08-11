@@ -4,6 +4,8 @@ repo: https://github.com/uriahf/rtichoke_python
 user_guide: user_guide
 homepage: user_guide
 site_url: https://uriahf.github.io/rtichoke_python/
+include_in_header:
+  - file: blog-navbar.html
 
 site:
   css: site.css
