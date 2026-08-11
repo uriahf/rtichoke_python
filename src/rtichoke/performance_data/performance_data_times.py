@@ -59,7 +59,8 @@ def prepare_performance_data_times(
         The event or censoring times corresponding to the `reals`. Can be a
         single array or a dictionary.
     fixed_time_horizons : list[float]
-        A list of time points at which to evaluate the model's performance.
+        A list of numeric time points at which to evaluate the model's
+        performance. Integer inputs are accepted and normalized to floats.
     heuristics_sets : list[Dict], optional
         A list of dictionaries, each specifying how to handle censored data
         and competing events. The default is
@@ -134,7 +135,8 @@ def prepare_binned_classification_data_times(
     times : Union[np.ndarray, Dict[str, np.ndarray]]
         The event or censoring times.
     fixed_time_horizons : list[float]
-        A list of time points for performance evaluation.
+        A list of numeric time points for performance evaluation. Integer
+        inputs are accepted and normalized to floats.
     heuristics_sets : list[Dict], optional
         Specifies how to handle censored data and competing events.
     stratified_by : Sequence[str], optional
@@ -152,6 +154,8 @@ def prepare_binned_classification_data_times(
         represents a unique combination of dataset, bin, time horizon,
         heuristic, and other strata.
     """
+    fixed_time_horizons = [float(horizon) for horizon in fixed_time_horizons]
+
     breaks = create_breaks_values(None, "probability_threshold", by)
 
     aj_data_combinations = create_aj_data_combinations(
