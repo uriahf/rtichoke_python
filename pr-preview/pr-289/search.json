@@ -22,11 +22,11 @@
     ]
   },
   {
-    "objectID": "user-guide/common-errors.html#where-this-commonly-appears",
-    "href": "user-guide/common-errors.html#where-this-commonly-appears",
+    "objectID": "user-guide/common-errors.html#where-this-appears",
+    "href": "user-guide/common-errors.html#where-this-appears",
     "title": "Common Errors & Fixes",
-    "section": "Where this commonly appears",
-    "text": "Where this commonly appears\ncreate_calibration_curve_times().",
+    "section": "Where this appears",
+    "text": "Where this appears\ncreate_calibration_curve_times().",
     "crumbs": [
       "Using rtichoke",
       "Common Errors & Fixes"
@@ -37,7 +37,7 @@
     "href": "user-guide/common-errors.html#why-it-happens",
     "title": "Common Errors & Fixes",
     "section": "Why it happens",
-    "text": "Why it happens\nOne current failure mode is passing the heuristic combination used as the default by ROC/PR/decision time-dependent functions. In calibration, censoring_heuristic=\"adjusted\" can skip every horizon, leaving no data to plot. The final exception does not currently explain which heuristic caused the removal.",
+    "text": "Why it happens\nCalibration does not currently implement censoring_heuristic=\"adjusted\" or competing_heuristic=\"adjusted_as_censored\". These inputs are rejected before curve construction rather than silently skipping every requested horizon.",
     "crumbs": [
       "Using rtichoke",
       "Common Errors & Fixes"
@@ -48,40 +48,7 @@
     "href": "user-guide/common-errors.html#fix",
     "title": "Common Errors & Fixes",
     "section": "Fix",
-    "text": "Fix\nPass the calibration heuristic explicitly. For the currently working exclusion-based path:\nheuristics_sets = [\n    {\n        \"censoring_heuristic\": \"excluded\",\n        \"competing_heuristic\": \"adjusted_as_negative\",\n    }\n]\nDo not infer calibration defaults from create_roc_curve_times(), create_precision_recall_curve_times(), or create_decision_curve_times().",
-    "crumbs": [
-      "Using rtichoke",
-      "Common Errors & Fixes"
-    ]
-  },
-  {
-    "objectID": "user-guide/common-errors.html#where-this-commonly-appears-1",
-    "href": "user-guide/common-errors.html#where-this-commonly-appears-1",
-    "title": "Common Errors & Fixes",
-    "section": "Where this commonly appears",
-    "text": "Where this commonly appears\nTime-dependent functions when integer values are supplied in fixed_time_horizons, for example:\nfixed_time_horizons=[3, 6, 9]",
-    "crumbs": [
-      "Using rtichoke",
-      "Common Errors & Fixes"
-    ]
-  },
-  {
-    "objectID": "user-guide/common-errors.html#why-it-happens-1",
-    "href": "user-guide/common-errors.html#why-it-happens-1",
-    "title": "Common Errors & Fixes",
-    "section": "Why it happens",
-    "text": "Why it happens\nThe current internal time-horizon data can be floating point, while integer literals create integer-typed join keys. The resulting Polars error leaks an implementation detail instead of explaining the rtichoke input requirement.",
-    "crumbs": [
-      "Using rtichoke",
-      "Common Errors & Fixes"
-    ]
-  },
-  {
-    "objectID": "user-guide/common-errors.html#fix-1",
-    "href": "user-guide/common-errors.html#fix-1",
-    "title": "Common Errors & Fixes",
-    "section": "Fix",
-    "text": "Fix\nUse floating-point horizons:\nfixed_time_horizons=[3.0, 6.0, 9.0]\nInternal numeric normalization is a candidate for a future defensive code fix.",
+    "text": "Fix\nPass a supported calibration heuristic explicitly. For the exclusion-based path:\nheuristics_sets = [\n    {\n        \"censoring_heuristic\": \"excluded\",\n        \"competing_heuristic\": \"adjusted_as_negative\",\n    }\n]\nDo not infer calibration defaults from create_roc_curve_times(), create_precision_recall_curve_times(), or create_decision_curve_times().",
     "crumbs": [
       "Using rtichoke",
       "Common Errors & Fixes"
