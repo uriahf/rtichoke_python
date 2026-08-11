@@ -31,7 +31,7 @@ pip install rtichoke
 To use `rtichoke`, you'll usually need two main inputs:
 
 * `probs`: A dictionary containing model-predicted probabilities.
-* `reals`: A dictionary containing the observed outcomes.
+* `reals`: Observed outcomes, provided either as one array or as a dictionary keyed by population.
 
 Here's a quick example of creating a ROC curve for a single model:
 
@@ -53,6 +53,30 @@ fig = rk.create_roc_curve(
 
 fig.show()
 ```
+
+### Compare populations
+
+When predictions and outcomes are both dictionaries with the same keys, rtichoke pairs them population-by-population. The populations do **not** need to have the same sample size.
+
+```python
+probs = {
+    "Train": np.array([0.10, 0.90, 0.20, 0.80, 0.30, 0.70]),
+    "Test": np.array([0.15, 0.85, 0.25, 0.75]),
+}
+reals = {
+    "Train": np.array([0, 1, 0, 1, 0, 1]),
+    "Test": np.array([0, 1, 0, 0]),
+}
+
+fig = rk.create_calibration_curve(
+    probs=probs,
+    reals=reals,
+)
+
+fig.show()
+```
+
+Here, `Train` contains six observations and `Test` contains four. Each probability vector only needs to match the outcome vector for its own population.
 
 ## Key Features
 
