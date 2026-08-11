@@ -1,0 +1,63 @@
+# Decision Curves with Fixed Time Horizons
+
+`rtichoke` for Python introduces support for fixed time horizons, allowing flexible specification of the prediction horizon and automatically updating performance plots accordingly.
+
+
+# The most under-discussed design choice in prediction models: The Time Horizon
+
+Prediction models require a well-defined fixed time horizon: The end of follow-up over which the outcome probability is defined. A probability of dying within 1 week, 1 year, or 100 years represents fundamentally different clinical questions and very different implied decision contexts.
+
+It is therefore important to explore the sensitivity of model performance to the choice of time horizon: Shorter horizons typically yield fewer observed events, resulting in smaller gaps between the two baseline strategies "treat all" (Everyone is considered Predicted Positive) and "treat none" (everyone is considered Predicted Negative).
+
+In contrast, longer horizons may introduce ambiguity through censoring (loss to follow-up) or competing events (events that preclude the primary outcome).
+
+
+# Pragmatic approach: Performance Sensitivity Analysis with rtichoke
+
+You do not need to develop a new or more complex model to overcome these problems, first you need to ensure if there's a problem at all and for which time horizons:
+
+You can reuse predictions trained for a specific horizon and evaluate their robustness across alternative fixed time horizons: This allows you to assess how performance changes as the effective follow-up window varies without retraining the model.
+
+
+# Load data and fit a Cox Regression
+
+
+``` python
+import pandas as pd
+import lifelines
+
+df_time_to_cancer_dx = pd.read_csv(
+    "https://raw.githubusercontent.com/ddsjoberg/dca-tutorial/main/data/df_time_to_cancer_dx.csv"
+)
+
+cph = lifelines.CoxPHFitter()
+cph.fit(
+    df=df_time_to_cancer_dx,
+    duration_col="ttcancer",
+    event_col="cancer",
+    formula="age + famhistory + marker",
+)
+
+cph_pred_vals = cph.predict_survival_function(
+    df_time_to_cancer_dx[["age", "famhistory", "marker"]], times=[1.5]
+)
+
+df_time_to_cancer_dx["pr_failure18"] = [1 - val for val in cph_pred_vals.iloc[0, :]]
+```
+
+
+# Decision Curve with Multiple Fixed Time Horizons
+
+The `fixed_time_horizons` argument allows you to explicitly define the set of follow-up horizons to evaluate.
+
+
+``` python
+from rtichoke import create_decision_curve_times
+
+create_decision_curve_times(
+    probs={"full": df_time_to_cancer_dx["pr_failure18"]},
+    reals=df_time_to_cancer_dx["cancer"],
+    times=df_time_to_cancer_dx["ttcancer"],
+    fixed_time_horizons=[0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+)
+```
