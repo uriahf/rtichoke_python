@@ -102,7 +102,7 @@ fig = rk.create_calibration_curve(
 fig.show()
 ```
 
-From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The [Naming Conventions](naming-conventions.qmd) guide explains how the exported function families fit together.
+From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The [Naming Conventions](user-guide/naming-conventions.html) guide explains how the exported function families fit together.
 
 
 ### Links
