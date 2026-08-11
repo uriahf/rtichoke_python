@@ -2,17 +2,23 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.10.18">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Getting Started with rtichoke – rtichoke</title>
+<title>create_calibration_curve_times() – rtichoke | rtichoke</title>
 <style>
-code{white-space: pre-wrap;}
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -67,25 +73,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="../">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b758ccaa5987ceb1b75504551e579abf.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-2041ce29c4eca8a233abee98b700a985.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-2041ce29c4eca8a233abee98b700a985.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-2041ce29c4eca8a233abee98b700a985.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-bf476c94c8758bc321fd5fd3b984c438.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
-  "location": "sidebar",
+  "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
-  "panel-placement": "start",
-  "type": "textbox",
+  "panel-placement": "end",
+  "type": "overlay",
   "limit": 50,
   "keyboard-shortcut": [
     "f",
@@ -107,62 +108,287 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:(document.querySelector('meta[name="quarto:offset"]')||{content:''}).content+'termshow.css'}));</script>
+<script>document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:(document.querySelector('meta[name="quarto:offset"]')||{content:''}).content+'gd-lightbox.css'}));</script>
+<script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'gd-lightbox.js';s.defer=true;document.head.appendChild(s);})();</script>
+<script>document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:(document.querySelector('meta[name="quarto:offset"]')||{content:''}).content+'gd-lightbox-compare.css'}));</script>
+<script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'gd-lightbox-compare.js';s.defer=true;document.head.appendChild(s);})();</script>
+<script>document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:(document.querySelector('meta[name="quarto:offset"]')||{content:''}).content+'gd-lightbox-annotate.css'}));</script>
+<script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'gd-lightbox-annotate.js';s.defer=true;document.head.appendChild(s);})();</script>
+<script src="../theme-init.js"></script>
 
 
+<link rel="stylesheet" href="../site.css">
+  <link rel="alternate" type="text/markdown" href="create_calibration_curve_times.md">
+  <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve_times.html">
+  <meta name="description" content="Creates a time-dependent Calibration Curve with a slider for different time horizons.">
+  <script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareSourceCode",
+    "name": "rtichoke",
+    "description": "interactive visualizations for performance of predictive models",
+    "license": "https://opensource.org/licenses/MIT",
+    "url": "https://uriahf.github.io/rtichoke_python",
+    "documentation": "https://uriahf.github.io/rtichoke_python",
+    "programmingLanguage": {
+      "@type": "ComputerLanguage",
+      "name": "Python"
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "create_calibration_curve_times - rtichoke",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "rtichoke"
+    },
+    "url": "https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve_times.html"
+  }
+]
+</script>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="create_calibration_curve_times() – rtichoke | rtichoke">
+  <meta property="og:description" content="Creates a time-dependent Calibration Curve with a slider for different time horizons.">
+  <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve_times.html">
+  <meta property="og:site_name" content="rtichoke">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="create_calibration_curve_times() – rtichoke | rtichoke">
+  <meta name="twitter:description" content="Creates a time-dependent Calibration Curve with a slider for different time horizons.">
 </head>
 
-<body class="nav-sidebar docked fullcontent quarto-light">
+<body class="gd-ref-sidebar nav-sidebar floating nav-fixed doc-api-page quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">rtichoke</span>
+    </a>
+  </div>
+            <div id="quarto-search" class=""></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../reference/index.html" aria-current="page"> 
+<span class="menu-text">Reference</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <span class="nav-link">
+<div id="github-widget" data-owner="uriahf" data-repo="rtichoke_python" data-stars="0" data-forks="0"></div>
+    </span>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/getting_started.html">Getting Started</a></li></ol></nav>
+        <h1 class="quarto-secondary-nav-title no-breadcrumbs gd-ref-title"><span class="gd-ref-title-prefix">API</span><span class="gd-ref-title-sep">/</span><span class="gd-ref-title-name">create_calibration_curve_times()</span></h1>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
-      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
-        <i class="bi bi-search"></i>
-      </button>
     </div>
   </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
-    <div class="pt-lg-2 mt-2 text-left sidebar-header">
-    <div class="sidebar-title mb-0 py-0">
-      <a href="../">User Guide</a> 
-    </div>
-      </div>
-        <div class="mt-2 flex-shrink-0 align-items-center">
-        <div class="sidebar-search">
-        <div id="quarto-search" class="" title="Search"></div>
-        </div>
-        </div>
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../tutorials/getting_started.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Getting Started</span></a>
+  <div class="sidebar-item-container" style="padding-bottom: 0.5rem; padding-top: 0.25rem;"> 
+  <a href="../reference/index.html" style="font-family: &quot;Open Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">API Index</span></a>
   </div>
 </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Performance Data</span></a>
+</div>
+      <ul id="quarto-sidebar-section-1" class="list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/prepare_performance_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">prepare_performance_data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/prepare_binned_classification_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">prepare_binned_classification_data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/prepare_performance_data_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">prepare_performance_data_times</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/prepare_binned_classification_data_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">prepare_binned_classification_data_times</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Discrimination</span></a>
+</div>
+      <ul id="quarto-sidebar-section-2" class="list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_roc_curve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_roc_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_roc_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_roc_curve_times</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/plot_roc_curve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_roc_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_precision_recall_curve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_precision_recall_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_precision_recall_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_precision_recall_curve_times</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/plot_precision_recall_curve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_precision_recall_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_gains_curve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_gains_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_gains_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_gains_curve_times</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/plot_gains_curve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_gains_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_lift_curve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_lift_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_lift_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_lift_curve_times</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/plot_lift_curve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_lift_curve</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Calibration</span></a>
+</div>
+      <ul id="quarto-sidebar-section-3" class="list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_calibration_curve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_calibration_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_calibration_curve_times.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">create_calibration_curve_times</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Utility</span></a>
+</div>
+      <ul id="quarto-sidebar-section-4" class="list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_decision_curve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_decision_curve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_decision_curve_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_decision_curve_times</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/plot_decision_curve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_decision_curve</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
     </ul>
     </div>
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Getting Started with rtichoke</h1>
+<h2 class="title" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 1.25rem;"><span class="doc-object-name doc-function doc-label doc-label-function">create_calibration_curve_times()</span></h2>
 </div>
 
 
@@ -179,91 +405,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>This tutorial provides an introduction to the <code>rtichoke</code> library, showing how to visualize model performance for different scenarios.</p>
-<section id="import-libraries" class="level2">
-<h2 class="anchored" data-anchor-id="import-libraries">1. Import Libraries</h2>
-<p>First, let’s import the necessary libraries. We’ll need <code>numpy</code> for data manipulation and <code>rtichoke</code> for the core functionality.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rtichoke <span class="im">as</span> rk</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="understanding-the-inputs" class="level2">
-<h2 class="anchored" data-anchor-id="understanding-the-inputs">2. Understanding the Inputs</h2>
-<p><code>rtichoke</code> expects two main inputs for creating performance curves:</p>
-<ul>
-<li><strong><code>probs</code> (Probabilities)</strong>: A dictionary where keys are model or population names and values are lists or NumPy arrays of predicted probabilities.</li>
-<li><strong><code>reals</code> (Outcomes)</strong>: A dictionary where keys are population names and values are lists or NumPy arrays of the true binary outcomes (0 or 1).</li>
-</ul>
-<p>Let’s look at the three main use cases.</p>
-<section id="use-case-1-single-model" class="level3">
-<h3 class="anchored" data-anchor-id="use-case-1-single-model">Use Case 1: Single Model</h3>
-<p>This is the simplest case, where you want to evaluate the performance of a single predictive model.</p>
-<p>For this, you provide <code>probs</code> with a single entry for your model and <code>reals</code> with a single entry for the corresponding outcomes.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample data for a model. Note that the probabilities for the</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># positive class (1) are generally higher than for the negative class (0).</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>probs_single <span class="op">=</span> {<span class="st">"Model A"</span>: np.array([<span class="fl">0.1</span>, <span class="fl">0.9</span>, <span class="fl">0.4</span>, <span class="fl">0.8</span>, <span class="fl">0.3</span>, <span class="fl">0.7</span>, <span class="fl">0.2</span>, <span class="fl">0.6</span>])}</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>reals_single <span class="op">=</span> {<span class="st">"Population"</span>: np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>])}</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a ROC curve</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_roc_curve(</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>probs_single,</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_single,</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># In an interactive environment (like a Jupyter notebook),</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># this will display the plot.</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="use-case-2-models-comparison" class="level3">
-<h3 class="anchored" data-anchor-id="use-case-2-models-comparison">Use Case 2: Models Comparison</h3>
-<p>Often, you want to compare the performance of several different models on the <em>same</em> population.</p>
-<p>For this, you provide <code>probs</code> with an entry for each model you want to compare. <code>reals</code> will still have a single entry, since the outcome data is the same for all models.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample data for two models. Model A is better at separating the classes.</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>probs_comparison <span class="op">=</span> {</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Model A"</span>: np.array([<span class="fl">0.1</span>, <span class="fl">0.9</span>, <span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="fl">0.3</span>, <span class="fl">0.7</span>]),</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Model B"</span>: np.array([<span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="fl">0.3</span>, <span class="fl">0.7</span>, <span class="fl">0.4</span>, <span class="fl">0.6</span>]),</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Random Guess"</span>: np.array([<span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>])</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>reals_comparison <span class="op">=</span> {<span class="st">"Population"</span>: np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>])}</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a precision-recall curve to compare the models</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_precision_recall_curve(</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>probs_comparison,</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_comparison,</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="use-case-3-several-populations" class="level3">
-<h3 class="anchored" data-anchor-id="use-case-3-several-populations">Use Case 3: Several Populations</h3>
-<p>This is useful when you want to evaluate a single model’s performance across different populations. A common example is comparing performance on a training set versus a testing set to check for overfitting.</p>
-<p>For this, you provide <code>probs</code> with an entry for each population and <code>reals</code> with a corresponding entry for each population’s outcomes.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample data for a train and test set.</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># The model performs slightly better on the train set.</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>probs_populations <span class="op">=</span> {</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: np.array([<span class="fl">0.1</span>, <span class="fl">0.9</span>, <span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="fl">0.3</span>, <span class="fl">0.7</span>]),</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>:  np.array([<span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="fl">0.3</span>, <span class="fl">0.7</span>, <span class="fl">0.4</span>, <span class="fl">0.6</span>])</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>reals_populations <span class="op">=</span> {</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>]),</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>:  np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>]) <span class="co"># Note one outcome is different</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a calibration curve to compare the model's performance</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># on the two populations.</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_calibration_curve(</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>probs_populations,</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_populations,</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>And that’s it! You’ve now seen how to create three of the most common evaluation plots with <code>rtichoke</code>. From here, you can explore the other curve types and options that the library has to offer in the <a href="../reference/index.html">API Reference</a>.</p>
+<div class="doc-subject">
+<p>Creates a time-dependent Calibration Curve with a slider for different time horizons.</p>
+</div>
+<div class="doc-usage-source">
+<p>Usage</p>
+<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/calibration/calibration.py#L71-L118" target="_blank" rel="noopener">Source</a></p>
+</div>
+<div class="doc-signature doc-Kind.FUNCTION">
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">create_calibration_curve_times</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">probs</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">reals</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">times</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="va">fixed_time_horizons</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">heuristics_sets</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="va">calibration_type</span><span class="op">=</span><span class="st">&quot;discrete&quot;</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="va">size</span><span class="op">=</span><span class="dv">600</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="va">color_values</span><span class="op">=</span>[<span class="st">&quot;#1b9e77&quot;</span>, <span class="st">&quot;#d95f02&quot;</span>, <span class="st">&quot;#7570b3&quot;</span>, <span class="st">&quot;#e7298a&quot;</span>, <span class="st">&quot;#07004D&quot;</span>, <span class="st">&quot;#E6AB02&quot;</span>, <span class="st">&quot;#FE5F55&quot;</span>, <span class="st">&quot;#54494B&quot;</span>, <span class="st">&quot;#006E90&quot;</span>, <span class="st">&quot;#BC96E6&quot;</span>, <span class="st">&quot;#52050A&quot;</span>, <span class="st">&quot;#1F271B&quot;</span>, <span class="st">&quot;#BE7C4D&quot;</span>, <span class="st">&quot;#63768D&quot;</span>, <span class="st">&quot;#08A045&quot;</span>, <span class="st">&quot;#320A28&quot;</span>, <span class="st">&quot;#82FF9E&quot;</span>, <span class="st">&quot;#2176FF&quot;</span>, <span class="st">&quot;#D1603D&quot;</span>, <span class="st">&quot;#585123&quot;</span>]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</div>
 
 
-</section>
-</section>
 
-</main> <!-- /main -->
+</main>
+<hr style="padding: 0; margin: 0;">
+ <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
@@ -273,68 +439,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       icon: icon
     };
     anchorJS.add('.anchored');
-    const isCodeAnnotation = (el) => {
-      for (const clz of el.classList) {
-        if (clz.startsWith('code-annotation-')) {                     
-          return true;
-        }
-      }
-      return false;
-    }
-    const onCopySuccess = function(e) {
-      // button target
-      const button = e.trigger;
-      // don't keep focus
-      button.blur();
-      // flash "checked"
-      button.classList.add('code-copy-button-checked');
-      var currentTitle = button.getAttribute("title");
-      button.setAttribute("title", "Copied!");
-      let tooltip;
-      if (window.bootstrap) {
-        button.setAttribute("data-bs-toggle", "tooltip");
-        button.setAttribute("data-bs-placement", "left");
-        button.setAttribute("data-bs-title", "Copied!");
-        tooltip = new bootstrap.Tooltip(button, 
-          { trigger: "manual", 
-            customClass: "code-copy-button-tooltip",
-            offset: [0, -8]});
-        tooltip.show();    
-      }
-      setTimeout(function() {
-        if (tooltip) {
-          tooltip.hide();
-          button.removeAttribute("data-bs-title");
-          button.removeAttribute("data-bs-toggle");
-          button.removeAttribute("data-bs-placement");
-        }
-        button.setAttribute("title", currentTitle);
-        button.classList.remove('code-copy-button-checked');
-      }, 1000);
-      // clear code selection
-      e.clearSelection();
-    }
-    const getTextToCopy = function(trigger) {
-      const outerScaffold = trigger.parentElement.cloneNode(true);
-      const codeEl = outerScaffold.querySelector('code');
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
-      text: getTextToCopy
-    });
-    clipboard.on('success', onCopySuccess);
-    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
-        text: getTextToCopy,
-        container: window.document.getElementById('quarto-embedded-source-code-modal')
-      });
-      clipboardModal.on('success', onCopySuccess);
-    }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
         var filterRegex = new RegExp("https:\/\/uriahf\.github\.io\/rtichoke_python\/");
@@ -665,6 +769,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   });
   </script>
 </div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+<div class="nav-footer-center">
+<p>Developed by <strong>Uriah&nbsp;Finkel</strong>.<br>Site created with <strong>Great&nbsp;Docs</strong>.</p>
+</div>
+</div>
+</footer>
+<script src="../github-widget.js"></script>
+<script src="../copy-page.js"></script>
+<script src="../sidebar-wrap.js"></script>
+<script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'sidebar-float.js';document.body.appendChild(s);})();</script>
+<script src="../sidebar-filter.js"></script>
+<script src="../dark-mode-toggle.js"></script>
+<script src="../back-to-top.js"></script>
+<script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'on-this-page.js';document.body.appendChild(s);})();</script>
+<script src="../keyboard-nav.js"></script>
+<script src="../copy-code.js"></script>
+<script src="../details.js"></script>
+<script src="../mermaid-renderer.js"></script>
+<script src="../tooltips.js"></script>
+<script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'color-swatch.js';document.body.appendChild(s);})();</script>
+<script src="../responsive-tables.js"></script>
+<script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'video-embed.js';document.body.appendChild(s);})();</script>
+<script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'termshow.js';document.body.appendChild(s);})();</script>
+<script src="../navbar-widgets.js"></script>
 
 
 
