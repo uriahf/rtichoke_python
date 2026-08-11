@@ -14,8 +14,8 @@
   --rtichoke-soft: #fef0ec;
   --rtichoke-primary: #c54b29;
   --rtichoke-accent: #ce3d15;
-  --rtichoke-border: #f0cfc3;
-  --rtichoke-text: #281d19;
+  --rtichoke-border: #f4d3c7;
+  --rtichoke-text: #1f1a17;
   --rtichoke-muted: #725f57;
   --rtichoke-shadow: 0 10px 28px rgba(96, 46, 27, 0.07);
 }
@@ -24,7 +24,7 @@ body { background: var(--rtichoke-bg); color: var(--rtichoke-text); font-family:
 h1, h2, h3, h4, h5, h6, .navbar-brand, .quarto-title-block .title, .sidebar-title, .listing-title { color: var(--rtichoke-primary); font-family: "Fraunces9pt-Light", "Fraunces", Georgia, serif; font-weight: 700; letter-spacing: -0.015em; }
 a { color: var(--rtichoke-accent); text-decoration-color: rgba(206, 61, 21, 0.35); text-decoration-thickness: 0.1em; text-underline-offset: 0.14em; }
 a:hover, a:focus-visible { color: var(--rtichoke-primary); text-decoration-color: currentColor; }
-.navbar, .navbar-dark, .navbar-light { background: rgba(255, 247, 245, 0.96) !important; border-bottom: 1px solid var(--rtichoke-border); box-shadow: 0 5px 18px rgba(96, 46, 27, 0.05); backdrop-filter: blur(12px); }
+.navbar, .navbar-dark, .navbar-light { background: var(--rtichoke-bg) !important; border-bottom: 1px solid var(--rtichoke-border); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04); }
 .navbar-brand, .navbar .nav-link, .navbar .navbar-title { color: var(--rtichoke-primary) !important; }
 .navbar .nav-link:hover, .navbar .nav-link:focus, .navbar .nav-link.active { color: var(--rtichoke-accent) !important; }
 #quarto-sidebar, .sidebar, .quarto-secondary-nav { background: var(--rtichoke-bg); border-color: var(--rtichoke-border); }
@@ -33,9 +33,25 @@ a:hover, a:focus-visible { color: var(--rtichoke-primary); text-decoration-color
 .quarto-title-block, .gd-group-card, .gd-api-card, .card, .callout { background: var(--rtichoke-surface); border-color: var(--rtichoke-border) !important; border-radius: 0.9rem; box-shadow: var(--rtichoke-shadow); }
 .quarto-title-block { padding: 1.25rem 1.4rem; }
 
-/* Keep the integrated Examples section visually continuous with rtichoke blog. */
+/* The Examples area should feel exactly like the shared rtichoke blog shell. */
+.rtichoke-blog-shell #quarto-search,
+.rtichoke-blog-shell .gd-github-widget,
+.rtichoke-blog-shell .gd-version-badge,
+.rtichoke-blog-shell .gd-dark-mode-toggle,
+.rtichoke-blog-shell .gd-keyboard-nav,
+.rtichoke-blog-shell .navbar .quarto-navbar-tools { display: none !important; }
+.rtichoke-blog-shell .navbar-brand { font-family: "Fraunces", "Fraunces9pt-Light", serif; font-weight: 600; }
+.rtichoke-blog-shell .navbar-nav .nav-link { font-family: "Fraunces", "Fraunces9pt-Light", serif; font-weight: 600; }
+.rtichoke-blog-shell .quarto-title-block { background: transparent; border: 0; box-shadow: none; padding: 0; }
+.rtichoke-blog-shell .quarto-listing-filter,
+.rtichoke-blog-shell .quarto-listing .quarto-listing-filter,
+.rtichoke-blog-shell .quarto-listing .listing-actions,
+.rtichoke-blog-shell .quarto-listing .listing-search,
+.rtichoke-blog-shell .quarto-listing .listing-tools,
+.rtichoke-blog-shell .quarto-listing .listing-toolbar { display: none !important; }
+
 .quarto-listing { display: grid; gap: 1.5rem; }
-.quarto-listing .listing-item { background: var(--rtichoke-surface); border: 1px solid var(--rtichoke-border); border-radius: 18px; padding: 1.4rem 1.6rem; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.05); transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.quarto-listing .listing-item { background: #ffffff; border: 1px solid var(--rtichoke-border); border-radius: 18px; padding: 1.4rem 1.6rem; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.05); transition: transform 0.15s ease, box-shadow 0.15s ease; }
 .quarto-listing .listing-item:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(0, 0, 0, 0.08); }
 .listing-description { color: #4b3a32; margin-bottom: 0.75rem; }
 .listing-categories .listing-category, .quarto-category { background: var(--rtichoke-soft); color: var(--rtichoke-accent); border: 1px solid var(--rtichoke-border); padding: 0.25rem 0.55rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600; }
