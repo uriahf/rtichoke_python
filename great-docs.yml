@@ -8,6 +8,12 @@ site_url: https://uriahf.github.io/rtichoke_python/
 site:
   css: site.css
 
+sections:
+  - title: Examples
+    dir: examples
+    type: blog
+    navbar_after: User Guide
+
 source:
   enabled: true
   branch: main
