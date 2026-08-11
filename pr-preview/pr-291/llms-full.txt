@@ -552,54 +552,22 @@ Calibration visualizations for classification and time-to-event models.
 
 create_calibration_curve(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], calibration_type: str = 'discrete', size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
 
-Create a calibration curve.
+Creates Calibration Curve
 
-Parameters
-----------
-probs : dict[str, numpy.ndarray]
-    Predicted probabilities. When ``reals`` is a dictionary with matching keys,
-    each key is treated as an independent population and may have its own sample size.
-reals : numpy.ndarray or dict[str, numpy.ndarray]
-    Observed binary outcomes. Matching dictionary keys are paired population-by-population.
-calibration_type : str, default="discrete"
-    Calibration rendering type, either ``"discrete"`` or ``"smooth"``.
-size : int, default=600
-    Figure width and height in pixels.
-color_values : list[str]
-    Colors used for population or model traces.
+Args:
+    probs (Dict[str, List[float]]): _description_
+    reals (Dict[str, List[int]]): _description_
+    calibration_type (str, optional): _description_. Defaults to "discrete".
+    size (Optional[int], optional): _description_. Defaults to None.
+    color_values (List[str], optional): _description_. Defaults to None.
+    url_api (_type_, optional): _description_. Defaults to "http://localhost:4242/".
 
-Returns
--------
-plotly.graph_objs.Figure
-    Interactive calibration figure.
+Returns:
+    Figure: _description_
 
 create_calibration_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: List[float], heuristics_sets: List[Dict[str, str]], calibration_type: str = 'discrete', size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
 
-Create time-dependent calibration curves.
-
-Parameters
-----------
-probs : dict[str, numpy.ndarray]
-    Predicted probabilities. Matching dictionary keys identify populations.
-reals : numpy.ndarray or dict[str, numpy.ndarray]
-    Observed event indicators.
-times : numpy.ndarray or dict[str, numpy.ndarray]
-    Observed event or censoring times.
-fixed_time_horizons : list[float]
-    Time horizons to display.
-heuristics_sets : list[dict[str, str]]
-    Censoring and competing-risk heuristic combinations.
-calibration_type : str, default="discrete"
-    Calibration rendering type.
-size : int, default=600
-    Figure width and height in pixels.
-color_values : list[str]
-    Colors used for population or model traces.
-
-Returns
--------
-plotly.graph_objs.Figure
-    Interactive time-dependent calibration figure.
+Creates a time-dependent Calibration Curve with a slider for different time horizons.
 
 
 ## Utility
