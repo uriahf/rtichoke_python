@@ -1,0 +1,115 @@
+# Curve API Compatibility
+
+`rtichoke` intentionally exposes parallel function families for discrimination, calibration, and decision-curve analysis. Their interfaces are similar, but they are **not interchangeable in every edge case**.
+
+This page makes those differences explicit so that users -- and coding agents reading `llms-full.txt` -- can choose the right call without experimentally probing each function.
+
+> **Important: Calibration is the main exception**
+>
+> The current calibration implementation has stricter multi-population behavior than ROC, precision-recall, and decision curves. In particular, do not assume that an input pattern accepted by a discrimination curve is automatically accepted by a calibration curve.
+
+
+# Capability matrix
+
+| Function family | Multiple named populations | Unequal population sizes with `dict`/`dict` inputs | Time-dependent heuristic default | `fixed_time_horizons` |
+|----|----|----|----|----|
+| ROC | Supported | Supported | `adjusted` / `adjusted_as_negative` | Use floating-point values |
+| Precision-recall | Supported | Supported | `adjusted` / `adjusted_as_negative` | Use floating-point values |
+| Decision curve | Supported | Supported | `adjusted` / `adjusted_as_negative` | Use floating-point values |
+| Calibration | Supported when inputs satisfy calibration alignment requirements | **Currently restricted**; differently sized named populations can raise a length-mismatch error | **No default on [create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times)**; pass explicitly | Use floating-point values |
+
+The matrix describes the current public behavior. It does **not** claim that every asymmetry is a permanent design decision.
+
+
+# Calibration with named populations
+
+This symmetric example is supported:
+
+``` python
+import numpy as np
+import rtichoke as rk
+
+probs = {
+    "Train": np.array([0.10, 0.90, 0.20, 0.80, 0.30, 0.70]),
+    "Test": np.array([0.15, 0.85, 0.25, 0.75, 0.35, 0.65]),
+}
+reals = {
+    "Train": np.array([0, 1, 0, 1, 0, 1]),
+    "Test": np.array([0, 1, 0, 1, 0, 0]),
+}
+
+fig = rk.create_calibration_curve(probs=probs, reals=reals)
+```
+
+At present, differently sized named populations are not a drop-in equivalent:
+
+``` python
+probs = {
+    "Train": np.array([0.10, 0.90, 0.20, 0.80, 0.30, 0.70]),
+    "Test": np.array([0.15, 0.85, 0.25, 0.75]),
+}
+reals = {
+    "Train": np.array([0, 1, 0, 1, 0, 1]),
+    "Test": np.array([0, 1, 0, 0]),
+}
+
+# This input shape can raise a length-mismatch error for calibration.
+rk.create_calibration_curve(probs=probs, reals=reals)
+```
+
+If you need to compare calibration across populations of different sizes, create each calibration curve from its own aligned population rather than assuming the ROC/PR multi-population behavior applies to calibration. See [Common Errors & Fixes](common-errors.md) for the failure pattern.
+
+> **Note: Note**
+>
+> The unequal-population restriction is documented as **current behavior**, not as a statistical recommendation. It should be investigated before adding an escape hatch such as `strict=False` or otherwise changing calibration semantics.
+
+
+# Time-dependent calibration heuristics
+
+[create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times) differs from its ROC, precision-recall, and decision-curve siblings in two important ways:
+
+1.  `heuristics_sets` is currently required rather than defaulted.
+2.  The sibling default `censoring_heuristic="adjusted"` is not a safe value to copy blindly into calibration. In the current calibration path, that choice can remove every requested horizon and end in `No data remaining after applying heuristics and time horizons.`
+
+Pass the calibration heuristic explicitly. For the currently working exclusion-based path:
+
+``` python
+heuristics_sets = [
+    {
+        "censoring_heuristic": "excluded",
+        "competing_heuristic": "adjusted_as_negative",
+    }
+]
+```
+
+Then call:
+
+``` python
+fig = rk.create_calibration_curve_times(
+    probs=probs,
+    reals=reals,
+    times=times,
+    fixed_time_horizons=[3.0, 6.0, 9.0],
+    heuristics_sets=heuristics_sets,
+)
+```
+
+
+# Time horizons: prefer floats
+
+Use floating-point horizons such as `[3.0, 6.0, 9.0]`, not `[3, 6, 9]`. The current implementation can otherwise expose an internal Polars join-key datatype mismatch (`i64` versus `f64`) rather than a rtichoke-specific validation message.
+
+``` python
+# Prefer
+fixed_time_horizons = [3.0, 6.0, 9.0]
+
+# Avoid for now
+fixed_time_horizons = [3, 6, 9]
+```
+
+This is a usability limitation rather than a conceptual requirement; normalizing numeric horizons internally is a good candidate for a small future code fix.
+
+
+# Related functions
+
+When moving between curve families, compare the API reference for [create_calibration_curve()](../reference/create_calibration_curve.md#rtichoke.create_calibration_curve), [create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times), [create_roc_curve_times()](../reference/create_roc_curve_times.md#rtichoke.create_roc_curve_times), [create_precision_recall_curve_times()](../reference/create_precision_recall_curve_times.md#rtichoke.create_precision_recall_curve_times), and [create_decision_curve_times()](../reference/create_decision_curve_times.md#rtichoke.create_decision_curve_times) rather than assuming their defaults and accepted input shapes are identical.
