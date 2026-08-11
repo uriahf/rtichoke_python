@@ -36,7 +36,7 @@ The true event statuses (e.g., 0=censored, 1=event, 2=competing).
 The event or censoring times.
 
 `fixed_time_horizons: list[float]`  
-A list of time points for performance evaluation.
+A list of numeric time points for performance evaluation. Integer inputs are accepted and normalized to floats.
 
 `heuristics_sets: list[Dict] = [{``"censoring_heuristic": `<span class="st">`"adjusted"``, ``"competing_heuristic"``: ``"adjusted_as_negative"``}]`\
 </span>  
