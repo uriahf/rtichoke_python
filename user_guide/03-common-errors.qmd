@@ -24,19 +24,21 @@ Check that the keys match and that each pair has equal length. Unequal Train/Tes
 
 See [Curve API Compatibility](curve-api-compatibility.html) for the family-by-family comparison.
 
-## `No data remaining after applying heuristics and time horizons.`
+## `Unsupported calibration heuristics`
 
-### Where this commonly appears
+### Where this appears
 
 `create_calibration_curve_times()`.
 
 ### Why it happens
 
-One current failure mode is passing the heuristic combination used as the default by ROC/PR/decision time-dependent functions. In calibration, `censoring_heuristic="adjusted"` can skip every horizon, leaving no data to plot. The final exception does not currently explain which heuristic caused the removal.
+Calibration does not currently implement `censoring_heuristic="adjusted"` or
+`competing_heuristic="adjusted_as_censored"`. These inputs are rejected
+before curve construction rather than silently skipping every requested horizon.
 
 ### Fix
 
-Pass the calibration heuristic explicitly. For the currently working exclusion-based path:
+Pass a supported calibration heuristic explicitly. For the exclusion-based path:
 
 ```python
 heuristics_sets = [
@@ -47,31 +49,30 @@ heuristics_sets = [
 ]
 ```
 
-Do not infer calibration defaults from `create_roc_curve_times()`, `create_precision_recall_curve_times()`, or `create_decision_curve_times()`.
+Do not infer calibration defaults from `create_roc_curve_times()`,
+`create_precision_recall_curve_times()`, or `create_decision_curve_times()`.
 
-## Polars join-key datatype mismatch: `i64` versus `f64`
+## `No data remaining after applying heuristics and time horizons.`
 
-### Where this commonly appears
+Unsupported calibration heuristics now raise the targeted error above. If this
+message still appears, the supported heuristic and horizon combination removed
+all observations. Check the observed times, event values, requested horizons,
+and exclusion rules.
 
-Time-dependent functions when integer values are supplied in `fixed_time_horizons`, for example:
+## Integer and floating-point time horizons
+
+`fixed_time_horizons` accepts integer and floating-point numeric values.
+Integer horizons are normalized to floats internally:
 
 ```python
 fixed_time_horizons=[3, 6, 9]
 ```
 
-### Why it happens
-
-The current internal time-horizon data can be floating point, while integer literals create integer-typed join keys. The resulting Polars error leaks an implementation detail instead of explaining the rtichoke input requirement.
-
-### Fix
-
-Use floating-point horizons:
+is equivalent to:
 
 ```python
 fixed_time_horizons=[3.0, 6.0, 9.0]
 ```
-
-Internal numeric normalization is a candidate for a future defensive code fix.
 
 ## Why is `heuristics_sets` missing?
 
@@ -90,4 +91,4 @@ heuristics_sets = [
 
 ## Still stuck?
 
-Check [Curve API Compatibility](curve-api-compatibility.html) first. The most important remaining differences are heuristic defaults and time-horizon handling, not unequal population sizes.
+Check [Curve API Compatibility](curve-api-compatibility.html) first. The most important remaining difference is calibration's required heuristic selection, not unequal population sizes or integer horizons.
