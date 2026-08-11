@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>create_roc_curve() – rtichoke | rtichoke</title>
+<title>Naming Conventions – rtichoke | rtichoke</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -26,41 +26,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -71,6 +36,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
+<link href="../index.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -141,47 +107,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <link rel="stylesheet" href="../site.css">
-  <link rel="alternate" type="text/markdown" href="create_roc_curve.md">
-  <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/reference/create_roc_curve.html">
-  <meta name="description" content="Creates a Receiver Operating Characteristic (ROC) curve.">
-  <script type="application/ld+json">
-[
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    "name": "rtichoke",
-    "description": "interactive visualizations for performance of predictive models",
-    "license": "https://opensource.org/licenses/MIT",
-    "url": "https://uriahf.github.io/rtichoke_python",
-    "documentation": "https://uriahf.github.io/rtichoke_python",
-    "programmingLanguage": {
-      "@type": "ComputerLanguage",
-      "name": "Python"
-    }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "create_roc_curve - rtichoke",
-    "isPartOf": {
-      "@type": "WebSite",
-      "name": "rtichoke"
-    },
-    "url": "https://uriahf.github.io/rtichoke_python/reference/create_roc_curve.html"
-  }
-]
-</script>
+  <link rel="alternate" type="text/markdown" href="naming-conventions.md">
+  <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/user-guide/naming-conventions.html">
+  <meta name="description" content="For example, a direct ROC workflow uses create_roc_curve(), while a workflow that first prepares reusable performance data can pass those results to...">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="create_roc_curve() – rtichoke | rtichoke">
-  <meta property="og:description" content="Creates a Receiver Operating Characteristic (ROC) curve.">
-  <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/reference/create_roc_curve.html">
+  <meta property="og:title" content="Naming Conventions – rtichoke | rtichoke">
+  <meta property="og:description" content="For example, a direct ROC workflow uses create_roc_curve(), while a workflow that first prepares reusable performance data can pass those results to...">
+  <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/user-guide/naming-conventions.html">
   <meta property="og:site_name" content="rtichoke">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="create_roc_curve() – rtichoke | rtichoke">
-  <meta name="twitter:description" content="Creates a Receiver Operating Characteristic (ROC) curve.">
+  <meta name="twitter:title" content="Naming Conventions – rtichoke | rtichoke">
+  <meta name="twitter:description" content="For example, a direct ROC workflow uses create_roc_curve(), while a workflow that first prepares reusable performance data can pass those results to...">
 </head>
 
-<body class="gd-ref-sidebar nav-sidebar floating nav-fixed doc-api-page quarto-light">
+<body class="nav-sidebar floating nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -199,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="../reference/index.html" aria-current="page"> 
+    <a class="nav-link" href="../reference/index.html"> 
 <span class="menu-text">Reference</span></a>
   </li>  
 </ul>
@@ -220,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <h1 class="quarto-secondary-nav-title no-breadcrumbs gd-ref-title"><span class="gd-ref-title-prefix">API</span><span class="gd-ref-title-sep">/</span><span class="gd-ref-title-name">create_roc_curve()</span></h1>
+        <h1 class="quarto-secondary-nav-title no-breadcrumbs">Naming Conventions</h1>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -232,166 +171,22 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
-        <li class="sidebar-item">
-  <div class="sidebar-item-container" style="padding-bottom: 0.5rem; padding-top: 0.25rem;"> 
-  <a href="../reference/index.html" style="font-family: &quot;Open Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;" class="sidebar-item-text sidebar-link">
- <span class="menu-text">API Index</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Performance Data</span></a>
+ <span class="menu-text">Getting Started</span></a>
 </div>
       <ul id="quarto-sidebar-section-1" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_performance_data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">prepare_performance_data</span></a>
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Getting Started</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_binned_classification_data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">prepare_binned_classification_data</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_performance_data_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">prepare_performance_data_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_binned_classification_data_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">prepare_binned_classification_data_times</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Discrimination</span></a>
-</div>
-      <ul id="quarto-sidebar-section-2" class="list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_roc_curve.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">create_roc_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_roc_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_roc_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_roc_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_roc_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_precision_recall_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_precision_recall_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_precision_recall_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_precision_recall_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_precision_recall_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_precision_recall_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_gains_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_gains_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_gains_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_gains_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_gains_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_gains_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_lift_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_lift_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_lift_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_lift_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_lift_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_lift_curve</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Calibration</span></a>
-</div>
-      <ul id="quarto-sidebar-section-3" class="list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_calibration_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_calibration_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_calibration_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_calibration_curve_times</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Utility</span></a>
-</div>
-      <ul id="quarto-sidebar-section-4" class="list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_decision_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_decision_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_decision_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_decision_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_decision_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_decision_curve</span></a>
+  <a href="../user-guide/naming-conventions.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Naming Conventions</span></a>
   </div>
 </li>
       </ul>
@@ -403,11 +198,13 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
-    <h3 id="toc-title">On this page</h3>
+    <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#parameters" id="toc-parameters" class="nav-link active" data-scroll-target="#parameters">Parameters</a></li>
-  <li><a href="#returns" id="toc-returns" class="nav-link" data-scroll-target="#returns">Returns</a></li>
+  <li><a href="#function-families" id="toc-function-families" class="nav-link active" data-scroll-target="#function-families">Function families</a></li>
+  <li><a href="#curve-families" id="toc-curve-families" class="nav-link" data-scroll-target="#curve-families">Curve families</a></li>
+  <li><a href="#time-to-event-variants" id="toc-time-to-event-variants" class="nav-link" data-scroll-target="#time-to-event-variants">Time-to-event variants</a></li>
+  <li><a href="#a-useful-mental-model" id="toc-a-useful-mental-model" class="nav-link" data-scroll-target="#a-useful-mental-model">A useful mental model</a></li>
   </ul>
 </nav>
     </div>
@@ -416,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h2 class="title" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 1.25rem;"><span class="doc-object-name doc-function doc-label doc-label-function">create_roc_curve()</span></h2>
+<h1 class="title d-none d-lg-block">Naming Conventions</h1>
 </div>
 
 
@@ -433,75 +230,108 @@ document.addEventListener('DOMContentLoaded', () => {
 </header>
 
 
-<div class="doc-subject">
-<p>Creates a Receiver Operating Characteristic (ROC) curve.</p>
-</div>
-<div class="doc-usage-source">
-<p>Usage</p>
-<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/discrimination/roc.py#L16-L88" target="_blank" rel="noopener">Source</a></p>
-</div>
-<div class="doc-signature doc-Kind.FUNCTION">
-<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">create_roc_curve</span>(</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">probs</span>,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">reals</span>,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">by</span><span class="op">=</span><span class="fl">0.01</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="va">stratified_by</span><span class="op">=</span>[<span class="st">&quot;probability_threshold&quot;</span>],</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">size</span><span class="op">=</span><span class="dv">600</span>,</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="va">color_values</span><span class="op">=</span>[<span class="st">&quot;#1b9e77&quot;</span>, <span class="st">&quot;#d95f02&quot;</span>, <span class="st">&quot;#7570b3&quot;</span>, <span class="st">&quot;#e7298a&quot;</span>, <span class="st">&quot;#07004D&quot;</span>, <span class="st">&quot;#E6AB02&quot;</span>, <span class="st">&quot;#FE5F55&quot;</span>, <span class="st">&quot;#54494B&quot;</span>, <span class="st">&quot;#006E90&quot;</span>, <span class="st">&quot;#BC96E6&quot;</span>, <span class="st">&quot;#52050A&quot;</span>, <span class="st">&quot;#1F271B&quot;</span>, <span class="st">&quot;#BE7C4D&quot;</span>, <span class="st">&quot;#63768D&quot;</span>, <span class="st">&quot;#08A045&quot;</span>, <span class="st">&quot;#320A28&quot;</span>, <span class="st">&quot;#82FF9E&quot;</span>, <span class="st">&quot;#2176FF&quot;</span>, <span class="st">&quot;#D1603D&quot;</span>, <span class="st">&quot;#585123&quot;</span>]</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
-</div>
-<div class="doc-text">
-<p>This function generates an ROC curve, which visualizes the diagnostic ability of a binary classifier system as its discrimination threshold is varied. The curve plots the True Positive Rate (TPR) against the False Positive Rate (FPR) at various threshold settings.</p>
-<p>It first calculates the performance data using the provided probabilities and true labels, and then generates the plot.</p>
-</div>
-<section id="parameters" class="level2 doc-parameters">
-<h2 class="doc-parameters">Parameters</h2>
-<div class="doc-definition-items">
-<dl>
-<dt><code><span class="doc-parameter-name">probs</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Dict[str, np.ndarray]</span></code></dt>
-<dd>
-<p>A dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">reals</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Union[np.ndarray, Dict[str, np.ndarray]]</span></code></dt>
-<dd>
-<p>The true binary labels (0 or 1). Can be a single array for all probabilities or a dictionary mapping names to label arrays.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">by</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">float</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="fl">0.01</span></span></code></dt>
-<dd>
-<p>The step size for the probability thresholds, controlling the curve’s granularity. Defaults to 0.01.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">stratified_by</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Sequence[str]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[<span class="st">"probability_threshold"</span>]<br></span></code></dt>
-<dd>
-<p>Variables for stratification. Defaults to <code>["probability_threshold"]</code>.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">size</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">int</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="dv">600</span></span></code></dt>
-<dd>
-<p>The width and height of the plot in pixels. Defaults to 600.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">color_values</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">List[str]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#1b9e77"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#d95f02"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#7570b3"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#e7298a"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#07004D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#E6AB02"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#FE5F55"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#54494B"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#006E90"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#BC96E6"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#52050A"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#1F271B"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#BE7C4D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#63768D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#08A045"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#320A28"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#82FF9E"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#2176FF"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#D1603D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#585123"</span>,<br>]<br></span></code></dt>
-<dd>
-A list of hex color strings for the plot lines. A default palette is used if not provided.
-</dd>
-</dl>
-</div>
+<p><code>rtichoke</code> uses consistent function names so that the API becomes easier to predict once you know the main families.</p>
+<section id="function-families" class="level1">
+<h1>Function families</h1>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Prefix</th>
+<th>Purpose</th>
+<th>Typical input</th>
+<th>Typical output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>prepare_*</code></td>
+<td>Prepare reusable performance data</td>
+<td>predictions and observed outcomes</td>
+<td>performance data</td>
+</tr>
+<tr class="even">
+<td><code>create_*</code></td>
+<td>Prepare data and create a visualization in one call</td>
+<td>predictions and observed outcomes</td>
+<td>interactive figure</td>
+</tr>
+<tr class="odd">
+<td><code>plot_*</code></td>
+<td>Visualize data that has already been prepared</td>
+<td>performance data</td>
+<td>interactive figure</td>
+</tr>
+</tbody>
+</table>
+<p>For example, a direct ROC workflow uses <a href="../reference/create_roc_curve.html#rtichoke.create_roc_curve" class="gdls-link gdls-code">create_roc_curve()</a>, while a workflow that first prepares reusable performance data can pass those results to <a href="../reference/plot_roc_curve.html#rtichoke.plot_roc_curve" class="gdls-link gdls-code">plot_roc_curve()</a>.</p>
 </section>
-<section id="returns" class="level2 doc-returns">
-<h2 class="doc-returns">Returns</h2>
-<div class="doc-definition-items">
-<dl>
-<dt><code> <span class="doc-parameter-annotation">Figure</span></code></dt>
-<dd>
-A Plotly <code>Figure</code> object representing the ROC curve.
-</dd>
-</dl>
-</div>
+<section id="curve-families" class="level1">
+<h1>Curve families</h1>
+<p>The same naming pattern repeats across the main performance views:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Performance view</th>
+<th>Direct visualization</th>
+<th>Plot prepared data</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ROC</td>
+<td><a href="../reference/create_roc_curve.html#rtichoke.create_roc_curve" class="gdls-link gdls-code">create_roc_curve()</a></td>
+<td><a href="../reference/plot_roc_curve.html#rtichoke.plot_roc_curve" class="gdls-link gdls-code">plot_roc_curve()</a></td>
+</tr>
+<tr class="even">
+<td>Precision–Recall</td>
+<td><a href="../reference/create_precision_recall_curve.html#rtichoke.create_precision_recall_curve" class="gdls-link gdls-code">create_precision_recall_curve()</a></td>
+<td><a href="../reference/plot_precision_recall_curve.html#rtichoke.plot_precision_recall_curve" class="gdls-link gdls-code">plot_precision_recall_curve()</a></td>
+</tr>
+<tr class="odd">
+<td>Gains</td>
+<td><a href="../reference/create_gains_curve.html#rtichoke.create_gains_curve" class="gdls-link gdls-code">create_gains_curve()</a></td>
+<td><a href="../reference/plot_gains_curve.html#rtichoke.plot_gains_curve" class="gdls-link gdls-code">plot_gains_curve()</a></td>
+</tr>
+<tr class="even">
+<td>Lift</td>
+<td><a href="../reference/create_lift_curve.html#rtichoke.create_lift_curve" class="gdls-link gdls-code">create_lift_curve()</a></td>
+<td><a href="../reference/plot_lift_curve.html#rtichoke.plot_lift_curve" class="gdls-link gdls-code">plot_lift_curve()</a></td>
+</tr>
+<tr class="odd">
+<td>Decision curve</td>
+<td><a href="../reference/create_decision_curve.html#rtichoke.create_decision_curve" class="gdls-link gdls-code">create_decision_curve()</a></td>
+<td><a href="../reference/plot_decision_curve.html#rtichoke.plot_decision_curve" class="gdls-link gdls-code">plot_decision_curve()</a></td>
+</tr>
+</tbody>
+</table>
+<p>Calibration currently uses the direct <a href="../reference/create_calibration_curve.html#rtichoke.create_calibration_curve" class="gdls-link gdls-code">create_calibration_curve()</a> interface.</p>
+</section>
+<section id="time-to-event-variants" class="level1">
+<h1>Time-to-event variants</h1>
+<p>Functions ending in <code>_times</code> extend the corresponding workflow to time-to-event outcomes. For example:</p>
+<ul>
+<li><a href="../reference/create_roc_curve.html#rtichoke.create_roc_curve" class="gdls-link gdls-code">create_roc_curve()</a> → binary-outcome ROC curve</li>
+<li><a href="../reference/create_roc_curve_times.html#rtichoke.create_roc_curve_times" class="gdls-link gdls-code">create_roc_curve_times()</a> → time-to-event ROC curve</li>
+<li><a href="../reference/create_calibration_curve.html#rtichoke.create_calibration_curve" class="gdls-link gdls-code">create_calibration_curve()</a> → binary-outcome calibration curve</li>
+<li><a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> → time-to-event calibration curve</li>
+<li><a href="../reference/create_decision_curve.html#rtichoke.create_decision_curve" class="gdls-link gdls-code">create_decision_curve()</a> → binary-outcome decision curve</li>
+<li><a href="../reference/create_decision_curve_times.html#rtichoke.create_decision_curve_times" class="gdls-link gdls-code">create_decision_curve_times()</a> → time-to-event decision curve</li>
+</ul>
+<p>The same convention is used for the performance-data preparation functions, such as <a href="../reference/prepare_performance_data.html#rtichoke.prepare_performance_data" class="gdls-link gdls-code">prepare_performance_data()</a> and <a href="../reference/prepare_performance_data_times.html#rtichoke.prepare_performance_data_times" class="gdls-link gdls-code">prepare_performance_data_times()</a>.</p>
+</section>
+<section id="a-useful-mental-model" class="level1">
+<h1>A useful mental model</h1>
+<p>Think of the API as a small grammar:</p>
+<pre class="text"><code>prepare + performance data        -&gt; reusable data
+create  + metric/curve            -&gt; data to figure
+plot    + metric/curve            -&gt; prepared data to figure
+*_times                           -&gt; time-to-event version</code></pre>
+<p>This convention is intended to make related functions discoverable without requiring users to memorize every exported name.</p>
 
 
 </section>
 
-</main>
-<hr style="padding: 0; margin: 0;">
- <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
@@ -840,6 +670,15 @@ A Plotly <code>Figure</code> object representing the ROC curve.
     }
   });
   </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../index.html" class="pagination-link" aria-label="Getting Started">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Getting Started</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">

@@ -2,10 +2,20 @@
 
 `rtichoke` is a Python library for interactive visualization of predictive-model performance. It supports discrimination, calibration, utility, and time-to-event evaluation workflows.
 
+For some reproducible examples please visit [rtichoke blog](https://rtichoke-blog.netlify.app/)!
+
 
 # Installation
 
-Install `rtichoke` from PyPI:
+If you use [uv](https://docs.astral.sh/uv/) to manage your Python project, add `rtichoke` with:
+
+``` bash
+uv add rtichoke
+```
+
+This adds `rtichoke` to your project dependencies and updates the uv lockfile.
+
+If you are not using uv, install `rtichoke` from PyPI with pip:
 
 ``` bash
 pip install rtichoke
@@ -92,7 +102,7 @@ fig = rk.create_calibration_curve(
 fig.show()
 ```
 
-From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants.
+From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The [Naming Conventions](user-guide/naming-conventions.html) guide explains how the exported function families fit together.
 
 
 ### Links
