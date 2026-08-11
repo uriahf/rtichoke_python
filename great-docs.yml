@@ -67,7 +67,7 @@ reference:
       - plot_lift_curve
 
   - title: Calibration
-    desc: Calibration visualizations for classification and time-to-event models. See the Curve API Compatibility guide for current multi-population and time-heuristic constraints.
+    desc: Calibration visualizations for classification and time-to-event models. See Curve API Compatibility for time-dependent heuristic and horizon differences.
     contents:
       - create_calibration_curve
       - create_calibration_curve_times
