@@ -12,8 +12,8 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: docs-${{ github.ref }}
-  cancel-in-progress: true
+  group: documentation-deployments
+  cancel-in-progress: false
 
 jobs:
   build-and-publish:
