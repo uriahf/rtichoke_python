@@ -5,6 +5,30 @@ user_guide: user_guide
 homepage: user_guide
 site_url: https://uriahf.github.io/rtichoke_python/
 
+include_in_header:
+  - text: |
+      <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const nav = document.querySelector('nav.navbar ul.navbar-nav.me-auto');
+        if (!nav || nav.querySelector('[data-rtichoke-blog-link]')) return;
+
+        const item = document.createElement('li');
+        item.className = 'nav-item';
+        item.setAttribute('data-rtichoke-blog-link', '');
+
+        const link = document.createElement('a');
+        link.className = 'nav-link';
+        link.href = 'https://rtichoke-blog.netlify.app/';
+        link.textContent = 'Blog ↗';
+
+        item.appendChild(link);
+        const reference = [...nav.children].find((el) =>
+          el.textContent.trim().toLowerCase().includes('reference')
+        );
+        nav.insertBefore(item, reference || null);
+      });
+      </script>
+
 site:
   css: site.css
 
