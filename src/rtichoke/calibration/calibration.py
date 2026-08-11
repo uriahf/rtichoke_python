@@ -470,17 +470,39 @@ def _make_deciles_dat_binary(
     n_bins: int = 10,
 ) -> pl.DataFrame:
     if isinstance(reals, dict):
-        reference_groups_keys = list(reals.keys())
-        y_list = [
-            np.asarray(reals[str(reference_group)]).ravel()
-            for reference_group in reference_groups_keys
-        ]
-        lengths = np.array([len(y) for y in y_list], dtype=np.int64)
-        offsets = np.concatenate([np.array([0], dtype=np.int64), np.cumsum(lengths)])
-        n_total = int(offsets[-1])
-
         frames: list[pl.DataFrame] = []
-        for model, p_all in probs.items():
+
+        if probs.keys() == reals.keys():
+            for population in reals:
+                p = np.asarray(probs[population]).ravel()
+                y = np.asarray(reals[population]).ravel()
+                if p.shape[0] != y.shape[0]:
+                    raise ValueError(
+                        f"Length mismatch for population '{population}': "
+                        f"probs has length {p.shape[0]} but reals has length {y.shape[0]}."
+                    )
+                frames.append(
+                    pl.DataFrame(
+                        {
+                            "reference_group": population,
+                            "model": population,
+                            "prob": p.astype(float, copy=False),
+                            "real": y.astype(float, copy=False),
+                        }
+                    )
+                )
+        elif len(probs) == 1:
+            reference_groups_keys = list(reals.keys())
+            y_list = [
+                np.asarray(reals[str(reference_group)]).ravel()
+                for reference_group in reference_groups_keys
+            ]
+            lengths = np.array([len(y) for y in y_list], dtype=np.int64)
+            offsets = np.concatenate(
+                [np.array([0], dtype=np.int64), np.cumsum(lengths)]
+            )
+            n_total = int(offsets[-1])
+            model, p_all = next(iter(probs.items()))
             p_all = np.asarray(p_all).ravel()
             if p_all.shape[0] != n_total:
                 raise ValueError(
@@ -491,7 +513,6 @@ def _make_deciles_dat_binary(
             for i, pop in enumerate(reference_groups_keys):
                 start = int(offsets[i])
                 end = int(offsets[i + 1])
-
                 frames.append(
                     pl.DataFrame(
                         {
@@ -502,6 +523,10 @@ def _make_deciles_dat_binary(
                         }
                     )
                 )
+        else:
+            raise ValueError(
+                "When probs and reals are dictionaries, their population keys must match."
+            )
 
         df = pl.concat(frames, how="vertical")
 
