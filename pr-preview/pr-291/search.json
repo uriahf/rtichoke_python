@@ -1,0 +1,343 @@
+[
+  {
+    "objectID": "user-guide/naming-conventions.html",
+    "href": "user-guide/naming-conventions.html",
+    "title": "Naming Conventions",
+    "section": "",
+    "text": "rtichoke uses consistent function names so that the API becomes easier to predict once you know the main families.\n\nFunction families\n\n\n\n\n\n\n\n\n\nPrefix\nPurpose\nTypical input\nTypical output\n\n\n\n\nprepare_*\nPrepare reusable performance data\npredictions and observed outcomes\nperformance data\n\n\ncreate_*\nPrepare data and create a visualization in one call\npredictions and observed outcomes\ninteractive figure\n\n\nplot_*\nVisualize data that has already been prepared\nperformance data\ninteractive figure\n\n\n\nFor example, a direct ROC workflow uses create_roc_curve(), while a workflow that first prepares reusable performance data can pass those results to plot_roc_curve().\n\n\nCurve families\nThe same naming pattern repeats across the main performance views:\n\n\n\n\n\n\n\n\nPerformance view\nDirect visualization\nPlot prepared data\n\n\n\n\nROC\ncreate_roc_curve()\nplot_roc_curve()\n\n\nPrecision–Recall\ncreate_precision_recall_curve()\nplot_precision_recall_curve()\n\n\nGains\ncreate_gains_curve()\nplot_gains_curve()\n\n\nLift\ncreate_lift_curve()\nplot_lift_curve()\n\n\nDecision curve\ncreate_decision_curve()\nplot_decision_curve()\n\n\n\nCalibration currently uses the direct create_calibration_curve() interface.\n\n\nTime-to-event variants\nFunctions ending in _times extend the corresponding workflow to time-to-event outcomes. For example:\n\ncreate_roc_curve() → binary-outcome ROC curve\ncreate_roc_curve_times() → time-to-event ROC curve\ncreate_calibration_curve() → binary-outcome calibration curve\ncreate_calibration_curve_times() → time-to-event calibration curve\ncreate_decision_curve() → binary-outcome decision curve\ncreate_decision_curve_times() → time-to-event decision curve\n\nThe same convention is used for the performance-data preparation functions, such as prepare_performance_data() and prepare_performance_data_times().\n\n\nA useful mental model\nThink of the API as a small grammar:\nprepare + performance data        -&gt; reusable data\ncreate  + metric/curve            -&gt; data to figure\nplot    + metric/curve            -&gt; prepared data to figure\n*_times                           -&gt; time-to-event version\nThis convention is intended to make related functions discoverable without requiring users to memorize every exported name.",
+    "crumbs": [
+      "Getting Started",
+      "Naming Conventions"
+    ]
+  },
+  {
+    "objectID": "reference/prepare_performance_data_times.html",
+    "href": "reference/prepare_performance_data_times.html",
+    "title": "prepare_performance_data_times()",
+    "section": "",
+    "text": "Prepare performance data for models with time-to-event outcomes.\n\n\nUsage\nSource\n\n\nprepare_performance_data_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    stratified_by=(\"probability_threshold\",),\n    by=0.01\n)\n\n\nThis function calculates a comprehensive set of performance metrics for models predicting time-to-event outcomes. It handles censored data and competing events by applying specified heuristics at different time horizons. The function first bins the data using prepare_binned_classification_data_times and then computes cumulative, Aalen-Johansen-based performance metrics.\nThe resulting dataframe is the primary input for time-dependent plotting functions.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names (str) to their predicted probabilities of an event occurring by a given time.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event statuses. Can be a single array or a dictionary. Labels should be integers indicating the outcome (e.g., 0=censored, 1=event of interest, 2=competing event).\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe event or censoring times corresponding to the reals. Can be a single array or a dictionary.\n\nfixed_time_horizons: list[float]\n\nA list of time points at which to evaluate the model’s performance.\n\nheuristics_sets: list[Dict] = [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n\nA list of dictionaries, each specifying how to handle censored data and competing events. The default is [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}].\n\nstratified_by: Sequence[str] = (\"probability_threshold\",)\n\nVariables by which to stratify the analysis. Defaults to (\"probability_threshold\",).\n\nby: float = 0.01\n\nThe step size for probability thresholds. Defaults to 0.01.\n\n\n\n\n\nReturns\n\n\n pl.DataFrame\n\nA Polars DataFrame with performance metrics computed across probability thresholds and time horizons. It includes columns for cutoffs, time points, heuristics, and performance measures.",
+    "crumbs": [
+      "Reference",
+      "Performance Data",
+      "prepare_performance_data_times"
+    ]
+  },
+  {
+    "objectID": "reference/prepare_binned_classification_data_times.html",
+    "href": "reference/prepare_binned_classification_data_times.html",
+    "title": "prepare_binned_classification_data_times()",
+    "section": "",
+    "text": "Prepare binned, time-dependent classification data.\n\n\nUsage\nSource\n\n\nprepare_binned_classification_data_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    stratified_by=(\"probability_threshold\",),\n    by=0.01,\n    risk_set_scope=[\"pooled_by_cutoff\", \"within_stratum\"]\n)\n\n\nThis function constructs the foundational binned data needed for time-to-event performance analysis. It bins predictions by probability thresholds, applies censoring and competing event heuristics, and stratifies the data across specified time horizons. The output is a detailed breakdown of outcomes within each bin, which can be used for calibration or passed to prepare_performance_data_times for full performance metric calculation.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names (str) to their predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event statuses (e.g., 0=censored, 1=event, 2=competing).\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe event or censoring times.\n\nfixed_time_horizons: list[float]\n\nA list of time points for performance evaluation.\n\nheuristics_sets: list[Dict] = [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n\nSpecifies how to handle censored data and competing events.\n\nstratified_by: Sequence[str] = (\"probability_threshold\",)\n\nVariables for stratification. Defaults to (\"probability_threshold\",).\n\nby: float = 0.01\n\nThe step size for probability thresholds. Defaults to 0.01.\n\nrisk_set_scope: Sequence[str] = [\"pooled_by_cutoff\", \"within_stratum\"]\n\nDefines the scope for risk set calculations. Defaults to [\"pooled_by_cutoff\", \"within_stratum\"].\n\n\n\n\n\nReturns\n\n\n pl.DataFrame\n\nA Polars DataFrame with binned, time-dependent data. Each row represents a unique combination of dataset, bin, time horizon, heuristic, and other strata.",
+    "crumbs": [
+      "Reference",
+      "Performance Data",
+      "prepare_binned_classification_data_times"
+    ]
+  },
+  {
+    "objectID": "reference/plot_roc_curve.html",
+    "href": "reference/plot_roc_curve.html",
+    "title": "plot_roc_curve()",
+    "section": "",
+    "text": "Plots an ROC curve from pre-computed performance data.\n\n\nUsage\nSource\n\n\nplot_roc_curve(\n    performance_data, stratified_by=[\"probability_threshold\"], size=600\n)\n\n\nThis function is useful when you have already computed the performance metrics (TPR, FPR, etc.) and want to generate an ROC plot directly from that data.\n\n\nParameters\n\n\nperformance_data: pl.DataFrame\n\nA Polars DataFrame containing the necessary performance metrics. It must include columns for the true positive rate (tpr) and false positive rate (fpr), along with any stratification variables.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the ROC curve.",
+    "crumbs": [
+      "Reference",
+      "Discrimination",
+      "plot_roc_curve"
+    ]
+  },
+  {
+    "objectID": "reference/plot_lift_curve.html",
+    "href": "reference/plot_lift_curve.html",
+    "title": "plot_lift_curve()",
+    "section": "",
+    "text": "Plots a Lift curve from pre-computed performance data.\n\n\nUsage\nSource\n\n\nplot_lift_curve(\n    performance_data, stratified_by=[\"probability_threshold\"], size=600\n)\n\n\nThis function is useful for plotting a Lift curve directly from a DataFrame that already contains the necessary performance metrics.\n\n\nParameters\n\n\nperformance_data: pl.DataFrame\n\nA Polars DataFrame with performance metrics. It must include columns for the lift values and the percentage of the population targeted, along with any stratification variables.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the Lift curve.",
+    "crumbs": [
+      "Reference",
+      "Discrimination",
+      "plot_lift_curve"
+    ]
+  },
+  {
+    "objectID": "reference/plot_decision_curve.html",
+    "href": "reference/plot_decision_curve.html",
+    "title": "plot_decision_curve()",
+    "section": "",
+    "text": "Plots a Decision Curve from pre-computed performance data.\n\n\nUsage\nSource\n\n\nplot_decision_curve(\n    performance_data,\n    decision_type=\"conventional\",\n    min_p_threshold=0,\n    max_p_threshold=1,\n    stratified_by=[\"probability_threshold\"],\n    size=600\n)\n\n\nThis function is useful for plotting a Decision Curve directly from a DataFrame that already contains the necessary performance metrics.\n\n\nParameters\n\n\nperformance_data: pl.DataFrame\n\nA Polars DataFrame with performance metrics, including net benefit and probability thresholds.\n\ndecision_type: str = \"conventional\"\n\nType of decision curve to plot. Defaults to \"conventional\".\n\nmin_p_threshold: float = 0\n\nThe minimum probability threshold to plot. Defaults to 0.\n\nmax_p_threshold: float = 1\n\nThe maximum probability threshold to plot. Defaults to 1.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the Decision Curve.",
+    "crumbs": [
+      "Reference",
+      "Utility",
+      "plot_decision_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_roc_curve_times.html",
+    "href": "reference/create_roc_curve_times.html",
+    "title": "create_roc_curve_times()",
+    "section": "",
+    "text": "Creates a time-dependent Receiver Operating Characteristic (ROC) curve.\n\n\nUsage\nSource\n\n\ncreate_roc_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"]\n)\n\n\nThis function generates an ROC curve for time-to-event models. It evaluates the model’s performance at specified time horizons, handling censored data and competing risks according to the chosen heuristics.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event statuses (e.g., 0=censored, 1=event, 2=competing).\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe event or censoring times.\n\nfixed_time_horizons: list[float]\n\nA list of time points for performance evaluation.\n\nheuristics_sets: list[Dict] = [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n\nSpecifies how to handle censored data and competing events.\n\nby: float = 0.01\n\nThe step size for probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the time-dependent ROC curve.",
+    "crumbs": [
+      "Reference",
+      "Discrimination",
+      "create_roc_curve_times"
+    ]
+  },
+  {
+    "objectID": "reference/create_precision_recall_curve_times.html",
+    "href": "reference/create_precision_recall_curve_times.html",
+    "title": "create_precision_recall_curve_times()",
+    "section": "",
+    "text": "Creates a time-dependent Precision-Recall curve.\n\n\nUsage\nSource\n\n\ncreate_precision_recall_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"]\n)\n\n\nGenerates a Precision-Recall curve for time-to-event models, evaluating performance at specified time horizons. It handles censored data and competing risks based on the provided heuristics.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event statuses.\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe event or censoring times.\n\nfixed_time_horizons: list[float]\n\nA list of time points for performance evaluation.\n\nheuristics_sets: list[Dict] = [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n\nSpecifies how to handle censored data and competing events.\n\nby: float = 0.01\n\nThe step size for probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object for the time-dependent Precision-Recall curve.",
+    "crumbs": [
+      "Reference",
+      "Discrimination",
+      "create_precision_recall_curve_times"
+    ]
+  },
+  {
+    "objectID": "reference/create_lift_curve_times.html",
+    "href": "reference/create_lift_curve_times.html",
+    "title": "create_lift_curve_times()",
+    "section": "",
+    "text": "Creates a time-dependent Lift curve.\n\n\nUsage\nSource\n\n\ncreate_lift_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"]\n)\n\n\nGenerates a Lift curve for time-to-event models, which is evaluated at specified time horizons and handles censored data and competing risks.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event statuses.\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe event or censoring times.\n\nfixed_time_horizons: list[float]\n\nA list of time points for performance evaluation.\n\nheuristics_sets: list[Dict] = [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n\nSpecifies how to handle censored data and competing events.\n\nby: float = 0.01\n\nThe step size for probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object for the time-dependent Lift curve.",
+    "crumbs": [
+      "Reference",
+      "Discrimination",
+      "create_lift_curve_times"
+    ]
+  },
+  {
+    "objectID": "reference/create_gains_curve_times.html",
+    "href": "reference/create_gains_curve_times.html",
+    "title": "create_gains_curve_times()",
+    "section": "",
+    "text": "Creates a time-dependent Gains curve.\n\n\nUsage\nSource\n\n\ncreate_gains_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"]\n)\n\n\nGenerates a Gains curve for time-to-event models, which is evaluated at specified time horizons and handles censored data and competing risks.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event statuses.\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe event or censoring times.\n\nfixed_time_horizons: list[float]\n\nA list of time points for performance evaluation.\n\nheuristics_sets: list[Dict] = [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n\nSpecifies how to handle censored data and competing events.\n\nby: float = 0.01\n\nThe step size for probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object for the time-dependent Gains curve.",
+    "crumbs": [
+      "Reference",
+      "Discrimination",
+      "create_gains_curve_times"
+    ]
+  },
+  {
+    "objectID": "reference/create_decision_curve_times.html",
+    "href": "reference/create_decision_curve_times.html",
+    "title": "create_decision_curve_times()",
+    "section": "",
+    "text": "Creates a time-dependent Decision Curve.\n\n\nUsage\nSource\n\n\ncreate_decision_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    decision_type=\"conventional\",\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    min_p_threshold=0,\n    max_p_threshold=1,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"]\n)\n\n\nGenerates a Decision Curve for time-to-event models, which is evaluated at specified time horizons and handles censored data and competing risks.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event statuses.\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe event or censoring times.\n\nfixed_time_horizons: list[float]\n\nA list of time points for performance evaluation.\n\ndecision_type: str = \"conventional\"\n\nType of decision curve to plot. Defaults to \"conventional\".\n\nheuristics_sets: list[Dict] = [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n\nSpecifies how to handle censored data and competing events.\n\nmin_p_threshold: float = 0\n\nThe minimum probability threshold to plot. Defaults to 0.\n\nmax_p_threshold: float = 1\n\nThe maximum probability threshold to plot. Defaults to 1.\n\nby: float = 0.01\n\nThe step size for the probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object for the time-dependent Decision Curve.",
+    "crumbs": [
+      "Reference",
+      "Utility",
+      "create_decision_curve_times"
+    ]
+  },
+  {
+    "objectID": "reference/create_calibration_curve_times.html",
+    "href": "reference/create_calibration_curve_times.html",
+    "title": "create_calibration_curve_times()",
+    "section": "",
+    "text": "Create time-dependent calibration curves.\n\n\nUsage\nSource\n\n\ncreate_calibration_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets,\n    calibration_type=\"discrete\",\n    size=600,\n    color_values=_DEFAULT_COLORS\n)\n\n\nParameters\n\n\nprobs: dict[str, numpy.ndarray]\n\nPredicted probabilities. Matching dictionary keys identify populations.\n\nreals: numpy.ndarray or dict[str, numpy.ndarray]\n\nObserved event indicators.\n\ntimes: numpy.ndarray or dict[str, numpy.ndarray]\n\nObserved event or censoring times.\n\nfixed_time_horizons: list[float]\n\nTime horizons to display.\n\nheuristics_sets: list[dict[str, str]]\n\nCensoring and competing-risk heuristic combinations.\n\ncalibration_type: str = \"discrete\"\n\nCalibration rendering type.\n\nsize: int = 600\n\nFigure width and height in pixels.\n\ncolor_values: list[str] = _DEFAULT_COLORS\n\nColors used for population or model traces.\n\n\n\n\n\nReturns\n\n\n plotly.graph_objs.Figure\n\nInteractive time-dependent calibration figure.",
+    "crumbs": [
+      "Reference",
+      "Calibration",
+      "create_calibration_curve_times"
+    ]
+  },
+  {
+    "objectID": "package-info.html",
+    "href": "package-info.html",
+    "title": "Package Info",
+    "section": "",
+    "text": "Runtime Dependencies\n\n\n\nPackage\nVersion Constraint\nLast Published\nPyPI\n\n\n\n\nplotly\n&lt;6.0.0,&gt;=5.13.1\n2026-07-09\n\n\n\npandas\n&gt;=2.2.3\n2026-07-22\n\n\n\ntyping\n&gt;=3.7.4.3\n2021-05-01\n\n\n\npolarstate\n==0.1.8\n2025-07-29\n\n\n\nmarimo\n&gt;=0.17.0\n2026-07-31\n\n\n\npyarrow\n&gt;=21.0.0\n2026-08-10\n\n\n\nstatsmodels\n&gt;=0.14.0\n2025-12-05\n\n\n\npolars\n&gt;=1.31.0\n2026-08-01\n\n\n\n\n\n\nSummary\n\nRequires: Python &gt;=3.9\nRuntime Dependencies: 8\nTotal unique dependencies: 8"
+  },
+  {
+    "objectID": "contributing.html",
+    "href": "contributing.html",
+    "title": "Contributing",
+    "section": "",
+    "text": "Contributions are welcome, and they are greatly appreciated! Every little bit helps, and credit will always be given."
+  },
+  {
+    "objectID": "contributing.html#report-bugs",
+    "href": "contributing.html#report-bugs",
+    "title": "Contributing",
+    "section": "Report Bugs",
+    "text": "Report Bugs\nIf you are reporting a bug, please include:\n\nYour operating system name and version.\nAny details about your local setup that might be helpful in troubleshooting.\nDetailed steps to reproduce the bug."
+  },
+  {
+    "objectID": "contributing.html#fix-bugs",
+    "href": "contributing.html#fix-bugs",
+    "title": "Contributing",
+    "section": "Fix Bugs",
+    "text": "Fix Bugs\nLook through the GitHub issues for bugs. Anything tagged with “bug” and “help wanted” is open to whoever wants to implement it."
+  },
+  {
+    "objectID": "contributing.html#implement-features",
+    "href": "contributing.html#implement-features",
+    "title": "Contributing",
+    "section": "Implement Features",
+    "text": "Implement Features\nLook through the GitHub issues for features. Anything tagged with “enhancement” and “help wanted” is open to whoever wants to implement it."
+  },
+  {
+    "objectID": "contributing.html#write-documentation",
+    "href": "contributing.html#write-documentation",
+    "title": "Contributing",
+    "section": "Write Documentation",
+    "text": "Write Documentation\nYou can never have enough documentation! Please feel free to contribute to any part of the documentation, such as the official docs, docstrings, or even on the web in blog posts, articles, and such."
+  },
+  {
+    "objectID": "contributing.html#submit-feedback",
+    "href": "contributing.html#submit-feedback",
+    "title": "Contributing",
+    "section": "Submit Feedback",
+    "text": "Submit Feedback\nIf you are proposing a feature:\n\nExplain in detail how it would work.\nKeep the scope as narrow as possible, to make it easier to implement.\nRemember that this is a volunteer-driven project, and that contributions are welcome :)"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Getting Started",
+    "section": "",
+    "text": "rtichoke is a Python library for interactive visualization of predictive-model performance. It supports discrimination, calibration, utility, and time-to-event evaluation workflows.\nFor some reproducible examples please visit rtichoke blog!\n\nInstallation\nIf you use uv to manage your Python project, add rtichoke with:\nuv add rtichoke\nThis adds rtichoke to your project dependencies and updates the uv lockfile.\nIf you are not using uv, install rtichoke from PyPI with pip:\npip install rtichoke\n\n\nImport\nimport numpy as np\nimport rtichoke as rk\n\n\nInputs\nMost rtichoke plotting functions use two dictionaries:\n\nprobs: model predictions, keyed by model or population name.\nreals: observed outcomes, keyed by population name.\n\n\n\nSingle model\nprobs_single = {\n    \"Model A\": np.array([0.1, 0.9, 0.4, 0.8, 0.3, 0.7, 0.2, 0.6])\n}\nreals_single = {\n    \"Population\": np.array([0, 1, 0, 1, 0, 1, 0, 1])\n}\n\nfig = rk.create_roc_curve(\n    probs=probs_single,\n    reals=reals_single,\n)\n\nfig.show()\n\n\nCompare models\nWhen several models are evaluated on the same population, provide one probability vector per model and one outcome vector for the shared population.\nprobs_comparison = {\n    \"Model A\": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),\n    \"Model B\": np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6]),\n    \"Random Guess\": np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),\n}\nreals_comparison = {\n    \"Population\": np.array([0, 1, 0, 1, 0, 1])\n}\n\nfig = rk.create_precision_recall_curve(\n    probs=probs_comparison,\n    reals=reals_comparison,\n)\n\nfig.show()\n\n\nCompare populations\nTo compare a model across populations, provide matching keys in probs and reals.\nprobs_populations = {\n    \"Train\": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),\n    \"Test\": np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6]),\n}\nreals_populations = {\n    \"Train\": np.array([0, 1, 0, 1, 0, 1]),\n    \"Test\": np.array([0, 1, 0, 1, 0, 0]),\n}\n\nfig = rk.create_calibration_curve(\n    probs=probs_populations,\n    reals=reals_populations,\n)\n\nfig.show()\nFrom here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The Naming Conventions guide explains how the exported function families fit together.\n\n\nLinks\nView on PyPI\n\n\nAI / Agents\nSkills llms.txt llms-full.txt\n\n\nDevelopers\n\n\n\nUriah Finkel\n\n\n\n\n\nCommunity\nContributing guide\n\n\nMeta\nRequires: Python &gt;=3.9 Package Info",
+    "crumbs": [
+      "Getting Started",
+      "Getting Started"
+    ]
+  },
+  {
+    "objectID": "reference/create_calibration_curve.html",
+    "href": "reference/create_calibration_curve.html",
+    "title": "create_calibration_curve()",
+    "section": "",
+    "text": "Create a calibration curve.\n\n\nUsage\nSource\n\n\ncreate_calibration_curve(\n    probs,\n    reals,\n    calibration_type=\"discrete\",\n    size=600,\n    color_values=_DEFAULT_COLORS\n)\n\n\nParameters\n\n\nprobs: dict[str, numpy.ndarray]\n\nPredicted probabilities. When reals is a dictionary with matching keys, each key is treated as an independent population and may have its own sample size.\n\nreals: numpy.ndarray or dict[str, numpy.ndarray]\n\nObserved binary outcomes. Matching dictionary keys are paired population-by-population.\n\ncalibration_type: str = \"discrete\"\n\nCalibration rendering type, either \"discrete\" or \"smooth\".\n\nsize: int = 600\n\nFigure width and height in pixels.\n\ncolor_values: list[str] = _DEFAULT_COLORS\n\nColors used for population or model traces.\n\n\n\n\n\nReturns\n\n\n plotly.graph_objs.Figure\n\nInteractive calibration figure.",
+    "crumbs": [
+      "Reference",
+      "Calibration",
+      "create_calibration_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_decision_curve.html",
+    "href": "reference/create_decision_curve.html",
+    "title": "create_decision_curve()",
+    "section": "",
+    "text": "Creates a Decision Curve.\n\n\nUsage\nSource\n\n\ncreate_decision_curve(\n    probs,\n    reals,\n    decision_type=\"conventional\",\n    min_p_threshold=0,\n    max_p_threshold=1,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"]\n)\n\n\nDecision Curve Analysis is a method for evaluating and comparing prediction models that incorporates the clinical consequences of a decision. The curve plots the net benefit of a model against the probability threshold used to determine positive cases. This helps to assess the real-world utility of a model.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true binary labels (0 or 1).\n\ndecision_type: str = \"conventional\"\n\nType of decision curve. \"conventional\" for a standard decision curve or another value for the “interventions avoided” variant. Defaults to \"conventional\".\n\nmin_p_threshold: float = 0\n\nThe minimum probability threshold to plot. Defaults to 0.\n\nmax_p_threshold: float = 1\n\nThe maximum probability threshold to plot. Defaults to 1.\n\nby: float = 0.01\n\nThe step size for the probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the Decision Curve.",
+    "crumbs": [
+      "Reference",
+      "Utility",
+      "create_decision_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_gains_curve.html",
+    "href": "reference/create_gains_curve.html",
+    "title": "create_gains_curve()",
+    "section": "",
+    "text": "Creates a Gains curve.\n\n\nUsage\nSource\n\n\ncreate_gains_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"]\n)\n\n\nA Gains curve is a marketing and business analytics tool that evaluates the performance of a predictive model. It shows the percentage of positive outcomes (the “gain”) that can be captured by targeting a certain percentage of the population, sorted by predicted probability.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true binary labels (0 or 1).\n\nby: float = 0.01\n\nThe step size for the probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the Gains curve.",
+    "crumbs": [
+      "Reference",
+      "Discrimination",
+      "create_gains_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_lift_curve.html",
+    "href": "reference/create_lift_curve.html",
+    "title": "create_lift_curve()",
+    "section": "",
+    "text": "Creates a Lift curve.\n\n\nUsage\nSource\n\n\ncreate_lift_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"]\n)\n\n\nA Lift curve is a visual tool used to evaluate the performance of a classification model. It shows how much better the model is at identifying positive outcomes compared to a random guess. The “lift” is the ratio of the results obtained with the model to the results from a random selection.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true binary labels (0 or 1).\n\nby: float = 0.01\n\nThe step size for the probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the Lift curve.",
+    "crumbs": [
+      "Reference",
+      "Discrimination",
+      "create_lift_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_precision_recall_curve.html",
+    "href": "reference/create_precision_recall_curve.html",
+    "title": "create_precision_recall_curve()",
+    "section": "",
+    "text": "Creates a Precision-Recall curve.\n\n\nUsage\nSource\n\n\ncreate_precision_recall_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"]\n)\n\n\nThis function generates a Precision-Recall curve, which is a common alternative to the ROC curve, particularly for imbalanced datasets. It plots precision (Positive Predictive Value) against recall (True Positive Rate) for a binary classifier at different probability thresholds.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true binary labels (0 or 1). Can be a single array or a dictionary mapping names to label arrays.\n\nby: float = 0.01\n\nThe step size for the probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the Precision-Recall curve.",
+    "crumbs": [
+      "Reference",
+      "Discrimination",
+      "create_precision_recall_curve"
+    ]
+  },
+  {
+    "objectID": "reference/create_roc_curve.html",
+    "href": "reference/create_roc_curve.html",
+    "title": "create_roc_curve()",
+    "section": "",
+    "text": "Creates a Receiver Operating Characteristic (ROC) curve.\n\n\nUsage\nSource\n\n\ncreate_roc_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"]\n)\n\n\nThis function generates an ROC curve, which visualizes the diagnostic ability of a binary classifier system as its discrimination threshold is varied. The curve plots the True Positive Rate (TPR) against the False Positive Rate (FPR) at various threshold settings.\nIt first calculates the performance data using the provided probabilities and true labels, and then generates the plot.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true binary labels (0 or 1). Can be a single array for all probabilities or a dictionary mapping names to label arrays.\n\nby: float = 0.01\n\nThe step size for the probability thresholds, controlling the curve’s granularity. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines. A default palette is used if not provided.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the ROC curve.",
+    "crumbs": [
+      "Reference",
+      "Discrimination",
+      "create_roc_curve"
+    ]
+  },
+  {
+    "objectID": "reference/index.html",
+    "href": "reference/index.html",
+    "title": "API Reference",
+    "section": "",
+    "text": "Performance Data\n\nPrepare classification and time-to-event data for visualization.\n\n\nprepare_performance_data()\n\nPrepare performance data for binary classification models.\n\nprepare_binned_classification_data()\n\nPrepare probability-binned classification data for binary outcomes.\n\nprepare_performance_data_times()\n\nPrepare performance data for models with time-to-event outcomes.\n\nprepare_binned_classification_data_times()\n\nPrepare binned, time-dependent classification data.\n\n\n\n\nDiscrimination\n\nROC, precision-recall, gains, and lift visualizations.\n\n\ncreate_roc_curve()\n\nCreates a Receiver Operating Characteristic (ROC) curve.\n\ncreate_roc_curve_times()\n\nCreates a time-dependent Receiver Operating Characteristic (ROC) curve.\n\nplot_roc_curve()\n\nPlots an ROC curve from pre-computed performance data.\n\ncreate_precision_recall_curve()\n\nCreates a Precision-Recall curve.\n\ncreate_precision_recall_curve_times()\n\nCreates a time-dependent Precision-Recall curve.\n\nplot_precision_recall_curve()\n\nPlots a Precision-Recall curve from pre-computed performance data.\n\ncreate_gains_curve()\n\nCreates a Gains curve.\n\ncreate_gains_curve_times()\n\nCreates a time-dependent Gains curve.\n\nplot_gains_curve()\n\nPlots a Gains curve from pre-computed performance data.\n\ncreate_lift_curve()\n\nCreates a Lift curve.\n\ncreate_lift_curve_times()\n\nCreates a time-dependent Lift curve.\n\nplot_lift_curve()\n\nPlots a Lift curve from pre-computed performance data.\n\n\n\n\nCalibration\n\nCalibration visualizations for classification and time-to-event models.\n\n\ncreate_calibration_curve()\n\nCreate a calibration curve.\n\ncreate_calibration_curve_times()\n\nCreate time-dependent calibration curves.\n\n\n\n\nUtility\n\nDecision-curve analysis for classification and time-to-event models.\n\n\ncreate_decision_curve()\n\nCreates a Decision Curve.\n\ncreate_decision_curve_times()\n\nCreates a time-dependent Decision Curve.\n\nplot_decision_curve()\n\nPlots a Decision Curve from pre-computed performance data.",
+    "crumbs": [
+      "Reference",
+      "API Index"
+    ]
+  },
+  {
+    "objectID": "reference/plot_gains_curve.html",
+    "href": "reference/plot_gains_curve.html",
+    "title": "plot_gains_curve()",
+    "section": "",
+    "text": "Plots a Gains curve from pre-computed performance data.\n\n\nUsage\nSource\n\n\nplot_gains_curve(\n    performance_data, stratified_by=[\"probability_threshold\"], size=600\n)\n\n\nThis function is useful for plotting a Gains curve directly from a DataFrame that already contains the necessary performance metrics.\n\n\nParameters\n\n\nperformance_data: pl.DataFrame\n\nA Polars DataFrame with performance metrics. It must include columns for the percentage of the population targeted and the corresponding gain, along with any stratification variables.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the Gains curve.",
+    "crumbs": [
+      "Reference",
+      "Discrimination",
+      "plot_gains_curve"
+    ]
+  },
+  {
+    "objectID": "reference/plot_precision_recall_curve.html",
+    "href": "reference/plot_precision_recall_curve.html",
+    "title": "plot_precision_recall_curve()",
+    "section": "",
+    "text": "Plots a Precision-Recall curve from pre-computed performance data.\n\n\nUsage\nSource\n\n\nplot_precision_recall_curve(\n    performance_data, stratified_by=[\"probability_threshold\"], size=600\n)\n\n\nThis function is useful when you have already computed the performance metrics and want to generate a Precision-Recall plot directly.\n\n\nParameters\n\n\nperformance_data: pl.DataFrame\n\nA Polars DataFrame with the necessary performance metrics, including precision (ppv) and recall (tpr), along with any stratification variables.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nThe columns in performance_data used for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the Precision-Recall curve.",
+    "crumbs": [
+      "Reference",
+      "Discrimination",
+      "plot_precision_recall_curve"
+    ]
+  },
+  {
+    "objectID": "reference/prepare_binned_classification_data.html",
+    "href": "reference/prepare_binned_classification_data.html",
+    "title": "prepare_binned_classification_data()",
+    "section": "",
+    "text": "Prepare probability-binned classification data for binary outcomes.\n\n\nUsage\nSource\n\n\nprepare_binned_classification_data(\n    probs, reals, stratified_by=(\"probability_threshold\",), by=0.01\n)\n\n\nThis function serves as the foundation for many of the performance analysis visualizations. It takes predicted probabilities and true binary outcomes, bins them by probability thresholds, and calculates the number of true positives, false positives, true negatives, and false negatives within each bin. This detailed, binned data can then be used to generate calibration plots or be aggregated to compute various performance metrics.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names (str) to their predicted probabilities (1-D numpy arrays).\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event labels. This can be a single numpy array that is aligned with all pooled probabilities or a dictionary mapping each dataset name to its corresponding array of true labels. Labels must be binary (0 or 1).\n\nstratified_by: Sequence[str] = (\"probability_threshold\",)\n\nA sequence of strings specifying the variables by which to stratify the data. The default is (\"probability_threshold\",), which bins the data based on predicted probabilities.\n\nby: float = 0.01\n\nThe step size to use when creating bins for the probability thresholds. This determines the granularity of the analysis. Defaults to 0.01.\n\n\n\n\n\nReturns\n\n\n pl.DataFrame\n\nA Polars DataFrame containing the binned classification data. Each row represents a unique combination of model/dataset, probability bin, and any other stratification variables. It forms the basis for subsequent performance calculations.",
+    "crumbs": [
+      "Reference",
+      "Performance Data",
+      "prepare_binned_classification_data"
+    ]
+  },
+  {
+    "objectID": "reference/prepare_performance_data.html",
+    "href": "reference/prepare_performance_data.html",
+    "title": "prepare_performance_data()",
+    "section": "",
+    "text": "Prepare performance data for binary classification models.\n\n\nUsage\nSource\n\n\nprepare_performance_data(\n    probs, reals, stratified_by=(\"probability_threshold\",), by=0.01\n)\n\n\nThis function computes a comprehensive set of performance metrics for one or more binary classification models across a range of probability thresholds. It builds upon the binned data from prepare_binned_classification_data by cumulatively summing the counts and calculating metrics like sensitivity (TPR), specificity, precision (PPV), and net benefit.\nThis resulting dataframe is the primary input for plotting functions like plot_roc_curve, plot_precision_recall_curve, etc.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names (str) to their predicted probabilities (1-D numpy arrays).\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event labels. This can be a single numpy array that is aligned with all pooled probabilities or a dictionary mapping each dataset name to its corresponding array of true labels. Labels must be binary (0 or 1).\n\nstratified_by: Sequence[str] = (\"probability_threshold\",)\n\nA sequence of strings specifying the variables by which to stratify the data. The default is (\"probability_threshold\",).\n\nby: float = 0.01\n\nThe step size for probability thresholds, determining the number of points at which performance is evaluated. Defaults to 0.01.\n\n\n\n\n\nReturns\n\n\n pl.DataFrame\n\nA Polars DataFrame where each row corresponds to a probability cutoff for a given model/dataset. Columns include the cutoff value and a rich set of performance metrics (e.g., tpr, fpr, ppv, net_benefit).\n\n\n\n\n\nExamples\n&gt;&gt;&gt; import numpy as np\n&gt;&gt;&gt; probs_dict_test = {\n...     \"small_data_set\": np.array(\n...         [0.9, 0.85, 0.95, 0.88, 0.6, 0.7, 0.51, 0.2, 0.1, 0.33]\n...     )\n... }\n&gt;&gt;&gt; reals_dict_test = [1, 1, 1, 1, 0, 0, 1, 0, 0, 1]\n&gt;&gt;&gt; performance_df = prepare_performance_data(\n...     probs=probs_dict_test,\n...     reals=reals_dict_test,\n...     by=0.1\n... )",
+    "crumbs": [
+      "Reference",
+      "Performance Data",
+      "prepare_performance_data"
+    ]
+  },
+  {
+    "objectID": "skills.html",
+    "href": "skills.html",
+    "title": "Skills",
+    "section": "",
+    "text": "A skill is a package of structured files that teaches an AI coding agent how to work with a specific tool or framework. The skill below was generated by Great Docs from this project’s documentation. Install it in your agent and it will be able to run commands, edit configuration, write content, and troubleshoot problems without step-by-step guidance from you.\n\n  \n    ▶    Install this skill\n  \n  \n    \n      \nAny agent — install with npx:\nnpx skills add https://uriahf.github.io/rtichoke_python/\nCodex / OpenCode\nTell the agent:Fetch the skill file at https://uriahf.github.io/rtichoke_python/skill.md and follow the instructions.\nManual — download the skill file:\ncurl -O https://uriahf.github.io/rtichoke_python/skill.md\nOr browse the SKILL.md file.\n      \n    \n  \n\n\nSKILL.md\n---\nname: rtichoke\ndescription: &gt;\n  interactive visualizations for performance of predictive models. Use when writing Python code that uses the rtichoke package.\nlicense: MIT\ncompatibility: Requires Python &gt;=3.9.\n---\n\n# rtichoke\n\ninteractive visualizations for performance of predictive models\n\n## Installation\n\n```bash\npip install rtichoke\n```\n\n## API overview\n\n### Performance Data\n\nPrepare classification and time-to-event data for visualization.\n\n- `prepare_performance_data`: Prepare performance data for binary classification models\n- `prepare_binned_classification_data`: Prepare probability-binned classification data for binary outcomes\n- `prepare_performance_data_times`: Prepare performance data for models with time-to-event outcomes\n- `prepare_binned_classification_data_times`: Prepare binned, time-dependent classification data\n\n### Discrimination\n\nROC, precision-recall, gains, and lift visualizations.\n\n- `create_roc_curve`: Creates a Receiver Operating Characteristic (ROC) curve\n- `create_roc_curve_times`: Creates a time-dependent Receiver Operating Characteristic (ROC) curve\n- `plot_roc_curve`: Plots an ROC curve from pre-computed performance data\n- `create_precision_recall_curve`: Creates a Precision-Recall curve\n- `create_precision_recall_curve_times`: Creates a time-dependent Precision-Recall curve\n- `plot_precision_recall_curve`: Plots a Precision-Recall curve from pre-computed performance data\n- `create_gains_curve`: Creates a Gains curve\n- `create_gains_curve_times`: Creates a time-dependent Gains curve\n- `plot_gains_curve`: Plots a Gains curve from pre-computed performance data\n- `create_lift_curve`: Creates a Lift curve\n- `create_lift_curve_times`: Creates a time-dependent Lift curve\n- `plot_lift_curve`: Plots a Lift curve from pre-computed performance data\n\n### Calibration\n\nCalibration visualizations for classification and time-to-event models.\n\n- `create_calibration_curve`: Create a calibration curve\n- `create_calibration_curve_times`: Create time-dependent calibration curves\n\n### Utility\n\nDecision-curve analysis for classification and time-to-event models.\n\n- `create_decision_curve`: Creates a Decision Curve\n- `create_decision_curve_times`: Creates a time-dependent Decision Curve\n- `plot_decision_curve`: Plots a Decision Curve from pre-computed performance data\n\n## Resources\n\n- [Full documentation](https://uriahf.github.io/rtichoke_python/)\n- [llms.txt](llms.txt) — Indexed API reference for LLMs\n- [llms-full.txt](llms-full.txt) — Comprehensive documentation for LLMs"
+  }
+]
