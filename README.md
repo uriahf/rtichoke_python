@@ -10,9 +10,17 @@
 
 The library is designed to be easy to use while still offering a high degree of control over the final plots.
 
+For some reproducible examples please visit [rtichoke blog](https://rtichoke-blog.netlify.app/)!
+
 ## Installation
 
-Install `rtichoke` from PyPI:
+For a project managed with [uv](https://docs.astral.sh/uv/), add `rtichoke` with:
+
+```bash
+uv add rtichoke
+```
+
+Alternatively, install `rtichoke` from PyPI with pip:
 
 ```bash
 pip install rtichoke
