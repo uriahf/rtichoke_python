@@ -108,6 +108,74 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const marker = '/examples/';
+  const path = window.location.pathname;
+  const pos = path.indexOf(marker);
+  if (pos === -1) return;
+
+  document.documentElement.classList.add('rtichoke-blog-shell');
+
+  const examplesRoot = path.slice(0, pos) + '/examples/';
+  const nav = document.querySelector('nav.navbar');
+  if (!nav) return;
+
+  const brand = nav.querySelector('.navbar-brand');
+  if (brand) {
+    brand.textContent = 'rtichoke blog';
+    brand.setAttribute('href', 'https://rtichoke-blog.netlify.app/');
+    brand.setAttribute('aria-label', 'rtichoke blog home');
+  }
+
+  const navLists = [...nav.querySelectorAll('ul.navbar-nav')];
+  if (!navLists.length) return;
+  const mainList = navLists.find((el) => el.classList.contains('me-auto')) || navLists[0];
+  const rightList = navLists.find((el) => el.classList.contains('ms-auto')) || navLists[navLists.length - 1];
+  if (mainList !== rightList) mainList.replaceChildren();
+
+  const links = [
+    ['R examples', 'https://rtichoke-blog.netlify.app/posts'],
+    ['Python examples', examplesRoot],
+    ['Talks', 'https://rtichoke-blog.netlify.app/talks.qmd'],
+    ['About Me', 'https://rtichoke-blog.netlify.app/about_me']
+  ];
+  const iconLinks = [
+    ['github', 'https://github.com/uriahf'],
+    ['twitter-x', 'https://twitter.com/finkeluriah'],
+    ['facebook', 'https://www.facebook.com/groups/rforthemasses'],
+    ['linkedin', 'https://www.linkedin.com/in/uriah-finkel'],
+    ['telegram', 'https://t.me/as_if_uriah'],
+    ['rss', 'https://rtichoke-blog.netlify.app/posts.xml']
+  ];
+
+  rightList.replaceChildren();
+  for (const [label, href] of links) {
+    const li = document.createElement('li');
+    li.className = 'nav-item';
+    const a = document.createElement('a');
+    a.className = 'nav-link';
+    a.href = href;
+    a.textContent = label;
+    if (label === 'Python examples') a.classList.add('active');
+    li.appendChild(a);
+    rightList.appendChild(li);
+  }
+  for (const [icon, href] of iconLinks) {
+    const li = document.createElement('li');
+    li.className = 'nav-item compact';
+    const a = document.createElement('a');
+    a.className = 'nav-link';
+    a.href = href;
+    a.setAttribute('aria-label', icon);
+    const i = document.createElement('i');
+    i.className = `bi bi-${icon}`;
+    a.appendChild(i);
+    li.appendChild(a);
+    rightList.appendChild(li);
+  }
+});
+</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script>document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:(document.querySelector('meta[name="quarto:offset"]')||{content:''}).content+'termshow.css'}));</script>
 <script>document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:(document.querySelector('meta[name="quarto:offset"]')||{content:''}).content+'gd-lightbox.css'}));</script>
