@@ -22,3 +22,34 @@ def test_create_calibration_curve_times():
     assert fig is not None
     assert len(fig.data) > 0
     assert len(fig.layout.sliders) > 0
+
+
+def test_create_calibration_curve_times_unequal_size_populations():
+    probs = {
+        "Train": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),
+        "Test": np.array([0.2, 0.8, 0.3, 0.7]),
+    }
+    reals = {
+        "Train": np.array([0, 1, 0, 1, 0, 1]),
+        "Test": np.array([0, 1, 0, 0]),
+    }
+    times = {
+        "Train": np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]),
+        "Test": np.array([1.0, 2.0, 3.0, 4.0]),
+    }
+    heuristics_sets = [
+        {
+            "censoring_heuristic": "excluded",
+            "competing_heuristic": "adjusted_as_negative",
+        }
+    ]
+
+    fig = create_calibration_curve_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=[3.0, 6.0],
+        heuristics_sets=heuristics_sets,
+    )
+
+    assert {trace.name for trace in fig.data if trace.name} >= {"Train", "Test"}
