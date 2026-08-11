@@ -37,6 +37,10 @@ Most `rtichoke` plotting functions use two dictionaries:
 - `probs`: model predictions, keyed by model or population name.
 - `reals`: observed outcomes, keyed by population name.
 
+::: {.callout-tip}
+Similar curve families do not have identical edge-case behavior. Before combining differently sized populations or moving code between ROC/PR/decision and calibration, see [Curve API Compatibility](curve-api-compatibility.html). If a call fails, [Common Errors & Fixes](common-errors.html) is searchable by literal exception text.
+:::
+
 ## Single model
 
 ```python
@@ -99,4 +103,8 @@ fig = rk.create_calibration_curve(
 fig.show()
 ```
 
-From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The [Naming Conventions](user-guide/naming-conventions.html) guide explains how the exported function families fit together.
+::: {.callout-warning}
+The calibration example above deliberately uses equally sized Train and Test populations. The current calibration implementation can reject differently sized populations even when the analogous ROC, precision-recall, or decision-curve call works. See [Curve API Compatibility](curve-api-compatibility.html) for the documented constraint and an intentional failure example.
+:::
+
+From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The [Naming Conventions](naming-conventions.html) guide explains how the exported function families fit together, while [Curve API Compatibility](curve-api-compatibility.html) documents where those families intentionally or currently differ.
