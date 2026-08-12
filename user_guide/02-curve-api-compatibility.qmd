@@ -3,20 +3,9 @@ title: "Curve API Compatibility"
 guide-section: "Using rtichoke"
 ---
 
-`rtichoke` exposes parallel function families for discrimination, calibration, and decision-curve analysis. Their interfaces are similar, but time-dependent defaults and accepted heuristics are not identical.
+`rtichoke` exposes parallel function families for discrimination, calibration, and decision-curve analysis. Most of them share the same input conventions; the main differences are in time-dependent heuristic handling, especially calibration.
 
-This page makes those differences explicit so that users — and coding agents reading `llms-full.txt` — can choose the right call without experimentally probing each function.
-
-## Capability matrix
-
-| Function family | Multiple named populations | Unequal population sizes with `dict`/`dict` inputs | Time-dependent heuristic default | `fixed_time_horizons` |
-|---|---|---|---|---|
-| ROC | Supported | Supported | `adjusted` / `adjusted_as_negative` | Integer and floating-point values supported |
-| Precision-recall | Supported | Supported | `adjusted` / `adjusted_as_negative` | Integer and floating-point values supported |
-| Gains | Supported | Supported | `adjusted` / `adjusted_as_negative` | Integer and floating-point values supported |
-| Lift | Supported | Supported | `adjusted` / `adjusted_as_negative` | Integer and floating-point values supported |
-| Decision curve | Supported | Supported | `adjusted` / `adjusted_as_negative` | Integer and floating-point values supported |
-| Calibration | Supported | Supported | **No default on `create_calibration_curve_times()`**; pass explicitly | Integer and floating-point values supported |
+This page focuses on the conventions that are shared across curve families and on the few places where users should expect different behavior.
 
 ## Multiple named populations
 
