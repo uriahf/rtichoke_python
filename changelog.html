@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>plot_decision_curve() – rtichoke | rtichoke</title>
+<title>Changelog – rtichoke | rtichoke</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -26,61 +26,26 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../site_libs/quarto-nav/headroom.min.js"></script>
-<script src="../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../">
-<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/popper.min.js"></script>
-<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-bf476c94c8758bc321fd5fd3b984c438.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-bf476c94c8758bc321fd5fd3b984c438.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -137,58 +102,31 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'gd-lightbox-compare.js';s.defer=true;document.head.appendChild(s);})();</script>
 <script>document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:(document.querySelector('meta[name="quarto:offset"]')||{content:''}).content+'gd-lightbox-annotate.css'}));</script>
 <script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'gd-lightbox-annotate.js';s.defer=true;document.head.appendChild(s);})();</script>
-<script src="../theme-init.js"></script>
+<script src="theme-init.js"></script>
 
 
-<link rel="stylesheet" href="../site.css">
-  <link rel="alternate" type="text/markdown" href="plot_decision_curve.md">
-  <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/reference/plot_decision_curve.html">
-  <meta name="description" content="Plots a Decision Curve from pre-computed performance data.">
-  <script type="application/ld+json">
-[
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    "name": "rtichoke",
-    "description": "interactive visualizations for performance of predictive models",
-    "license": "https://opensource.org/licenses/MIT",
-    "url": "https://uriahf.github.io/rtichoke_python",
-    "documentation": "https://uriahf.github.io/rtichoke_python",
-    "programmingLanguage": {
-      "@type": "ComputerLanguage",
-      "name": "Python"
-    }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "plot_decision_curve - rtichoke",
-    "isPartOf": {
-      "@type": "WebSite",
-      "name": "rtichoke"
-    },
-    "url": "https://uriahf.github.io/rtichoke_python/reference/plot_decision_curve.html"
-  }
-]
-</script>
+<link rel="stylesheet" href="site.css">
+  <link rel="alternate" type="text/markdown" href="changelog.md">
+  <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/changelog.html">
+  <meta name="description" content="This changelog is generated automatically from GitHub Releases.">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="plot_decision_curve() – rtichoke | rtichoke">
-  <meta property="og:description" content="Plots a Decision Curve from pre-computed performance data.">
-  <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/reference/plot_decision_curve.html">
+  <meta property="og:title" content="Changelog – rtichoke | rtichoke">
+  <meta property="og:description" content="This changelog is generated automatically from GitHub Releases.">
+  <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/changelog.html">
   <meta property="og:site_name" content="rtichoke">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="plot_decision_curve() – rtichoke | rtichoke">
-  <meta name="twitter:description" content="Plots a Decision Curve from pre-computed performance data.">
+  <meta name="twitter:title" content="Changelog – rtichoke | rtichoke">
+  <meta name="twitter:description" content="This changelog is generated automatically from GitHub Releases.">
 </head>
 
-<body class="gd-ref-sidebar nav-sidebar floating nav-fixed doc-api-page quarto-light">
+<body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="../index.html">
+    <a class="navbar-brand" href="./index.html">
     <span class="navbar-title">rtichoke <span class="version-badge" title="Released 2026-08-12">v0.1.29</span></span>
     </a>
   </div>
@@ -199,11 +137,11 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="../reference/index.html" aria-current="page"> 
+    <a class="nav-link" href="./reference/index.html"> 
 <span class="menu-text">Reference</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../changelog.html"> 
+    <a class="nav-link active" href="./changelog.html" aria-current="page"> 
 <span class="menu-text">Changelog</span></a>
   </li>  
 </ul>
@@ -219,225 +157,21 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
       </div> <!-- /container-fluid -->
     </nav>
-  <nav class="quarto-secondary-nav">
-    <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-        <i class="bi bi-layout-text-sidebar-reverse"></i>
-      </button>
-        <h1 class="quarto-secondary-nav-title no-breadcrumbs gd-ref-title"><span class="gd-ref-title-prefix">API</span><span class="gd-ref-title-sep">/</span><span class="gd-ref-title-name">plot_decision_curve()</span></h1>
-        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-        </a>
-    </div>
-  </nav>
 </header>
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
-    <div class="sidebar-menu-container"> 
-    <ul class="list-unstyled mt-1">
-        <li class="sidebar-item">
-  <div class="sidebar-item-container" style="padding-bottom: 0.5rem; padding-top: 0.25rem;"> 
-  <a href="../reference/index.html" style="font-family: &quot;Open Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;" class="sidebar-item-text sidebar-link">
- <span class="menu-text">API Index</span></a>
-  </div>
-</li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Performance Data</span></a>
-</div>
-      <ul id="quarto-sidebar-section-1" class="list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_performance_data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">prepare_performance_data</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_binned_classification_data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">prepare_binned_classification_data</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_performance_data_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">prepare_performance_data_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_binned_classification_data_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">prepare_binned_classification_data_times</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Performance Tables</span></a>
-</div>
-      <ul id="quarto-sidebar-section-2" class="list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_performance_table.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_performance_table</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_performance_table_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_performance_table_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/render_performance_table.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">render_performance_table</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Discrimination</span></a>
-</div>
-      <ul id="quarto-sidebar-section-3" class="list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_roc_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_roc_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_roc_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_roc_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_roc_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_roc_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_precision_recall_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_precision_recall_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_precision_recall_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_precision_recall_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_precision_recall_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_precision_recall_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_gains_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_gains_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_gains_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_gains_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_gains_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_gains_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_lift_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_lift_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_lift_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_lift_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_lift_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_lift_curve</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Calibration</span></a>
-</div>
-      <ul id="quarto-sidebar-section-4" class="list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_calibration_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_calibration_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_calibration_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_calibration_curve_times</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Utility</span></a>
-</div>
-      <ul id="quarto-sidebar-section-5" class="list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_decision_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_decision_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_decision_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_decision_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_decision_curve.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">plot_decision_curve</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-    </ul>
-    </div>
-</nav>
-<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
-    <h3 id="toc-title">On this page</h3>
+    <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#parameters" id="toc-parameters" class="nav-link active" data-scroll-target="#parameters">Parameters</a></li>
-  <li><a href="#returns" id="toc-returns" class="nav-link" data-scroll-target="#returns">Returns</a></li>
+  <li><a href="#v0.1.29" id="toc-v0.1.29" class="nav-link active" data-scroll-target="#v0.1.29">v0.1.29</a>
+  <ul class="collapse">
+  <li><a href="#whats-changed" id="toc-whats-changed" class="nav-link" data-scroll-target="#whats-changed">What’s Changed</a></li>
+  <li><a href="#new-contributors" id="toc-new-contributors" class="nav-link" data-scroll-target="#new-contributors">New Contributors</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -446,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h2 class="title" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 1.25rem;"><span class="doc-object-name doc-function doc-label doc-label-function">plot_decision_curve()</span></h2>
+<h1 class="title">Changelog</h1>
 </div>
 
 
@@ -463,74 +197,93 @@ document.addEventListener('DOMContentLoaded', () => {
 </header>
 
 
-<div class="doc-subject">
-<p>Plots a Decision Curve from pre-computed performance data.</p>
-</div>
-<div class="doc-usage-source">
-<p>Usage</p>
-<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/utility/decision.py#L104-L151" target="_blank" rel="noopener">Source</a></p>
-</div>
-<div class="doc-signature doc-Kind.FUNCTION">
-<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">plot_decision_curve</span>(</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">performance_data</span>,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">decision_type</span><span class="op">=</span><span class="st">&quot;conventional&quot;</span>,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">min_p_threshold</span><span class="op">=</span><span class="dv">0</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="va">max_p_threshold</span><span class="op">=</span><span class="dv">1</span>,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">stratified_by</span><span class="op">=</span>[<span class="st">&quot;probability_threshold&quot;</span>],</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="va">size</span><span class="op">=</span><span class="dv">600</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
-</div>
-<div class="doc-text">
-<p>This function is useful for plotting a Decision Curve directly from a DataFrame that already contains the necessary performance metrics.</p>
-</div>
-<section id="parameters" class="level2 doc-parameters">
-<h2 class="doc-parameters">Parameters</h2>
-<div class="doc-definition-items">
-<dl>
-<dt><code><span class="doc-parameter-name">performance_data</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">pl.DataFrame</span></code></dt>
-<dd>
-<p>A Polars DataFrame with performance metrics, including net benefit and probability thresholds.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">decision_type</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">str</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="st">"conventional"</span></span></code></dt>
-<dd>
-<p>Type of decision curve to plot. Defaults to <code>"conventional"</code>.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">min_p_threshold</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">float</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="dv">0</span></span></code></dt>
-<dd>
-<p>The minimum probability threshold to plot. Defaults to 0.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">max_p_threshold</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">float</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="dv">1</span></span></code></dt>
-<dd>
-<p>The maximum probability threshold to plot. Defaults to 1.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">stratified_by</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Sequence[str]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[<span class="st">"probability_threshold"</span>]<br></span></code></dt>
-<dd>
-<p>The columns in <code>performance_data</code> used for stratification. Defaults to <code>["probability_threshold"]</code>.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">size</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">int</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="dv">600</span></span></code></dt>
-<dd>
-The width and height of the plot in pixels. Defaults to 600.
-</dd>
-</dl>
-</div>
+<p>This changelog is generated automatically from <a href="https://github.com/uriahf/rtichoke_python/releases">GitHub Releases</a>.</p>
+<section id="v0.1.29" class="level1 changelog-version">
+<h1 class="changelog-version">v0.1.29</h1>
+<p><em>2026-08-12</em> · <a href="https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.29">GitHub</a></p>
+<section id="whats-changed" class="level2">
+<h2 class="anchored" data-anchor-id="whats-changed">What’s Changed</h2>
+<ul>
+<li>65 create a clean marimo version of walkthrough the aj estimateqmd by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/84</li>
+<li>build: fix requires-python to support &gt;=3.9 by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/86</li>
+<li>Observable report by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/85</li>
+<li>test: fix test_extract_aj_estimate_for_strata_basic by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/87</li>
+<li>close <a href="https://github.com/uriahf/rtichoke_python/issues/89">#89</a> by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/90</li>
+<li>docs: close <a href="https://github.com/uriahf/rtichoke_python/issues/91">#91</a> by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/92</li>
+<li>fix: remove explicit call from an absolute path by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/93</li>
+<li>build: add contents write permissions to yml file by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/94</li>
+<li>Observable report by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/88</li>
+<li>65 create a clean marimo version of walkthrough the aj estimateqmd by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/95</li>
+<li>Observable report by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/96</li>
+<li>65 create a clean marimo version of walkthrough the aj estimateqmd by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/167</li>
+<li>Observable report by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/170</li>
+<li>100 create prepare performance data and prepare performance data times functions by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/172</li>
+<li>build: give up before_we_validate.qmd for now by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/174</li>
+<li>Observable report by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/173</li>
+<li>feat: close <a href="https://github.com/uriahf/rtichoke_python/issues/171">#171</a> by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/175</li>
+<li>build: add quartodoc build step in publish-package.yml by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/177</li>
+<li>100 create prepare performance data and prepare performance data times functions by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/178</li>
+<li>100 create prepare performance data and prepare performance data times functions by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/186</li>
+<li>build: try to make quarto publish work by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/187</li>
+<li>build: remove unecessary files from docs by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/189</li>
+<li>fix: remove tracked files that might cause some problems by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/190</li>
+<li>build: use quarto action instead of uv run quarto publish by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/191</li>
+<li>100 create prepare performance data and prepare performance data times functions by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/192</li>
+<li>Observable report by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/176</li>
+<li>build: update version number by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/193</li>
+<li>195 update functions for discrimination plots by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/200</li>
+<li>Observable report by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/201</li>
+<li>195 update functions for discrimination plots by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/205</li>
+<li>195 update functions for discrimination plots by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/206</li>
+<li>fix: add fill_null with 0 values by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/208</li>
+<li>195 update functions for discrimination plots by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/211</li>
+<li>195 update functions for discrimination plots by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/214</li>
+<li>195 update functions for discrimination plots by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/217</li>
+<li>feat: migrate decision curves to new api by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/219</li>
+<li>199 create create rtichoke curve list times function by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/230</li>
+<li>feat: add _create_plotly_curve_times() by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/231</li>
+<li>232 create exported functions create curve times by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/242</li>
+<li>232 create exported functions create curve times by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/244</li>
+<li>feat: Add smoothed calibration curve by <a href="https://github.com/google-labs-jules"><span class="citation" data-cites="google-labs-jules">@google-labs-jules</span></a>[bot] in https://github.com/uriahf/rtichoke_python/pull/260</li>
+<li>feat: Add create_calibration_curve_times function by <a href="https://github.com/google-labs-jules"><span class="citation" data-cites="google-labs-jules">@google-labs-jules</span></a>[bot] in https://github.com/uriahf/rtichoke_python/pull/264</li>
+<li>Feat/calibration curve times 1091703731330045434 by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/266</li>
+<li>Pass ty check and update AGENTS.md by <a href="https://github.com/google-labs-jules"><span class="citation" data-cites="google-labs-jules">@google-labs-jules</span></a>[bot] in https://github.com/uriahf/rtichoke_python/pull/267</li>
+<li>Refactor: helpers module by <a href="https://github.com/google-labs-jules"><span class="citation" data-cites="google-labs-jules">@google-labs-jules</span></a>[bot] in https://github.com/uriahf/rtichoke_python/pull/268</li>
+<li>245 add updated functions create calibration curve and create calibration curve times by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/269</li>
+<li>Improve Documentation and Add Getting Started Tutorial by <a href="https://github.com/google-labs-jules"><span class="citation" data-cites="google-labs-jules">@google-labs-jules</span></a>[bot] in https://github.com/uriahf/rtichoke_python/pull/271</li>
+<li>docs: Update README and “Getting Started” Tutorial by <a href="https://github.com/google-labs-jules"><span class="citation" data-cites="google-labs-jules">@google-labs-jules</span></a>[bot] in https://github.com/uriahf/rtichoke_python/pull/272</li>
+<li>Fix: Replace unstable <code>qcut</code> with robust rank-based decile calculation by <a href="https://github.com/google-labs-jules"><span class="citation" data-cites="google-labs-jules">@google-labs-jules</span></a>[bot] in https://github.com/uriahf/rtichoke_python/pull/277</li>
+<li>273 small changes for better calibration plots by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/278</li>
+<li>Fix plot consistency and transparency by <a href="https://github.com/google-labs-jules"><span class="citation" data-cites="google-labs-jules">@google-labs-jules</span></a>[bot] in https://github.com/uriahf/rtichoke_python/pull/280</li>
+<li>273 small changes for better calibration plots by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/281</li>
+<li>Migrate documentation to Great Docs by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/282</li>
+<li>Separate PyPI publishing from package CI by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/283</li>
+<li>Prevent merged PR cleanup from cancelling docs deployment by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/284</li>
+<li>Polish Great Docs onboarding and API conventions by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/286</li>
+<li>Sort performance data deterministically by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/287</li>
+<li>Fix calibration multi-population input contract by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/291</li>
+<li>Normalize integer fixed time horizons by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/292</li>
+<li>Raise actionable errors for unsupported calibration heuristics by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/293</li>
+<li>Document curve API constraints and troubleshooting by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/289</li>
+<li>Add R-style performance table with Great Tables and Reactable renderers by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/288</li>
+<li>Release rtichoke 0.1.29 by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/294</li>
+<li>Fix 0.1.29 release workflow by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/295</li>
+<li>Publish 0.1.29 through configured trusted publisher by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/296</li>
+</ul>
 </section>
-<section id="returns" class="level2 doc-returns">
-<h2 class="doc-returns">Returns</h2>
-<div class="doc-definition-items">
-<dl>
-<dt><code> <span class="doc-parameter-annotation">Figure</span></code></dt>
-<dd>
-A Plotly <code>Figure</code> object representing the Decision Curve.
-</dd>
-</dl>
-</div>
+<section id="new-contributors" class="level2">
+<h2 class="anchored" data-anchor-id="new-contributors">New Contributors</h2>
+<ul>
+<li><a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> made their first contribution in https://github.com/uriahf/rtichoke_python/pull/84</li>
+<li><a href="https://github.com/google-labs-jules"><span class="citation" data-cites="google-labs-jules">@google-labs-jules</span></a>[bot] made their first contribution in https://github.com/uriahf/rtichoke_python/pull/260</li>
+</ul>
+<p><strong>Full Changelog</strong>: https://github.com/uriahf/rtichoke_python/commits/v0.1.29</p>
 
 
 </section>
+</section>
 
-</main>
-<hr style="padding: 0; margin: 0;">
- <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
@@ -877,24 +630,24 @@ A Plotly <code>Figure</code> object representing the Decision Curve.
 </div>
 </div>
 </footer>
-<script src="../github-widget.js"></script>
-<script src="../copy-page.js"></script>
-<script src="../sidebar-wrap.js"></script>
+<script src="github-widget.js"></script>
+<script src="copy-page.js"></script>
+<script src="sidebar-wrap.js"></script>
 <script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'sidebar-float.js';document.body.appendChild(s);})();</script>
-<script src="../sidebar-filter.js"></script>
-<script src="../dark-mode-toggle.js"></script>
-<script src="../back-to-top.js"></script>
+<script src="sidebar-filter.js"></script>
+<script src="dark-mode-toggle.js"></script>
+<script src="back-to-top.js"></script>
 <script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'on-this-page.js';document.body.appendChild(s);})();</script>
-<script src="../keyboard-nav.js"></script>
-<script src="../copy-code.js"></script>
-<script src="../details.js"></script>
-<script src="../mermaid-renderer.js"></script>
-<script src="../tooltips.js"></script>
+<script src="keyboard-nav.js"></script>
+<script src="copy-code.js"></script>
+<script src="details.js"></script>
+<script src="mermaid-renderer.js"></script>
+<script src="tooltips.js"></script>
 <script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'color-swatch.js';document.body.appendChild(s);})();</script>
-<script src="../responsive-tables.js"></script>
+<script src="responsive-tables.js"></script>
 <script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'video-embed.js';document.body.appendChild(s);})();</script>
 <script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'termshow.js';document.body.appendChild(s);})();</script>
-<script src="../navbar-widgets.js"></script>
+<script src="navbar-widgets.js"></script>
 
 
 

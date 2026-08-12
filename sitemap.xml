@@ -181,6 +181,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://uriahf.github.io/rtichoke_python/changelog.html</loc>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://uriahf.github.io/rtichoke_python/contributing.html</loc>
     <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
