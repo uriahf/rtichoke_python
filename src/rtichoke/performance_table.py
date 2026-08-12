@@ -68,11 +68,21 @@ def create_performance_table_times(
     Numerical results come from ``prepare_performance_data_times()``. The table
     keeps time horizon and censoring/competing-event heuristics visible so that
     multiple requested evaluation scenarios are not collapsed in presentation.
+    Observed times are normalized to floating point at this public wrapper
+    boundary; fixed-horizon normalization is handled by the shared time-dependent
+    performance pipeline.
     """
+    if isinstance(times, dict):
+        normalized_times = {
+            key: np.asarray(value, dtype=float) for key, value in times.items()
+        }
+    else:
+        normalized_times = np.asarray(times, dtype=float)
+
     performance_data = prepare_performance_data_times(
         probs=probs,
         reals=reals,
-        times=times,
+        times=normalized_times,
         fixed_time_horizons=fixed_time_horizons,
         heuristics_sets=heuristics_sets,
         by=by,
