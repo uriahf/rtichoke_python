@@ -8,15 +8,16 @@
 | Prefix | Purpose | Typical input | Typical output |
 |----|----|----|----|
 | `prepare_*` | Prepare reusable performance data | predictions and observed outcomes | performance data |
-| `create_*` | Prepare data and create a visualization in one call | predictions and observed outcomes | interactive figure |
+| `create_*` | Prepare data and create a visualization or table in one call | predictions and observed outcomes | figure or rendered table |
 | `plot_*` | Visualize data that has already been prepared | performance data | interactive figure |
+| `render_*` | Render already-prepared data as a table | prepared performance data | rendered table |
 
-For example, a direct ROC workflow uses [create_roc_curve()](../reference/create_roc_curve.md#rtichoke.create_roc_curve), while a workflow that first prepares reusable performance data can pass those results to [plot_roc_curve()](../reference/plot_roc_curve.md#rtichoke.plot_roc_curve).
+For example, a direct ROC workflow uses [create_roc_curve()](../reference/create_roc_curve.md#rtichoke.create_roc_curve), while a workflow that first prepares reusable performance data can pass those results to [plot_roc_curve()](../reference/plot_roc_curve.md#rtichoke.plot_roc_curve). Performance tables follow the same direct-versus-prepared-data idea: [create_performance_table()](../reference/create_performance_table.md#rtichoke.create_performance_table) prepares and renders in one call, while [render_performance_table()](../reference/render_performance_table.md#rtichoke.render_performance_table) renders an already-prepared performance-data frame.
 
 
 # Curve families
 
-The same naming pattern repeats across the main performance views:
+The same naming pattern repeats across the main performance curves:
 
 | Performance view | Direct visualization | Plot prepared data |
 |----|----|----|
@@ -29,6 +30,19 @@ The same naming pattern repeats across the main performance views:
 Calibration currently uses the direct [create_calibration_curve()](../reference/create_calibration_curve.md#rtichoke.create_calibration_curve) interface.
 
 
+# Performance tables
+
+Performance tables use a closely related naming pattern:
+
+| Workflow | Function |
+|----|----|
+| Prepare and render a binary-outcome table | [create_performance_table()](../reference/create_performance_table.md#rtichoke.create_performance_table) |
+| Prepare and render a time-to-event table | [create_performance_table_times()](../reference/create_performance_table_times.md#rtichoke.create_performance_table_times) |
+| Render already-prepared performance data | [render_performance_table()](../reference/render_performance_table.md#rtichoke.render_performance_table) |
+
+The table constructors use the same underlying [prepare_performance_data()](../reference/prepare_performance_data.md#rtichoke.prepare_performance_data) and [prepare_performance_data_times()](../reference/prepare_performance_data_times.md#rtichoke.prepare_performance_data_times) pipelines as the curve functions. The `render_*` prefix is used when the numerical performance data already exist and only the presentation layer is needed.
+
+
 # Time-to-event variants
 
 Functions ending in `_times` extend the corresponding workflow to time-to-event outcomes. For example:
@@ -39,6 +53,8 @@ Functions ending in `_times` extend the corresponding workflow to time-to-event 
 - [create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times) → time-to-event calibration curve
 - [create_decision_curve()](../reference/create_decision_curve.md#rtichoke.create_decision_curve) → binary-outcome decision curve
 - [create_decision_curve_times()](../reference/create_decision_curve_times.md#rtichoke.create_decision_curve_times) → time-to-event decision curve
+- [create_performance_table()](../reference/create_performance_table.md#rtichoke.create_performance_table) → binary-outcome performance table
+- [create_performance_table_times()](../reference/create_performance_table_times.md#rtichoke.create_performance_table_times) → time-to-event performance table
 
 The same convention is used for the performance-data preparation functions, such as [prepare_performance_data()](../reference/prepare_performance_data.md#rtichoke.prepare_performance_data) and [prepare_performance_data_times()](../reference/prepare_performance_data_times.md#rtichoke.prepare_performance_data_times).
 
@@ -49,8 +65,9 @@ Think of the API as a small grammar:
 
 ``` text
 prepare + performance data        -> reusable data
-create  + metric/curve            -> data to figure
-plot    + metric/curve            -> prepared data to figure
+create  + curve/table             -> data to rendered output
+plot    + curve                   -> prepared data to figure
+render  + table                   -> prepared data to rendered table
 *_times                           -> time-to-event version
 ```
 
