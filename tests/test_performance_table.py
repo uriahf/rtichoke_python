@@ -68,7 +68,7 @@ def test_create_performance_table_times_supports_reactable():
 
 def test_render_performance_table_preserves_multiple_time_horizons():
     probs, reals, times = _time_example()
-    data = prepare_performance_data_times(probs, reals, times, fixed_time_horizons=[5, 10], by=0.1)
+    data = prepare_performance_data_times(probs, reals, times.astype(float), fixed_time_horizons=[5, 10], by=0.1)
     assert sorted(data.get_column("fixed_time_horizon").unique().to_list()) == [5.0, 10.0]
     assert isinstance(render_performance_table(data), GT)
 
@@ -79,7 +79,7 @@ def test_create_performance_table_times_supports_multiple_heuristic_sets():
         {"censoring_heuristic": "adjusted", "competing_heuristic": "adjusted_as_negative"},
         {"censoring_heuristic": "excluded", "competing_heuristic": "excluded"},
     ]
-    data = prepare_performance_data_times(probs, reals, times, fixed_time_horizons=[5], heuristics_sets=heuristics_sets, by=0.1)
+    data = prepare_performance_data_times(probs, reals, times.astype(float), fixed_time_horizons=[5], heuristics_sets=heuristics_sets, by=0.1)
     assert data.get_column("censoring_heuristic").n_unique() == 2
     assert data.get_column("competing_heuristic").n_unique() == 2
     assert isinstance(render_performance_table(data), GT)
