@@ -51,6 +51,12 @@ from rtichoke.performance_data.performance_data_times import (
     prepare_binned_classification_data_times as prepare_binned_classification_data_times,
 )
 
+from rtichoke.performance_table import (
+    create_performance_table as create_performance_table,
+    create_performance_table_times as create_performance_table_times,
+    render_performance_table as render_performance_table,
+)
+
 from rtichoke.summary_report.summary_report import (
     create_summary_report as create_summary_report,
 )
@@ -69,5 +75,8 @@ __all__ = [
     "plot_decision_curve",
     "prepare_performance_data",
     "prepare_performance_data_times",
+    "create_performance_table",
+    "create_performance_table_times",
+    "render_performance_table",
     "create_summary_report",
 ]

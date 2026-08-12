@@ -71,6 +71,19 @@ jobs:
         if: github.event.action != 'closed'
         run: uv run great-docs build
 
+      - name: Export Great Tables performance table demo
+        if: github.event.action != 'closed'
+        run: uv run marimo export html --no-include-code examples/performance_table_demo.py -o great-docs/_site/performance-table-demo.html
+
+      - name: Export Reactable performance table demo
+        if: github.event.action != 'closed'
+        run: |
+          uv run quarto render examples/performance_table_reactable.qmd --output performance-table-reactable.html
+          grep -q '.Reactable {' performance-table-reactable.html
+          grep -q 'Real Positive' performance-table-reactable.html
+          mv performance-table-reactable.html great-docs/_site/performance-table-reactable.html
+          cp -R examples/performance_table_reactable_files great-docs/_site/performance_table_reactable_files
+
       - name: Deploy PR preview
         uses: rossjrw/pr-preview-action@v1
         with:

@@ -50,6 +50,13 @@ reference:
       - prepare_performance_data_times
       - prepare_binned_classification_data_times
 
+  - title: Performance Tables
+    desc: Summarize model performance across thresholds and time horizons.
+    contents:
+      - create_performance_table
+      - create_performance_table_times
+      - render_performance_table
+
   - title: Discrimination
     desc: ROC, precision-recall, gains, and lift visualizations.
     contents:
