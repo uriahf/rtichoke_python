@@ -184,6 +184,31 @@ pl.DataFrame
     heuristic, and other strata.
 
 
+## Performance Tables
+
+Summarize model performance across thresholds and time horizons.
+
+
+create_performance_table(probs: 'Dict[str, np.ndarray]', reals: 'Union[np.ndarray, Dict[str, np.ndarray]]', by: 'float' = 0.01, stratified_by: 'Sequence[str]' = ('probability_threshold',), color_values: 'Sequence[str]' = ('#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'), renderer: 'PerformanceTableRenderer' = 'great_tables')
+
+Create an R-style rtichoke performance table.
+
+create_performance_table_times(probs: 'Dict[str, np.ndarray]', reals: 'Union[np.ndarray, Dict[str, np.ndarray]]', times: 'Union[np.ndarray, Dict[str, np.ndarray]]', fixed_time_horizons: 'list[float]', heuristics_sets: 'list[Dict]' = [{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}], by: 'float' = 0.01, stratified_by: 'Sequence[str]' = ('probability_threshold',), color_values: 'Sequence[str]' = ('#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'), renderer: 'PerformanceTableRenderer' = 'great_tables')
+
+Create a time-dependent rtichoke performance table.
+
+Numerical results come from ``prepare_performance_data_times()``. The table
+keeps time horizon and censoring/competing-event heuristics visible so that
+multiple requested evaluation scenarios are not collapsed in presentation.
+Observed times are normalized to floating point at this public wrapper
+boundary; fixed-horizon normalization is handled by the shared time-dependent
+performance pipeline.
+
+render_performance_table(performance_data: 'pl.DataFrame', color_values: 'Sequence[str]' = ('#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'), renderer: 'PerformanceTableRenderer' = 'great_tables')
+
+Render prepared performance data with a selected table backend.
+
+
 ## Discrimination
 
 ROC, precision-recall, gains, and lift visualizations.

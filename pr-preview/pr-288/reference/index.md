@@ -20,6 +20,22 @@ Prepare performance data for models with time-to-event outcomes.
 Prepare binned, time-dependent classification data.
 
 
+## Performance Tables
+
+
+Summarize model performance across thresholds and time horizons.
+
+
+[create_performance_table()](create_performance_table.md#rtichoke.create_performance_table)  
+Create an R-style rtichoke performance table.
+
+[create_performance_table_times()](create_performance_table_times.md#rtichoke.create_performance_table_times)  
+Create a time-dependent rtichoke performance table.
+
+[render_performance_table()](render_performance_table.md#rtichoke.render_performance_table)  
+Render prepared performance data with a selected table backend.
+
+
 ## Discrimination
 
 

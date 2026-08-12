@@ -45,7 +45,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-bf476c94c8758bc321fd5fd3b984c438.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-360b2068b25b2f2099f2f47bce35ebf0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -226,9 +226,35 @@ document.addEventListener('DOMContentLoaded', () => {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Discrimination</span></a>
+ <span class="menu-text">Performance Tables</span></a>
 </div>
       <ul id="quarto-sidebar-section-2" class="list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_performance_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_performance_table</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/create_performance_table_times.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">create_performance_table_times</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/render_performance_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">render_performance_table</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Discrimination</span></a>
+</div>
+      <ul id="quarto-sidebar-section-3" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../reference/create_roc_curve.html" class="sidebar-item-text sidebar-link">
@@ -308,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <a class="sidebar-item-text sidebar-link text-start">
  <span class="menu-text">Calibration</span></a>
 </div>
-      <ul id="quarto-sidebar-section-3" class="list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-4" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../reference/create_calibration_curve.html" class="sidebar-item-text sidebar-link">
@@ -328,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <a class="sidebar-item-text sidebar-link text-start">
  <span class="menu-text">Utility</span></a>
 </div>
-      <ul id="quarto-sidebar-section-4" class="list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-5" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../reference/create_decision_curve.html" class="sidebar-item-text sidebar-link">
@@ -360,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
    
   <ul class="collapse">
   <li><a href="#performance-data" id="toc-performance-data" class="nav-link active" data-scroll-target="#performance-data">Performance Data</a></li>
+  <li><a href="#performance-tables" id="toc-performance-tables" class="nav-link" data-scroll-target="#performance-tables">Performance Tables</a></li>
   <li><a href="#discrimination" id="toc-discrimination" class="nav-link" data-scroll-target="#discrimination">Discrimination</a></li>
   <li><a href="#calibration" id="toc-calibration" class="nav-link" data-scroll-target="#calibration">Calibration</a></li>
   <li><a href="#utility" id="toc-utility" class="nav-link" data-scroll-target="#utility">Utility</a></li>
@@ -409,6 +436,26 @@ document.addEventListener('DOMContentLoaded', () => {
 <dt><a href="../reference/prepare_binned_classification_data_times.html#rtichoke.prepare_binned_classification_data_times" class="doc-function doc-label doc-label-function">prepare_binned_classification_data_times()</a></dt>
 <dd>
 <p>Prepare binned, time-dependent classification data.</p>
+</dd>
+</dl>
+</section>
+<section id="performance-tables" class="level2 doc-group">
+<h2 class="doc-group">Performance Tables</h2>
+<div class="doc-description">
+<p>Summarize model performance across thresholds and time horizons.</p>
+</div>
+<dl>
+<dt><a href="../reference/create_performance_table.html#rtichoke.create_performance_table" class="doc-function doc-label doc-label-function">create_performance_table()</a></dt>
+<dd>
+<p>Create an R-style rtichoke performance table.</p>
+</dd>
+<dt><a href="../reference/create_performance_table_times.html#rtichoke.create_performance_table_times" class="doc-function doc-label doc-label-function">create_performance_table_times()</a></dt>
+<dd>
+<p>Create a time-dependent rtichoke performance table.</p>
+</dd>
+<dt><a href="../reference/render_performance_table.html#rtichoke.render_performance_table" class="doc-function doc-label doc-label-function">render_performance_table()</a></dt>
+<dd>
+<p>Render prepared performance data with a selected table backend.</p>
 </dd>
 </dl>
 </section>

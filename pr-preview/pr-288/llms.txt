@@ -14,6 +14,13 @@
 - [prepare_performance_data_times](https://uriahf.github.io/rtichoke_python/reference/prepare_performance_data_times.html): Prepare performance data for models with time-to-event outcomes
 - [prepare_binned_classification_data_times](https://uriahf.github.io/rtichoke_python/reference/prepare_binned_classification_data_times.html): Prepare binned, time-dependent classification data
 
+#### Performance Tables
+> Summarize model performance across thresholds and time horizons.
+
+- [create_performance_table](https://uriahf.github.io/rtichoke_python/reference/create_performance_table.html): Create an R-style rtichoke performance table
+- [create_performance_table_times](https://uriahf.github.io/rtichoke_python/reference/create_performance_table_times.html): Create a time-dependent rtichoke performance table
+- [render_performance_table](https://uriahf.github.io/rtichoke_python/reference/render_performance_table.html): Render prepared performance data with a selected table backend
+
 #### Discrimination
 > ROC, precision-recall, gains, and lift visualizations.
 

@@ -4,8 +4,8 @@ Performance tables summarize several model-performance quantities at the same pr
 
 `rtichoke` provides two public constructors:
 
-- `create_performance_table()` for binary outcomes.
-- `create_performance_table_times()` for time-to-event outcomes at one or more fixed horizons.
+- [create_performance_table()](../reference/create_performance_table.md#rtichoke.create_performance_table) for binary outcomes.
+- [create_performance_table_times()](../reference/create_performance_table_times.md#rtichoke.create_performance_table_times) for time-to-event outcomes at one or more fixed horizons.
 
 Both use the existing [prepare_performance_data()](../reference/prepare_performance_data.md#rtichoke.prepare_performance_data) / [prepare_performance_data_times()](../reference/prepare_performance_data_times.md#rtichoke.prepare_performance_data_times) pipelines as their numerical source of truth. The table layer is presentation only.
 
@@ -50,7 +50,7 @@ rk.create_performance_table(
 
 # Time-dependent performance tables
 
-`create_performance_table_times()` applies the same idea to time-to-event prediction. You supply observed times and one or more fixed horizons:
+[create_performance_table_times()](../reference/create_performance_table_times.md#rtichoke.create_performance_table_times) applies the same idea to time-to-event prediction. You supply observed times and one or more fixed horizons:
 
 ``` python
 import numpy as np
@@ -113,7 +113,7 @@ rk.create_performance_table(
 
 The Reactable backend adds richer interaction such as sortable columns and expandable confusion-matrix details. It is retained as an option for environments that support its Jupyter widget bridge; it is **not** the Marimo renderer.
 
-The same `renderer=` argument is available on `create_performance_table_times()`.
+The same `renderer=` argument is available on [create_performance_table_times()](../reference/create_performance_table_times.md#rtichoke.create_performance_table_times).
 
 
 # Render prepared performance data directly
