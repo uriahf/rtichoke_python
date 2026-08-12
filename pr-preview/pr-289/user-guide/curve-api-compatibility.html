@@ -82,7 +82,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-360b2068b25b2f2099f2f47bce35ebf0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-bf476c94c8758bc321fd5fd3b984c438.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -258,7 +258,8 @@ document.addEventListener('DOMContentLoaded', () => {
    
   <ul class="collapse">
   <li><a href="#capability-matrix" id="toc-capability-matrix" class="nav-link active" data-scroll-target="#capability-matrix">Capability matrix</a></li>
-  <li><a href="#calibration-with-named-populations" id="toc-calibration-with-named-populations" class="nav-link" data-scroll-target="#calibration-with-named-populations">Calibration with named populations</a></li>
+  <li><a href="#multiple-named-populations" id="toc-multiple-named-populations" class="nav-link" data-scroll-target="#multiple-named-populations">Multiple named populations</a></li>
+  <li><a href="#censoring-and-competing-event-heuristics" id="toc-censoring-and-competing-event-heuristics" class="nav-link" data-scroll-target="#censoring-and-competing-event-heuristics">Censoring and competing-event heuristics</a></li>
   <li><a href="#time-dependent-calibration-heuristics" id="toc-time-dependent-calibration-heuristics" class="nav-link" data-scroll-target="#time-dependent-calibration-heuristics">Time-dependent calibration heuristics</a></li>
   <li><a href="#numeric-time-horizons" id="toc-numeric-time-horizons" class="nav-link" data-scroll-target="#numeric-time-horizons">Numeric time horizons</a></li>
   <li><a href="#related-functions" id="toc-related-functions" class="nav-link" data-scroll-target="#related-functions">Related functions</a></li>
@@ -317,6 +318,20 @@ document.addEventListener('DOMContentLoaded', () => {
 <td>Integer and floating-point values supported</td>
 </tr>
 <tr class="odd">
+<td>Gains</td>
+<td>Supported</td>
+<td>Supported</td>
+<td><code>adjusted</code> / <code>adjusted_as_negative</code></td>
+<td>Integer and floating-point values supported</td>
+</tr>
+<tr class="even">
+<td>Lift</td>
+<td>Supported</td>
+<td>Supported</td>
+<td><code>adjusted</code> / <code>adjusted_as_negative</code></td>
+<td>Integer and floating-point values supported</td>
+</tr>
+<tr class="odd">
 <td>Decision curve</td>
 <td>Supported</td>
 <td>Supported</td>
@@ -325,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </tr>
 <tr class="even">
 <td>Calibration</td>
-<td>Supported with matching population keys</td>
+<td>Supported</td>
 <td>Supported</td>
 <td><strong>No default on <a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a></strong>; pass explicitly</td>
 <td>Integer and floating-point values supported</td>
@@ -333,9 +348,9 @@ document.addEventListener('DOMContentLoaded', () => {
 </tbody>
 </table>
 </section>
-<section id="calibration-with-named-populations" class="level1">
-<h1>Calibration with named populations</h1>
-<p>Matching dictionary keys are paired population-by-population. Each probability vector must match the outcome vector for its own population, but populations may have different sample sizes.</p>
+<section id="multiple-named-populations" class="level1">
+<h1>Multiple named populations</h1>
+<p>The curve families accept named probability arrays, so populations such as Train and Test can be evaluated together. When outcomes are also supplied as a dictionary, matching dictionary keys are paired population-by-population. Each probability vector must match the outcome vector for its own population, but different populations may have different sample sizes.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rtichoke <span class="im">as</span> rk</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -349,16 +364,27 @@ document.addEventListener('DOMContentLoaded', () => {
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_calibration_curve(probs<span class="op">=</span>probs, reals<span class="op">=</span>reals)</span></code></pre></div>
-<p>In this example, Train has six observations and Test has four. That is supported. What matters is:</p>
+<p>Here Train has six observations and Test has four. That is supported. What matters is the within-population alignment:</p>
 <pre class="text"><code>len(probs["Train"]) == len(reals["Train"])
 len(probs["Test"])  == len(reals["Test"])</code></pre>
+<p>The same named-population pattern is used by ROC, precision-recall, Gains, Lift, decision, and calibration curve families. For time-dependent calls, <code>times</code> follows the same population alignment when supplied as a dictionary.</p>
+</section>
+<section id="censoring-and-competing-event-heuristics" class="level1">
+<h1>Censoring and competing-event heuristics</h1>
+<p>Time-dependent functions distinguish censoring from competing events. The heuristic for an outcome type matters only when observations of that type are present:</p>
+<ul>
+<li>If there are no competing events, changing <code>competing_heuristic</code> does not change the statistical estimates because there are no competing events for that rule to act on.</li>
+<li>If there are no censored observations, changing <code>censoring_heuristic</code> does not change the statistical estimates because there are no censored observations for that rule to act on.</li>
+<li>If neither censoring nor competing events are present, the heuristic choices do not alter the estimates.</li>
+</ul>
+<p>These statements describe the effect of the heuristics on the estimates. Function-specific input validation still applies: a function can reject an unsupported heuristic combination even when the corresponding outcome type is absent.</p>
 </section>
 <section id="time-dependent-calibration-heuristics" class="level1">
 <h1>Time-dependent calibration heuristics</h1>
-<p><a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> still differs from its ROC, precision-recall, and decision-curve siblings in two important ways:</p>
+<p><a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> differs from its ROC, precision-recall, Gains, Lift, and decision-curve siblings in two important ways:</p>
 <ol type="1">
 <li><code>heuristics_sets</code> is currently required rather than defaulted.</li>
-<li>Calibration explicitly rejects <code>censoring_heuristic="adjusted"</code> and <code>competing_heuristic="adjusted_as_censored"</code> with an <code>Unsupported calibration heuristics</code> error instead of silently skipping every requested horizon.</li>
+<li>Calibration explicitly rejects unsupported heuristic combinations, including <code>censoring_heuristic="adjusted"</code> and <code>competing_heuristic="adjusted_as_censored"</code>, with an <code>Unsupported calibration heuristics</code> error instead of silently skipping every requested horizon.</li>
 </ol>
 <p>Pass the calibration heuristic explicitly. For the currently working exclusion-based path:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>heuristics_sets <span class="op">=</span> [</span>
@@ -382,7 +408,7 @@ len(probs["Test"])  == len(reals["Test"])</code></pre>
 </section>
 <section id="related-functions" class="level1">
 <h1>Related functions</h1>
-<p>When moving between curve families, compare the API reference for <a href="../reference/create_calibration_curve.html#rtichoke.create_calibration_curve" class="gdls-link gdls-code">create_calibration_curve()</a>, <a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a>, <a href="../reference/create_roc_curve_times.html#rtichoke.create_roc_curve_times" class="gdls-link gdls-code">create_roc_curve_times()</a>, <a href="../reference/create_precision_recall_curve_times.html#rtichoke.create_precision_recall_curve_times" class="gdls-link gdls-code">create_precision_recall_curve_times()</a>, and <a href="../reference/create_decision_curve_times.html#rtichoke.create_decision_curve_times" class="gdls-link gdls-code">create_decision_curve_times()</a> rather than assuming their defaults and accepted heuristics are identical.</p>
+<p>When moving between curve families, compare the API reference for the relevant <code>_times()</code> functions rather than assuming their defaults and accepted heuristics are identical. In particular, calibration has a narrower heuristic contract than the other time-dependent curve families.</p>
 
 
 </section>
