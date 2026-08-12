@@ -36,3 +36,58 @@ jobs:
 
       - name: Show package version
         run: grep -r "version" pyproject.toml || grep -r "__version__" rtichoke/ || python -c "import rtichoke; print(rtichoke.__version__)"
+
+  release:
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check for intentional release marker change
+        id: marker
+        shell: bash
+        run: |
+          if git diff --name-only HEAD^ HEAD | grep -qx '.github/release-version'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install uv
+        if: steps.marker.outputs.changed == 'true'
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.10"
+
+      - name: Validate release version
+        if: steps.marker.outputs.changed == 'true'
+        id: version
+        shell: bash
+        run: |
+          RELEASE_VERSION=$(tr -d '[:space:]' < .github/release-version)
+          PACKAGE_VERSION=$(sed -n 's/^version = "\([^"]*\)"/\1/p' pyproject.toml | head -n 1)
+          test -n "$RELEASE_VERSION"
+          test "$RELEASE_VERSION" = "$PACKAGE_VERSION"
+          echo "version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build package
+        if: steps.marker.outputs.changed == 'true'
+        run: uv build
+
+      - name: Publish to PyPI
+        if: steps.marker.outputs.changed == 'true'
+        run: uv publish
+
+      - name: Create GitHub release
+        if: steps.marker.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: gh release create "v${VERSION}" --target "${GITHUB_SHA}" --generate-notes --title "v${VERSION}"
