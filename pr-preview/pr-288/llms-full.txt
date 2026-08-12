@@ -549,7 +549,7 @@ Figure
 
 ## Calibration
 
-Calibration visualizations for classification and time-to-event models.
+Calibration visualizations for classification and time-to-event models. See Curve API Compatibility for time-dependent heuristic and horizon differences.
 
 
 create_calibration_curve(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], calibration_type: str = 'discrete', size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
@@ -569,7 +569,11 @@ Returns:
 
 create_calibration_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: List[float], heuristics_sets: List[Dict[str, str]], calibration_type: str = 'discrete', size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
 
-Creates a time-dependent Calibration Curve with a slider for different time horizons.
+Create a time-dependent calibration curve across fixed horizons.
+
+Raises:
+    ValueError: If a heuristic set requests adjusted censoring or treats
+        competing events as censored, which calibration does not support.
 
 
 ## Utility
@@ -728,6 +732,10 @@ Most `rtichoke` plotting functions use two dictionaries:
 - `probs`: model predictions, keyed by model or population name.
 - `reals`: observed outcomes, keyed by population name.
 
+::: {.callout-tip}
+Similar curve families can still differ in defaults and time-dependent handling. See [Curve API Compatibility](curve-api-compatibility.html), and if a call fails, search [Common Errors & Fixes](common-errors.html) by literal exception text.
+:::
+
 ## Single model
 
 ```python
@@ -770,16 +778,16 @@ fig.show()
 
 ## Compare populations
 
-To compare a model across populations, provide matching keys in `probs` and `reals`.
+To compare a model across populations, provide matching keys in `probs` and `reals`. Population sizes may differ; each probability vector only needs to match the outcome vector for the same key.
 
 ```python
 probs_populations = {
     "Train": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),
-    "Test": np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6]),
+    "Test": np.array([0.2, 0.8, 0.3, 0.7]),
 }
 reals_populations = {
     "Train": np.array([0, 1, 0, 1, 0, 1]),
-    "Test": np.array([0, 1, 0, 1, 0, 0]),
+    "Test": np.array([0, 1, 0, 0]),
 }
 
 fig = rk.create_calibration_curve(
@@ -790,7 +798,9 @@ fig = rk.create_calibration_curve(
 fig.show()
 ```
 
-From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The [Naming Conventions](user-guide/naming-conventions.html) guide explains how the exported function families fit together.
+Here, `Train` contains six observations and `Test` contains four. This matching-key contract is supported by calibration as well as the other curve families.
+
+From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The [Naming Conventions](naming-conventions.html) guide explains how the exported function families fit together, while [Curve API Compatibility](curve-api-compatibility.html) documents where those families still differ.
 
 
 ### Naming Conventions
@@ -846,4 +856,185 @@ plot    + metric/curve            -> prepared data to figure
 ```
 
 This convention is intended to make related functions discoverable without requiring users to memorize every exported name.
+
+
+
+## Using rtichoke
+
+### Curve API Compatibility
+
+`rtichoke` exposes parallel function families for discrimination, calibration, and decision-curve analysis. Most of them share the same input conventions; the main differences are in time-dependent heuristic handling, especially calibration.
+
+This page focuses on the conventions that are shared across curve families and on the few places where users should expect different behavior.
+
+## Multiple named populations
+
+The curve families accept named probability arrays, so populations such as Train and Test can be evaluated together. When outcomes are also supplied as a dictionary, matching dictionary keys are paired population-by-population. Each probability vector must match the outcome vector for its own population, but different populations may have different sample sizes.
+
+```python
+import numpy as np
+import rtichoke as rk
+
+probs = {
+    "Train": np.array([0.10, 0.90, 0.20, 0.80, 0.30, 0.70]),
+    "Test": np.array([0.15, 0.85, 0.25, 0.75]),
+}
+reals = {
+    "Train": np.array([0, 1, 0, 1, 0, 1]),
+    "Test": np.array([0, 1, 0, 0]),
+}
+
+fig = rk.create_calibration_curve(probs=probs, reals=reals)
+```
+
+Here Train has six observations and Test has four. That is supported. What matters is the within-population alignment:
+
+```text
+len(probs["Train"]) == len(reals["Train"])
+len(probs["Test"])  == len(reals["Test"])
+```
+
+The same named-population pattern is used by ROC, precision-recall, Gains, Lift, decision, and calibration curve families. For time-dependent calls, `times` follows the same population alignment when supplied as a dictionary.
+
+## Censoring and competing-event heuristics
+
+Time-dependent functions distinguish censoring from competing events. The heuristic for an outcome type matters only when observations of that type are present:
+
+- If there are no competing events, changing `competing_heuristic` does not change the statistical estimates because there are no competing events for that rule to act on.
+- If there are no censored observations, changing `censoring_heuristic` does not change the statistical estimates because there are no censored observations for that rule to act on.
+- If neither censoring nor competing events are present, the heuristic choices do not alter the estimates.
+
+These statements describe the effect of the heuristics on the estimates. Function-specific input validation still applies: a function can reject an unsupported heuristic combination even when the corresponding outcome type is absent.
+
+## Time-dependent calibration heuristics
+
+`create_calibration_curve_times()` differs from its ROC, precision-recall, Gains, Lift, and decision-curve siblings in two important ways:
+
+1. `heuristics_sets` is currently required rather than defaulted.
+2. Calibration explicitly rejects unsupported heuristic combinations, including `censoring_heuristic="adjusted"` and `competing_heuristic="adjusted_as_censored"`, with an `Unsupported calibration heuristics` error instead of silently skipping every requested horizon.
+
+Pass the calibration heuristic explicitly. For the currently working exclusion-based path:
+
+```python
+heuristics_sets = [
+    {
+        "censoring_heuristic": "excluded",
+        "competing_heuristic": "adjusted_as_negative",
+    }
+]
+```
+
+Then call:
+
+```python
+fig = rk.create_calibration_curve_times(
+    probs=probs,
+    reals=reals,
+    times=times,
+    fixed_time_horizons=[3.0, 6.0, 9.0],
+    heuristics_sets=heuristics_sets,
+)
+```
+
+## Numeric time horizons
+
+`fixed_time_horizons` accepts integer or floating-point numeric values. Integer horizons are normalized to floats at the shared time-dependent processing boundary, so `[3, 6, 9]` and `[3.0, 6.0, 9.0]` are equivalent.
+
+## Related functions
+
+When moving between curve families, compare the API reference for the relevant `_times()` functions rather than assuming their defaults and accepted heuristics are identical. In particular, calibration has a narrower heuristic contract than the other time-dependent curve families.
+
+
+### Common Errors & Fixes
+
+This page is deliberately keyed by **literal error text**. If an rtichoke call fails, search this page for a distinctive part of the exception before tracing into the implementation.
+
+## Population key or length mismatch
+
+For matching `probs` and `reals` dictionaries, rtichoke pairs values population-by-population. Different populations may have different sample sizes, but lengths must match within each key.
+
+```python
+probs = {
+    "Train": train_probs,
+    "Test": test_probs,
+}
+reals = {
+    "Train": train_outcomes,
+    "Test": test_outcomes,
+}
+```
+
+Check that the keys match and that each pair has equal length. Unequal Train/Test sample sizes are supported across the curve families that accept these inputs. For time-dependent calls, dictionary-valued `times` must follow the same population alignment.
+
+See [Curve API Compatibility](curve-api-compatibility.html) for the family-by-family comparison.
+
+## `Unsupported calibration heuristics`
+
+### Where this appears
+
+`create_calibration_curve_times()`.
+
+### Why it happens
+
+Calibration does not currently implement `censoring_heuristic="adjusted"` or
+`competing_heuristic="adjusted_as_censored"`. These inputs are rejected
+before curve construction rather than silently skipping every requested horizon.
+
+### Fix
+
+Pass a supported calibration heuristic explicitly. For the exclusion-based path:
+
+```python
+heuristics_sets = [
+    {
+        "censoring_heuristic": "excluded",
+        "competing_heuristic": "adjusted_as_negative",
+    }
+]
+```
+
+Do not infer calibration defaults from the other time-dependent curve families.
+
+A heuristic only changes estimates when the corresponding outcome type is present: a competing-event rule has no statistical effect when there are no competing events, and a censoring rule has no statistical effect when there is no censoring. Input validation is separate from this statistical point, so unsupported calibration combinations can still be rejected even when the relevant outcome type is absent.
+
+## `No data remaining after applying heuristics and time horizons.`
+
+Unsupported calibration heuristics now raise the targeted error above. If this
+message still appears, the supported heuristic and horizon combination removed
+all observations. Check the observed times, event values, requested horizons,
+and exclusion rules.
+
+## Integer and floating-point time horizons
+
+`fixed_time_horizons` accepts integer and floating-point numeric values.
+Integer horizons are normalized to floats internally:
+
+```python
+fixed_time_horizons=[3, 6, 9]
+```
+
+is equivalent to:
+
+```python
+fixed_time_horizons=[3.0, 6.0, 9.0]
+```
+
+## Why is `heuristics_sets` missing?
+
+If Python reports that `create_calibration_curve_times()` is missing the required `heuristics_sets` argument, that is currently expected API behavior. Unlike the ROC, precision-recall, Gains, Lift, and decision-curve `_times` functions, calibration does not currently provide a default.
+
+Pass it explicitly rather than copying a sibling default:
+
+```python
+heuristics_sets = [
+    {
+        "censoring_heuristic": "excluded",
+        "competing_heuristic": "adjusted_as_negative",
+    }
+]
+```
+
+## Still stuck?
+
+Check [Curve API Compatibility](curve-api-compatibility.html) first. The most important remaining difference is calibration's required and narrower heuristic selection, not unequal population sizes or integer horizons.
 

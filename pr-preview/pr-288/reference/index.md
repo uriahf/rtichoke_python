@@ -66,14 +66,14 @@ Plots a Lift curve from pre-computed performance data.
 ## Calibration
 
 
-Calibration visualizations for classification and time-to-event models.
+Calibration visualizations for classification and time-to-event models. See Curve API Compatibility for time-dependent heuristic and horizon differences.
 
 
 [create_calibration_curve()](create_calibration_curve.md#rtichoke.create_calibration_curve)  
 Creates Calibration Curve
 
 [create_calibration_curve_times()](create_calibration_curve_times.md#rtichoke.create_calibration_curve_times)  
-Creates a time-dependent Calibration Curve with a slider for different time horizons.
+Create a time-dependent calibration curve across fixed horizons.
 
 
 ## Utility

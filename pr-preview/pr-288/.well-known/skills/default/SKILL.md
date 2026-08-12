@@ -1,66 +1,49 @@
----
-name: rtichoke
-description: >
-  interactive visualizations for performance of predictive models. Use when writing Python code that uses the rtichoke package.
-license: MIT
-compatibility: Requires Python >=3.9.
----
-
 # rtichoke
 
-interactive visualizations for performance of predictive models
+Use this skill when writing or debugging Python code that evaluates predictive-model performance with `rtichoke`.
 
-## Installation
+## Start here
 
-```bash
-pip install rtichoke
-```
+- Use the generated API reference for signatures and parameter details.
+- Use `llms-full.txt` for the complete API plus user-guide content.
+- Read **Curve API Compatibility** before assuming that all curve families accept identical time-dependent heuristics.
+- Search **Common Errors & Fixes** by literal exception text before source-diving.
 
-## API overview
+## Function families
 
-### Performance Data
+The main exported families include:
 
-Prepare classification and time-to-event data for visualization.
+- ROC: `create_roc_curve()`, `create_roc_curve_times()`
+- Precision-recall: `create_precision_recall_curve()`, `create_precision_recall_curve_times()`
+- Gains: `create_gains_curve()`, `create_gains_curve_times()`
+- Lift: `create_lift_curve()`, `create_lift_curve_times()`
+- Calibration: `create_calibration_curve()`, `create_calibration_curve_times()`
+- Decision curve: `create_decision_curve()`, `create_decision_curve_times()`
 
-- `prepare_performance_data`: Prepare performance data for binary classification models
-- `prepare_binned_classification_data`: Prepare probability-binned classification data for binary outcomes
-- `prepare_performance_data_times`: Prepare performance data for models with time-to-event outcomes
-- `prepare_binned_classification_data_times`: Prepare binned, time-dependent classification data
+Similar names do not guarantee identical edge-case behavior.
 
-### Discrimination
+## Shared input patterns
 
-ROC, precision-recall, gains, and lift visualizations.
+- Named populations such as Train and Test can be represented by dictionaries. With dictionary-valued outcomes, keys are paired population-by-population and lengths must match within each population; populations themselves may have different sample sizes.
+- For time-dependent calls, dictionary-valued `times` follows the same population alignment.
+- A censoring heuristic affects estimates only when censored observations are present. A competing-event heuristic affects estimates only when competing events are present. Function-specific validation rules still apply independently of whether a heuristic would change the estimates.
+- `fixed_time_horizons` accepts numeric values. Integer horizons such as `[3, 6, 9]` are normalized to floats at the shared time-dependent processing boundary.
 
-- `create_roc_curve`: Creates a Receiver Operating Characteristic (ROC) curve
-- `create_roc_curve_times`: Creates a time-dependent Receiver Operating Characteristic (ROC) curve
-- `plot_roc_curve`: Plots an ROC curve from pre-computed performance data
-- `create_precision_recall_curve`: Creates a Precision-Recall curve
-- `create_precision_recall_curve_times`: Creates a time-dependent Precision-Recall curve
-- `plot_precision_recall_curve`: Plots a Precision-Recall curve from pre-computed performance data
-- `create_gains_curve`: Creates a Gains curve
-- `create_gains_curve_times`: Creates a time-dependent Gains curve
-- `plot_gains_curve`: Plots a Gains curve from pre-computed performance data
-- `create_lift_curve`: Creates a Lift curve
-- `create_lift_curve_times`: Creates a time-dependent Lift curve
-- `plot_lift_curve`: Plots a Lift curve from pre-computed performance data
+## Calibration gotchas
 
-### Calibration
+1. `create_calibration_curve_times()` currently requires `heuristics_sets`; it does not inherit the default used by ROC/PR/Gains/Lift/decision `_times` functions.
+2. Time-dependent calibration rejects `censoring_heuristic="adjusted"` and `competing_heuristic="adjusted_as_censored"` with an actionable `Unsupported calibration heuristics` error. A supported exclusion-based path uses `censoring_heuristic="excluded"` with `competing_heuristic="adjusted_as_negative"`.
 
-Calibration visualizations for classification and time-to-event models.
+## Debugging rule
 
-- `create_calibration_curve`: Creates Calibration Curve
-- `create_calibration_curve_times`: Creates a time-dependent Calibration Curve with a slider for different time horizons
+When a call that works for another time-dependent curve family fails for calibration, first check whether the failure concerns:
 
-### Utility
-
-Decision-curve analysis for classification and time-to-event models.
-
-- `create_decision_curve`: Creates a Decision Curve
-- `create_decision_curve_times`: Creates a time-dependent Decision Curve
-- `plot_decision_curve`: Plots a Decision Curve from pre-computed performance data
+- mismatched population keys or within-population lengths,
+- `heuristics_sets`,
+- or an unsupported calibration heuristic.
 
 ## Resources
 
-- [Full documentation](https://uriahf.github.io/rtichoke_python/)
-- [llms.txt](llms.txt) — Indexed API reference for LLMs
-- [llms-full.txt](llms-full.txt) — Comprehensive documentation for LLMs
+- Documentation site: https://uriahf.github.io/rtichoke_python/
+- Full machine-readable documentation: https://uriahf.github.io/rtichoke_python/llms-full.txt
+- Source repository: https://github.com/uriahf/rtichoke_python
