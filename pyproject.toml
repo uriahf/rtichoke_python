@@ -17,7 +17,7 @@ dependencies = [
     "great-tables>=0.18.0",
 ]
 name = "rtichoke"
-version = "0.1.30"
+version = "0.1.31"
 description = "interactive visualizations for performance of predictive models"
 readme = "README.md"
 
