@@ -99,7 +99,29 @@ def create_calibration_curve_times(
         "#585123",
     ],
 ) -> Figure:
-    """Creates a time-dependent Calibration Curve with a slider for different time horizons."""
+    """Create a time-dependent calibration curve across fixed horizons.
+
+    Raises:
+        ValueError: If a heuristic set requests adjusted censoring or treats
+            competing events as censored, which calibration does not support.
+    """
+
+    unsupported = [
+        heuristics
+        for heuristics in heuristics_sets
+        if heuristics.get("censoring_heuristic") == "adjusted"
+        or heuristics.get("competing_heuristic") == "adjusted_as_censored"
+    ]
+    if unsupported:
+        raise ValueError(
+            "Unsupported calibration heuristics: "
+            "create_calibration_curve_times() does not support "
+            "censoring_heuristic='adjusted' or "
+            "competing_heuristic='adjusted_as_censored'. "
+            "Use a supported heuristic combination such as "
+            "censoring_heuristic='excluded' with "
+            "competing_heuristic='adjusted_as_negative'."
+        )
 
     calibration_curve_list_times = _create_calibration_curve_list_times(
         probs,

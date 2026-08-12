@@ -30,7 +30,7 @@ from rtichoke.discrimination.gains import (
 )
 from rtichoke.discrimination.gains import plot_gains_curve as plot_gains_curve
 
-from rtichoke.calibration.calibration import (
+from rtichoke.calibration import (
     create_calibration_curve as create_calibration_curve,
     create_calibration_curve_times as create_calibration_curve_times,
 )
