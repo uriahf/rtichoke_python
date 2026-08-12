@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Train"</span>: train_outcomes,</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test"</span>: test_outcomes,</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
-<p>Check that the keys match and that each pair has equal length. Unequal Train/Test sample sizes are supported.</p>
+<p>Check that the keys match and that each pair has equal length. Unequal Train/Test sample sizes are supported across the curve families that accept these inputs. For time-dependent calls, dictionary-valued <code>times</code> must follow the same population alignment.</p>
 <p>See <a href="curve-api-compatibility.html">Curve API Compatibility</a> for the family-by-family comparison.</p>
 </section>
 <section id="unsupported-calibration-heuristics" class="level1">
@@ -326,7 +326,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"competing_heuristic"</span>: <span class="st">"adjusted_as_negative"</span>,</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div>
-<p>Do not infer calibration defaults from <a href="../reference/create_roc_curve_times.html#rtichoke.create_roc_curve_times" class="gdls-link gdls-code">create_roc_curve_times()</a>, <a href="../reference/create_precision_recall_curve_times.html#rtichoke.create_precision_recall_curve_times" class="gdls-link gdls-code">create_precision_recall_curve_times()</a>, or <a href="../reference/create_decision_curve_times.html#rtichoke.create_decision_curve_times" class="gdls-link gdls-code">create_decision_curve_times()</a>.</p>
+<p>Do not infer calibration defaults from the other time-dependent curve families.</p>
+<p>A heuristic only changes estimates when the corresponding outcome type is present: a competing-event rule has no statistical effect when there are no competing events, and a censoring rule has no statistical effect when there is no censoring. Input validation is separate from this statistical point, so unsupported calibration combinations can still be rejected even when the relevant outcome type is absent.</p>
 </section>
 </section>
 <section id="no-data-remaining-after-applying-heuristics-and-time-horizons." class="level1">
@@ -342,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </section>
 <section id="why-is-heuristics_sets-missing" class="level1">
 <h1>Why is <code>heuristics_sets</code> missing?</h1>
-<p>If Python reports that <a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> is missing the required <code>heuristics_sets</code> argument, that is currently expected API behavior. Unlike the ROC, precision-recall, and decision-curve <code>_times</code> functions, calibration does not currently provide a default.</p>
+<p>If Python reports that <a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> is missing the required <code>heuristics_sets</code> argument, that is currently expected API behavior. Unlike the ROC, precision-recall, Gains, Lift, and decision-curve <code>_times</code> functions, calibration does not currently provide a default.</p>
 <p>Pass it explicitly rather than copying a sibling default:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>heuristics_sets <span class="op">=</span> [</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    {</span>
@@ -353,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </section>
 <section id="still-stuck" class="level1">
 <h1>Still stuck?</h1>
-<p>Check <a href="curve-api-compatibility.html">Curve API Compatibility</a> first. The most important remaining difference is calibration’s required heuristic selection, not unequal population sizes or integer horizons.</p>
+<p>Check <a href="curve-api-compatibility.html">Curve API Compatibility</a> first. The most important remaining difference is calibration’s required and narrower heuristic selection, not unequal population sizes or integer horizons.</p>
 
 
 </section>
