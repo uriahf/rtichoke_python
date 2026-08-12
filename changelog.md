@@ -3,6 +3,18 @@
 This changelog is generated automatically from [GitHub Releases](https://github.com/uriahf/rtichoke_python/releases).
 
 
+# v0.1.30
+
+*2026-08-12* · [GitHub](https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.30)
+
+
+## What's Changed
+
+- Allow adjusted calibration when censoring is absent by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/297
+
+**Full Changelog**: [https://github.com/uriahf/rtichoke_python/compare/v0.1.29…v0.1.30](https://github.com/uriahf/rtichoke_python/compare/v0.1.29...v0.1.30)
+
+
 # v0.1.29
 
 *2026-08-12* · [GitHub](https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.29)
