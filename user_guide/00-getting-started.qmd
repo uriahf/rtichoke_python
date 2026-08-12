@@ -37,6 +37,10 @@ Most `rtichoke` plotting functions use two dictionaries:
 - `probs`: model predictions, keyed by model or population name.
 - `reals`: observed outcomes, keyed by population name.
 
+::: {.callout-tip}
+Similar curve families can still differ in defaults and time-dependent handling. See [Curve API Compatibility](curve-api-compatibility.html), and if a call fails, search [Common Errors & Fixes](common-errors.html) by literal exception text.
+:::
+
 ## Single model
 
 ```python
@@ -79,16 +83,16 @@ fig.show()
 
 ## Compare populations
 
-To compare a model across populations, provide matching keys in `probs` and `reals`.
+To compare a model across populations, provide matching keys in `probs` and `reals`. Population sizes may differ; each probability vector only needs to match the outcome vector for the same key.
 
 ```python
 probs_populations = {
     "Train": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),
-    "Test": np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6]),
+    "Test": np.array([0.2, 0.8, 0.3, 0.7]),
 }
 reals_populations = {
     "Train": np.array([0, 1, 0, 1, 0, 1]),
-    "Test": np.array([0, 1, 0, 1, 0, 0]),
+    "Test": np.array([0, 1, 0, 0]),
 }
 
 fig = rk.create_calibration_curve(
@@ -99,4 +103,6 @@ fig = rk.create_calibration_curve(
 fig.show()
 ```
 
-From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The [Naming Conventions](user-guide/naming-conventions.html) guide explains how the exported function families fit together.
+Here, `Train` contains six observations and `Test` contains four. This matching-key contract is supported by calibration as well as the other curve families.
+
+From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The [Naming Conventions](naming-conventions.html) guide explains how the exported function families fit together, while [Curve API Compatibility](curve-api-compatibility.html) documents where those families still differ.

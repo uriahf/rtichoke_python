@@ -5,6 +5,10 @@ user_guide: user_guide
 homepage: user_guide
 site_url: https://uriahf.github.io/rtichoke_python/
 
+changelog:
+  enabled: true
+  max_releases: 50
+
 include_in_header:
   - text: |
       <script>
@@ -63,7 +67,7 @@ reference:
       - plot_lift_curve
 
   - title: Calibration
-    desc: Calibration visualizations for classification and time-to-event models.
+    desc: Calibration visualizations for classification and time-to-event models. See Curve API Compatibility for time-dependent heuristic and horizon differences.
     contents:
       - create_calibration_curve
       - create_calibration_curve_times
