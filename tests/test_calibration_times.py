@@ -1,6 +1,8 @@
 import numpy as np
 import pytest
-from rtichoke import create_calibration_curve_times as create_calibration_curve_times_top_level
+from rtichoke import (
+    create_calibration_curve_times as create_calibration_curve_times_top_level,
+)
 from rtichoke.calibration import create_calibration_curve_times
 from rtichoke.calibration.calibration import (
     create_calibration_curve_times as create_calibration_curve_times_direct,
@@ -89,24 +91,72 @@ def test_create_calibration_curve_times_allows_adjusted_without_censoring(entry_
     "entry_point",
     [create_calibration_curve_times_top_level, create_calibration_curve_times_direct],
 )
-def test_create_calibration_curve_times_rejects_adjusted_with_censoring(entry_point):
+def test_create_calibration_curve_times_adjusts_independent_censoring(entry_point):
     probs = {"model_1": np.array([0.1, 0.2, 0.3, 0.4])}
     reals = np.array([0, 1, 1, 1])
     times = np.array([1.0, 2.0, 3.0, 4.0])
 
-    with pytest.raises(ValueError, match="Unsupported calibration heuristics"):
-        entry_point(
-            probs,
-            reals,
-            times,
-            fixed_time_horizons=[2.0],
-            heuristics_sets=[
-                {
-                    "censoring_heuristic": "adjusted",
-                    "competing_heuristic": "adjusted_as_negative",
-                }
-            ],
-        )
+    fig = entry_point(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=[2.0],
+        heuristics_sets=[
+            {
+                "censoring_heuristic": "adjusted",
+                "competing_heuristic": "adjusted_as_negative",
+            }
+        ],
+    )
+
+    assert fig is not None
+    assert len(fig.data) == 3
+
+
+def test_adjusted_discrete_calibration_uses_kaplan_meier_risk():
+    probs = {"model_1": np.repeat(0.5, 4)}
+    reals = np.array([1, 0, 1, 0])
+    times = np.array([1.0, 2.0, 3.0, 4.0])
+
+    fig = create_calibration_curve_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=[3.0],
+        heuristics_sets=[
+            {
+                "censoring_heuristic": "adjusted",
+                "competing_heuristic": "adjusted_as_negative",
+            }
+        ],
+    )
+
+    calibration_trace = fig.data[1]
+    assert calibration_trace.y[0] == pytest.approx(0.625)
+
+
+def test_adjusted_smooth_calibration_uses_pseudo_observations():
+    probs = {"model_1": np.array([0.1, 0.3, 0.6, 0.8])}
+    reals = np.array([1, 0, 1, 0])
+    times = np.array([1.0, 2.0, 3.0, 4.0])
+
+    fig = create_calibration_curve_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=[3.0],
+        heuristics_sets=[
+            {
+                "censoring_heuristic": "adjusted",
+                "competing_heuristic": "adjusted_as_negative",
+            }
+        ],
+        calibration_type="smooth",
+    )
+
+    calibration_trace = fig.data[1]
+    assert len(calibration_trace.x) == 101
+    assert np.isfinite(np.asarray(calibration_trace.y)).all()
 
 
 @pytest.mark.parametrize(
