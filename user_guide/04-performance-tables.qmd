@@ -1,6 +1,6 @@
 ---
 title: "Performance Tables"
-guide-section: "Using rtichoke"
+guide-section: "Model Performance"
 ---
 
 Performance tables summarize several model-performance quantities at the same probability threshold. They are useful when you want a compact comparison across models rather than a separate ROC, precision-recall, calibration, or decision curve.
