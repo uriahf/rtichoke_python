@@ -49,7 +49,7 @@ ROC, precision-recall, gains, and lift visualizations.
 Calibration visualizations for classification and time-to-event models.
 
 - `create_calibration_curve`: Creates Calibration Curve
-- `create_calibration_curve_times`: Creates a time-dependent Calibration Curve with a slider for different time horizons
+- `create_calibration_curve_times`: Create a time-dependent calibration curve across fixed horizons
 
 ### Utility
 

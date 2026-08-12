@@ -1,115 +1,120 @@
 {
-  "build_time": "2026-08-11T18:45:22Z",
-  "total_seconds": 23.409,
+  "build_time": "2026-08-12T03:55:19Z",
+  "total_seconds": 24.181,
   "pages": [
     {
       "page": "user-guide/naming-conventions.qmd",
-      "seconds": 5.924,
+      "seconds": 6.086,
       "frozen": false
     },
     {
       "page": "contributing.qmd",
-      "seconds": 3.229,
+      "seconds": 3.807,
       "frozen": false
     },
     {
       "page": "package-info.qmd",
-      "seconds": 0.838,
-      "frozen": false
-    },
-    {
-      "page": "reference/create_decision_curve.qmd",
-      "seconds": 0.791,
+      "seconds": 0.808,
       "frozen": false
     },
     {
       "page": "reference/create_decision_curve_times.qmd",
-      "seconds": 0.674,
+      "seconds": 0.691,
       "frozen": false
     },
     {
       "page": "reference/create_gains_curve_times.qmd",
-      "seconds": 0.654,
-      "frozen": false
-    },
-    {
-      "page": "reference/create_precision_recall_curve_times.qmd",
-      "seconds": 0.635,
-      "frozen": false
-    },
-    {
-      "page": "reference/create_roc_curve_times.qmd",
-      "seconds": 0.63,
-      "frozen": false
-    },
-    {
-      "page": "reference/create_gains_curve.qmd",
-      "seconds": 0.629,
-      "frozen": false
-    },
-    {
-      "page": "reference/create_roc_curve.qmd",
-      "seconds": 0.627,
+      "seconds": 0.673,
       "frozen": false
     },
     {
       "page": "reference/create_lift_curve_times.qmd",
-      "seconds": 0.625,
+      "seconds": 0.66,
       "frozen": false
     },
     {
-      "page": "reference/create_lift_curve.qmd",
-      "seconds": 0.623,
+      "page": "reference/create_gains_curve.qmd",
+      "seconds": 0.659,
+      "frozen": false
+    },
+    {
+      "page": "reference/create_roc_curve_times.qmd",
+      "seconds": 0.659,
+      "frozen": false
+    },
+    {
+      "page": "reference/create_precision_recall_curve_times.qmd",
+      "seconds": 0.658,
+      "frozen": false
+    },
+    {
+      "page": "reference/create_decision_curve.qmd",
+      "seconds": 0.637,
       "frozen": false
     },
     {
       "page": "reference/create_precision_recall_curve.qmd",
-      "seconds": 0.616,
+      "seconds": 0.622,
+      "frozen": false
+    },
+    {
+      "page": "reference/create_lift_curve.qmd",
+      "seconds": 0.611,
+      "frozen": false
+    },
+    {
+      "page": "reference/create_roc_curve.qmd",
+      "seconds": 0.604,
       "frozen": false
     },
     {
       "page": "reference/prepare_binned_classification_data_times.qmd",
-      "seconds": 0.551,
+      "seconds": 0.561,
       "frozen": false
     },
     {
       "page": "reference/prepare_performance_data_times.qmd",
-      "seconds": 0.535,
-      "frozen": false
-    },
-    {
-      "page": "reference/plot_decision_curve.qmd",
-      "seconds": 0.519,
-      "frozen": false
-    },
-    {
-      "page": "reference/prepare_binned_classification_data.qmd",
-      "seconds": 0.508,
-      "frozen": false
-    },
-    {
-      "page": "reference/prepare_performance_data.qmd",
-      "seconds": 0.508,
-      "frozen": false
-    },
-    {
-      "page": "reference/plot_precision_recall_curve.qmd",
-      "seconds": 0.488,
-      "frozen": false
-    },
-    {
-      "page": "reference/plot_gains_curve.qmd",
-      "seconds": 0.486,
-      "frozen": false
-    },
-    {
-      "page": "reference/plot_roc_curve.qmd",
-      "seconds": 0.486,
+      "seconds": 0.538,
       "frozen": false
     },
     {
       "page": "index.qmd",
-      "seconds": 0.485,
+      "seconds": 0.516,
+      "frozen": false
+    },
+    {
+      "page": "reference/index.qmd",
+      "seconds": 0.506,
+      "frozen": false
+    },
+    {
+      "page": "reference/plot_roc_curve.qmd",
+      "seconds": 0.505,
+      "frozen": false
+    },
+    {
+      "page": "reference/prepare_binned_classification_data.qmd",
+      "seconds": 0.503,
+      "frozen": false
+    },
+    {
+      "page": "reference/prepare_performance_data.qmd",
+      "seconds": 0.502,
+      "frozen": false
+    },
+    {
+      "page": "reference/plot_decision_curve.qmd",
+      "seconds": 0.5,
+      "frozen": false
+    },
+    {
+      "page": "reference/create_calibration_curve.qmd",
+      "seconds": 0.492,
+      "frozen": false
+    },
+    {
+      "page": "reference/plot_lift_curve.qmd",
+      "seconds": 0.489,
       "frozen": false
     },
     {
@@ -118,23 +123,18 @@
       "frozen": false
     },
     {
-      "page": "reference/index.qmd",
-      "seconds": 0.483,
+      "page": "reference/plot_gains_curve.qmd",
+      "seconds": 0.482,
       "frozen": false
     },
     {
-      "page": "reference/plot_lift_curve.qmd",
-      "seconds": 0.476,
-      "frozen": false
-    },
-    {
-      "page": "reference/create_calibration_curve.qmd",
-      "seconds": 0.473,
+      "page": "reference/plot_precision_recall_curve.qmd",
+      "seconds": 0.48,
       "frozen": false
     },
     {
       "page": "skills.qmd",
-      "seconds": 0.432,
+      "seconds": 0.448,
       "frozen": false
     }
   ]

@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <link rel="stylesheet" href="../site.css">
   <link rel="alternate" type="text/markdown" href="create_calibration_curve_times.md">
   <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve_times.html">
-  <meta name="description" content="Creates a time-dependent Calibration Curve with a slider for different time horizons.">
+  <meta name="description" content="Create a time-dependent calibration curve across fixed horizons.">
   <script type="application/ld+json">
 [
   {
@@ -173,12 +173,12 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
   <meta property="og:type" content="website">
   <meta property="og:title" content="create_calibration_curve_times() – rtichoke | rtichoke">
-  <meta property="og:description" content="Creates a time-dependent Calibration Curve with a slider for different time horizons.">
+  <meta property="og:description" content="Create a time-dependent calibration curve across fixed horizons.">
   <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve_times.html">
   <meta property="og:site_name" content="rtichoke">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="create_calibration_curve_times() – rtichoke | rtichoke">
-  <meta name="twitter:description" content="Creates a time-dependent Calibration Curve with a slider for different time horizons.">
+  <meta name="twitter:description" content="Create a time-dependent calibration curve across fixed horizons.">
 </head>
 
 <body class="gd-ref-sidebar nav-sidebar floating nav-fixed doc-api-page quarto-light">
@@ -427,11 +427,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <div class="doc-subject">
-<p>Creates a time-dependent Calibration Curve with a slider for different time horizons.</p>
+<p>Create a time-dependent calibration curve across fixed horizons.</p>
 </div>
 <div class="doc-usage-source">
 <p>Usage</p>
-<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/calibration/calibration.py#L71-L135" target="_blank" rel="noopener">Source</a></p>
+<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/calibration/calibration.py#L71-L140" target="_blank" rel="noopener">Source</a></p>
 </div>
 <div class="doc-signature doc-Kind.FUNCTION">
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">create_calibration_curve_times</span>(</span>
@@ -444,6 +444,17 @@ document.addEventListener('DOMContentLoaded', () => {
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="va">size</span><span class="op">=</span><span class="dv">600</span>,</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="va">color_values</span><span class="op">=</span>[<span class="st">&quot;#1b9e77&quot;</span>, <span class="st">&quot;#d95f02&quot;</span>, <span class="st">&quot;#7570b3&quot;</span>, <span class="st">&quot;#e7298a&quot;</span>, <span class="st">&quot;#07004D&quot;</span>, <span class="st">&quot;#E6AB02&quot;</span>, <span class="st">&quot;#FE5F55&quot;</span>, <span class="st">&quot;#54494B&quot;</span>, <span class="st">&quot;#006E90&quot;</span>, <span class="st">&quot;#BC96E6&quot;</span>, <span class="st">&quot;#52050A&quot;</span>, <span class="st">&quot;#1F271B&quot;</span>, <span class="st">&quot;#BE7C4D&quot;</span>, <span class="st">&quot;#63768D&quot;</span>, <span class="st">&quot;#08A045&quot;</span>, <span class="st">&quot;#320A28&quot;</span>, <span class="st">&quot;#82FF9E&quot;</span>, <span class="st">&quot;#2176FF&quot;</span>, <span class="st">&quot;#D1603D&quot;</span>, <span class="st">&quot;#585123&quot;</span>]</span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div class="doc-text">
+<section id="raises" class="level2 doc-section doc-section-raises">
+<h2 class="doc-section doc-section-raises">Raises</h2>
+<dl>
+<dt><code><span class="parameter-annotation">ValueError</span></code></dt>
+<dd>
+<p>If a heuristic set requests adjusted censoring or treats competing events as censored, which calibration does not support.</p>
+</dd>
+</dl>
+</section>
 </div>
 
 

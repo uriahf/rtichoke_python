@@ -73,7 +73,7 @@ Calibration visualizations for classification and time-to-event models.
 Creates Calibration Curve
 
 [create_calibration_curve_times()](create_calibration_curve_times.md#rtichoke.create_calibration_curve_times)  
-Creates a time-dependent Calibration Curve with a slider for different time horizons.
+Create a time-dependent calibration curve across fixed horizons.
 
 
 ## Utility
