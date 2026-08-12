@@ -1059,15 +1059,20 @@ def _apply_heuristics_and_censoring(
 
 
 def _prepare_adjusted_event_data(
-    df: pl.DataFrame, competing_heuristic: str
+    df: pl.DataFrame, horizon: float, competing_heuristic: str
 ) -> pl.DataFrame:
     """Prepare event histories for Aalen-Johansen estimation."""
     event_data = df
     if competing_heuristic == "excluded":
-        event_data = event_data.filter(pl.col("real") != 2)
+        event_data = event_data.filter(
+            ~((pl.col("real") == 2) & (pl.col("time") <= horizon))
+        )
     elif competing_heuristic == "adjusted_as_composite":
         event_data = event_data.with_columns(
-            pl.when(pl.col("real") == 2).then(1).otherwise(pl.col("real")).alias("real")
+            pl.when((pl.col("real") == 2) & (pl.col("time") <= horizon))
+            .then(1)
+            .otherwise(pl.col("real"))
+            .alias("real")
         )
     return event_data
 
@@ -1188,7 +1193,9 @@ def _create_calibration_curve_list_times(
                 continue
 
             if censoring_heuristic == "adjusted":
-                df_adj = _prepare_adjusted_event_data(initial_df, competing_heuristic)
+                df_adj = _prepare_adjusted_event_data(
+                    initial_df, horizon, competing_heuristic
+                )
                 if df_adj.height == 0:
                     continue
 
