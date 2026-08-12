@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "pyproject.toml"
+      - ".github/workflows/release.yml"
 
 jobs:
   release:
@@ -25,12 +26,8 @@ jobs:
         id: version
         shell: bash
         run: |
-          VERSION=$(python - <<'PY'
-          import tomllib
-          with open("pyproject.toml", "rb") as f:
-              print(tomllib.load(f)["project"]["version"])
-          PY
-          )
+          VERSION=$(sed -n 's/^version = "\([^"]*\)"/\1/p' pyproject.toml | head -n 1)
+          test -n "$VERSION"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Build package
