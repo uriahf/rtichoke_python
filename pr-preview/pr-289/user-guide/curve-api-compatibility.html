@@ -145,15 +145,15 @@ document.addEventListener('DOMContentLoaded', () => {
 <link rel="stylesheet" href="../site.css">
   <link rel="alternate" type="text/markdown" href="curve-api-compatibility.md">
   <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/user-guide/curve-api-compatibility.html">
-  <meta name="description" content="This page makes those differences explicit so that users — and coding agents reading llms-full.txt — can choose the right call without experimentally...">
+  <meta name="description" content="This page focuses on the conventions that are shared across curve families and on the few places where users should expect different behavior.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Curve API Compatibility – rtichoke | rtichoke">
-  <meta property="og:description" content="This page makes those differences explicit so that users — and coding agents reading llms-full.txt — can choose the right call without experimentally...">
+  <meta property="og:description" content="This page focuses on the conventions that are shared across curve families and on the few places where users should expect different behavior.">
   <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/user-guide/curve-api-compatibility.html">
   <meta property="og:site_name" content="rtichoke">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Curve API Compatibility – rtichoke | rtichoke">
-  <meta name="twitter:description" content="This page makes those differences explicit so that users — and coding agents reading llms-full.txt — can choose the right call without experimentally...">
+  <meta name="twitter:description" content="This page focuses on the conventions that are shared across curve families and on the few places where users should expect different behavior.">
 </head>
 
 <body class="nav-sidebar floating nav-fixed quarto-light">
@@ -257,8 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#capability-matrix" id="toc-capability-matrix" class="nav-link active" data-scroll-target="#capability-matrix">Capability matrix</a></li>
-  <li><a href="#multiple-named-populations" id="toc-multiple-named-populations" class="nav-link" data-scroll-target="#multiple-named-populations">Multiple named populations</a></li>
+  <li><a href="#multiple-named-populations" id="toc-multiple-named-populations" class="nav-link active" data-scroll-target="#multiple-named-populations">Multiple named populations</a></li>
   <li><a href="#censoring-and-competing-event-heuristics" id="toc-censoring-and-competing-event-heuristics" class="nav-link" data-scroll-target="#censoring-and-competing-event-heuristics">Censoring and competing-event heuristics</a></li>
   <li><a href="#time-dependent-calibration-heuristics" id="toc-time-dependent-calibration-heuristics" class="nav-link" data-scroll-target="#time-dependent-calibration-heuristics">Time-dependent calibration heuristics</a></li>
   <li><a href="#numeric-time-horizons" id="toc-numeric-time-horizons" class="nav-link" data-scroll-target="#numeric-time-horizons">Numeric time horizons</a></li>
@@ -288,66 +287,8 @@ document.addEventListener('DOMContentLoaded', () => {
 </header>
 
 
-<p><code>rtichoke</code> exposes parallel function families for discrimination, calibration, and decision-curve analysis. Their interfaces are similar, but time-dependent defaults and accepted heuristics are not identical.</p>
-<p>This page makes those differences explicit so that users — and coding agents reading <code>llms-full.txt</code> — can choose the right call without experimentally probing each function.</p>
-<section id="capability-matrix" class="level1">
-<h1>Capability matrix</h1>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Function family</th>
-<th>Multiple named populations</th>
-<th>Unequal population sizes with <code>dict</code>/<code>dict</code> inputs</th>
-<th>Time-dependent heuristic default</th>
-<th><code>fixed_time_horizons</code></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>ROC</td>
-<td>Supported</td>
-<td>Supported</td>
-<td><code>adjusted</code> / <code>adjusted_as_negative</code></td>
-<td>Integer and floating-point values supported</td>
-</tr>
-<tr class="even">
-<td>Precision-recall</td>
-<td>Supported</td>
-<td>Supported</td>
-<td><code>adjusted</code> / <code>adjusted_as_negative</code></td>
-<td>Integer and floating-point values supported</td>
-</tr>
-<tr class="odd">
-<td>Gains</td>
-<td>Supported</td>
-<td>Supported</td>
-<td><code>adjusted</code> / <code>adjusted_as_negative</code></td>
-<td>Integer and floating-point values supported</td>
-</tr>
-<tr class="even">
-<td>Lift</td>
-<td>Supported</td>
-<td>Supported</td>
-<td><code>adjusted</code> / <code>adjusted_as_negative</code></td>
-<td>Integer and floating-point values supported</td>
-</tr>
-<tr class="odd">
-<td>Decision curve</td>
-<td>Supported</td>
-<td>Supported</td>
-<td><code>adjusted</code> / <code>adjusted_as_negative</code></td>
-<td>Integer and floating-point values supported</td>
-</tr>
-<tr class="even">
-<td>Calibration</td>
-<td>Supported</td>
-<td>Supported</td>
-<td><strong>No default on <a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a></strong>; pass explicitly</td>
-<td>Integer and floating-point values supported</td>
-</tr>
-</tbody>
-</table>
-</section>
+<p><code>rtichoke</code> exposes parallel function families for discrimination, calibration, and decision-curve analysis. Most of them share the same input conventions; the main differences are in time-dependent heuristic handling, especially calibration.</p>
+<p>This page focuses on the conventions that are shared across curve families and on the few places where users should expect different behavior.</p>
 <section id="multiple-named-populations" class="level1">
 <h1>Multiple named populations</h1>
 <p>The curve families accept named probability arrays, so populations such as Train and Test can be evaluated together. When outcomes are also supplied as a dictionary, matching dictionary keys are paired population-by-population. Each probability vector must match the outcome vector for its own population, but different populations may have different sample sizes.</p>
