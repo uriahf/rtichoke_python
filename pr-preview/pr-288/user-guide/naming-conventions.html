@@ -47,7 +47,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-360b2068b25b2f2099f2f47bce35ebf0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-bf476c94c8758bc321fd5fd3b984c438.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -238,6 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <ul class="collapse">
   <li><a href="#function-families" id="toc-function-families" class="nav-link active" data-scroll-target="#function-families">Function families</a></li>
   <li><a href="#curve-families" id="toc-curve-families" class="nav-link" data-scroll-target="#curve-families">Curve families</a></li>
+  <li><a href="#performance-tables" id="toc-performance-tables" class="nav-link" data-scroll-target="#performance-tables">Performance tables</a></li>
   <li><a href="#time-to-event-variants" id="toc-time-to-event-variants" class="nav-link" data-scroll-target="#time-to-event-variants">Time-to-event variants</a></li>
   <li><a href="#a-useful-mental-model" id="toc-a-useful-mental-model" class="nav-link" data-scroll-target="#a-useful-mental-model">A useful mental model</a></li>
   </ul>
@@ -286,9 +287,9 @@ document.addEventListener('DOMContentLoaded', () => {
 </tr>
 <tr class="even">
 <td><code>create_*</code></td>
-<td>Prepare data and create a visualization in one call</td>
+<td>Prepare data and create a visualization or table in one call</td>
 <td>predictions and observed outcomes</td>
-<td>interactive figure</td>
+<td>figure or rendered table</td>
 </tr>
 <tr class="odd">
 <td><code>plot_*</code></td>
@@ -296,13 +297,19 @@ document.addEventListener('DOMContentLoaded', () => {
 <td>performance data</td>
 <td>interactive figure</td>
 </tr>
+<tr class="even">
+<td><code>render_*</code></td>
+<td>Render already-prepared data as a table</td>
+<td>prepared performance data</td>
+<td>rendered table</td>
+</tr>
 </tbody>
 </table>
-<p>For example, a direct ROC workflow uses <a href="../reference/create_roc_curve.html#rtichoke.create_roc_curve" class="gdls-link gdls-code">create_roc_curve()</a>, while a workflow that first prepares reusable performance data can pass those results to <a href="../reference/plot_roc_curve.html#rtichoke.plot_roc_curve" class="gdls-link gdls-code">plot_roc_curve()</a>.</p>
+<p>For example, a direct ROC workflow uses <a href="../reference/create_roc_curve.html#rtichoke.create_roc_curve" class="gdls-link gdls-code">create_roc_curve()</a>, while a workflow that first prepares reusable performance data can pass those results to <a href="../reference/plot_roc_curve.html#rtichoke.plot_roc_curve" class="gdls-link gdls-code">plot_roc_curve()</a>. Performance tables follow the same direct-versus-prepared-data idea: <a href="../reference/create_performance_table.html#rtichoke.create_performance_table" class="gdls-link gdls-code">create_performance_table()</a> prepares and renders in one call, while <a href="../reference/render_performance_table.html#rtichoke.render_performance_table" class="gdls-link gdls-code">render_performance_table()</a> renders an already-prepared performance-data frame.</p>
 </section>
 <section id="curve-families" class="level1">
 <h1>Curve families</h1>
-<p>The same naming pattern repeats across the main performance views:</p>
+<p>The same naming pattern repeats across the main performance curves:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -341,6 +348,33 @@ document.addEventListener('DOMContentLoaded', () => {
 </table>
 <p>Calibration currently uses the direct <a href="../reference/create_calibration_curve.html#rtichoke.create_calibration_curve" class="gdls-link gdls-code">create_calibration_curve()</a> interface.</p>
 </section>
+<section id="performance-tables" class="level1">
+<h1>Performance tables</h1>
+<p>Performance tables use a closely related naming pattern:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Workflow</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Prepare and render a binary-outcome table</td>
+<td><a href="../reference/create_performance_table.html#rtichoke.create_performance_table" class="gdls-link gdls-code">create_performance_table()</a></td>
+</tr>
+<tr class="even">
+<td>Prepare and render a time-to-event table</td>
+<td><a href="../reference/create_performance_table_times.html#rtichoke.create_performance_table_times" class="gdls-link gdls-code">create_performance_table_times()</a></td>
+</tr>
+<tr class="odd">
+<td>Render already-prepared performance data</td>
+<td><a href="../reference/render_performance_table.html#rtichoke.render_performance_table" class="gdls-link gdls-code">render_performance_table()</a></td>
+</tr>
+</tbody>
+</table>
+<p>The table constructors use the same underlying <a href="../reference/prepare_performance_data.html#rtichoke.prepare_performance_data" class="gdls-link gdls-code">prepare_performance_data()</a> and <a href="../reference/prepare_performance_data_times.html#rtichoke.prepare_performance_data_times" class="gdls-link gdls-code">prepare_performance_data_times()</a> pipelines as the curve functions. The <code>render_*</code> prefix is used when the numerical performance data already exist and only the presentation layer is needed.</p>
+</section>
 <section id="time-to-event-variants" class="level1">
 <h1>Time-to-event variants</h1>
 <p>Functions ending in <code>_times</code> extend the corresponding workflow to time-to-event outcomes. For example:</p>
@@ -351,6 +385,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <li><a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> → time-to-event calibration curve</li>
 <li><a href="../reference/create_decision_curve.html#rtichoke.create_decision_curve" class="gdls-link gdls-code">create_decision_curve()</a> → binary-outcome decision curve</li>
 <li><a href="../reference/create_decision_curve_times.html#rtichoke.create_decision_curve_times" class="gdls-link gdls-code">create_decision_curve_times()</a> → time-to-event decision curve</li>
+<li><a href="../reference/create_performance_table.html#rtichoke.create_performance_table" class="gdls-link gdls-code">create_performance_table()</a> → binary-outcome performance table</li>
+<li><a href="../reference/create_performance_table_times.html#rtichoke.create_performance_table_times" class="gdls-link gdls-code">create_performance_table_times()</a> → time-to-event performance table</li>
 </ul>
 <p>The same convention is used for the performance-data preparation functions, such as <a href="../reference/prepare_performance_data.html#rtichoke.prepare_performance_data" class="gdls-link gdls-code">prepare_performance_data()</a> and <a href="../reference/prepare_performance_data_times.html#rtichoke.prepare_performance_data_times" class="gdls-link gdls-code">prepare_performance_data_times()</a>.</p>
 </section>
@@ -358,8 +394,9 @@ document.addEventListener('DOMContentLoaded', () => {
 <h1>A useful mental model</h1>
 <p>Think of the API as a small grammar:</p>
 <pre class="text"><code>prepare + performance data        -&gt; reusable data
-create  + metric/curve            -&gt; data to figure
-plot    + metric/curve            -&gt; prepared data to figure
+create  + curve/table             -&gt; data to rendered output
+plot    + curve                   -&gt; prepared data to figure
+render  + table                   -&gt; prepared data to rendered table
 *_times                           -&gt; time-to-event version</code></pre>
 <p>This convention is intended to make related functions discoverable without requiring users to memorize every exported name.</p>
 
