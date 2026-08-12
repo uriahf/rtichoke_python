@@ -1064,6 +1064,9 @@ heuristics_sets = [
 Check [Curve API Compatibility](curve-api-compatibility.html) first. The most important remaining difference is calibration's required and narrower heuristic selection, not unequal population sizes or integer horizons.
 
 
+
+## Model Performance
+
 ### Performance Tables
 
 Performance tables summarize several model-performance quantities at the same probability threshold. They are useful when you want a compact comparison across models rather than a separate ROC, precision-recall, calibration, or decision curve.
