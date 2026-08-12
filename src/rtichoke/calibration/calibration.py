@@ -10,6 +10,7 @@ from plotly.subplots import make_subplots
 from plotly.graph_objs._figure import Figure
 import polars as pl
 import numpy as np
+from polarstate import predict_aj_estimates, prepare_event_table
 
 # from rtichoke.helpers.send_post_request_to_r_rtichoke import send_requests_to_rtichoke_r
 
@@ -106,27 +107,16 @@ def create_calibration_curve_times(
             competing events as censored, which calibration does not support.
     """
 
-    real_values = reals.values() if isinstance(reals, dict) else [reals]
-    has_censoring = any(np.any(np.asarray(values) == 0) for values in real_values)
-
-    unsupported_adjusted_censoring = has_censoring and any(
-        heuristics.get("censoring_heuristic") == "adjusted"
-        for heuristics in heuristics_sets
-    )
     unsupported_competing_as_censored = any(
         heuristics.get("competing_heuristic") == "adjusted_as_censored"
         for heuristics in heuristics_sets
     )
 
-    if unsupported_adjusted_censoring or unsupported_competing_as_censored:
+    if unsupported_competing_as_censored:
         raise ValueError(
             "Unsupported calibration heuristics: "
             "create_calibration_curve_times() does not support "
-            "censoring_heuristic='adjusted' when censored observations are present, "
-            "or competing_heuristic='adjusted_as_censored'. "
-            "When censoring is present, use a supported heuristic combination such as "
-            "censoring_heuristic='excluded' with "
-            "competing_heuristic='adjusted_as_negative'."
+            "competing_heuristic='adjusted_as_censored'."
         )
 
     calibration_curve_list_times = _create_calibration_curve_list_times(
@@ -135,6 +125,7 @@ def create_calibration_curve_times(
         times,
         fixed_time_horizons=fixed_time_horizons,
         heuristics_sets=heuristics_sets,
+        calibration_type=calibration_type,
         size=size,
         color_values=color_values,
     )
@@ -943,6 +934,7 @@ def _build_initial_df_for_times(
     """Builds the initial DataFrame for time-dependent calibration curves."""
 
     # Convert all inputs to dictionaries of arrays to unify processing
+    reals_was_dict = isinstance(reals, dict)
     if not isinstance(reals, dict):
         reals = {"single_population": np.asarray(reals)}
     if not isinstance(times, dict):
@@ -979,9 +971,13 @@ def _build_initial_df_for_times(
             raise ValueError(
                 f"Length of probabilities for model '{model_name}' does not match total number of observations."
             )
-        return base_df.with_columns(
-            pl.Series("prob", prob_array), pl.lit(model_name).alias("model")
-        )
+        expressions = [
+            pl.Series("prob", prob_array),
+            pl.lit(model_name).alias("model"),
+        ]
+        if not reals_was_dict:
+            expressions.append(pl.lit(model_name).alias("reference_group"))
+        return base_df.with_columns(expressions)
 
     # Multiple models
     else:
@@ -1062,12 +1058,91 @@ def _apply_heuristics_and_censoring(
     return df_adj
 
 
+def _prepare_adjusted_event_data(
+    df: pl.DataFrame, competing_heuristic: str
+) -> pl.DataFrame:
+    """Prepare event histories for Aalen-Johansen estimation."""
+    event_data = df
+    if competing_heuristic == "excluded":
+        event_data = event_data.filter(pl.col("real") != 2)
+    elif competing_heuristic == "adjusted_as_composite":
+        event_data = event_data.with_columns(
+            pl.when(pl.col("real") == 2).then(1).otherwise(pl.col("real")).alias("real")
+        )
+    return event_data
+
+
+def _aj_risk_at_horizon(df: pl.DataFrame, horizon: float) -> float:
+    """Estimate target-event cumulative incidence at one horizon."""
+    event_table = prepare_event_table(
+        df.select(pl.col("time").alias("times"), pl.col("real").alias("reals"))
+    )
+    estimate = predict_aj_estimates(event_table, pl.Series([horizon]))
+    return float(estimate["state_occupancy_probability_1"][0])
+
+
+def _make_adjusted_deciles_data(
+    df: pl.DataFrame, horizon: float, n_bins: int = 10
+) -> pl.DataFrame:
+    """Create calibration groups using within-group Aalen-Johansen risks."""
+    grouped = df.with_columns(
+        (
+            (pl.col("prob").rank("average").over("reference_group") - 1)
+            * n_bins
+            // pl.len().over("reference_group")
+            + 1
+        ).alias("decile")
+    )
+    rows = []
+    for key, group_df in grouped.group_by(["reference_group", "decile"]):
+        reference_group, decile = key
+        estimate = _aj_risk_at_horizon(group_df, horizon)
+        n = group_df.height
+        rows.append(
+            {
+                "reference_group": reference_group,
+                "model": reference_group,
+                "decile": decile,
+                "n": n,
+                "x": cast(float, group_df["prob"].mean()),
+                "y": estimate,
+                "n_reals": estimate * n,
+            }
+        )
+    return pl.DataFrame(rows).sort(["reference_group", "decile"])
+
+
+def _calculate_adjusted_pseudostates(
+    df: pl.DataFrame, horizon: float
+) -> Dict[str, np.ndarray]:
+    """Calculate leave-one-out AJ pseudo-observations without a new dependency."""
+    pseudo_by_group: Dict[str, np.ndarray] = {}
+    for key, group_df in df.group_by("reference_group", maintain_order=True):
+        reference_group = str(key[0])
+        n = group_df.height
+        theta = _aj_risk_at_horizon(group_df, horizon)
+        if n == 1:
+            pseudo_by_group[reference_group] = np.array([theta])
+            continue
+        leave_one_out = np.array(
+            [
+                _aj_risk_at_horizon(
+                    group_df.slice(0, i).vstack(group_df.slice(i + 1)), horizon
+                )
+                for i in range(n)
+            ]
+        )
+        pseudo_by_group[reference_group] = n * theta - (n - 1) * leave_one_out
+    return pseudo_by_group
+
+
 def _create_calibration_curve_list_times(
     probs: Dict[str, np.ndarray],
     reals: Union[np.ndarray, Dict[str, np.ndarray]],
     times: Union[np.ndarray, Dict[str, np.ndarray]],
     fixed_time_horizons: List[float],
     heuristics_sets: List[Dict[str, str]],
+    calibration_type: str = "discrete",
     size: int = 600,
     color_values: List[str] = [
         "#1b9e77",
@@ -1097,8 +1172,6 @@ def _create_calibration_curve_list_times(
     """
     # Part 1: Prepare initial dataframe from inputs
     initial_df = _build_initial_df_for_times(probs, reals, times)
-    has_censoring = initial_df.filter(pl.col("real") == 0).height > 0
-
     # Part 2: Iterate and generate calibration data for each horizon/heuristic
     all_deciles = []
     all_smooth = []
@@ -1111,10 +1184,43 @@ def _create_calibration_curve_list_times(
             censoring_heuristic = heuristics["censoring_heuristic"]
             competing_heuristic = heuristics["competing_heuristic"]
 
-            if (
-                (censoring_heuristic == "adjusted" and has_censoring)
-                or competing_heuristic == "adjusted_as_censored"
-            ):
+            if competing_heuristic == "adjusted_as_censored":
+                continue
+
+            if censoring_heuristic == "adjusted":
+                df_adj = _prepare_adjusted_event_data(initial_df, competing_heuristic)
+                if df_adj.height == 0:
+                    continue
+
+                deciles_data = _make_adjusted_deciles_data(df_adj, horizon)
+                probs_adj = {
+                    key[0]: group_df["prob"].to_numpy()
+                    for key, group_df in df_adj.group_by(
+                        "reference_group", maintain_order=True
+                    )
+                }
+                if calibration_type == "smooth":
+                    pseudo_by_group = _calculate_adjusted_pseudostates(df_adj, horizon)
+                    smooth_data = _calculate_smooth_curve(
+                        probs_adj, pseudo_by_group, performance_type
+                    )
+                else:
+                    smooth_data = deciles_data.select("x", "y", "reference_group")
+                hist_data = _create_histogram_for_calibration(probs_adj)
+
+                all_deciles.append(
+                    deciles_data.with_columns(
+                        pl.lit(horizon).alias("fixed_time_horizon")
+                    )
+                )
+                all_smooth.append(
+                    smooth_data.with_columns(
+                        pl.lit(horizon).alias("fixed_time_horizon")
+                    )
+                )
+                all_histograms.append(
+                    hist_data.with_columns(pl.lit(horizon).alias("fixed_time_horizon"))
+                )
                 continue
 
             df_adj = _apply_heuristics_and_censoring(
