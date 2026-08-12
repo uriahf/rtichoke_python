@@ -106,19 +106,25 @@ def create_calibration_curve_times(
             competing events as censored, which calibration does not support.
     """
 
-    unsupported = [
-        heuristics
+    real_values = reals.values() if isinstance(reals, dict) else [reals]
+    has_censoring = any(np.any(np.asarray(values) == 0) for values in real_values)
+
+    unsupported_adjusted_censoring = has_censoring and any(
+        heuristics.get("censoring_heuristic") == "adjusted"
         for heuristics in heuristics_sets
-        if heuristics.get("censoring_heuristic") == "adjusted"
-        or heuristics.get("competing_heuristic") == "adjusted_as_censored"
-    ]
-    if unsupported:
+    )
+    unsupported_competing_as_censored = any(
+        heuristics.get("competing_heuristic") == "adjusted_as_censored"
+        for heuristics in heuristics_sets
+    )
+
+    if unsupported_adjusted_censoring or unsupported_competing_as_censored:
         raise ValueError(
             "Unsupported calibration heuristics: "
             "create_calibration_curve_times() does not support "
-            "censoring_heuristic='adjusted' or "
-            "competing_heuristic='adjusted_as_censored'. "
-            "Use a supported heuristic combination such as "
+            "censoring_heuristic='adjusted' when censored observations are present, "
+            "or competing_heuristic='adjusted_as_censored'. "
+            "When censoring is present, use a supported heuristic combination such as "
             "censoring_heuristic='excluded' with "
             "competing_heuristic='adjusted_as_negative'."
         )
@@ -1091,6 +1097,7 @@ def _create_calibration_curve_list_times(
     """
     # Part 1: Prepare initial dataframe from inputs
     initial_df = _build_initial_df_for_times(probs, reals, times)
+    has_censoring = initial_df.filter(pl.col("real") == 0).height > 0
 
     # Part 2: Iterate and generate calibration data for each horizon/heuristic
     all_deciles = []
@@ -1105,7 +1112,7 @@ def _create_calibration_curve_list_times(
             competing_heuristic = heuristics["competing_heuristic"]
 
             if (
-                censoring_heuristic == "adjusted"
+                (censoring_heuristic == "adjusted" and has_censoring)
                 or competing_heuristic == "adjusted_as_censored"
             ):
                 continue

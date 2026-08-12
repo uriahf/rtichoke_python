@@ -64,24 +64,34 @@ def test_create_calibration_curve_times_unequal_size_populations():
     "entry_point",
     [create_calibration_curve_times_top_level, create_calibration_curve_times_direct],
 )
-@pytest.mark.parametrize(
-    "heuristics",
-    [
-        {
-            "censoring_heuristic": "adjusted",
-            "competing_heuristic": "adjusted_as_negative",
-        },
-        {
-            "censoring_heuristic": "excluded",
-            "competing_heuristic": "adjusted_as_censored",
-        },
-    ],
-)
-def test_create_calibration_curve_times_rejects_unsupported_heuristics(
-    entry_point, heuristics
-):
+def test_create_calibration_curve_times_allows_adjusted_without_censoring(entry_point):
     probs = {"model_1": np.array([0.1, 0.2, 0.3, 0.4])}
-    reals = np.array([0, 1, 0, 1])
+    reals = np.array([1, 1, 1, 1])
+    times = np.array([1.0, 2.0, 3.0, 4.0])
+
+    fig = entry_point(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=[2.0],
+        heuristics_sets=[
+            {
+                "censoring_heuristic": "adjusted",
+                "competing_heuristic": "adjusted_as_negative",
+            }
+        ],
+    )
+
+    assert fig is not None
+
+
+@pytest.mark.parametrize(
+    "entry_point",
+    [create_calibration_curve_times_top_level, create_calibration_curve_times_direct],
+)
+def test_create_calibration_curve_times_rejects_adjusted_with_censoring(entry_point):
+    probs = {"model_1": np.array([0.1, 0.2, 0.3, 0.4])}
+    reals = np.array([0, 1, 1, 1])
     times = np.array([1.0, 2.0, 3.0, 4.0])
 
     with pytest.raises(ValueError, match="Unsupported calibration heuristics"):
@@ -90,5 +100,34 @@ def test_create_calibration_curve_times_rejects_unsupported_heuristics(
             reals,
             times,
             fixed_time_horizons=[2.0],
-            heuristics_sets=[heuristics],
+            heuristics_sets=[
+                {
+                    "censoring_heuristic": "adjusted",
+                    "competing_heuristic": "adjusted_as_negative",
+                }
+            ],
+        )
+
+
+@pytest.mark.parametrize(
+    "entry_point",
+    [create_calibration_curve_times_top_level, create_calibration_curve_times_direct],
+)
+def test_create_calibration_curve_times_rejects_competing_as_censored(entry_point):
+    probs = {"model_1": np.array([0.1, 0.2, 0.3, 0.4])}
+    reals = np.array([1, 1, 1, 1])
+    times = np.array([1.0, 2.0, 3.0, 4.0])
+
+    with pytest.raises(ValueError, match="Unsupported calibration heuristics"):
+        entry_point(
+            probs,
+            reals,
+            times,
+            fixed_time_horizons=[2.0],
+            heuristics_sets=[
+                {
+                    "censoring_heuristic": "excluded",
+                    "competing_heuristic": "adjusted_as_censored",
+                }
+            ],
         )
