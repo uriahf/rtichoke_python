@@ -12,12 +12,17 @@ import subprocess
 
 
 def create_summary_report(probs, reals, url_api="http://localhost:4242/"):
-    """Create rtichoke Summary Report
+    """Creates a summary report for rtichoke model performance.
 
-    Args:
-        probs (_type_): _description_
-        reals (_type_): _description_
-        url_api (str, optional): _description_. Defaults to "http://localhost:4242/".
+    Parameters
+    ----------
+    probs : Dict[str, np.ndarray]
+        A dictionary mapping model names to predicted probabilities.
+    reals : Union[np.ndarray, Dict[str, np.ndarray]]
+        The true outcome labels (0 or 1).
+    url_api : str, optional
+        The API endpoint URL of the R rtichoke backend.
+        Defaults to ``"http://localhost:4242/"``.
     """
     rtichoke_response = send_requests_to_rtichoke_r(
         dictionary_to_send={"probs": probs, "reals": reals},

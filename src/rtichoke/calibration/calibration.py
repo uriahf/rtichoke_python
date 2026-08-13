@@ -43,21 +43,34 @@ def create_calibration_curve(
         "#585123",
     ],
 ) -> Figure:
-    """Creates Calibration Curve
+    """Creates a Calibration Curve.
 
-    Args:
-        probs (Dict[str, List[float]]): _description_
-        reals (Dict[str, List[int]]): _description_
-        calibration_type (str, optional): _description_. Defaults to "discrete".
-        size (Optional[int], optional): _description_. Defaults to None.
-        color_values (List[str], optional): _description_. Defaults to None.
-        url_api (_type_, optional): _description_. Defaults to "http://localhost:4242/".
+    This function generates a calibration curve, which evaluates how well
+    the predicted probabilities from one or more models align with the
+    observed binary outcomes. It can plot either discrete binned calibration
+    (deciles) or a smoothed calibration curve.
 
-    Returns:
-        Figure: _description_
+    Parameters
+    ----------
+    probs : Dict[str, np.ndarray]
+        A dictionary mapping model or dataset names to 1-D numpy arrays of
+        predicted probabilities.
+    reals : Union[np.ndarray, Dict[str, np.ndarray]]
+        The true binary labels (0 or 1). Can be a single array or a dictionary
+        mapping names to label arrays.
+    calibration_type : str, optional
+        The type of calibration curve to plot. Options are ``"discrete"`` (binned)
+        or ``"smooth"`` (smoothed lowess). Defaults to ``"discrete"``.
+    size : int, optional
+        The width and height of the plot in pixels. Defaults to 600.
+    color_values : List[str], optional
+        A list of hex color strings for the plot lines/markers.
+
+    Returns
+    -------
+    Figure
+        A Plotly ``Figure`` object representing the calibration curve.
     """
-    pass
-
     calibration_curve_list = _create_calibration_curve_list(
         probs, reals, size=size, color_values=color_values
     )
