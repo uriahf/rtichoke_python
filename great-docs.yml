@@ -14,7 +14,18 @@ include_in_header:
       <script>
       document.addEventListener('DOMContentLoaded', () => {
         const nav = document.querySelector('nav.navbar ul.navbar-nav.me-auto');
-        if (!nav || nav.querySelector('[data-rtichoke-blog-link]')) return;
+        if (!nav || nav.querySelector('[data-rtichoke-guides-link]')) return;
+
+        const guidesItem = document.createElement('li');
+        guidesItem.className = 'nav-item';
+        guidesItem.setAttribute('data-rtichoke-guides-link', '');
+
+        const guidesLink = document.createElement('a');
+        guidesLink.className = 'nav-link';
+        const offset = document.querySelector('meta[name="quarto:offset"]');
+        guidesLink.href = (offset ? offset.content : '') + 'index.html';
+        guidesLink.textContent = 'Guides';
+        guidesItem.appendChild(guidesLink);
 
         const item = document.createElement('li');
         item.className = 'nav-item';
@@ -29,8 +40,19 @@ include_in_header:
         const reference = [...nav.children].find((el) =>
           el.textContent.trim().toLowerCase().includes('reference')
         );
+        nav.insertBefore(guidesItem, reference || null);
         nav.insertBefore(item, reference || null);
       });
+      </script>
+  - text: |
+      <script>
+      (function () {
+        var script = document.createElement('script');
+        var offset = document.querySelector('meta[name="quarto:offset"]');
+        script.src = (offset ? offset.content : '') + 'assets/uriahtalks-horizon-explorer.js';
+        script.defer = true;
+        document.head.appendChild(script);
+      })();
       </script>
 
 site:
@@ -85,3 +107,4 @@ reference:
       - create_decision_curve
       - create_decision_curve_times
       - plot_decision_curve
+
