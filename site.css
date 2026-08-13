@@ -182,3 +182,94 @@ footer.footer {
     --rtichoke-shadow: none;
   }
 }
+uriahtalks-horizon-explorer {
+  color: inherit;
+  background: transparent;
+  container-type: inline-size;
+  display: block;
+  margin: 1rem 0 1.5rem;
+}
+
+uriahtalks-horizon-explorer .uriah-horizon-heading {
+  font-size: 1.1em;
+  font-weight: 650;
+  margin-bottom: .65rem;
+}
+
+uriahtalks-horizon-explorer .uriah-horizon-control {
+  display: grid;
+  gap: .3rem;
+  max-width: 34rem;
+}
+
+uriahtalks-horizon-explorer input[type="range"] {
+  accent-color: var(--uriah-horizon-accent);
+  width: 100%;
+}
+
+uriahtalks-horizon-explorer .uriah-horizon-chart {
+  background: transparent;
+  overflow-x: auto;
+  width: 100%;
+}
+
+uriahtalks-horizon-explorer .uriah-horizon-svg {
+  background: transparent;
+  display: block;
+  min-width: 620px;
+  width: 100%;
+}
+
+uriahtalks-horizon-explorer .uriah-axis {
+  stroke: currentColor;
+  stroke-width: 1;
+}
+
+uriahtalks-horizon-explorer .uriah-tick,
+uriahtalks-horizon-explorer .uriah-axis-label,
+uriahtalks-horizon-explorer .uriah-row-label {
+  fill: currentColor;
+  font: 14px Commissioner, system-ui, sans-serif;
+}
+
+uriahtalks-horizon-explorer .uriah-tick,
+uriahtalks-horizon-explorer .uriah-axis-label {
+  text-anchor: middle;
+}
+
+uriahtalks-horizon-explorer .uriah-row-label {
+  dominant-baseline: middle;
+  text-anchor: end;
+}
+
+uriahtalks-horizon-explorer .uriah-followup-line {
+  stroke: color-mix(in srgb, currentColor 38%, transparent);
+  stroke-width: 2;
+}
+
+uriahtalks-horizon-explorer .uriah-horizon-line {
+  stroke: var(--uriah-horizon-accent);
+  stroke-dasharray: 7 6;
+  stroke-width: 4;
+}
+
+uriahtalks-horizon-explorer .uriah-emoji-marker {
+  cursor: help;
+  dominant-baseline: central;
+  font: 30px "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
+  text-anchor: middle;
+}
+
+uriahtalks-horizon-explorer .uriah-horizon-key {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: .9em;
+  gap: .45rem 1.1rem;
+}
+
+@media (max-width: 650px) {
+  uriahtalks-horizon-explorer .uriah-horizon-svg {
+    width: 720px;
+  }
+}
+
