@@ -40,7 +40,7 @@
 #### Calibration
 > Calibration visualizations for classification and time-to-event models. See Curve API Compatibility for time-dependent heuristic and horizon differences.
 
-- [create_calibration_curve](https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve.html): Creates Calibration Curve
+- [create_calibration_curve](https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve.html): Creates a Calibration Curve
 - [create_calibration_curve_times](https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve_times.html): Create a time-dependent calibration curve across fixed horizons
 
 #### Utility

@@ -80,7 +80,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-bf476c94c8758bc321fd5fd3b984c438.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8d81ff0c427573f4e934abdc536f8dbf.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -452,8 +452,15 @@ document.addEventListener('DOMContentLoaded', () => {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h3 id="toc-title">On this page</h3>
+   
+  <ul class="collapse">
+  <li><a href="#parameters" id="toc-parameters" class="nav-link active" data-scroll-target="#parameters">Parameters</a></li>
+  <li><a href="#returns" id="toc-returns" class="nav-link" data-scroll-target="#returns">Returns</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -478,11 +485,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <div class="doc-subject">
-<p>Creates Calibration Curve</p>
+<p>Creates a Calibration Curve.</p>
 </div>
 <div class="doc-usage-source">
 <p>Usage</p>
-<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/calibration/calibration.py#L18-L69" target="_blank" rel="noopener">Source</a></p>
+<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/calibration/calibration.py#L18-L82" target="_blank" rel="noopener">Source</a></p>
 </div>
 <div class="doc-signature doc-Kind.FUNCTION">
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">create_calibration_curve</span>(</span>
@@ -494,14 +501,48 @@ document.addEventListener('DOMContentLoaded', () => {
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 </div>
 <div class="doc-text">
-<p>Args: probs (Dict[str, List[float]]): <em>description</em> reals (Dict[str, List[int]]): <em>description</em> calibration_type (str, optional): <em>description</em>. Defaults to “discrete”. size (Optional[int], optional): <em>description</em>. Defaults to None. color_values (List[str], optional): <em>description</em>. Defaults to None. url_api (<em>type</em>, optional): <em>description</em>. Defaults to “http://localhost:4242/”.</p>
-<section id="returns" class="level2 doc-section doc-section-returns">
-<h2 class="doc-section doc-section-returns">Returns</h2>
-<p>Figure: <em>description</em></p>
+<p>This function generates a calibration curve, which evaluates how well the predicted probabilities from one or more models align with the observed binary outcomes. It can plot either discrete binned calibration (deciles) or a smoothed calibration curve.</p>
+</div>
+<section id="parameters" class="level2 doc-parameters">
+<h2 class="doc-parameters">Parameters</h2>
+<div class="doc-definition-items">
+<dl>
+<dt><code><span class="doc-parameter-name">probs</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Dict[str, np.ndarray]</span></code></dt>
+<dd>
+<p>A dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.</p>
+</dd>
+<dt><code><span class="doc-parameter-name">reals</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Union[np.ndarray, Dict[str, np.ndarray]]</span></code></dt>
+<dd>
+<p>The true binary labels (0 or 1). Can be a single array or a dictionary mapping names to label arrays.</p>
+</dd>
+<dt><code><span class="doc-parameter-name">calibration_type</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">str</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="st">"discrete"</span></span></code></dt>
+<dd>
+<p>The type of calibration curve to plot. Options are <code>"discrete"</code> (binned) or <code>"smooth"</code> (smoothed lowess). Defaults to <code>"discrete"</code>.</p>
+</dd>
+<dt><code><span class="doc-parameter-name">size</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">int</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="dv">600</span></span></code></dt>
+<dd>
+<p>The width and height of the plot in pixels. Defaults to 600.</p>
+</dd>
+<dt><code><span class="doc-parameter-name">color_values</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">List[str]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#1b9e77"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#d95f02"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#7570b3"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#e7298a"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#07004D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#E6AB02"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#FE5F55"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#54494B"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#006E90"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#BC96E6"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#52050A"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#1F271B"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#BE7C4D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#63768D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#08A045"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#320A28"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#82FF9E"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#2176FF"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#D1603D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#585123"</span>,<br>]</span></code></dt>
+<dd>
+A list of hex color strings for the plot lines/markers.
+</dd>
+</dl>
+</div>
 </section>
+<section id="returns" class="level2 doc-returns">
+<h2 class="doc-returns">Returns</h2>
+<div class="doc-definition-items">
+<dl>
+<dt><code> <span class="doc-parameter-annotation">Figure</span></code></dt>
+<dd>
+A Plotly <code>Figure</code> object representing the calibration curve.
+</dd>
+</dl>
 </div>
 
 
+</section>
 
 </main>
 <hr style="padding: 0; margin: 0;">

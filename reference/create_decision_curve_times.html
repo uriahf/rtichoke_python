@@ -80,7 +80,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-bf476c94c8758bc321fd5fd3b984c438.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8d81ff0c427573f4e934abdc536f8dbf.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -534,7 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <dd>
 <p>Type of decision curve to plot. Defaults to <code>"conventional"</code>.</p>
 </dd>
-<dt><code><span class="doc-parameter-name">heuristics_sets</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">list[Dict]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[{<span class="st">"censoring_heuristic"</span>: <span class="st">"adjusted"</span>, <span class="st">"competing_heuristic"</span>: <span class="st">"adjusted_as_negative"</span>}]<br></span></code></dt>
+<dt><code><span class="doc-parameter-name">heuristics_sets</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">list[Dict]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[{<span class="st">"censoring_heuristic"</span>: <span class="st">"adjusted"</span>, <span class="st">"competing_heuristic"</span>: <span class="st">"adjusted_as_negative"</span>}]</span></code></dt>
 <dd>
 <p>Specifies how to handle censored data and competing events.</p>
 </dd>
@@ -550,7 +550,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <dd>
 <p>The step size for the probability thresholds. Defaults to 0.01.</p>
 </dd>
-<dt><code><span class="doc-parameter-name">stratified_by</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Sequence[str]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[<span class="st">"probability_threshold"</span>]<br></span></code></dt>
+<dt><code><span class="doc-parameter-name">stratified_by</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Sequence[str]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[<span class="st">"probability_threshold"</span>]</span></code></dt>
 <dd>
 <p>Variables for stratification. Defaults to <code>["probability_threshold"]</code>.</p>
 </dd>
@@ -558,7 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <dd>
 <p>The width and height of the plot in pixels. Defaults to 600.</p>
 </dd>
-<dt><code><span class="doc-parameter-name">color_values</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">List[str]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#1b9e77"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#d95f02"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#7570b3"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#e7298a"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#07004D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#E6AB02"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#FE5F55"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#54494B"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#006E90"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#BC96E6"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#52050A"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#1F271B"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#BE7C4D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#63768D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#08A045"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#320A28"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#82FF9E"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#2176FF"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#D1603D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#585123"</span>,<br>]<br></span></code></dt>
+<dt><code><span class="doc-parameter-name">color_values</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">List[str]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#1b9e77"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#d95f02"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#7570b3"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#e7298a"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#07004D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#E6AB02"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#FE5F55"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#54494B"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#006E90"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#BC96E6"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#52050A"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#1F271B"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#BE7C4D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#63768D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#08A045"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#320A28"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#82FF9E"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#2176FF"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#D1603D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#585123"</span>,<br>]</span></code></dt>
 <dd>
 A list of hex color strings for the plot lines.
 </dd>
