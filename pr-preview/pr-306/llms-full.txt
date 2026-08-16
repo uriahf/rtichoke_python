@@ -1,0 +1,1425 @@
+----------------------------------------------------------------------
+This is the API documentation for the rtichoke library.
+----------------------------------------------------------------------
+
+
+## Performance Data
+
+Prepare classification and time-to-event data for visualization.
+
+
+prepare_performance_data(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], stratified_by: collections.abc.Sequence[str] = ('probability_threshold',), by: float = 0.01) -> polars.dataframe.frame.DataFrame
+
+Prepare performance data for binary classification models.
+
+This function computes a comprehensive set of performance metrics for one
+or more binary classification models across a range of probability
+thresholds. It builds upon the binned data from
+`prepare_binned_classification_data` by cumulatively summing the counts
+and calculating metrics like sensitivity (TPR), specificity, precision
+(PPV), and net benefit.
+
+This resulting dataframe is the primary input for plotting functions like
+`plot_roc_curve`, `plot_precision_recall_curve`, etc.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary mapping model or dataset names (str) to their predicted
+    probabilities (1-D numpy arrays).
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true event labels. This can be a single numpy array that is aligned
+    with all pooled probabilities or a dictionary mapping each dataset name
+    to its corresponding array of true labels. Labels must be binary (0 or 1).
+stratified_by : Sequence[str], optional
+    A sequence of strings specifying the variables by which to stratify the
+    data. The default is ``("probability_threshold",)``.
+by : float, optional
+    The step size for probability thresholds, determining the number of
+    points at which performance is evaluated. Defaults to ``0.01``.
+
+Returns
+-------
+pl.DataFrame
+    A Polars DataFrame where each row corresponds to a probability cutoff
+    for a given model/dataset. Columns include the cutoff value and a rich
+    set of performance metrics (e.g., `tpr`, `fpr`, `ppv`, `net_benefit`).
+
+Examples
+--------
+>>> import numpy as np
+>>> probs_dict_test = {
+...     "small_data_set": np.array(
+...         [0.9, 0.85, 0.95, 0.88, 0.6, 0.7, 0.51, 0.2, 0.1, 0.33]
+...     )
+... }
+>>> reals_dict_test = [1, 1, 1, 1, 0, 0, 1, 0, 0, 1]
+>>> performance_df = prepare_performance_data(
+...     probs=probs_dict_test,
+...     reals=reals_dict_test,
+...     by=0.1
+... )
+
+prepare_binned_classification_data(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], stratified_by: collections.abc.Sequence[str] = ('probability_threshold',), by: float = 0.01) -> polars.dataframe.frame.DataFrame
+
+Prepare probability-binned classification data for binary outcomes.
+
+This function serves as the foundation for many of the performance analysis
+visualizations. It takes predicted probabilities and true binary outcomes,
+bins them by probability thresholds, and calculates the number of true
+positives, false positives, true negatives, and false negatives within each
+bin. This detailed, binned data can then be used to generate calibration
+plots or be aggregated to compute various performance metrics.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary mapping model or dataset names (str) to their predicted
+    probabilities (1-D numpy arrays).
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true event labels. This can be a single numpy array that is aligned
+    with all pooled probabilities or a dictionary mapping each dataset name
+    to its corresponding array of true labels. Labels must be binary (0 or 1).
+stratified_by : Sequence[str], optional
+    A sequence of strings specifying the variables by which to stratify the
+    data. The default is ``("probability_threshold",)``, which bins the data
+    based on predicted probabilities.
+by : float, optional
+    The step size to use when creating bins for the probability thresholds.
+    This determines the granularity of the analysis. Defaults to ``0.01``.
+
+Returns
+-------
+pl.DataFrame
+    A Polars DataFrame containing the binned classification data. Each row
+    represents a unique combination of model/dataset, probability bin, and
+    any other stratification variables. It forms the basis for subsequent
+    performance calculations.
+
+prepare_performance_data_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: list[float], heuristics_sets: list[typing.Dict] = [{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}], stratified_by: collections.abc.Sequence[str] = ('probability_threshold',), by: float = 0.01) -> polars.dataframe.frame.DataFrame
+
+Prepare performance data for models with time-to-event outcomes.
+
+This function calculates a comprehensive set of performance metrics for
+models predicting time-to-event outcomes. It handles censored data and
+competing events by applying specified heuristics at different time
+horizons. The function first bins the data using
+`prepare_binned_classification_data_times` and then computes cumulative,
+Aalen-Johansen-based performance metrics.
+
+The resulting dataframe is the primary input for time-dependent plotting
+functions.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary mapping model or dataset names (str) to their predicted
+    probabilities of an event occurring by a given time.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true event statuses. Can be a single array or a dictionary.
+    Labels should be integers indicating the outcome (e.g., 0=censored,
+    1=event of interest, 2=competing event).
+times : Union[np.ndarray, Dict[str, np.ndarray]]
+    The event or censoring times corresponding to the `reals`. Can be a
+    single array or a dictionary.
+fixed_time_horizons : list[float]
+    A list of numeric time points at which to evaluate the model's
+    performance. Integer inputs are accepted and normalized to floats.
+heuristics_sets : list[Dict], optional
+    A list of dictionaries, each specifying how to handle censored data
+    and competing events. The default is
+    ``[{"censoring_heuristic": "adjusted",
+    "competing_heuristic": "adjusted_as_negative"}]``.
+stratified_by : Sequence[str], optional
+    Variables by which to stratify the analysis. Defaults to
+    ``("probability_threshold",)``.
+by : float, optional
+    The step size for probability thresholds. Defaults to ``0.01``.
+
+Returns
+-------
+pl.DataFrame
+    A Polars DataFrame with performance metrics computed across probability
+    thresholds and time horizons. It includes columns for cutoffs, time
+    points, heuristics, and performance measures.
+
+prepare_binned_classification_data_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: list[float], heuristics_sets: list[typing.Dict] = [{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}], stratified_by: collections.abc.Sequence[str] = ('probability_threshold',), by: float = 0.01, risk_set_scope: collections.abc.Sequence[str] = ['pooled_by_cutoff', 'within_stratum']) -> polars.dataframe.frame.DataFrame
+
+Prepare binned, time-dependent classification data.
+
+This function constructs the foundational binned data needed for
+time-to-event performance analysis. It bins predictions by probability
+thresholds, applies censoring and competing event heuristics, and stratifies
+the data across specified time horizons. The output is a detailed breakdown
+of outcomes within each bin, which can be used for calibration or passed to
+`prepare_performance_data_times` for full performance metric calculation.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary mapping model or dataset names (str) to their predicted
+    probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true event statuses (e.g., 0=censored, 1=event, 2=competing).
+times : Union[np.ndarray, Dict[str, np.ndarray]]
+    The event or censoring times.
+fixed_time_horizons : list[float]
+    A list of numeric time points for performance evaluation. Integer
+    inputs are accepted and normalized to floats.
+heuristics_sets : list[Dict], optional
+    Specifies how to handle censored data and competing events.
+stratified_by : Sequence[str], optional
+    Variables for stratification. Defaults to ``("probability_threshold",)``.
+by : float, optional
+    The step size for probability thresholds. Defaults to ``0.01``.
+risk_set_scope : Sequence[str], optional
+    Defines the scope for risk set calculations. Defaults to
+    ``["pooled_by_cutoff", "within_stratum"]``.
+
+Returns
+-------
+pl.DataFrame
+    A Polars DataFrame with binned, time-dependent data. Each row
+    represents a unique combination of dataset, bin, time horizon,
+    heuristic, and other strata.
+
+
+## Performance Tables
+
+Summarize model performance across thresholds and time horizons.
+
+
+create_performance_table(probs: 'Dict[str, np.ndarray]', reals: 'Union[np.ndarray, Dict[str, np.ndarray]]', by: 'float' = 0.01, stratified_by: 'Sequence[str]' = ('probability_threshold',), color_values: 'Sequence[str]' = ('#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'), renderer: 'PerformanceTableRenderer' = 'great_tables')
+
+Create an R-style rtichoke performance table.
+
+create_performance_table_times(probs: 'Dict[str, np.ndarray]', reals: 'Union[np.ndarray, Dict[str, np.ndarray]]', times: 'Union[np.ndarray, Dict[str, np.ndarray]]', fixed_time_horizons: 'list[float]', heuristics_sets: 'list[Dict]' = [{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}], by: 'float' = 0.01, stratified_by: 'Sequence[str]' = ('probability_threshold',), color_values: 'Sequence[str]' = ('#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'), renderer: 'PerformanceTableRenderer' = 'great_tables')
+
+Create a time-dependent rtichoke performance table.
+
+Numerical results come from ``prepare_performance_data_times()``. The table
+keeps time horizon and censoring/competing-event heuristics visible so that
+multiple requested evaluation scenarios are not collapsed in presentation.
+Observed times are normalized to floating point at this public wrapper
+boundary; fixed-horizon normalization is handled by the shared time-dependent
+performance pipeline.
+
+render_performance_table(performance_data: 'pl.DataFrame', color_values: 'Sequence[str]' = ('#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'), renderer: 'PerformanceTableRenderer' = 'great_tables')
+
+Render prepared performance data with a selected table backend.
+
+
+## Discrimination
+
+ROC, precision-recall, gains, and lift visualizations.
+
+
+create_roc_curve(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], by: float = 0.01, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+
+Creates a Receiver Operating Characteristic (ROC) curve.
+
+This function generates an ROC curve, which visualizes the diagnostic
+ability of a binary classifier system as its discrimination threshold is
+varied. The curve plots the True Positive Rate (TPR) against the
+False Positive Rate (FPR) at various threshold settings.
+
+It first calculates the performance data using the provided probabilities
+and true labels, and then generates the plot.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary mapping model or dataset names to 1-D numpy arrays of
+    predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true binary labels (0 or 1). Can be a single array for all
+    probabilities or a dictionary mapping names to label arrays.
+by : float, optional
+    The step size for the probability thresholds, controlling the curve's
+    granularity. Defaults to 0.01.
+stratified_by : Sequence[str], optional
+    Variables for stratification. Defaults to ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+color_values : List[str], optional
+    A list of hex color strings for the plot lines. A default palette is
+    used if not provided.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the ROC curve.
+
+create_roc_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: list[float], heuristics_sets: list[typing.Dict] = [{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}], by: float = 0.01, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+
+Creates a time-dependent Receiver Operating Characteristic (ROC) curve.
+
+This function generates an ROC curve for time-to-event models. It evaluates
+the model's performance at specified time horizons, handling censored data
+and competing risks according to the chosen heuristics.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary of predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true event statuses (e.g., 0=censored, 1=event, 2=competing).
+times : Union[np.ndarray, Dict[str, np.ndarray]]
+    The event or censoring times.
+fixed_time_horizons : list[float]
+    A list of time points for performance evaluation.
+heuristics_sets : list[Dict], optional
+    Specifies how to handle censored data and competing events.
+by : float, optional
+    The step size for probability thresholds. Defaults to 0.01.
+stratified_by : Sequence[str], optional
+    Variables for stratification. Defaults to ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+color_values : List[str], optional
+    A list of hex color strings for the plot lines.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the time-dependent ROC curve.
+
+plot_roc_curve(performance_data: polars.dataframe.frame.DataFrame, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600) -> plotly.graph_objs._figure.Figure
+
+Plots an ROC curve from pre-computed performance data.
+
+This function is useful when you have already computed the performance
+metrics (TPR, FPR, etc.) and want to generate an ROC plot directly from
+that data.
+
+Parameters
+----------
+performance_data : pl.DataFrame
+    A Polars DataFrame containing the necessary performance metrics. It must
+    include columns for the true positive rate (tpr) and false positive
+    rate (fpr), along with any stratification variables.
+stratified_by : Sequence[str], optional
+    The columns in `performance_data` used for stratification. Defaults to
+    ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the ROC curve.
+
+create_precision_recall_curve(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], by: float = 0.01, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+
+Creates a Precision-Recall curve.
+
+This function generates a Precision-Recall curve, which is a common
+alternative to the ROC curve, particularly for imbalanced datasets. It
+plots precision (Positive Predictive Value) against recall (True Positive
+Rate) for a binary classifier at different probability thresholds.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary mapping model or dataset names to 1-D numpy arrays of
+    predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true binary labels (0 or 1). Can be a single array or a dictionary
+    mapping names to label arrays.
+by : float, optional
+    The step size for the probability thresholds. Defaults to 0.01.
+stratified_by : Sequence[str], optional
+    Variables for stratification. Defaults to ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+color_values : List[str], optional
+    A list of hex color strings for the plot lines.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the Precision-Recall curve.
+
+create_precision_recall_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: list[float], heuristics_sets: list[typing.Dict] = [{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}], by: float = 0.01, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+
+Creates a time-dependent Precision-Recall curve.
+
+Generates a Precision-Recall curve for time-to-event models, evaluating
+performance at specified time horizons. It handles censored data and
+competing risks based on the provided heuristics.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary of predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true event statuses.
+times : Union[np.ndarray, Dict[str, np.ndarray]]
+    The event or censoring times.
+fixed_time_horizons : list[float]
+    A list of time points for performance evaluation.
+heuristics_sets : list[Dict], optional
+    Specifies how to handle censored data and competing events.
+by : float, optional
+    The step size for probability thresholds. Defaults to 0.01.
+stratified_by : Sequence[str], optional
+    Variables for stratification. Defaults to ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+color_values : List[str], optional
+    A list of hex color strings for the plot lines.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object for the time-dependent Precision-Recall curve.
+
+plot_precision_recall_curve(performance_data: polars.dataframe.frame.DataFrame, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600) -> plotly.graph_objs._figure.Figure
+
+Plots a Precision-Recall curve from pre-computed performance data.
+
+This function is useful when you have already computed the performance
+metrics and want to generate a Precision-Recall plot directly.
+
+Parameters
+----------
+performance_data : pl.DataFrame
+    A Polars DataFrame with the necessary performance metrics, including
+    precision (ppv) and recall (tpr), along with any stratification variables.
+stratified_by : Sequence[str], optional
+    The columns in `performance_data` used for stratification. Defaults to
+    ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the Precision-Recall curve.
+
+create_gains_curve(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], by: float = 0.01, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+
+Creates a Gains curve.
+
+A Gains curve is a marketing and business analytics tool that evaluates
+the performance of a predictive model. It shows the percentage of
+positive outcomes (the "gain") that can be captured by targeting a
+certain percentage of the population, sorted by predicted probability.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary mapping model or dataset names to 1-D numpy arrays of
+    predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true binary labels (0 or 1).
+by : float, optional
+    The step size for the probability thresholds. Defaults to 0.01.
+stratified_by : Sequence[str], optional
+    Variables for stratification. Defaults to ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+color_values : List[str], optional
+    A list of hex color strings for the plot lines.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the Gains curve.
+
+create_gains_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: list[float], heuristics_sets: list[typing.Dict] = [{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}], by: float = 0.01, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+
+Creates a time-dependent Gains curve.
+
+Generates a Gains curve for time-to-event models, which is evaluated at
+specified time horizons and handles censored data and competing risks.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary of predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true event statuses.
+times : Union[np.ndarray, Dict[str, np.ndarray]]
+    The event or censoring times.
+fixed_time_horizons : list[float]
+    A list of time points for performance evaluation.
+heuristics_sets : list[Dict], optional
+    Specifies how to handle censored data and competing events.
+by : float, optional
+    The step size for probability thresholds. Defaults to 0.01.
+stratified_by : Sequence[str], optional
+    Variables for stratification. Defaults to ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+color_values : List[str], optional
+    A list of hex color strings for the plot lines.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object for the time-dependent Gains curve.
+
+plot_gains_curve(performance_data: polars.dataframe.frame.DataFrame, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600) -> plotly.graph_objs._figure.Figure
+
+Plots a Gains curve from pre-computed performance data.
+
+This function is useful for plotting a Gains curve directly from a
+DataFrame that already contains the necessary performance metrics.
+
+Parameters
+----------
+performance_data : pl.DataFrame
+    A Polars DataFrame with performance metrics. It must include columns
+    for the percentage of the population targeted and the corresponding
+    gain, along with any stratification variables.
+stratified_by : Sequence[str], optional
+    The columns in `performance_data` used for stratification. Defaults to
+    ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the Gains curve.
+
+create_lift_curve(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], by: float = 0.01, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+
+Creates a Lift curve.
+
+A Lift curve is a visual tool used to evaluate the performance of a
+classification model. It shows how much better the model is at identifying
+positive outcomes compared to a random guess. The "lift" is the ratio of
+the results obtained with the model to the results from a random selection.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary mapping model or dataset names to 1-D numpy arrays of
+    predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true binary labels (0 or 1).
+by : float, optional
+    The step size for the probability thresholds. Defaults to 0.01.
+stratified_by : Sequence[str], optional
+    Variables for stratification. Defaults to ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+color_values : List[str], optional
+    A list of hex color strings for the plot lines.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the Lift curve.
+
+create_lift_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: list[float], heuristics_sets: list[typing.Dict] = [{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}], by: float = 0.01, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+
+Creates a time-dependent Lift curve.
+
+Generates a Lift curve for time-to-event models, which is evaluated at
+specified time horizons and handles censored data and competing risks.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary of predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true event statuses.
+times : Union[np.ndarray, Dict[str, np.ndarray]]
+    The event or censoring times.
+fixed_time_horizons : list[float]
+    A list of time points for performance evaluation.
+heuristics_sets : list[Dict], optional
+    Specifies how to handle censored data and competing events.
+by : float, optional
+    The step size for probability thresholds. Defaults to 0.01.
+stratified_by : Sequence[str], optional
+    Variables for stratification. Defaults to ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+color_values : List[str], optional
+    A list of hex color strings for the plot lines.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object for the time-dependent Lift curve.
+
+plot_lift_curve(performance_data: polars.dataframe.frame.DataFrame, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600) -> plotly.graph_objs._figure.Figure
+
+Plots a Lift curve from pre-computed performance data.
+
+This function is useful for plotting a Lift curve directly from a
+DataFrame that already contains the necessary performance metrics.
+
+Parameters
+----------
+performance_data : pl.DataFrame
+    A Polars DataFrame with performance metrics. It must include columns
+    for the lift values and the percentage of the population targeted,
+    along with any stratification variables.
+stratified_by : Sequence[str], optional
+    The columns in `performance_data` used for stratification. Defaults to
+    ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the Lift curve.
+
+
+## Calibration
+
+Calibration visualizations for classification and time-to-event models. See Curve API Compatibility for time-dependent heuristic and horizon differences.
+
+
+create_calibration_curve(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], calibration_type: str = 'discrete', size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+
+Creates a Calibration Curve.
+
+This function generates a calibration curve, which evaluates how well
+the predicted probabilities from one or more models align with the
+observed binary outcomes. It can plot either discrete binned calibration
+(deciles) or a smoothed calibration curve.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary mapping model or dataset names to 1-D numpy arrays of
+    predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true binary labels (0 or 1). Can be a single array or a dictionary
+    mapping names to label arrays.
+calibration_type : str, optional
+    The type of calibration curve to plot. Options are ``"discrete"`` (binned)
+    or ``"smooth"`` (smoothed lowess). Defaults to ``"discrete"``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+color_values : List[str], optional
+    A list of hex color strings for the plot lines/markers.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the calibration curve.
+
+create_calibration_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: List[float], heuristics_sets: List[Dict[str, str]], calibration_type: str = 'discrete', smooth_method: str = 'local_aj', bandwidth: Optional[float] = None, size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+
+Create a time-dependent calibration curve across fixed horizons.
+
+This function generates time-dependent calibration curves evaluating predicted
+probabilities against observed outcomes over specified prediction horizons.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary mapping model or dataset names to 1-D numpy arrays of
+    predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    True outcome indicators (0 for censored, 1 for event of interest, 2 for
+    competing risk).
+times : Union[np.ndarray, Dict[str, np.ndarray]]
+    Follow-up times corresponding to `reals`.
+fixed_time_horizons : List[float]
+    List of prediction horizons (times) at which to evaluate calibration.
+heuristics_sets : List[Dict[str, str]]
+    List of heuristic dictionaries defining censoring and competing risk
+    adjustments.
+calibration_type : str, optional
+    Type of calibration plot, either ``"discrete"`` (binned) or ``"smooth"``.
+    Defaults to ``"discrete"``.
+smooth_method : str, optional
+    Smoothing method when `calibration_type="smooth"`. Supported options are
+    ``"local_aj"`` (Gerds' local Aalen-Johansen/KM neighborhood estimation),
+    ``"secondary_cox"`` (Austin, Harrell & McLernon secondary Cox regression method),
+    or ``"pseudo_values"`` (jackknife pseudo-values lowess). Defaults to ``"local_aj"``.
+bandwidth : Union[float, None], optional
+    Bandwidth fraction for ``"local_aj"`` neighborhood smoothing. Defaults to None.
+size : int, optional
+    Width and height of the Plotly figure in pixels. Defaults to 600.
+color_values : List[str], optional
+    List of hex color strings for traces.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the time-dependent calibration curve.
+
+Raises
+------
+ValueError
+    If a heuristic set requests `competing_heuristic='adjusted_as_censored'`.
+
+
+## Utility
+
+Decision-curve analysis for classification and time-to-event models.
+
+
+create_decision_curve(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], decision_type: str = 'conventional', min_p_threshold: float = 0, max_p_threshold: float = 1, by: float = 0.01, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+
+Creates a Decision Curve.
+
+Decision Curve Analysis is a method for evaluating and comparing prediction
+models that incorporates the clinical consequences of a decision. The curve
+plots the net benefit of a model against the probability threshold used to
+determine positive cases. This helps to assess the real-world utility of a
+model.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary mapping model or dataset names to 1-D numpy arrays of
+    predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true binary labels (0 or 1).
+decision_type : str, optional
+    Type of decision curve. ``"conventional"`` for a standard decision curve
+    or another value for the "interventions avoided" variant. Defaults to
+    ``"conventional"``.
+min_p_threshold : float, optional
+    The minimum probability threshold to plot. Defaults to 0.
+max_p_threshold : float, optional
+    The maximum probability threshold to plot. Defaults to 1.
+by : float, optional
+    The step size for the probability thresholds. Defaults to 0.01.
+stratified_by : Sequence[str], optional
+    Variables for stratification. Defaults to ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+color_values : List[str], optional
+    A list of hex color strings for the plot lines.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the Decision Curve.
+
+create_decision_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: list[float], decision_type: str = 'conventional', heuristics_sets: list[typing.Dict] = [{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}], min_p_threshold: float = 0, max_p_threshold: float = 1, by: float = 0.01, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+
+Creates a time-dependent Decision Curve.
+
+Generates a Decision Curve for time-to-event models, which is evaluated at
+specified time horizons and handles censored data and competing risks.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary of predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true event statuses.
+times : Union[np.ndarray, Dict[str, np.ndarray]]
+    The event or censoring times.
+fixed_time_horizons : list[float]
+    A list of time points for performance evaluation.
+decision_type : str, optional
+    Type of decision curve to plot. Defaults to ``"conventional"``.
+heuristics_sets : list[Dict], optional
+    Specifies how to handle censored data and competing events.
+min_p_threshold : float, optional
+    The minimum probability threshold to plot. Defaults to 0.
+max_p_threshold : float, optional
+    The maximum probability threshold to plot. Defaults to 1.
+by : float, optional
+    The step size for the probability thresholds. Defaults to 0.01.
+stratified_by : Sequence[str], optional
+    Variables for stratification. Defaults to ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+color_values : List[str], optional
+    A list of hex color strings for the plot lines.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object for the time-dependent Decision Curve.
+
+plot_decision_curve(performance_data: polars.dataframe.frame.DataFrame, decision_type: str = 'conventional', min_p_threshold: float = 0, max_p_threshold: float = 1, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600) -> plotly.graph_objs._figure.Figure
+
+Plots a Decision Curve from pre-computed performance data.
+
+This function is useful for plotting a Decision Curve directly from a
+DataFrame that already contains the necessary performance metrics.
+
+Parameters
+----------
+performance_data : pl.DataFrame
+    A Polars DataFrame with performance metrics, including net benefit and
+    probability thresholds.
+decision_type : str, optional
+    Type of decision curve to plot. Defaults to ``"conventional"``.
+min_p_threshold : float, optional
+    The minimum probability threshold to plot. Defaults to 0.
+max_p_threshold : float, optional
+    The maximum probability threshold to plot. Defaults to 1.
+stratified_by : Sequence[str], optional
+    The columns in `performance_data` used for stratification. Defaults to
+    ``["probability_threshold"]``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the Decision Curve.
+
+
+----------------------------------------------------------------------
+This is the User Guide documentation for the package.
+----------------------------------------------------------------------
+
+
+## Getting Started
+
+### Getting Started
+
+`rtichoke` is a Python library for interactive visualization of predictive-model performance. It supports discrimination, calibration, utility, and time-to-event evaluation workflows.
+
+For some reproducible examples please visit [rtichoke blog](https://rtichoke-blog.netlify.app/)!
+
+## Installation
+
+If you use [uv](https://docs.astral.sh/uv/) to manage your Python project, add `rtichoke` with:
+
+```bash
+uv add rtichoke
+```
+
+This adds `rtichoke` to your project dependencies and updates the uv lockfile.
+
+If you are not using uv, install `rtichoke` from PyPI with pip:
+
+```bash
+pip install rtichoke
+```
+
+## Import
+
+```python
+import numpy as np
+import rtichoke as rk
+```
+
+## Inputs
+
+Most `rtichoke` plotting functions use two dictionaries:
+
+- `probs`: model predictions, keyed by model or population name.
+- `reals`: observed outcomes, keyed by population name.
+
+::: {.callout-tip}
+Similar curve families can still differ in defaults and time-dependent handling. See [Curve API Compatibility](curve-api-compatibility.html), and if a call fails, search [Common Errors & Fixes](common-errors.html) by literal exception text.
+:::
+
+## Single model
+
+```python
+probs_single = {
+    "Model A": np.array([0.1, 0.9, 0.4, 0.8, 0.3, 0.7, 0.2, 0.6])
+}
+reals_single = {
+    "Population": np.array([0, 1, 0, 1, 0, 1, 0, 1])
+}
+
+fig = rk.create_roc_curve(
+    probs=probs_single,
+    reals=reals_single,
+)
+
+fig.show()
+```
+
+## Compare models
+
+When several models are evaluated on the same population, provide one probability vector per model and one outcome vector for the shared population.
+
+```python
+probs_comparison = {
+    "Model A": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),
+    "Model B": np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6]),
+    "Random Guess": np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),
+}
+reals_comparison = {
+    "Population": np.array([0, 1, 0, 1, 0, 1])
+}
+
+fig = rk.create_precision_recall_curve(
+    probs=probs_comparison,
+    reals=reals_comparison,
+)
+
+fig.show()
+```
+
+## Compare populations
+
+To compare a model across populations, provide matching keys in `probs` and `reals`. Population sizes may differ; each probability vector only needs to match the outcome vector for the same key.
+
+```python
+probs_populations = {
+    "Train": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),
+    "Test": np.array([0.2, 0.8, 0.3, 0.7]),
+}
+reals_populations = {
+    "Train": np.array([0, 1, 0, 1, 0, 1]),
+    "Test": np.array([0, 1, 0, 0]),
+}
+
+fig = rk.create_calibration_curve(
+    probs=probs_populations,
+    reals=reals_populations,
+)
+
+fig.show()
+```
+
+Here, `Train` contains six observations and `Test` contains four. This matching-key contract is supported by calibration as well as the other curve families.
+
+From here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The [Naming Conventions](naming-conventions.html) guide explains how the exported function families fit together, while [Curve API Compatibility](curve-api-compatibility.html) documents where those families still differ.
+
+
+### Naming Conventions
+
+`rtichoke` uses consistent function names so that the API becomes easier to predict once you know the main families.
+
+## Function families
+
+| Prefix | Purpose | Typical input | Typical output |
+|---|---|---|---|
+| `prepare_*` | Prepare reusable performance data | predictions and observed outcomes | performance data |
+| `create_*` | Prepare data and create a visualization or table in one call | predictions and observed outcomes | figure or rendered table |
+| `plot_*` | Visualize data that has already been prepared | performance data | interactive figure |
+| `render_*` | Render already-prepared data as a table | prepared performance data | rendered table |
+
+For example, a direct ROC workflow uses `create_roc_curve()`, while a workflow that first prepares reusable performance data can pass those results to `plot_roc_curve()`. Performance tables follow the same direct-versus-prepared-data idea: `create_performance_table()` prepares and renders in one call, while `render_performance_table()` renders an already-prepared performance-data frame.
+
+## Curve families
+
+The same naming pattern repeats across the main performance curves:
+
+| Performance view | Direct visualization | Plot prepared data |
+|---|---|---|
+| ROC | `create_roc_curve()` | `plot_roc_curve()` |
+| Precision–Recall | `create_precision_recall_curve()` | `plot_precision_recall_curve()` |
+| Gains | `create_gains_curve()` | `plot_gains_curve()` |
+| Lift | `create_lift_curve()` | `plot_lift_curve()` |
+| Decision curve | `create_decision_curve()` | `plot_decision_curve()` |
+
+Calibration currently uses the direct `create_calibration_curve()` interface.
+
+## Performance tables
+
+Performance tables use a closely related naming pattern:
+
+| Workflow | Function |
+|---|---|
+| Prepare and render a binary-outcome table | `create_performance_table()` |
+| Prepare and render a time-to-event table | `create_performance_table_times()` |
+| Render already-prepared performance data | `render_performance_table()` |
+
+The table constructors use the same underlying `prepare_performance_data()` and `prepare_performance_data_times()` pipelines as the curve functions. The `render_*` prefix is used when the numerical performance data already exist and only the presentation layer is needed.
+
+## Time-to-event variants
+
+Functions ending in `_times` extend the corresponding workflow to time-to-event outcomes. For example:
+
+- `create_roc_curve()` → binary-outcome ROC curve
+- `create_roc_curve_times()` → time-to-event ROC curve
+- `create_calibration_curve()` → binary-outcome calibration curve
+- `create_calibration_curve_times()` → time-to-event calibration curve
+- `create_decision_curve()` → binary-outcome decision curve
+- `create_decision_curve_times()` → time-to-event decision curve
+- `create_performance_table()` → binary-outcome performance table
+- `create_performance_table_times()` → time-to-event performance table
+
+The same convention is used for the performance-data preparation functions, such as `prepare_performance_data()` and `prepare_performance_data_times()`.
+
+## A useful mental model
+
+Think of the API as a small grammar:
+
+```text
+prepare + performance data        -> reusable data
+create  + curve/table             -> data to rendered output
+plot    + curve                   -> prepared data to figure
+render  + table                   -> prepared data to rendered table
+*_times                           -> time-to-event version
+```
+
+This convention is intended to make related functions discoverable without requiring users to memorize every exported name.
+
+
+
+## Using rtichoke
+
+### Curve API Compatibility
+
+`rtichoke` exposes parallel function families for discrimination, calibration, and decision-curve analysis. Most of them share the same input conventions; the main differences are in time-dependent heuristic handling, especially calibration.
+
+This page focuses on the conventions that are shared across curve families and on the few places where users should expect different behavior.
+
+## Multiple named populations
+
+The curve families accept named probability arrays, so populations such as Train and Test can be evaluated together. When outcomes are also supplied as a dictionary, matching dictionary keys are paired population-by-population. Each probability vector must match the outcome vector for its own population, but different populations may have different sample sizes.
+
+```python
+import numpy as np
+import rtichoke as rk
+
+probs = {
+    "Train": np.array([0.10, 0.90, 0.20, 0.80, 0.30, 0.70]),
+    "Test": np.array([0.15, 0.85, 0.25, 0.75]),
+}
+reals = {
+    "Train": np.array([0, 1, 0, 1, 0, 1]),
+    "Test": np.array([0, 1, 0, 0]),
+}
+
+fig = rk.create_calibration_curve(probs=probs, reals=reals)
+```
+
+Here Train has six observations and Test has four. That is supported. What matters is the within-population alignment:
+
+```text
+len(probs["Train"]) == len(reals["Train"])
+len(probs["Test"])  == len(reals["Test"])
+```
+
+The same named-population pattern is used by ROC, precision-recall, Gains, Lift, decision, and calibration curve families. For time-dependent calls, `times` follows the same population alignment when supplied as a dictionary.
+
+## Censoring and competing-event heuristics
+
+Time-dependent functions distinguish censoring from competing events. The heuristic for an outcome type matters only when observations of that type are present:
+
+- If there are no competing events, changing `competing_heuristic` does not change the statistical estimates because there are no competing events for that rule to act on.
+- If there are no censored observations, changing `censoring_heuristic` does not change the statistical estimates because there are no censored observations for that rule to act on.
+- If neither censoring nor competing events are present, the heuristic choices do not alter the estimates.
+
+These statements describe the effect of the heuristics on the estimates. Function-specific input validation still applies: a function can reject an unsupported heuristic combination even when the corresponding outcome type is absent.
+
+## Time-dependent calibration heuristics
+
+`create_calibration_curve_times()` differs from its ROC, precision-recall, Gains, Lift, and decision-curve siblings in two important ways:
+
+1. `heuristics_sets` is currently required rather than defaulted.
+2. Calibration explicitly rejects unsupported heuristic combinations (specifically `competing_heuristic="adjusted_as_censored"`) with an `Unsupported calibration heuristics` error instead of silently skipping requested horizons.
+
+Pass the calibration heuristic explicitly. For adjusted or exclusion-based paths:
+
+```python
+heuristics_sets = [
+    {
+        "censoring_heuristic": "adjusted",
+        "competing_heuristic": "adjusted_as_negative",
+    }
+]
+```
+
+When `calibration_type="smooth"`, you can also specify the `smooth_method`:
+- `"local_aj"` (default): Gerds' local Aalen-Johansen/KM neighborhood estimation.
+- `"secondary_cox"`: Secondary Cox regression method (Austin, Harrell & McLernon 2020).
+- `"pseudo_values"`: Leave-one-out Aalen-Johansen pseudo-observations lowess.
+
+Then call:
+
+```python
+fig = rk.create_calibration_curve_times(
+    probs=probs,
+    reals=reals,
+    times=times,
+    fixed_time_horizons=[3.0, 6.0, 9.0],
+    heuristics_sets=heuristics_sets,
+)
+```
+
+## Numeric time horizons
+
+`fixed_time_horizons` accepts integer or floating-point numeric values. Integer horizons are normalized to floats at the shared time-dependent processing boundary, so `[3, 6, 9]` and `[3.0, 6.0, 9.0]` are equivalent.
+
+## Related functions
+
+When moving between curve families, compare the API reference for the relevant `_times()` functions rather than assuming their defaults and accepted heuristics are identical. In particular, calibration has a narrower heuristic contract than the other time-dependent curve families.
+
+
+
+## Before You Validate
+
+### Fixed Time Horizons
+
+A time-to-event prediction must specify when the outcome is evaluated. Use
+`fixed_time_horizons` to declare those times in the same unit as `times` and
+the prediction model:
+
+```python
+fixed_time_horizons = [5.0, 10.0]  # years
+```
+
+Choose clinically meaningful horizons before inspecting performance. Changing
+the horizon changes the outcome being validated.
+
+## Update administrative censoring
+
+At a fixed horizon:
+
+- an event observed after the horizon is a 🤨 non-event *at that horizon*;
+- event-free follow-up ending before the horizon is 🤬 censored;
+- a primary event observed by the horizon remains 🤢; and
+- a competing event observed by the horizon remains 💀.
+
+## Explore the horizon
+
+Move the slider to see how the selected horizon changes each observation. The
+vertical line marks the horizon; information after it is not used.
+
+<uriahtalks-horizon-explorer
+  min="10" max="50" step="10" horizon="50"
+  accent-color="#7a9a01"
+  heading="Explore the horizon">
+</uriahtalks-horizon-explorer>
+
+The symbols are:
+
+- 🤬 censored before the horizon;
+- 🤢 primary event;
+- 🤨 non-event through the horizon; and
+- 💀 competing event.
+
+## Pass horizons to `rtichoke`
+
+```python
+performance_data = rk.prepare_performance_data_times(
+    probs=probs,
+    reals=reals,
+    times=times,
+    fixed_time_horizons=[5.0, 10.0],
+)
+```
+
+
+
+
+## Using rtichoke
+
+### Common Errors & Fixes
+
+This page is deliberately keyed by **literal error text**. If an rtichoke call fails, search this page for a distinctive part of the exception before tracing into the implementation.
+
+## Population key or length mismatch
+
+For matching `probs` and `reals` dictionaries, rtichoke pairs values population-by-population. Different populations may have different sample sizes, but lengths must match within each key.
+
+```python
+probs = {
+    "Train": train_probs,
+    "Test": test_probs,
+}
+reals = {
+    "Train": train_outcomes,
+    "Test": test_outcomes,
+}
+```
+
+Check that the keys match and that each pair has equal length. Unequal Train/Test sample sizes are supported across the curve families that accept these inputs. For time-dependent calls, dictionary-valued `times` must follow the same population alignment.
+
+See [Curve API Compatibility](curve-api-compatibility.html) for the family-by-family comparison.
+
+## `Unsupported calibration heuristics`
+
+### Where this appears
+
+`create_calibration_curve_times()`.
+
+### Why it happens
+
+Calibration does not support `competing_heuristic="adjusted_as_censored"`.
+This input is rejected before curve construction rather than silently
+skipping every requested horizon.
+
+### Fix
+
+Pass a supported calibration heuristic explicitly. For example:
+
+```python
+heuristics_sets = [
+    {
+        "censoring_heuristic": "adjusted",
+        "competing_heuristic": "adjusted_as_negative",
+    }
+]
+```
+
+Do not infer calibration defaults from the other time-dependent curve families.
+
+A heuristic only changes estimates when the corresponding outcome type is present: a competing-event rule has no statistical effect when there are no competing events, and a censoring rule has no statistical effect when there is no censoring. Input validation is separate from this statistical point, so unsupported calibration combinations can still be rejected even when the relevant outcome type is absent.
+
+## `No data remaining after applying heuristics and time horizons.`
+
+Unsupported calibration heuristics now raise the targeted error above. If this
+message still appears, the supported heuristic and horizon combination removed
+all observations. Check the observed times, event values, requested horizons,
+and exclusion rules.
+
+## Integer and floating-point time horizons
+
+`fixed_time_horizons` accepts integer and floating-point numeric values.
+Integer horizons are normalized to floats internally:
+
+```python
+fixed_time_horizons=[3, 6, 9]
+```
+
+is equivalent to:
+
+```python
+fixed_time_horizons=[3.0, 6.0, 9.0]
+```
+
+## Why is `heuristics_sets` missing?
+
+If Python reports that `create_calibration_curve_times()` is missing the required `heuristics_sets` argument, that is currently expected API behavior. Unlike the ROC, precision-recall, Gains, Lift, and decision-curve `_times` functions, calibration does not currently provide a default.
+
+Pass it explicitly rather than copying a sibling default:
+
+```python
+heuristics_sets = [
+    {
+        "censoring_heuristic": "excluded",
+        "competing_heuristic": "adjusted_as_negative",
+    }
+]
+```
+
+## Still stuck?
+
+Check [Curve API Compatibility](curve-api-compatibility.html) first. The most important remaining difference is calibration's required and narrower heuristic selection, not unequal population sizes or integer horizons.
+
+
+
+## Model Performance
+
+### Performance Tables
+
+Performance tables summarize several model-performance quantities at the same probability threshold. They are useful when you want a compact comparison across models rather than a separate ROC, precision-recall, calibration, or decision curve.
+
+`rtichoke` provides two public constructors:
+
+- `create_performance_table()` for binary outcomes.
+- `create_performance_table_times()` for time-to-event outcomes at one or more fixed horizons.
+
+Both use the existing `prepare_performance_data()` / `prepare_performance_data_times()` pipelines as their numerical source of truth. The table layer is presentation only.
+
+## Basic performance table
+
+A minimal two-model example:
+
+```python
+import numpy as np
+import rtichoke as rk
+
+reals = np.array([0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1])
+
+probs = {
+    "Model A": np.array([0.04, 0.10, 0.20, 0.24, 0.33, 0.42, 0.48, 0.61, 0.70, 0.82, 0.86, 0.94]),
+    "Model B": np.array([0.08, 0.18, 0.14, 0.39, 0.30, 0.50, 0.43, 0.57, 0.65, 0.74, 0.76, 0.88]),
+}
+
+table = rk.create_performance_table(
+    probs=probs,
+    reals=reals,
+    by=0.10,
+)
+
+table
+```
+
+The default stratification is by `probability_threshold`, so each row corresponds to a threshold for one model. The table collects the performance quantities produced by `prepare_performance_data()` into one view, including discrimination, classification, and decision-analytic quantities where available.
+
+For an alternative view based on the predicted-positive proportion, use:
+
+```python
+rk.create_performance_table(
+    probs=probs,
+    reals=reals,
+    by=0.10,
+    stratified_by=("ppcr",),
+)
+```
+
+## Time-dependent performance tables
+
+`create_performance_table_times()` applies the same idea to time-to-event prediction. You supply observed times and one or more fixed horizons:
+
+```python
+import numpy as np
+import rtichoke as rk
+
+probs = {
+    "Model A": np.array([0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00])
+}
+
+# 0 = censored, 1 = event of interest
+reals = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
+times = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+
+rk.create_performance_table_times(
+    probs=probs,
+    reals=reals,
+    times=times,
+    fixed_time_horizons=[5, 10],
+    by=0.10,
+)
+```
+
+The time horizon remains visible in the output, so results from different horizons are not collapsed together.
+
+By default, time-dependent performance tables use:
+
+```python
+heuristics_sets = [
+    {
+        "censoring_heuristic": "adjusted",
+        "competing_heuristic": "adjusted_as_negative",
+    }
+]
+```
+
+You can pass multiple heuristic sets. The censoring and competing-event heuristic columns remain visible so distinct evaluation scenarios stay distinguishable.
+
+As with the other time-dependent rtichoke functions, a censoring heuristic affects estimates only when censored observations are present, and a competing-event heuristic affects estimates only when competing events are present.
+
+## Renderer choice
+
+The default renderer is **Great Tables**:
+
+```python
+rk.create_performance_table(probs=probs, reals=reals)
+```
+
+Great Tables is the recommended renderer for Marimo and ordinary HTML output. It is styled to preserve the visual ideas of the original R performance table, including model labeling, grouped performance columns, compact metric bars, predicted-positive bars, and diverging net-benefit bars.
+
+For Quarto or Jupyter environments, Reactable remains available explicitly:
+
+```python
+rk.create_performance_table(
+    probs=probs,
+    reals=reals,
+    renderer="reactable",
+)
+```
+
+The Reactable backend adds richer interaction such as sortable columns and expandable confusion-matrix details. It is retained as an option for environments that support its Jupyter widget bridge; it is **not** the Marimo renderer.
+
+The same `renderer=` argument is available on `create_performance_table_times()`.
+
+## Render prepared performance data directly
+
+If you already called `prepare_performance_data()` or `prepare_performance_data_times()`, render the resulting Polars DataFrame without recomputing it:
+
+```python
+performance_data = rk.prepare_performance_data(
+    probs=probs,
+    reals=reals,
+    by=0.10,
+)
+
+rk.render_performance_table(performance_data)
+```
+
+Use `renderer="reactable"` here as well if you want the Reactable backend.
+
+## Related documentation
+
+For the underlying numerical data, see the `prepare_performance_data()` and `prepare_performance_data_times()` API reference. For time-dependent censoring and competing-event semantics, see [Curve API Compatibility](curve-api-compatibility.html).
+
+
+
+## Curves
+
+### Calibration Curves
+
+Calibration evaluates how well predicted risks from a classification or time-to-event model align with observed outcome rates.
+
+## Standard Calibration (`create_calibration_curve`)
+
+For binary outcomes:
+
+```python
+import rtichoke as rk
+
+fig = rk.create_calibration_curve(
+    probs={"Model A": probs_a},
+    reals=reals_binary,
+    calibration_type="smooth",
+)
+```
+
+`calibration_type` can be set to `"discrete"` (deciles) or `"smooth"` (lowess curve).
+
+## Time-Dependent Calibration (`create_calibration_curve_times`)
+
+When evaluating risk predictions at a specific time horizon $t$:
+
+```python
+heuristics_sets = [
+    {
+        "censoring_heuristic": "adjusted",
+        "competing_heuristic": "adjusted_as_negative",
+    }
+]
+
+fig = rk.create_calibration_curve_times(
+    probs={"Model A": probs_a},
+    reals=reals_time_to_event,
+    times=times,
+    fixed_time_horizons=[3.0, 5.0],
+    heuristics_sets=heuristics_sets,
+    calibration_type="smooth",
+    smooth_method="local_aj",
+)
+```
+
+## Smoothing Methods for Time-Dependent Calibration
+
+When `calibration_type="smooth"`, `create_calibration_curve_times` supports three distinct statistical smoothing methods via the `smooth_method` parameter:
+
+### 1. Local Aalen-Johansen (`smooth_method="local_aj"`, Default)
+
+**Gerds' favoured local neighborhood method** (`riskRegression::plotCalibration(method="nne", cens.method="local")`):
+
+- Computes local Aalen-Johansen / Kaplan-Meier cumulative incidence estimates within nearest-neighborhood risk windows across predicted probabilities.
+- Fully non-parametric and handles both standard survival and competing risks ($0=\text{censored}$, $1=\text{event}$, $2=\text{competing event}$).
+- You can tune the neighborhood window using the optional `bandwidth` parameter (e.g., `bandwidth=0.2`).
+
+### 2. Secondary Cox Model (`smooth_method="secondary_cox"`)
+
+**Austin, Harrell & McLernon original time-to-event method** (Austin et al. 2020 / McLernon et al. 2023):
+
+- Fits a secondary cause-specific Cox proportional hazards model on the complementary log-log transformed predictions ($\log(-\log(1-p))$).
+- Evaluates predicted cumulative incidence at horizon $t$ across the grid of predicted probabilities.
+
+### 3. Pseudo-Values LOWESS (`smooth_method="pseudo_values"`)
+
+**Jackknife pseudo-observations method**:
+
+- Computes leave-one-out Aalen-Johansen pseudo-values for each subject at horizon $t$.
+- Applies LOWESS smoothing against predicted probabilities.
+
+## Discrete (Binned) Calibration
+
+For binned decile plots at time horizons, pass `calibration_type="discrete"`:
+
+```python
+fig = rk.create_calibration_curve_times(
+    probs={"Model A": probs_a},
+    reals=reals_time_to_event,
+    times=times,
+    fixed_time_horizons=[5.0],
+    heuristics_sets=heuristics_sets,
+    calibration_type="discrete",
+)
+```
+
