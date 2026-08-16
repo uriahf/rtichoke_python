@@ -89,6 +89,8 @@ def create_calibration_curve_times(
     fixed_time_horizons: List[float],
     heuristics_sets: List[Dict[str, str]],
     calibration_type: str = "discrete",
+    smooth_method: str = "local_aj",
+    bandwidth: Union[float, None] = None,
     size: int = 600,
     color_values: List[str] = [
         "#1b9e77",
@@ -115,9 +117,48 @@ def create_calibration_curve_times(
 ) -> Figure:
     """Create a time-dependent calibration curve across fixed horizons.
 
-    Raises:
-        ValueError: If a heuristic set requests adjusted censoring or treats
-            competing events as censored, which calibration does not support.
+    This function generates time-dependent calibration curves evaluating predicted
+    probabilities against observed outcomes over specified prediction horizons.
+
+    Parameters
+    ----------
+    probs : Dict[str, np.ndarray]
+        A dictionary mapping model or dataset names to 1-D numpy arrays of
+        predicted probabilities.
+    reals : Union[np.ndarray, Dict[str, np.ndarray]]
+        True outcome indicators (0 for censored, 1 for event of interest, 2 for
+        competing risk).
+    times : Union[np.ndarray, Dict[str, np.ndarray]]
+        Follow-up times corresponding to `reals`.
+    fixed_time_horizons : List[float]
+        List of prediction horizons (times) at which to evaluate calibration.
+    heuristics_sets : List[Dict[str, str]]
+        List of heuristic dictionaries defining censoring and competing risk
+        adjustments.
+    calibration_type : str, optional
+        Type of calibration plot, either ``"discrete"`` (binned) or ``"smooth"``.
+        Defaults to ``"discrete"``.
+    smooth_method : str, optional
+        Smoothing method when `calibration_type="smooth"`. Supported options are
+        ``"local_aj"`` (Gerds' local Aalen-Johansen/KM neighborhood estimation),
+        ``"secondary_cox"`` (Austin, Harrell & McLernon secondary Cox regression method),
+        or ``"pseudo_values"`` (jackknife pseudo-values lowess). Defaults to ``"local_aj"``.
+    bandwidth : Union[float, None], optional
+        Bandwidth fraction for ``"local_aj"`` neighborhood smoothing. Defaults to None.
+    size : int, optional
+        Width and height of the Plotly figure in pixels. Defaults to 600.
+    color_values : List[str], optional
+        List of hex color strings for traces.
+
+    Returns
+    -------
+    Figure
+        A Plotly ``Figure`` object representing the time-dependent calibration curve.
+
+    Raises
+    ------
+    ValueError
+        If a heuristic set requests `competing_heuristic='adjusted_as_censored'`.
     """
 
     unsupported_competing_as_censored = any(
@@ -139,6 +180,8 @@ def create_calibration_curve_times(
         fixed_time_horizons=fixed_time_horizons,
         heuristics_sets=heuristics_sets,
         calibration_type=calibration_type,
+        smooth_method=smooth_method,
+        bandwidth=bandwidth,
         size=size,
         color_values=color_values,
     )
@@ -731,7 +774,7 @@ def _calculate_smooth_curve(
             # lowess returns a 2D array where the first column is x and the second is y
             smoothed = lowess(r, p, it=0)
             xout = np.linspace(0, 1, 101)
-            yout = np.interp(xout, smoothed[:, 0], smoothed[:, 1])
+            yout = np.clip(np.interp(xout, smoothed[:, 0], smoothed[:, 1]), 0.0, 1.0)
             return pl.DataFrame(
                 {"x": xout, "y": yout, "reference_group": [group_name] * len(xout)}
             )
@@ -1130,6 +1173,147 @@ def _make_adjusted_deciles_data(
     return pl.DataFrame(rows).sort(["reference_group", "decile"])
 
 
+def _calculate_secondary_cox_smooth(
+    df_adj: pl.DataFrame,
+    horizon: float,
+    performance_type: str,
+) -> pl.DataFrame:
+    """Calculate smoothed calibration curve using secondary Cox regression (Austin et al. 2020 method)."""
+    import pandas as pd
+    from lifelines import CoxPHFitter
+
+    smooth_frames = []
+
+    for key, group_df in df_adj.group_by("reference_group", maintain_order=True):
+        group_name = str(key[0])
+        probs = group_df["prob"].to_numpy()
+        reals = group_df["real"].to_numpy()
+        times = group_df["time"].to_numpy()
+
+        p_clipped = np.clip(probs, 1e-6, 1 - 1e-6)
+        x = np.log(-np.log(1 - p_clipped))
+        events = (reals == 1).astype(int)
+
+        if len(np.unique(x)) <= 1 or events.sum() == 0:
+            y_est = _aj_risk_at_horizon(group_df, horizon)
+            xout = np.linspace(0, 1, 101)
+            smooth_frames.append(
+                pl.DataFrame(
+                    {
+                        "x": xout,
+                        "y": [y_est] * len(xout),
+                        "reference_group": [group_name] * len(xout),
+                    }
+                )
+            )
+            continue
+
+        fit_df = pd.DataFrame({"time": times, "event": events, "x": x})
+        try:
+            cph = CoxPHFitter(penalizer=0.01)
+            cph.fit(fit_df, duration_col="time", event_col="event")
+
+            xout = np.linspace(0.001, 0.999, 101)
+            x_grid = np.log(-np.log(1 - xout))
+
+            surv_at_t = cph.predict_survival_function(
+                pd.DataFrame({"x": x_grid}), times=[horizon]
+            ).values.ravel()
+            yout = np.clip(1.0 - surv_at_t, 0.0, 1.0)
+        except Exception:
+            y_est = _aj_risk_at_horizon(group_df, horizon)
+            xout = np.linspace(0, 1, 101)
+            yout = np.array([y_est] * len(xout))
+
+        smooth_frames.append(
+            pl.DataFrame(
+                {
+                    "x": xout,
+                    "y": yout,
+                    "reference_group": [group_name] * len(xout),
+                }
+            )
+        )
+
+    if not smooth_frames:
+        return pl.DataFrame(
+            schema={
+                "x": pl.Float64,
+                "y": pl.Float64,
+                "reference_group": pl.Utf8,
+            }
+        )
+
+    smooth_dat = pl.concat(smooth_frames)
+    return smooth_dat
+
+
+def _calculate_local_aj_smooth(
+    df_adj: pl.DataFrame,
+    horizon: float,
+    performance_type: str,
+    bandwidth: Union[float, None] = None,
+) -> pl.DataFrame:
+    """Calculate smoothed calibration curve using local Aalen-Johansen estimation (Gerds' method)."""
+    smooth_frames = []
+
+    for key, group_df in df_adj.group_by("reference_group", maintain_order=True):
+        group_name = str(key[0])
+        n = group_df.height
+        probs = group_df["prob"].to_numpy()
+
+        if len(np.unique(probs)) == 1:
+            y_est = _aj_risk_at_horizon(group_df, horizon)
+            xout = np.linspace(0, 1, 101)
+            smooth_frames.append(
+                pl.DataFrame(
+                    {
+                        "x": xout,
+                        "y": [y_est] * len(xout),
+                        "reference_group": [group_name] * len(xout),
+                    }
+                )
+            )
+            continue
+
+        xout = np.linspace(0, 1, 101)
+        yout = []
+
+        if bandwidth is not None:
+            k = max(5, int(bandwidth * n))
+        else:
+            k = max(10, min(n, int(0.2 * n)))
+
+        for p0 in xout:
+            distances = np.abs(probs - p0)
+            idx = np.argsort(distances, kind="stable")[:k]
+            sub_df = group_df[idx]
+            y_est = _aj_risk_at_horizon(sub_df, horizon)
+            yout.append(y_est)
+
+        smooth_frames.append(
+            pl.DataFrame(
+                {
+                    "x": xout,
+                    "y": np.array(yout),
+                    "reference_group": [group_name] * len(xout),
+                }
+            )
+        )
+
+    if not smooth_frames:
+        return pl.DataFrame(
+            schema={
+                "x": pl.Float64,
+                "y": pl.Float64,
+                "reference_group": pl.Utf8,
+            }
+        )
+
+    smooth_dat = pl.concat(smooth_frames)
+    return smooth_dat
+
+
 def _calculate_adjusted_pseudostates(
     df: pl.DataFrame, horizon: float
 ) -> Dict[str, np.ndarray]:
@@ -1161,6 +1345,8 @@ def _create_calibration_curve_list_times(
     fixed_time_horizons: List[float],
     heuristics_sets: List[Dict[str, str]],
     calibration_type: str = "discrete",
+    smooth_method: str = "local_aj",
+    bandwidth: Union[float, None] = None,
     size: int = 600,
     color_values: List[str] = [
         "#1b9e77",
@@ -1220,10 +1406,26 @@ def _create_calibration_curve_list_times(
                     )
                 }
                 if calibration_type == "smooth":
-                    pseudo_by_group = _calculate_adjusted_pseudostates(df_adj, horizon)
-                    smooth_data = _calculate_smooth_curve(
-                        probs_adj, pseudo_by_group, performance_type
-                    )
+                    if smooth_method == "local_aj":
+                        smooth_data = _calculate_local_aj_smooth(
+                            df_adj, horizon, performance_type, bandwidth=bandwidth
+                        )
+                    elif smooth_method == "secondary_cox":
+                        smooth_data = _calculate_secondary_cox_smooth(
+                            df_adj, horizon, performance_type
+                        )
+                    elif smooth_method == "pseudo_values":
+                        pseudo_by_group = _calculate_adjusted_pseudostates(
+                            df_adj, horizon
+                        )
+                        smooth_data = _calculate_smooth_curve(
+                            probs_adj, pseudo_by_group, performance_type
+                        )
+                    else:
+                        raise ValueError(
+                            f"Unsupported smooth_method: '{smooth_method}'. "
+                            "Supported options are 'local_aj', 'secondary_cox', and 'pseudo_values'."
+                        )
                 else:
                     smooth_data = deciles_data.select("x", "y", "reference_group")
                 hist_data = _create_histogram_for_calibration(probs_adj)
@@ -1270,9 +1472,26 @@ def _create_calibration_curve_list_times(
             )
 
             # Smooth curve
-            smooth_data = _calculate_smooth_curve(
-                probs_adj, reals_adj, performance_type
-            )
+            if calibration_type == "smooth":
+                if smooth_method == "local_aj":
+                    smooth_data = _calculate_local_aj_smooth(
+                        df_adj, horizon, performance_type, bandwidth=bandwidth
+                    )
+                elif smooth_method == "secondary_cox":
+                    smooth_data = _calculate_secondary_cox_smooth(
+                        df_adj, horizon, performance_type
+                    )
+                elif smooth_method == "pseudo_values":
+                    smooth_data = _calculate_smooth_curve(
+                        probs_adj, reals_adj, performance_type
+                    )
+                else:
+                    raise ValueError(
+                        f"Unsupported smooth_method: '{smooth_method}'. "
+                        "Supported options are 'local_aj', 'secondary_cox', and 'pseudo_values'."
+                    )
+            else:
+                smooth_data = deciles_data.select("x", "y", "reference_group")
             all_smooth.append(
                 smooth_data.with_columns(pl.lit(horizon).alias("fixed_time_horizon"))
             )
