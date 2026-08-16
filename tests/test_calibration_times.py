@@ -254,3 +254,83 @@ def test_create_calibration_curve_times_rejects_competing_as_censored(entry_poin
                 }
             ],
         )
+
+
+@pytest.mark.parametrize("smooth_method", ["local_aj", "secondary_cox", "pseudo_values"])
+def test_create_calibration_curve_times_smooth_methods(smooth_method):
+    np.random.seed(42)
+    probs = {"model_1": np.linspace(0.1, 0.9, 20)}
+    reals = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+    times = np.linspace(1.0, 10.0, 20)
+
+    fig = create_calibration_curve_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=[5.0],
+        heuristics_sets=[
+            {
+                "censoring_heuristic": "adjusted",
+                "competing_heuristic": "adjusted_as_negative",
+            }
+        ],
+        calibration_type="smooth",
+        smooth_method=smooth_method,
+    )
+
+    assert fig is not None
+    # Check that trace contains smooth points
+    smooth_trace = fig.data[1]
+    assert len(smooth_trace.x) == 101
+    assert np.isfinite(np.asarray(smooth_trace.y)).all()
+
+
+def test_create_calibration_curve_times_invalid_smooth_method():
+    probs = {"model_1": np.array([0.1, 0.2, 0.3, 0.4])}
+    reals = np.array([1, 0, 1, 0])
+    times = np.array([1.0, 2.0, 3.0, 4.0])
+
+    with pytest.raises(ValueError, match="Unsupported smooth_method"):
+        create_calibration_curve_times(
+            probs,
+            reals,
+            times,
+            fixed_time_horizons=[2.0],
+            heuristics_sets=[
+                {
+                    "censoring_heuristic": "adjusted",
+                    "competing_heuristic": "adjusted_as_negative",
+                }
+            ],
+            calibration_type="smooth",
+            smooth_method="unknown_method",
+        )
+
+
+@pytest.mark.parametrize("smooth_method", ["local_aj", "secondary_cox", "pseudo_values"])
+def test_create_calibration_curve_times_competing_risks(smooth_method):
+    probs = {"model_1": np.linspace(0.05, 0.95, 30)}
+    # 0 = censored, 1 = event of interest, 2 = competing event
+    reals = np.array([0, 1, 2] * 10)
+    times = np.linspace(1.0, 15.0, 30)
+
+    fig = create_calibration_curve_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=[8.0],
+        heuristics_sets=[
+            {
+                "censoring_heuristic": "adjusted",
+                "competing_heuristic": "adjusted_as_negative",
+            }
+        ],
+        calibration_type="smooth",
+        smooth_method=smooth_method,
+    )
+
+    assert fig is not None
+    smooth_trace = fig.data[1]
+    assert len(smooth_trace.x) == 101
+    assert np.all(np.asarray(smooth_trace.y) >= 0.0)
+    assert np.all(np.asarray(smooth_trace.y) <= 1.0)
