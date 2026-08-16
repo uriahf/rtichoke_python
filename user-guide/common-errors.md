@@ -33,17 +33,17 @@ See [Curve API Compatibility](curve-api-compatibility.md) for the family-by-fami
 
 ## Why it happens
 
-Calibration does not currently implement `censoring_heuristic="adjusted"` or `competing_heuristic="adjusted_as_censored"`. These inputs are rejected before curve construction rather than silently skipping every requested horizon.
+Calibration does not support `competing_heuristic="adjusted_as_censored"`. This input is rejected before curve construction rather than silently skipping every requested horizon.
 
 
 ## Fix
 
-Pass a supported calibration heuristic explicitly. For the exclusion-based path:
+Pass a supported calibration heuristic explicitly. For example:
 
 ``` python
 heuristics_sets = [
     {
-        "censoring_heuristic": "excluded",
+        "censoring_heuristic": "adjusted",
         "competing_heuristic": "adjusted_as_negative",
     }
 ]

@@ -82,7 +82,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-8d81ff0c427573f4e934abdc536f8dbf.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-84ac27f0ad322ca6b46d42a29965ff7f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -369,14 +369,14 @@ document.addEventListener('DOMContentLoaded', () => {
 </section>
 <section id="why-it-happens" class="level2">
 <h2 class="anchored" data-anchor-id="why-it-happens">Why it happens</h2>
-<p>Calibration does not currently implement <code>censoring_heuristic="adjusted"</code> or <code>competing_heuristic="adjusted_as_censored"</code>. These inputs are rejected before curve construction rather than silently skipping every requested horizon.</p>
+<p>Calibration does not support <code>competing_heuristic="adjusted_as_censored"</code>. This input is rejected before curve construction rather than silently skipping every requested horizon.</p>
 </section>
 <section id="fix" class="level2">
 <h2 class="anchored" data-anchor-id="fix">Fix</h2>
-<p>Pass a supported calibration heuristic explicitly. For the exclusion-based path:</p>
+<p>Pass a supported calibration heuristic explicitly. For example:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>heuristics_sets <span class="op">=</span> [</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    {</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"censoring_heuristic"</span>: <span class="st">"excluded"</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"censoring_heuristic"</span>: <span class="st">"adjusted"</span>,</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"competing_heuristic"</span>: <span class="st">"adjusted_as_negative"</span>,</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div>

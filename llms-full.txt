@@ -607,13 +607,52 @@ Returns
 Figure
     A Plotly ``Figure`` object representing the calibration curve.
 
-create_calibration_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: List[float], heuristics_sets: List[Dict[str, str]], calibration_type: str = 'discrete', size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+create_calibration_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: List[float], heuristics_sets: List[Dict[str, str]], calibration_type: str = 'discrete', smooth_method: str = 'local_aj', bandwidth: Optional[float] = None, size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
 
 Create a time-dependent calibration curve across fixed horizons.
 
-Raises:
-    ValueError: If a heuristic set requests adjusted censoring or treats
-        competing events as censored, which calibration does not support.
+This function generates time-dependent calibration curves evaluating predicted
+probabilities against observed outcomes over specified prediction horizons.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary mapping model or dataset names to 1-D numpy arrays of
+    predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    True outcome indicators (0 for censored, 1 for event of interest, 2 for
+    competing risk).
+times : Union[np.ndarray, Dict[str, np.ndarray]]
+    Follow-up times corresponding to `reals`.
+fixed_time_horizons : List[float]
+    List of prediction horizons (times) at which to evaluate calibration.
+heuristics_sets : List[Dict[str, str]]
+    List of heuristic dictionaries defining censoring and competing risk
+    adjustments.
+calibration_type : str, optional
+    Type of calibration plot, either ``"discrete"`` (binned) or ``"smooth"``.
+    Defaults to ``"discrete"``.
+smooth_method : str, optional
+    Smoothing method when `calibration_type="smooth"`. Supported options are
+    ``"local_aj"`` (Gerds' local Aalen-Johansen/KM neighborhood estimation),
+    ``"secondary_cox"`` (Austin, Harrell & McLernon secondary Cox regression method),
+    or ``"pseudo_values"`` (jackknife pseudo-values lowess). Defaults to ``"local_aj"``.
+bandwidth : Union[float, None], optional
+    Bandwidth fraction for ``"local_aj"`` neighborhood smoothing. Defaults to None.
+size : int, optional
+    Width and height of the Plotly figure in pixels. Defaults to 600.
+color_values : List[str], optional
+    List of hex color strings for traces.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the time-dependent calibration curve.
+
+Raises
+------
+ValueError
+    If a heuristic set requests `competing_heuristic='adjusted_as_censored'`.
 
 
 ## Utility
@@ -967,18 +1006,23 @@ These statements describe the effect of the heuristics on the estimates. Functio
 `create_calibration_curve_times()` differs from its ROC, precision-recall, Gains, Lift, and decision-curve siblings in two important ways:
 
 1. `heuristics_sets` is currently required rather than defaulted.
-2. Calibration explicitly rejects unsupported heuristic combinations, including `censoring_heuristic="adjusted"` and `competing_heuristic="adjusted_as_censored"`, with an `Unsupported calibration heuristics` error instead of silently skipping every requested horizon.
+2. Calibration explicitly rejects unsupported heuristic combinations (specifically `competing_heuristic="adjusted_as_censored"`) with an `Unsupported calibration heuristics` error instead of silently skipping requested horizons.
 
-Pass the calibration heuristic explicitly. For the currently working exclusion-based path:
+Pass the calibration heuristic explicitly. For adjusted or exclusion-based paths:
 
 ```python
 heuristics_sets = [
     {
-        "censoring_heuristic": "excluded",
+        "censoring_heuristic": "adjusted",
         "competing_heuristic": "adjusted_as_negative",
     }
 ]
 ```
+
+When `calibration_type="smooth"`, you can also specify the `smooth_method`:
+- `"local_aj"` (default): Gerds' local Aalen-Johansen/KM neighborhood estimation.
+- `"secondary_cox"`: Secondary Cox regression method (Austin, Harrell & McLernon 2020).
+- `"pseudo_values"`: Leave-one-out Aalen-Johansen pseudo-observations lowess.
 
 Then call:
 
@@ -1091,18 +1135,18 @@ See [Curve API Compatibility](curve-api-compatibility.html) for the family-by-fa
 
 ### Why it happens
 
-Calibration does not currently implement `censoring_heuristic="adjusted"` or
-`competing_heuristic="adjusted_as_censored"`. These inputs are rejected
-before curve construction rather than silently skipping every requested horizon.
+Calibration does not support `competing_heuristic="adjusted_as_censored"`.
+This input is rejected before curve construction rather than silently
+skipping every requested horizon.
 
 ### Fix
 
-Pass a supported calibration heuristic explicitly. For the exclusion-based path:
+Pass a supported calibration heuristic explicitly. For example:
 
 ```python
 heuristics_sets = [
     {
-        "censoring_heuristic": "excluded",
+        "censoring_heuristic": "adjusted",
         "competing_heuristic": "adjusted_as_negative",
     }
 ]

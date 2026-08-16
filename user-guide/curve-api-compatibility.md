@@ -51,18 +51,20 @@ These statements describe the effect of the heuristics on the estimates. Functio
 [create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times) differs from its ROC, precision-recall, Gains, Lift, and decision-curve siblings in two important ways:
 
 1.  `heuristics_sets` is currently required rather than defaulted.
-2.  Calibration explicitly rejects unsupported heuristic combinations, including `censoring_heuristic="adjusted"` and `competing_heuristic="adjusted_as_censored"`, with an `Unsupported calibration heuristics` error instead of silently skipping every requested horizon.
+2.  Calibration explicitly rejects unsupported heuristic combinations (specifically `competing_heuristic="adjusted_as_censored"`) with an `Unsupported calibration heuristics` error instead of silently skipping requested horizons.
 
-Pass the calibration heuristic explicitly. For the currently working exclusion-based path:
+Pass the calibration heuristic explicitly. For adjusted or exclusion-based paths:
 
 ``` python
 heuristics_sets = [
     {
-        "censoring_heuristic": "excluded",
+        "censoring_heuristic": "adjusted",
         "competing_heuristic": "adjusted_as_negative",
     }
 ]
 ```
+
+When `calibration_type="smooth"`, you can also specify the `smooth_method`: - `"local_aj"` (default): Gerds' local Aalen-Johansen/KM neighborhood estimation. - `"secondary_cox"`: Secondary Cox regression method (Austin, Harrell & McLernon 2020). - `"pseudo_values"`: Leave-one-out Aalen-Johansen pseudo-observations lowess.
 
 Then call:
 
