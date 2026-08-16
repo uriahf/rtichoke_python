@@ -3,6 +3,11 @@
 This changelog is generated automatically from [GitHub Releases](https://github.com/uriahf/rtichoke_python/releases).
 
 
+# v0.1.32
+
+*2026-08-16* · [GitHub](https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.32)
+
+
 # v0.1.30
 
 *2026-08-12* · [GitHub](https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.30)

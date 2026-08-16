@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>create_performance_table() – rtichoke | rtichoke</title>
+<title>Calibration Curves – rtichoke | rtichoke</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -71,6 +71,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
+<link href="../user-guide/performance-tables.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -160,49 +161,65 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'gd-lightbox-annotate.js';s.defer=true;document.head.appendChild(s);})();</script>
 <script src="../theme-init.js"></script>
 
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../site.css">
-  <link rel="alternate" type="text/markdown" href="create_performance_table.md">
-  <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/reference/create_performance_table.html">
-  <meta name="description" content="Create an R-style rtichoke performance table.">
-  <script type="application/ld+json">
-[
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    "name": "rtichoke",
-    "description": "interactive visualizations for performance of predictive models",
-    "license": "https://opensource.org/licenses/MIT",
-    "url": "https://uriahf.github.io/rtichoke_python",
-    "documentation": "https://uriahf.github.io/rtichoke_python",
-    "programmingLanguage": {
-      "@type": "ComputerLanguage",
-      "name": "Python"
-    }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "create_performance_table - rtichoke",
-    "isPartOf": {
-      "@type": "WebSite",
-      "name": "rtichoke"
-    },
-    "url": "https://uriahf.github.io/rtichoke_python/reference/create_performance_table.html"
-  }
-]
-</script>
+  <link rel="alternate" type="text/markdown" href="calibration-curves.md">
+  <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/user-guide/calibration-curves.html">
+  <meta name="description" content="Calibration evaluates how well predicted risks from a classification or time-to-event model align with observed outcome rates.">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="create_performance_table() – rtichoke | rtichoke">
-  <meta property="og:description" content="Create an R-style rtichoke performance table.">
-  <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/reference/create_performance_table.html">
+  <meta property="og:title" content="Calibration Curves – rtichoke | rtichoke">
+  <meta property="og:description" content="Calibration evaluates how well predicted risks from a classification or time-to-event model align with observed outcome rates.">
+  <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/user-guide/calibration-curves.html">
   <meta property="og:site_name" content="rtichoke">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="create_performance_table() – rtichoke | rtichoke">
-  <meta name="twitter:description" content="Create an R-style rtichoke performance table.">
+  <meta name="twitter:title" content="Calibration Curves – rtichoke | rtichoke">
+  <meta name="twitter:description" content="Calibration evaluates how well predicted risks from a classification or time-to-event model align with observed outcome rates.">
 </head>
 
-<body class="gd-ref-sidebar nav-sidebar floating nav-fixed doc-api-page quarto-light">
+<body class="nav-sidebar floating nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -220,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="../reference/index.html" aria-current="page"> 
+    <a class="nav-link" href="../reference/index.html"> 
 <span class="menu-text">Reference</span></a>
   </li>  
   <li class="nav-item">
@@ -245,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <h1 class="quarto-secondary-nav-title no-breadcrumbs gd-ref-title"><span class="gd-ref-title-prefix">API</span><span class="gd-ref-title-sep">/</span><span class="gd-ref-title-name">create_performance_table()</span></h1>
+        <h1 class="quarto-secondary-nav-title no-breadcrumbs">Calibration Curves</h1>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -257,40 +274,22 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
-        <li class="sidebar-item">
-  <div class="sidebar-item-container" style="padding-bottom: 0.5rem; padding-top: 0.25rem;"> 
-  <a href="../reference/index.html" style="font-family: &quot;Open Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;" class="sidebar-item-text sidebar-link">
- <span class="menu-text">API Index</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Performance Data</span></a>
+ <span class="menu-text">Getting Started</span></a>
 </div>
       <ul id="quarto-sidebar-section-1" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_performance_data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">prepare_performance_data</span></a>
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Getting Started</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_binned_classification_data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">prepare_binned_classification_data</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_performance_data_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">prepare_performance_data_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/prepare_binned_classification_data_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">prepare_binned_classification_data_times</span></a>
+  <a href="../user-guide/naming-conventions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Naming Conventions</span></a>
   </div>
 </li>
       </ul>
@@ -298,25 +297,19 @@ document.addEventListener('DOMContentLoaded', () => {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Performance Tables</span></a>
+ <span class="menu-text">Using rtichoke</span></a>
 </div>
       <ul id="quarto-sidebar-section-2" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../reference/create_performance_table.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">create_performance_table</span></a>
+  <a href="../user-guide/curve-api-compatibility.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Curve API Compatibility</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../reference/create_performance_table_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_performance_table_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/render_performance_table.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">render_performance_table</span></a>
+  <a href="../user-guide/common-errors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Common Errors &amp; Fixes</span></a>
   </div>
 </li>
       </ul>
@@ -324,79 +317,13 @@ document.addEventListener('DOMContentLoaded', () => {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Discrimination</span></a>
+ <span class="menu-text">Before You Validate</span></a>
 </div>
       <ul id="quarto-sidebar-section-3" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../reference/create_roc_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_roc_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_roc_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_roc_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_roc_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_roc_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_precision_recall_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_precision_recall_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_precision_recall_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_precision_recall_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_precision_recall_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_precision_recall_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_gains_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_gains_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_gains_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_gains_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_gains_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_gains_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_lift_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_lift_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_lift_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_lift_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_lift_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_lift_curve</span></a>
+  <a href="../user-guide/fixed-time-horizons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Fixed Time Horizons</span></a>
   </div>
 </li>
       </ul>
@@ -404,19 +331,13 @@ document.addEventListener('DOMContentLoaded', () => {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Calibration</span></a>
+ <span class="menu-text">Model Performance</span></a>
 </div>
       <ul id="quarto-sidebar-section-4" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../reference/create_calibration_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_calibration_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_calibration_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_calibration_curve_times</span></a>
+  <a href="../user-guide/performance-tables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Performance Tables</span></a>
   </div>
 </li>
       </ul>
@@ -424,25 +345,13 @@ document.addEventListener('DOMContentLoaded', () => {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Utility</span></a>
+ <span class="menu-text">Curves</span></a>
 </div>
       <ul id="quarto-sidebar-section-5" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../reference/create_decision_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_decision_curve</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/create_decision_curve_times.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_decision_curve_times</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../reference/plot_decision_curve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">plot_decision_curve</span></a>
+  <a href="../user-guide/calibration-curves.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Calibration Curves</span></a>
   </div>
 </li>
       </ul>
@@ -452,15 +361,29 @@ document.addEventListener('DOMContentLoaded', () => {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#standard-calibration-create_calibration_curve" id="toc-standard-calibration-create_calibration_curve" class="nav-link active" data-scroll-target="#standard-calibration-create_calibration_curve">Standard Calibration (<a href="../reference/create_calibration_curve.html#rtichoke.create_calibration_curve" class="gdls-link gdls-code">create_calibration_curve</a>)</a></li>
+  <li><a href="#time-dependent-calibration-create_calibration_curve_times" id="toc-time-dependent-calibration-create_calibration_curve_times" class="nav-link" data-scroll-target="#time-dependent-calibration-create_calibration_curve_times">Time-Dependent Calibration (<a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times</a>)</a></li>
+  <li><a href="#smoothing-methods-for-time-dependent-calibration" id="toc-smoothing-methods-for-time-dependent-calibration" class="nav-link" data-scroll-target="#smoothing-methods-for-time-dependent-calibration">Smoothing Methods for Time-Dependent Calibration</a>
+  <ul class="collapse">
+  <li><a href="#local-aalen-johansen-smooth_methodlocal_aj-default" id="toc-local-aalen-johansen-smooth_methodlocal_aj-default" class="nav-link" data-scroll-target="#local-aalen-johansen-smooth_methodlocal_aj-default">1. Local Aalen-Johansen (<code>smooth_method="local_aj"</code>, Default)</a></li>
+  <li><a href="#secondary-cox-model-smooth_methodsecondary_cox" id="toc-secondary-cox-model-smooth_methodsecondary_cox" class="nav-link" data-scroll-target="#secondary-cox-model-smooth_methodsecondary_cox">2. Secondary Cox Model (<code>smooth_method="secondary_cox"</code>)</a></li>
+  <li><a href="#pseudo-values-lowess-smooth_methodpseudo_values" id="toc-pseudo-values-lowess-smooth_methodpseudo_values" class="nav-link" data-scroll-target="#pseudo-values-lowess-smooth_methodpseudo_values">3. Pseudo-Values LOWESS (<code>smooth_method="pseudo_values"</code>)</a></li>
+  </ul></li>
+  <li><a href="#discrete-binned-calibration" id="toc-discrete-binned-calibration" class="nav-link" data-scroll-target="#discrete-binned-calibration">Discrete (Binned) Calibration</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h2 class="title" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 1.25rem;"><span class="doc-object-name doc-function doc-label doc-label-function">create_performance_table()</span></h2>
+<h1 class="title d-none d-lg-block">Calibration Curves</h1>
 </div>
 
 
@@ -477,29 +400,84 @@ document.addEventListener('DOMContentLoaded', () => {
 </header>
 
 
-<div class="doc-subject">
-<p>Create an R-style rtichoke performance table.</p>
-</div>
-<div class="doc-usage-source">
-<p>Usage</p>
-<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/performance_table.py#L42-L52" target="_blank" rel="noopener">Source</a></p>
-</div>
-<div class="doc-signature doc-Kind.FUNCTION">
-<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">create_performance_table</span>(</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">probs</span>,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">reals</span>,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">by</span><span class="op">=</span><span class="fl">0.01</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="va">stratified_by</span><span class="op">=</span>(<span class="st">&quot;probability_threshold&quot;</span>,),</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">color_values</span><span class="op">=</span><span class="va">DEFAULT_COLORS</span>,</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="va">renderer</span><span class="op">=</span><span class="st">&quot;great_tables&quot;</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
-</div>
+<p>Calibration evaluates how well predicted risks from a classification or time-to-event model align with observed outcome rates.</p>
+<section id="standard-calibration-create_calibration_curve" class="level1">
+<h1>Standard Calibration (<a href="../reference/create_calibration_curve.html#rtichoke.create_calibration_curve" class="gdls-link gdls-code">create_calibration_curve</a>)</h1>
+<p>For binary outcomes:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rtichoke <span class="im">as</span> rk</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_calibration_curve(</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>{<span class="st">"Model A"</span>: probs_a},</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_binary,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    calibration_type<span class="op">=</span><span class="st">"smooth"</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p><code>calibration_type</code> can be set to <code>"discrete"</code> (deciles) or <code>"smooth"</code> (lowess curve).</p>
+</section>
+<section id="time-dependent-calibration-create_calibration_curve_times" class="level1">
+<h1>Time-Dependent Calibration (<a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times</a>)</h1>
+<p>When evaluating risk predictions at a specific time horizon <span class="math inline">t</span>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>heuristics_sets <span class="op">=</span> [</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"censoring_heuristic"</span>: <span class="st">"adjusted"</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"competing_heuristic"</span>: <span class="st">"adjusted_as_negative"</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_calibration_curve_times(</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>{<span class="st">"Model A"</span>: probs_a},</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_time_to_event,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    times<span class="op">=</span>times,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    fixed_time_horizons<span class="op">=</span>[<span class="fl">3.0</span>, <span class="fl">5.0</span>],</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    heuristics_sets<span class="op">=</span>heuristics_sets,</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    calibration_type<span class="op">=</span><span class="st">"smooth"</span>,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    smooth_method<span class="op">=</span><span class="st">"local_aj"</span>,</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</section>
+<section id="smoothing-methods-for-time-dependent-calibration" class="level1">
+<h1>Smoothing Methods for Time-Dependent Calibration</h1>
+<p>When <code>calibration_type="smooth"</code>, <a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times</a> supports three distinct statistical smoothing methods via the <code>smooth_method</code> parameter:</p>
+<section id="local-aalen-johansen-smooth_methodlocal_aj-default" class="level2">
+<h2 class="anchored" data-anchor-id="local-aalen-johansen-smooth_methodlocal_aj-default">1. Local Aalen-Johansen (<code>smooth_method="local_aj"</code>, Default)</h2>
+<p><strong>Gerds’ favoured local neighborhood method</strong> (<code>riskRegression::plotCalibration(method="nne", cens.method="local")</code>):</p>
+<ul>
+<li>Computes local Aalen-Johansen / Kaplan-Meier cumulative incidence estimates within nearest-neighborhood risk windows across predicted probabilities.</li>
+<li>Fully non-parametric and handles both standard survival and competing risks (<span class="math inline">0=\text{censored}</span>, <span class="math inline">1=\text{event}</span>, <span class="math inline">2=\text{competing event}</span>).</li>
+<li>You can tune the neighborhood window using the optional <code>bandwidth</code> parameter (e.g., <code>bandwidth=0.2</code>).</li>
+</ul>
+</section>
+<section id="secondary-cox-model-smooth_methodsecondary_cox" class="level2">
+<h2 class="anchored" data-anchor-id="secondary-cox-model-smooth_methodsecondary_cox">2. Secondary Cox Model (<code>smooth_method="secondary_cox"</code>)</h2>
+<p><strong>Austin, Harrell &amp; McLernon original time-to-event method</strong> (Austin et al.&nbsp;2020 / McLernon et al.&nbsp;2023):</p>
+<ul>
+<li>Fits a secondary cause-specific Cox proportional hazards model on the complementary log-log transformed predictions (<span class="math inline">\log(-\log(1-p))</span>).</li>
+<li>Evaluates predicted cumulative incidence at horizon <span class="math inline">t</span> across the grid of predicted probabilities.</li>
+</ul>
+</section>
+<section id="pseudo-values-lowess-smooth_methodpseudo_values" class="level2">
+<h2 class="anchored" data-anchor-id="pseudo-values-lowess-smooth_methodpseudo_values">3. Pseudo-Values LOWESS (<code>smooth_method="pseudo_values"</code>)</h2>
+<p><strong>Jackknife pseudo-observations method</strong>:</p>
+<ul>
+<li>Computes leave-one-out Aalen-Johansen pseudo-values for each subject at horizon <span class="math inline">t</span>.</li>
+<li>Applies LOWESS smoothing against predicted probabilities.</li>
+</ul>
+</section>
+</section>
+<section id="discrete-binned-calibration" class="level1">
+<h1>Discrete (Binned) Calibration</h1>
+<p>For binned decile plots at time horizons, pass <code>calibration_type="discrete"</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_calibration_curve_times(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>{<span class="st">"Model A"</span>: probs_a},</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_time_to_event,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    times<span class="op">=</span>times,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    fixed_time_horizons<span class="op">=</span>[<span class="fl">5.0</span>],</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    heuristics_sets<span class="op">=</span>heuristics_sets,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    calibration_type<span class="op">=</span><span class="st">"discrete"</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 
 
+</section>
 
-</main>
-<hr style="padding: 0; margin: 0;">
- <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
@@ -838,6 +816,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../user-guide/performance-tables.html" class="pagination-link" aria-label="Performance Tables">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Performance Tables</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
