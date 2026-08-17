@@ -1214,7 +1214,6 @@ def _calculate_secondary_cox_smooth(
     performance_type: str,
 ) -> pl.DataFrame:
     """Calculate smoothed calibration curve using secondary Cox regression (Austin et al. 2020 & McLernon et al. 2023 method)."""
-    import pandas as pd
     from lifelines import CoxPHFitter
 
     smooth_frames = []
@@ -1246,7 +1245,7 @@ def _calculate_secondary_cox_smooth(
         basis, knots = _calculate_rcs_basis_3knots(x)
 
         if basis.shape[1] == 2:
-            fit_df = pd.DataFrame(
+            fit_df = pl.DataFrame(
                 {
                     "time": times,
                     "event": events,
@@ -1255,27 +1254,27 @@ def _calculate_secondary_cox_smooth(
                 }
             )
         else:
-            fit_df = pd.DataFrame(
+            fit_df = pl.DataFrame(
                 {"time": times, "event": events, "rcs_1": basis[:, 0]}
             )
 
         try:
             cph = CoxPHFitter(penalizer=0.01)
-            cph.fit(fit_df, duration_col="time", event_col="event")
+            cph.fit(fit_df.to_pandas(), duration_col="time", event_col="event")
 
             xout = np.linspace(0.001, 0.999, 101)
             x_grid = np.log(-np.log(1 - xout))
             grid_basis, _ = _calculate_rcs_basis_3knots(x_grid, knots=knots)
 
             if grid_basis.shape[1] == 2 and "rcs_2" in fit_df.columns:
-                grid_df = pd.DataFrame(
+                grid_df = pl.DataFrame(
                     {"rcs_1": grid_basis[:, 0], "rcs_2": grid_basis[:, 1]}
                 )
             else:
-                grid_df = pd.DataFrame({"rcs_1": grid_basis[:, 0]})
+                grid_df = pl.DataFrame({"rcs_1": grid_basis[:, 0]})
 
             surv_at_t = cph.predict_survival_function(
-                grid_df, times=[horizon]
+                grid_df.to_pandas(), times=[horizon]
             ).values.ravel()
             yout = np.clip(1.0 - surv_at_t, 0.0, 1.0)
         except Exception:
