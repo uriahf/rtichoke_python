@@ -3,6 +3,20 @@
 This changelog is generated automatically from [GitHub Releases](https://github.com/uriahf/rtichoke_python/releases).
 
 
+# v0.1.33
+
+*2026-08-17* · [GitHub](https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.33)
+
+
+## What's Changed
+
+- Jules 11048813694386596407 e7f2a3f8 by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/306
+- Extend smooth_method="secondary_cox" with 3-knot Restricted Cubic Splines by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/308
+- feat: update release version marker to 0.1.33 for PyPI automated release by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/309
+
+**Full Changelog**: [https://github.com/uriahf/rtichoke_python/compare/v0.1.32…v0.1.33](https://github.com/uriahf/rtichoke_python/compare/v0.1.32...v0.1.33)
+
+
 # v0.1.32
 
 *2026-08-16* · [GitHub](https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.32)
