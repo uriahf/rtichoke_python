@@ -58,10 +58,17 @@ When `calibration_type="smooth"`, `create_calibration_curve_times` supports thre
 
 ### 2. Secondary Cox Model (`smooth_method="secondary_cox"`)
 
-**Austin, Harrell & McLernon original time-to-event method** (Austin et al. 2020 / McLernon et al. 2023):
+To construct a smooth time-dependent calibration curve at prediction horizon $t$, `rtichoke` fits a secondary Cox proportional hazards model (Austin, Harrell & van Klaveren 2020; McLernon et al. 2023) on the complementary log-log transformed predicted probabilities:
 
-- Fits a secondary cause-specific Cox proportional hazards model on the complementary log-log transformed predictions ($\log(-\log(1-p))$).
-- Evaluates predicted cumulative incidence at horizon $t$ across the grid of predicted probabilities.
+$$x_i = \log\left(-\log(1 - \hat{p}_i)\right)$$
+
+The secondary Cox model relates observed event times to $x_i$:
+
+$$h(t \mid x_i) = h_0(t) \exp(\beta x_i)$$
+
+The estimated actual risk at horizon $t$ across predicted probabilities $\hat{p}$ is then calculated as:
+
+$$\hat{F}(t \mid \hat{p}) = 1 - \hat{S}_0(t)^{\exp(\beta x)}$$
 
 ### 3. Pseudo-Values LOWESS (`smooth_method="pseudo_values"`)
 
