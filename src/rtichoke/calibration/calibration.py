@@ -141,7 +141,7 @@ def create_calibration_curve_times(
     smooth_method : str, optional
         Smoothing method when `calibration_type="smooth"`. Supported options are
         ``"local_aj"`` (Gerds' local Aalen-Johansen/KM neighborhood estimation),
-        ``"secondary_cox"`` (Austin, Harrell & McLernon secondary Cox regression method),
+        ``"secondary_cox"`` (Austin, Harrell & McLernon secondary Cox regression with 3-knot restricted cubic splines on complementary log-log predictions),
         or ``"pseudo_values"`` (jackknife pseudo-values lowess). Defaults to ``"local_aj"``.
     bandwidth : Union[float, None], optional
         Bandwidth fraction for ``"local_aj"`` neighborhood smoothing. Defaults to None.
@@ -1173,12 +1173,47 @@ def _make_adjusted_deciles_data(
     return pl.DataFrame(rows).sort(["reference_group", "decile"])
 
 
+def _calculate_rcs_basis_3knots(
+    x: np.ndarray, knots: Union[np.ndarray, None] = None
+) -> tuple[np.ndarray, np.ndarray]:
+    """Calculate 3-knot restricted cubic spline basis matrix.
+
+    Follows Harrell's RCS formulation (RMS Section 2.4.1) / rms::rcs in R.
+    For 3 knots (10th, 50th, 90th percentiles of x):
+    basis matrix has 2 columns: [x, u1(x)]
+    """
+    x = np.asarray(x, dtype=float)
+    if knots is None:
+        knots = np.percentile(x, [10, 50, 90])
+    knots = np.sort(np.asarray(knots, dtype=float))
+
+    t1, t2, t3 = knots[0], knots[1], knots[2]
+
+    # Handle edge case where knots are duplicate / non-unique
+    if len(np.unique(knots)) < 3 or (t3 - t2) == 0 or (t2 - t1) == 0 or (t3 - t1) == 0:
+        return x[:, None], knots
+
+    denom = (t3 - t1) ** 2
+
+    def pos_cube(val: np.ndarray) -> np.ndarray:
+        return np.maximum(val, 0) ** 3
+
+    u1 = (
+        pos_cube(x - t1)
+        - ((t3 - t1) / (t3 - t2)) * pos_cube(x - t2)
+        + ((t2 - t1) / (t3 - t2)) * pos_cube(x - t3)
+    ) / denom
+
+    basis = np.column_stack([x, u1])
+    return basis, knots
+
+
 def _calculate_secondary_cox_smooth(
     df_adj: pl.DataFrame,
     horizon: float,
     performance_type: str,
 ) -> pl.DataFrame:
-    """Calculate smoothed calibration curve using secondary Cox regression (Austin et al. 2020 method)."""
+    """Calculate smoothed calibration curve using secondary Cox regression (Austin et al. 2020 & McLernon et al. 2023 method)."""
     import pandas as pd
     from lifelines import CoxPHFitter
 
@@ -1208,16 +1243,39 @@ def _calculate_secondary_cox_smooth(
             )
             continue
 
-        fit_df = pd.DataFrame({"time": times, "event": events, "x": x})
+        basis, knots = _calculate_rcs_basis_3knots(x)
+
+        if basis.shape[1] == 2:
+            fit_df = pd.DataFrame(
+                {
+                    "time": times,
+                    "event": events,
+                    "rcs_1": basis[:, 0],
+                    "rcs_2": basis[:, 1],
+                }
+            )
+        else:
+            fit_df = pd.DataFrame(
+                {"time": times, "event": events, "rcs_1": basis[:, 0]}
+            )
+
         try:
             cph = CoxPHFitter(penalizer=0.01)
             cph.fit(fit_df, duration_col="time", event_col="event")
 
             xout = np.linspace(0.001, 0.999, 101)
             x_grid = np.log(-np.log(1 - xout))
+            grid_basis, _ = _calculate_rcs_basis_3knots(x_grid, knots=knots)
+
+            if grid_basis.shape[1] == 2 and "rcs_2" in fit_df.columns:
+                grid_df = pd.DataFrame(
+                    {"rcs_1": grid_basis[:, 0], "rcs_2": grid_basis[:, 1]}
+                )
+            else:
+                grid_df = pd.DataFrame({"rcs_1": grid_basis[:, 0]})
 
             surv_at_t = cph.predict_survival_function(
-                pd.DataFrame({"x": x_grid}), times=[horizon]
+                grid_df, times=[horizon]
             ).values.ravel()
             yout = np.clip(1.0 - surv_at_t, 0.0, 1.0)
         except Exception:
