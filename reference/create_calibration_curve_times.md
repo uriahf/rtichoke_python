@@ -47,7 +47,7 @@ List of heuristic dictionaries defining censoring and competing risk adjustments
 Type of calibration plot, either `"discrete"` (binned) or `"smooth"`. Defaults to `"discrete"`.
 
 `smooth_method: str = ``"local_aj"`  
-Smoothing method when `calibration_type="smooth"`. Supported options are `"local_aj"` (Gerds' local Aalen-Johansen/KM neighborhood estimation), `"secondary_cox"` (Austin, Harrell & McLernon secondary Cox regression method), or `"pseudo_values"` (jackknife pseudo-values lowess). Defaults to `"local_aj"`.
+Smoothing method when `calibration_type="smooth"`. Supported options are `"local_aj"` (Gerds' local Aalen-Johansen/KM neighborhood estimation), `"secondary_cox"` (Austin, Harrell & McLernon secondary Cox regression with 3-knot restricted cubic splines on complementary log-log predictions), or `"pseudo_values"` (jackknife pseudo-values lowess). Defaults to `"local_aj"`.
 
 `bandwidth: Union[float, None] = None`  
 Bandwidth fraction for `"local_aj"` neighborhood smoothing. Defaults to None.

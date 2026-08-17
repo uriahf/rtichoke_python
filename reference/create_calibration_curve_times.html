@@ -539,7 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </dd>
 <dt><code><span class="doc-parameter-name">smooth_method</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">str</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="st">"local_aj"</span></span></code></dt>
 <dd>
-<p>Smoothing method when <code>calibration_type="smooth"</code>. Supported options are <code>"local_aj"</code> (Gerds’ local Aalen-Johansen/KM neighborhood estimation), <code>"secondary_cox"</code> (Austin, Harrell &amp; McLernon secondary Cox regression method), or <code>"pseudo_values"</code> (jackknife pseudo-values lowess). Defaults to <code>"local_aj"</code>.</p>
+<p>Smoothing method when <code>calibration_type="smooth"</code>. Supported options are <code>"local_aj"</code> (Gerds’ local Aalen-Johansen/KM neighborhood estimation), <code>"secondary_cox"</code> (Austin, Harrell &amp; McLernon secondary Cox regression with 3-knot restricted cubic splines on complementary log-log predictions), or <code>"pseudo_values"</code> (jackknife pseudo-values lowess). Defaults to <code>"local_aj"</code>.</p>
 </dd>
 <dt><code><span class="doc-parameter-name">bandwidth</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Union[float, None]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">None</span></code></dt>
 <dd>

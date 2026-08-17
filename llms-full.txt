@@ -635,7 +635,7 @@ calibration_type : str, optional
 smooth_method : str, optional
     Smoothing method when `calibration_type="smooth"`. Supported options are
     ``"local_aj"`` (Gerds' local Aalen-Johansen/KM neighborhood estimation),
-    ``"secondary_cox"`` (Austin, Harrell & McLernon secondary Cox regression method),
+    ``"secondary_cox"`` (Austin, Harrell & McLernon secondary Cox regression with 3-knot restricted cubic splines on complementary log-log predictions),
     or ``"pseudo_values"`` (jackknife pseudo-values lowess). Defaults to ``"local_aj"``.
 bandwidth : Union[float, None], optional
     Bandwidth fraction for ``"local_aj"`` neighborhood smoothing. Defaults to None.
