@@ -256,7 +256,9 @@ def test_create_calibration_curve_times_rejects_competing_as_censored(entry_poin
         )
 
 
-@pytest.mark.parametrize("smooth_method", ["local_aj", "secondary_cox", "pseudo_values"])
+@pytest.mark.parametrize(
+    "smooth_method", ["local_aj", "secondary_cox", "pseudo_values"]
+)
 def test_create_calibration_curve_times_smooth_methods(smooth_method):
     np.random.seed(42)
     probs = {"model_1": np.linspace(0.1, 0.9, 20)}
@@ -307,7 +309,9 @@ def test_create_calibration_curve_times_invalid_smooth_method():
         )
 
 
-@pytest.mark.parametrize("smooth_method", ["local_aj", "secondary_cox", "pseudo_values"])
+@pytest.mark.parametrize(
+    "smooth_method", ["local_aj", "secondary_cox", "pseudo_values"]
+)
 def test_create_calibration_curve_times_competing_risks(smooth_method):
     probs = {"model_1": np.linspace(0.05, 0.95, 30)}
     # 0 = censored, 1 = event of interest, 2 = competing event
@@ -334,3 +338,62 @@ def test_create_calibration_curve_times_competing_risks(smooth_method):
     assert len(smooth_trace.x) == 101
     assert np.all(np.asarray(smooth_trace.y) >= 0.0)
     assert np.all(np.asarray(smooth_trace.y) <= 1.0)
+
+
+def test_secondary_cox_rcs_3knots_parity():
+    # Validation dataset with predictions, status, and survival times
+    probs = {"model_1": np.array([0.1, 0.2, 0.35, 0.5, 0.65, 0.8, 0.9])}
+    reals = np.array([0, 0, 1, 0, 1, 1, 1])
+    times = np.array([12.0, 15.0, 8.0, 20.0, 6.0, 4.0, 3.0])
+
+    fig = create_calibration_curve_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=[10.0],
+        heuristics_sets=[
+            {
+                "censoring_heuristic": "adjusted",
+                "competing_heuristic": "adjusted_as_negative",
+            }
+        ],
+        calibration_type="smooth",
+        smooth_method="secondary_cox",
+    )
+
+    smooth_trace = fig.data[1]
+    y_vals = np.asarray(smooth_trace.y)
+
+    assert len(smooth_trace.x) == 101
+    assert np.all(y_vals >= 0.0)
+    assert np.all(y_vals <= 1.0)
+    # Higher predicted risk should correspond to higher actual risk
+    assert y_vals[-1] > y_vals[0]
+
+
+def test_secondary_cox_duplicate_knots_fallback():
+    # Data where probs contain duplicate values leading to duplicate knots
+    probs = {"model_1": np.array([0.2, 0.2, 0.2, 0.2, 0.8, 0.8])}
+    reals = np.array([0, 0, 1, 0, 1, 1])
+    times = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+
+    fig = create_calibration_curve_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=[4.0],
+        heuristics_sets=[
+            {
+                "censoring_heuristic": "adjusted",
+                "competing_heuristic": "adjusted_as_negative",
+            }
+        ],
+        calibration_type="smooth",
+        smooth_method="secondary_cox",
+    )
+
+    smooth_trace = fig.data[1]
+    y_vals = np.asarray(smooth_trace.y)
+
+    assert len(smooth_trace.x) == 101
+    assert np.all(np.isfinite(y_vals))
