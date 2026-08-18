@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <link rel="stylesheet" href="../site.css">
   <link rel="alternate" type="text/markdown" href="create_calibration_curve_times.md">
   <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve_times.html">
-  <meta name="description" content="Create a time-dependent calibration curve across fixed horizons.">
+  <meta name="description" content="Create an interactive time-dependent calibration plot with a square main panel.">
   <script type="application/ld+json">
 [
   {
@@ -194,12 +194,12 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
   <meta property="og:type" content="website">
   <meta property="og:title" content="create_calibration_curve_times() – rtichoke | rtichoke">
-  <meta property="og:description" content="Create a time-dependent calibration curve across fixed horizons.">
+  <meta property="og:description" content="Create an interactive time-dependent calibration plot with a square main panel.">
   <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve_times.html">
   <meta property="og:site_name" content="rtichoke">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="create_calibration_curve_times() – rtichoke | rtichoke">
-  <meta name="twitter:description" content="Create a time-dependent calibration curve across fixed horizons.">
+  <meta name="twitter:description" content="Create an interactive time-dependent calibration plot with a square main panel.">
 </head>
 
 <body class="gd-ref-sidebar nav-sidebar floating nav-fixed doc-api-page quarto-light">
@@ -452,16 +452,8 @@ document.addEventListener('DOMContentLoaded', () => {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h3 id="toc-title">On this page</h3>
-   
-  <ul class="collapse">
-  <li><a href="#parameters" id="toc-parameters" class="nav-link active" data-scroll-target="#parameters">Parameters</a></li>
-  <li><a href="#returns" id="toc-returns" class="nav-link" data-scroll-target="#returns">Returns</a></li>
-  <li><a href="#raises" id="toc-raises" class="nav-link" data-scroll-target="#raises">Raises</a></li>
-  </ul>
-</nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -486,100 +478,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <div class="doc-subject">
-<p>Create a time-dependent calibration curve across fixed horizons.</p>
+<p>Create an interactive time-dependent calibration plot with a square main panel.</p>
 </div>
 <div class="doc-usage-source">
 <p>Usage</p>
-<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/calibration/calibration.py#L85-L193" target="_blank" rel="noopener">Source</a></p>
+<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/calibration/__init__.py#L19-L23" target="_blank" rel="noopener">Source</a></p>
 </div>
 <div class="doc-signature doc-Kind.FUNCTION">
-<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">create_calibration_curve_times</span>(</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">probs</span>,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">reals</span>,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">times</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="va">fixed_time_horizons</span>,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">heuristics_sets</span>,</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="va">calibration_type</span><span class="op">=</span><span class="st">&quot;discrete&quot;</span>,</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="va">smooth_method</span><span class="op">=</span><span class="st">&quot;local_aj&quot;</span>,</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="va">bandwidth</span><span class="op">=</span><span class="cn-none">None</span>,</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="va">size</span><span class="op">=</span><span class="dv">600</span>,</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="va">color_values</span><span class="op">=</span>[<span class="st">&quot;#1b9e77&quot;</span>, <span class="st">&quot;#d95f02&quot;</span>, <span class="st">&quot;#7570b3&quot;</span>, <span class="st">&quot;#e7298a&quot;</span>, <span class="st">&quot;#07004D&quot;</span>, <span class="st">&quot;#E6AB02&quot;</span>, <span class="st">&quot;#FE5F55&quot;</span>, <span class="st">&quot;#54494B&quot;</span>, <span class="st">&quot;#006E90&quot;</span>, <span class="st">&quot;#BC96E6&quot;</span>, <span class="st">&quot;#52050A&quot;</span>, <span class="st">&quot;#1F271B&quot;</span>, <span class="st">&quot;#BE7C4D&quot;</span>, <span class="st">&quot;#63768D&quot;</span>, <span class="st">&quot;#08A045&quot;</span>, <span class="st">&quot;#320A28&quot;</span>, <span class="st">&quot;#82FF9E&quot;</span>, <span class="st">&quot;#2176FF&quot;</span>, <span class="st">&quot;#D1603D&quot;</span>, <span class="st">&quot;#585123&quot;</span>]</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
-</div>
-<div class="doc-text">
-<p>This function generates time-dependent calibration curves evaluating predicted probabilities against observed outcomes over specified prediction horizons.</p>
-</div>
-<section id="parameters" class="level2 doc-parameters">
-<h2 class="doc-parameters">Parameters</h2>
-<div class="doc-definition-items">
-<dl>
-<dt><code><span class="doc-parameter-name">probs</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Dict[str, np.ndarray]</span></code></dt>
-<dd>
-<p>A dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">reals</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Union[np.ndarray, Dict[str, np.ndarray]]</span></code></dt>
-<dd>
-<p>True outcome indicators (0 for censored, 1 for event of interest, 2 for competing risk).</p>
-</dd>
-<dt><code><span class="doc-parameter-name">times</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Union[np.ndarray, Dict[str, np.ndarray]]</span></code></dt>
-<dd>
-<p>Follow-up times corresponding to <code>reals</code>.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">fixed_time_horizons</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">List[float]</span></code></dt>
-<dd>
-<p>List of prediction horizons (times) at which to evaluate calibration.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">heuristics_sets</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">List[Dict[str, str]]</span></code></dt>
-<dd>
-<p>List of heuristic dictionaries defining censoring and competing risk adjustments.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">calibration_type</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">str</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="st">"discrete"</span></span></code></dt>
-<dd>
-<p>Type of calibration plot, either <code>"discrete"</code> (binned) or <code>"smooth"</code>. Defaults to <code>"discrete"</code>.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">smooth_method</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">str</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="st">"local_aj"</span></span></code></dt>
-<dd>
-<p>Smoothing method when <code>calibration_type="smooth"</code>. Supported options are <code>"local_aj"</code> (Gerds’ local Aalen-Johansen/KM neighborhood estimation), <code>"secondary_cox"</code> (Austin, Harrell &amp; McLernon secondary Cox regression with 3-knot restricted cubic splines on complementary log-log predictions), or <code>"pseudo_values"</code> (jackknife pseudo-values lowess). Defaults to <code>"local_aj"</code>.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">bandwidth</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Union[float, None]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">None</span></code></dt>
-<dd>
-<p>Bandwidth fraction for <code>"local_aj"</code> neighborhood smoothing. Defaults to None.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">size</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">int</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="dv">600</span></span></code></dt>
-<dd>
-<p>Width and height of the Plotly figure in pixels. Defaults to 600.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">color_values</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">List[str]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#1b9e77"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#d95f02"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#7570b3"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#e7298a"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#07004D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#E6AB02"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#FE5F55"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#54494B"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#006E90"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#BC96E6"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#52050A"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#1F271B"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#BE7C4D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#63768D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#08A045"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#320A28"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#82FF9E"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#2176FF"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#D1603D"</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"#585123"</span>,<br>]</span></code></dt>
-<dd>
-List of hex color strings for traces.
-</dd>
-</dl>
-</div>
-</section>
-<section id="returns" class="level2 doc-returns">
-<h2 class="doc-returns">Returns</h2>
-<div class="doc-definition-items">
-<dl>
-<dt><code> <span class="doc-parameter-annotation">Figure</span></code></dt>
-<dd>
-A Plotly <code>Figure</code> object representing the time-dependent calibration curve.
-</dd>
-</dl>
-</div>
-</section>
-<section id="raises" class="level2 doc-raises">
-<h2 class="doc-raises">Raises</h2>
-<div class="doc-definition-items">
-<dl>
-<dt><code> <span class="doc-parameter-annotation">ValueError</span></code></dt>
-<dd>
-If a heuristic set requests <code>competing_heuristic='adjusted_as_censored'</code>.
-</dd>
-</dl>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">create_calibration_curve_times</span>(
+    <span class="op">*</span><span class="va">args</span>,
+    <span class="op">**</span><span class="va">kwargs</span>,
+)</span></code></pre></div>
 </div>
 
 
-</section>
 
 </main>
 <hr style="padding: 0; margin: 0;">
