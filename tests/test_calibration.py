@@ -1,5 +1,10 @@
 import numpy as np
-from rtichoke.calibration.calibration import create_calibration_curve
+import polars as pl
+
+from rtichoke.calibration.calibration import (
+    _define_limits_for_calibration_plot,
+    create_calibration_curve,
+)
 
 
 def test_create_calibration_curve_smooth():
@@ -43,3 +48,13 @@ def test_create_calibration_curve_multiple_populations_unequal_sizes():
             probs, reals, calibration_type=calibration_type
         )
         assert {trace.name for trace in fig.data if trace.name} >= {"Train", "Test"}
+
+
+def test_calibration_limits_keep_padding_without_leaving_probability_scale():
+    near_zero = pl.DataFrame({"x": [0.01, 0.20], "y": [0.02, 0.70]})
+    near_one = pl.DataFrame({"x": [0.30, 0.99], "y": [0.40, 0.98]})
+    mid_range = pl.DataFrame({"x": [0.20, 0.80], "y": [0.25, 0.75]})
+
+    assert _define_limits_for_calibration_plot(near_zero) == [0.0, 0.7345]
+    assert _define_limits_for_calibration_plot(near_one) == [0.2655, 1.0]
+    assert _define_limits_for_calibration_plot(mid_range) == [0.17, 0.8300000000000001]
