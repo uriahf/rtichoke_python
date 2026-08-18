@@ -976,9 +976,10 @@ def _define_limits_for_calibration_plot(deciles_dat: pl.DataFrame) -> List[float
             )
         )
 
+    padding = (upper_bound - lower_bound) * 0.05
     return [
-        lower_bound - (upper_bound - lower_bound) * 0.05,
-        upper_bound + (upper_bound - lower_bound) * 0.05,
+        max(0.0, lower_bound - padding),
+        min(1.0, upper_bound + padding),
     ]
 
 
