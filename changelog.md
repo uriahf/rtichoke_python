@@ -3,6 +3,19 @@
 This changelog is generated automatically from [GitHub Releases](https://github.com/uriahf/rtichoke_python/releases).
 
 
+# v0.1.34
+
+*2026-08-18* · [GitHub](https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.34)
+
+
+## What's Changed
+
+- feat: add changelog entry for v0.1.33 by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/310
+- Guarantee square interactive calibration panels by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/311
+
+**Full Changelog**: [https://github.com/uriahf/rtichoke_python/compare/v0.1.33…v0.1.34](https://github.com/uriahf/rtichoke_python/compare/v0.1.33...v0.1.34)
+
+
 # v0.1.33
 
 *2026-08-17* · [GitHub](https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.33)
