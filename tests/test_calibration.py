@@ -1,5 +1,6 @@
 import numpy as np
 import polars as pl
+import pytest
 
 from rtichoke.calibration.calibration import (
     _define_limits_for_calibration_plot,
@@ -55,6 +56,6 @@ def test_calibration_limits_keep_padding_without_leaving_probability_scale():
     near_one = pl.DataFrame({"x": [0.30, 0.99], "y": [0.40, 0.98]})
     mid_range = pl.DataFrame({"x": [0.20, 0.80], "y": [0.25, 0.75]})
 
-    assert _define_limits_for_calibration_plot(near_zero) == [0.0, 0.7345]
-    assert _define_limits_for_calibration_plot(near_one) == [0.2655, 1.0]
-    assert _define_limits_for_calibration_plot(mid_range) == [0.17, 0.8300000000000001]
+    assert _define_limits_for_calibration_plot(near_zero) == pytest.approx([0.0, 0.7345])
+    assert _define_limits_for_calibration_plot(near_one) == pytest.approx([0.2655, 1.0])
+    assert _define_limits_for_calibration_plot(mid_range) == pytest.approx([0.17, 0.83])

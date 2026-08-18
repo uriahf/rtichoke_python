@@ -11,6 +11,13 @@ def _assert_square_main_panel(fig):
     assert fig.layout.yaxis2.scaleanchor is None
 
 
+def _assert_tall_widget_geometry(fig):
+    assert fig.layout.height > fig.layout.width
+    assert fig.layout.height == round(fig.layout.width * 1.30)
+    assert list(fig.layout.yaxis.domain) == [0.22, 1.0]
+    assert list(fig.layout.yaxis2.domain) == [0.0, 0.16]
+
+
 def test_interactive_calibration_main_panel_is_square():
     probs = {"model": np.linspace(0.05, 0.95, 20)}
     reals = np.array([0, 1] * 10)
@@ -20,6 +27,7 @@ def test_interactive_calibration_main_panel_is_square():
             probs, reals, calibration_type=calibration_type
         )
         _assert_square_main_panel(fig)
+        _assert_tall_widget_geometry(fig)
         assert list(fig.layout.xaxis.range) == list(fig.layout.yaxis.range)
 
 
@@ -42,4 +50,5 @@ def test_interactive_calibration_times_main_panel_is_square():
     )
 
     _assert_square_main_panel(fig)
+    _assert_tall_widget_geometry(fig)
     assert list(fig.layout.xaxis.range) == list(fig.layout.yaxis.range)
