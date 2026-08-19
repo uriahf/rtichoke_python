@@ -1,9 +1,9 @@
 """Readable integration layer for the lightweight summary report renderers.
 
 This module keeps the legacy report generator stable while the large inline
-HTML template is being split into maintainable assets.  It post-processes the
+HTML template is being split into maintainable assets. It post-processes the
 legacy HTML to route performance and decision curves through the dedicated
-Plotly-parity D3 renderer.
+Plotly-parity D3 renderer and applies the shared R-report visual polish layer.
 """
 from __future__ import annotations
 
@@ -14,6 +14,10 @@ import numpy as np
 
 from rtichoke.summary_report.curve_renderer import curve_renderer_source
 from rtichoke.summary_report.summary_report import create_summary_report as _legacy_create_summary_report
+
+
+def _style_source() -> str:
+    return Path(__file__).with_name("report_style.css").read_text(encoding="utf-8")
 
 
 def _wire_curve_renderer(html: str) -> str:
@@ -37,15 +41,26 @@ def _wire_curve_renderer(html: str) -> str:
     return html
 
 
+def _wire_report_style(html: str) -> str:
+    """Append the shared visual layer without disturbing legacy CSS."""
+    css = _style_source()
+    marker = "</head>"
+    if marker not in html:
+        raise RuntimeError("Could not locate summary-report head element")
+    return html.replace(marker, f"<style>\n{css}\n</style>\n{marker}", 1)
+
+
 def create_summary_report(
     probs: Dict[str, np.ndarray],
     reals: Union[np.ndarray, Dict[str, np.ndarray]],
     output_file: str | Path = "summary_report.html",
     by: float = 0.01,
 ) -> Path:
-    """Create the lightweight report using the dedicated curve renderer."""
+    """Create the lightweight report using the modular parity renderers."""
     out = Path(output_file)
     _legacy_create_summary_report(probs=probs, reals=reals, output_file=out, by=by)
-    html = _wire_curve_renderer(out.read_text(encoding="utf-8"))
+    html = out.read_text(encoding="utf-8")
+    html = _wire_curve_renderer(html)
+    html = _wire_report_style(html)
     out.write_text(html, encoding="utf-8")
     return out
