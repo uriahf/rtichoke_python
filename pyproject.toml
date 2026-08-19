@@ -47,9 +47,6 @@ docs = [
 [tool.uv.workspace]
 members = ["rtichoke"]
 
-[tool.uv.sources]
-smoothstate = { git = "https://github.com/uriahf/smoothstate.git", branch = "main" }
-
 [tool.uv.dependency-groups]
 docs = {requires-python = ">=3.11"}
 
