@@ -1,0 +1,1 @@
+After CI passes, rerun the runtime benchmark. If pandas is absent, remove the unused `ensure_no_categorical` helper and obsolete R API bridge in a separate cleanup. If pandas remains, identify the transitive parent before further code changes.
