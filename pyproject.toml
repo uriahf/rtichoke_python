@@ -48,7 +48,7 @@ docs = [
 members = ["rtichoke"]
 
 [tool.uv.sources]
-smoothstate = { git = "https://github.com/uriahf/smoothstate.git", branch = "agent/python-310-min" }
+smoothstate = { git = "https://github.com/uriahf/smoothstate.git", branch = "main" }
 
 [tool.uv.dependency-groups]
 docs = {requires-python = ">=3.11"}
