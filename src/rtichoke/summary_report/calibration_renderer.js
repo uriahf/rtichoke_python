@@ -8,8 +8,6 @@ function calibration(type, sel) {
   card.selectAll("*").remove();
 
   // Match the 600px square Plotly calibration figure and its two-row subplot.
-  // Plotly's default margins leave an inner plotting width of about 500px;
-  // the 0.8/0.2 row heights are represented directly below.
   const W = 600, H = 600;
   const X0 = 80, X1 = 580;
   const MAIN_TOP = 100, MAIN_BOTTOM = 424;
@@ -55,16 +53,22 @@ function calibration(type, sel) {
     .attr("x", X0).attr("y", HIST_TOP)
     .attr("width", X1 - X0).attr("height", HIST_BOTTOM - HIST_TOP);
 
+  // R Plotly: horizontal, centered legend at x=.5/y=1.1. Discrete traces
+  // show markers+lines; smooth traces show lines only.
   if (c.groups.length > 1) {
     const lg = svg.append("g")
       .attr("font-family", "Open Sans, verdana, arial, sans-serif")
       .attr("font-size", 12);
-    const itemW = 100, total = itemW * c.groups.length, start = W / 2 - total / 2;
+    const itemW = 110, total = itemW * c.groups.length, start = W / 2 - total / 2;
     c.groups.forEach((g, i) => {
-      const q = lg.append("g").attr("transform", `translate(${start + i * itemW},62)`);
+      const q = lg.append("g").attr("transform", `translate(${start + i * itemW},72)`);
       q.append("line").attr("x1", 5).attr("x2", 35)
         .attr("stroke", c.colors[g]).attr("stroke-width", 2);
-      q.append("text").attr("x", 40).attr("y", 4).attr("fill", "#444").text(g);
+      if (type === "discrete") {
+        q.append("circle").attr("cx", 20).attr("cy", 0).attr("r", 5)
+          .attr("fill", c.colors[g]).attr("stroke", c.colors[g]);
+      }
+      q.append("text").attr("x", 42).attr("y", 4).attr("fill", "#444").text(g);
     });
   }
 
@@ -107,6 +111,7 @@ function calibration(type, sel) {
     }
   });
 
+  // R uses 0.01-wide overlaid bars and opacity 1 / number of groups.
   const hist = svg.append("g").attr("clip-path", `url(#hist-${type})`);
   const opacity = 1 / Math.max(1, c.groups.length);
   c.histogram.forEach(d => {
