@@ -18,13 +18,26 @@ function calibration(type, sel) {
   const yHist = d3.scaleLinear().domain([0, histMax]).nice().range([HIST_BOTTOM, HIST_TOP]);
   const svg = card.append("svg").attr("viewBox", `0 0 ${W} ${H}`);
 
+  const contrastText = color => {
+    const hex = String(color || "#333").replace("#", "");
+    if (!/^[0-9a-f]{6}$/i.test(hex)) return "white";
+    const r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 170 ? "#222" : "white";
+  };
   const showTip = (ev, html, color) => {
+    const bg = color || "#333";
     tip.style("opacity", 1)
       .style("left", (ev.clientX + 10) + "px")
       .style("top", (ev.clientY + 10) + "px")
-      .style("background", color || "#333")
-      .style("border", "1px solid " + (color || "#333"))
-      .style("color", "white")
+      .style("background", bg)
+      .style("border", "1px solid " + bg)
+      .style("border-radius", "2px")
+      .style("box-shadow", "none")
+      .style("padding", "6px 8px")
+      .style("font-family", "Open Sans, verdana, arial, sans-serif")
+      .style("font-size", "12px")
+      .style("line-height", "15px")
+      .style("color", contrastText(bg))
       .html(String(html || ""));
   };
   const hideTip = () => tip.style("opacity", 0);
@@ -89,11 +102,16 @@ function calibration(type, sel) {
       .attr("y", yHist(+d.counts)).attr("height", HIST_BOTTOM - yHist(+d.counts))
       .attr("fill", c.colors[String(d.reference_group)] || "#777")
       .attr("opacity", opacity).attr("stroke", "none")
+      .on("mouseenter", function() { d3.select(this).attr("opacity", Math.min(1, opacity + 0.18)); })
       .on("mousemove", ev => showTip(ev, d.text, hoverColor(d)))
-      .on("mouseleave", hideTip);
+      .on("mouseleave", function() { d3.select(this).attr("opacity", opacity); hideTip(); });
   });
 
   const hoverData = dat.concat(c.reference);
+  const hoverLayer = svg.append("g");
+  const marker = hoverLayer.append("circle")
+    .attr("r", 4).attr("fill", "white").attr("stroke-width", 2)
+    .style("display", "none").style("pointer-events", "none");
   svg.append("rect").attr("x", X0).attr("y", MAIN_TOP)
     .attr("width", X1 - X0).attr("height", MAIN_BOTTOM - MAIN_TOP)
     .attr("fill", "transparent")
@@ -105,8 +123,14 @@ function calibration(type, sel) {
         const dd = (x(+d.x) - mx) ** 2 + (y(+d.y) - my) ** 2;
         if (dd < dist) { dist = dd; best = d; }
       });
-      if (best && dist < 625) showTip(ev, best.text, hoverColor(best));
-      else hideTip();
+      if (best && dist < 625) {
+        const color = hoverColor(best);
+        marker.attr("cx", x(+best.x)).attr("cy", y(+best.y)).attr("stroke", color).style("display", null);
+        showTip(ev, best.text, color);
+      } else {
+        marker.style("display", "none");
+        hideTip();
+      }
     })
-    .on("mouseleave", hideTip);
+    .on("mouseleave", () => { marker.style("display", "none"); hideTip(); });
 }
