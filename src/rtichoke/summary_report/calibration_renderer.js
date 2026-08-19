@@ -1,18 +1,15 @@
 /* Calibration-only D3 renderer for the lightweight summary report.
- * Kept separate so visual parity with the R/Plotly report can be iterated
- * without touching the rest of the report template.
+ * Geometry follows the actual R summary-report call: size = 550.
  */
 function calibration(type, sel) {
   const c = R.calibration;
   const card = d3.select(sel);
   card.selectAll("*").remove();
 
-  // Match the 600px square Plotly calibration figure and its two-row subplot.
-  const W = 600, H = 600;
-  const X0 = 80, X1 = 580;
-  const MAIN_TOP = 100, MAIN_BOTTOM = 424;
-  const HIST_TOP = 444, HIST_BOTTOM = 525;
-
+  const W = 550, H = 550;
+  const X0 = 60, X1 = 540;
+  const MAIN_TOP = 55, MAIN_BOTTOM = 409.9;
+  const HIST_TOP = 428.1, HIST_BOTTOM = 510;
   const x = d3.scaleLinear().domain(c.ranges.xaxis).range([X0, X1]);
   const y = d3.scaleLinear().domain(c.ranges.yaxis).range([MAIN_BOTTOM, MAIN_TOP]);
   const histMax = d3.max(c.histogram, d => +d.counts) || 1;
@@ -27,118 +24,56 @@ function calibration(type, sel) {
   };
   const showTip = (ev, html, color) => {
     const bg = color || "#333";
-    tip.style("opacity", 1)
-      .style("left", (ev.clientX + 10) + "px")
-      .style("top", (ev.clientY + 10) + "px")
-      .style("background", bg)
-      .style("border", "1px solid " + bg)
-      .style("border-radius", "2px")
-      .style("box-shadow", "none")
-      .style("padding", "6px 8px")
-      .style("font-family", "Open Sans, verdana, arial, sans-serif")
-      .style("font-size", "12px")
-      .style("line-height", "15px")
-      .style("color", contrastText(bg))
-      .html(String(html || ""));
+    tip.style("opacity", 1).style("left", (ev.clientX + 10) + "px").style("top", (ev.clientY + 10) + "px")
+      .style("background", bg).style("border", "1px solid " + bg).style("border-radius", "2px")
+      .style("box-shadow", "none").style("padding", "6px 8px")
+      .style("font-family", "Open Sans, verdana, arial, sans-serif").style("font-size", "12px")
+      .style("line-height", "15px").style("color", contrastText(bg)).html(String(html || ""));
   };
   const hideTip = () => tip.style("opacity", 0);
   const groupOf = d => String(d.reference_group || "");
   const hoverColor = d => groupOf(d) === "reference_line" ? "#bebebe" : (c.colors[groupOf(d)] || "#777");
 
   const defs = svg.append("defs");
-  defs.append("clipPath").attr("id", `main-${type}`).append("rect")
-    .attr("x", X0).attr("y", MAIN_TOP)
-    .attr("width", X1 - X0).attr("height", MAIN_BOTTOM - MAIN_TOP);
-  defs.append("clipPath").attr("id", `hist-${type}`).append("rect")
-    .attr("x", X0).attr("y", HIST_TOP)
-    .attr("width", X1 - X0).attr("height", HIST_BOTTOM - HIST_TOP);
+  defs.append("clipPath").attr("id", `main-${type}`).append("rect").attr("x", X0).attr("y", MAIN_TOP).attr("width", X1-X0).attr("height", MAIN_BOTTOM-MAIN_TOP);
+  defs.append("clipPath").attr("id", `hist-${type}`).append("rect").attr("x", X0).attr("y", HIST_TOP).attr("width", X1-X0).attr("height", HIST_BOTTOM-HIST_TOP);
 
-  // R Plotly: horizontal, centered legend at x=.5/y=1.1. Discrete traces
-  // show markers+lines; smooth traces show lines only.
   if (c.groups.length > 1) {
-    const lg = svg.append("g")
-      .attr("font-family", "Open Sans, verdana, arial, sans-serif")
-      .attr("font-size", 12);
-    const itemW = 110, total = itemW * c.groups.length, start = W / 2 - total / 2;
-    c.groups.forEach((g, i) => {
-      const q = lg.append("g").attr("transform", `translate(${start + i * itemW},72)`);
-      q.append("line").attr("x1", 5).attr("x2", 35)
-        .attr("stroke", c.colors[g]).attr("stroke-width", 2);
-      if (type === "discrete") {
-        q.append("circle").attr("cx", 20).attr("cy", 0).attr("r", 5)
-          .attr("fill", c.colors[g]).attr("stroke", c.colors[g]);
-      }
-      q.append("text").attr("x", 42).attr("y", 4).attr("fill", "#444").text(g);
+    const lg = svg.append("g").attr("font-family", "Open Sans, verdana, arial, sans-serif").attr("font-size", 12);
+    const itemW = 93, total = itemW*c.groups.length, start = 300-total/2;
+    c.groups.forEach((g,i) => {
+      const q=lg.append("g").attr("transform",`translate(${start+i*itemW},24)`);
+      q.append("line").attr("x1",5).attr("x2",35).attr("stroke",c.colors[g]).attr("stroke-width",2);
+      if(type === "discrete") q.append("circle").attr("cx",20).attr("cy",0).attr("r",5).attr("fill",c.colors[g]).attr("stroke-width",0);
+      q.append("text").attr("x",40).attr("y",4).attr("fill","#444").text(g);
     });
   }
 
-  const styleAxis = axis => {
-    axis.attr("font-family", "Open Sans, verdana, arial, sans-serif").attr("font-size", 12).attr("color", "#444");
-    axis.select(".domain").attr("stroke", "#444").attr("stroke-width", 1);
-    axis.selectAll(".tick line").attr("stroke", "#444");
-  };
-  const mainYAxis = svg.append("g").attr("class", "axis").attr("transform", `translate(${X0},0)`).call(d3.axisLeft(y).ticks(5));
-  const histYAxis = svg.append("g").attr("class", "axis").attr("transform", `translate(${X0},0)`).call(d3.axisLeft(yHist).ticks(4));
-  const xAxis = svg.append("g").attr("class", "axis").attr("transform", `translate(0,${HIST_BOTTOM})`).call(d3.axisBottom(x).ticks(5));
-  styleAxis(mainYAxis); styleAxis(histYAxis); styleAxis(xAxis);
+  const styleAxis = axis => { axis.attr("font-family","Open Sans, verdana, arial, sans-serif").attr("font-size",12).attr("color","#444"); axis.select(".domain").attr("stroke","#444"); axis.selectAll(".tick line").attr("stroke","#444"); };
+  const ay=svg.append("g").attr("class","axis").attr("transform",`translate(${X0},0)`).call(d3.axisLeft(y));
+  const ah=svg.append("g").attr("class","axis").attr("transform",`translate(${X0},0)`).call(d3.axisLeft(yHist).ticks(5));
+  const ax=svg.append("g").attr("class","axis").attr("transform",`translate(0,${HIST_BOTTOM})`).call(d3.axisBottom(x).ticks(5));
+  styleAxis(ay); styleAxis(ah); styleAxis(ax);
+  svg.append("text").attr("class","axis-label").attr("x",(X0+X1)/2).attr("y",548).attr("text-anchor","middle").text("Predicted");
+  svg.append("text").attr("class","axis-label").attr("transform","rotate(-90)").attr("x",-(MAIN_TOP+MAIN_BOTTOM)/2).attr("y",18).attr("text-anchor","middle").text("Observed");
 
-  svg.append("text").attr("class", "axis-label")
-    .attr("font-family", "Open Sans, verdana, arial, sans-serif").attr("font-size", 14).attr("fill", "#444")
-    .attr("x", (X0 + X1) / 2).attr("y", 580).attr("text-anchor", "middle").text("Predicted");
-  svg.append("text").attr("class", "axis-label")
-    .attr("font-family", "Open Sans, verdana, arial, sans-serif").attr("font-size", 14).attr("fill", "#444")
-    .attr("transform", "rotate(-90)").attr("x", -(MAIN_TOP + MAIN_BOTTOM) / 2).attr("y", 24)
-    .attr("text-anchor", "middle").text("Observed");
-
-  const line = d3.line().defined(d => isFinite(+d.x) && isFinite(+d.y))
-    .x(d => x(+d.x)).y(d => y(+d.y));
-  const main = svg.append("g").attr("clip-path", `url(#main-${type})`);
-  main.append("path").datum(c.reference).attr("fill", "none")
-    .attr("stroke", "#bebebe").attr("stroke-width", 2)
-    .attr("stroke-dasharray", "3,3").attr("d", line);
-
-  const dat = type === "smooth" ? c.smooth : c.deciles;
+  const line=d3.line().defined(d=>isFinite(+d.x)&&isFinite(+d.y)).x(d=>x(+d.x)).y(d=>y(+d.y));
+  const main=svg.append("g").attr("clip-path",`url(#main-${type})`);
+  main.append("path").datum(c.reference).attr("fill","none").attr("stroke","#bebebe").attr("stroke-width",2).attr("stroke-dasharray","3,3").attr("d",line);
+  const dat=type === "smooth" ? c.smooth : c.deciles;
   c.groups.forEach(g => {
-    const a = dat.filter(d => String(d.reference_group) === g);
-    main.append("path").datum(a).attr("fill", "none")
-      .attr("stroke", c.colors[g]).attr("stroke-width", 2).attr("d", line);
-    if (type === "discrete") {
-      main.selectAll(null).data(a).enter().append("circle")
-        .attr("cx", d => x(+d.x)).attr("cy", d => y(+d.y))
-        .attr("r", 5).attr("fill", c.colors[g])
-        .attr("stroke", c.colors[g]).attr("stroke-width", 0)
-        .attr("shape-rendering", "geometricPrecision");
-    }
+    const a=dat.filter(d=>String(d.reference_group)===g);
+    main.append("path").datum(a).attr("fill","none").attr("stroke",c.colors[g]).attr("stroke-width",2).attr("d",line);
+    if(type === "discrete") main.selectAll(null).data(a).enter().append("circle").attr("cx",d=>x(+d.x)).attr("cy",d=>y(+d.y)).attr("r",5).attr("fill",c.colors[g]).attr("stroke-width",0).attr("shape-rendering","geometricPrecision");
   });
 
-  // R uses 0.01-wide overlaid bars and opacity 1 / number of groups.
-  const hist = svg.append("g").attr("clip-path", `url(#hist-${type})`);
-  const opacity = 1 / Math.max(1, c.groups.length);
+  const hist=svg.append("g").attr("clip-path",`url(#hist-${type})`), opacity=1/Math.max(1,c.groups.length);
   c.histogram.forEach(d => {
-    const mid = +d.mids, left = x(mid - .005), right = x(mid + .005);
-    hist.append("rect")
-      .attr("x", left).attr("width", Math.max(0, right - left))
-      .attr("y", yHist(+d.counts)).attr("height", HIST_BOTTOM - yHist(+d.counts))
-      .attr("fill", c.colors[String(d.reference_group)] || "#777")
-      .attr("opacity", opacity).attr("stroke", "none")
-      .on("mousemove", ev => showTip(ev, d.text, hoverColor(d)))
-      .on("mouseleave", hideTip);
+    const mid=+d.mids,left=x(mid-.005),right=x(mid+.005);
+    hist.append("rect").attr("x",left).attr("width",Math.max(0,right-left)).attr("y",yHist(+d.counts)).attr("height",HIST_BOTTOM-yHist(+d.counts)).attr("fill",c.colors[String(d.reference_group)]||"#777").attr("opacity",opacity).attr("stroke","none").on("mousemove",ev=>showTip(ev,d.text,hoverColor(d))).on("mouseleave",hideTip);
   });
 
-  const hoverData = dat.concat(c.reference);
-  svg.append("rect").attr("x", X0).attr("y", MAIN_TOP)
-    .attr("width", X1 - X0).attr("height", MAIN_BOTTOM - MAIN_TOP)
-    .attr("fill", "transparent")
-    .on("mousemove", ev => {
-      const [mx, my] = d3.pointer(ev);
-      let best = null, dist = Infinity;
-      hoverData.forEach(d => {
-        if (!isFinite(+d.x) || !isFinite(+d.y)) return;
-        const dd = (x(+d.x) - mx) ** 2 + (y(+d.y) - my) ** 2;
-        if (dd < dist) { dist = dd; best = d; }
-      });
-      if (best && dist < 625) showTip(ev, best.text, hoverColor(best));
-      else hideTip();
-    })
-    .on("mouseleave", hideTip);
+  const hoverData=dat.concat(c.reference);
+  svg.append("rect").attr("x",X0).attr("y",MAIN_TOP).attr("width",X1-X0).attr("height",MAIN_BOTTOM-MAIN_TOP).attr("fill","transparent")
+    .on("mousemove",ev=>{const [mx,my]=d3.pointer(ev);let best=null,dist=Infinity;hoverData.forEach(d=>{if(!isFinite(+d.x)||!isFinite(+d.y))return;const dd=(x(+d.x)-mx)**2+(y(+d.y)-my)**2;if(dd<dist){dist=dd;best=d}});if(best&&dist<625)showTip(ev,best.text,hoverColor(best));else hideTip();}).on("mouseleave",hideTip);
 }
