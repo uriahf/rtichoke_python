@@ -3,6 +3,19 @@
 This changelog is generated automatically from [GitHub Releases](https://github.com/uriahf/rtichoke_python/releases).
 
 
+# v0.1.35
+
+*2026-08-18* · [GitHub](https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.35)
+
+
+## What's Changed
+
+- Clamp calibration zoom to probability bounds by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/312
+- Improve interactive calibration panel geometry by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/313
+
+**Full Changelog**: [https://github.com/uriahf/rtichoke_python/compare/v0.1.34…v0.1.35](https://github.com/uriahf/rtichoke_python/compare/v0.1.34...v0.1.35)
+
+
 # v0.1.34
 
 *2026-08-18* · [GitHub](https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.34)
