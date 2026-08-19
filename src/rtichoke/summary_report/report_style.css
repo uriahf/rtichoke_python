@@ -1,0 +1,130 @@
+/* Final layout/typography layer for the lightweight summary report.
+ * Intentionally conservative: preserve the report structure while bringing
+ * spacing, tabs, cards, plots and tables closer to the R flexdashboard report.
+ */
+:root {
+  --rt-text: #333;
+  --rt-muted: #666;
+  --rt-border: #d9d9d9;
+  --rt-panel: #fff;
+  --rt-tab: #f7f7f7;
+}
+
+html, body {
+  background: #fff;
+  color: var(--rt-text);
+  font-family: "Open Sans", verdana, arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+body { margin: 0; }
+
+/* Keep the report visually dense like the original dashboard rather than a
+ * documentation page with oversized whitespace. */
+.container, .report, main {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+h1, h2, h3, h4, .plot-title {
+  font-family: "Open Sans", verdana, arial, sans-serif;
+  color: var(--rt-text);
+  font-weight: 400;
+}
+
+h1 { font-size: 24px; margin: 14px 0 10px; }
+h2 { font-size: 20px; margin: 12px 0 8px; }
+h3, .plot-title { font-size: 16px; margin: 8px 0 6px; }
+
+/* Bootstrap/flexdashboard-like tabs. */
+.tabs, .tab-nav, [class*="tabs-nav"] {
+  border-bottom: 1px solid var(--rt-border);
+  margin: 0 0 10px;
+  padding-left: 0;
+}
+.tabs button, .tab-nav button, [class*="tabs-nav"] button {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px 4px 0 0;
+  color: #337ab7;
+  font: inherit;
+  padding: 8px 12px;
+  margin-bottom: -1px;
+}
+.tabs button.active, .tab-nav button.active, [class*="tabs-nav"] button.active {
+  background: #fff;
+  border-color: var(--rt-border) var(--rt-border) #fff;
+  color: #555;
+}
+
+/* Plot panels should read as dashboard content, not floating cards. */
+.plot-card, .chart-card, .panel, .card {
+  background: var(--rt-panel);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.plot-card svg, .chart-card svg, .panel svg {
+  display: block;
+  width: min(100%, 600px);
+  height: auto;
+  margin: 0 auto;
+}
+
+.axis text { fill: #444; font-size: 12px; }
+.axis-label { fill: #444; font-size: 14px; }
+.plot-title { text-align: center; }
+.legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  min-height: 24px;
+  color: #444;
+  font-size: 12px;
+}
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend i { width: 24px; height: 2px; display: inline-block; }
+
+/* Reactable-like table density. */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 13px;
+}
+thead th {
+  background: #fafafa;
+  color: #333;
+  font-weight: 600;
+  border-bottom: 1px solid #cfcfcf;
+  padding: 8px 7px;
+  vertical-align: bottom;
+}
+tbody td {
+  border-bottom: 1px solid #e8e8e8;
+  padding: 7px;
+  vertical-align: middle;
+}
+tbody tr:hover { background: #f8f8f8; }
+
+/* Plotly-style hover label shared by all D3 renderers. */
+.tooltip, #tooltip {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  border-radius: 2px;
+  box-shadow: none;
+  font-family: "Open Sans", verdana, arial, sans-serif;
+  font-size: 12px;
+  line-height: 15px;
+}
+
+@media (max-width: 760px) {
+  h1 { font-size: 21px; }
+  .tabs button, .tab-nav button, [class*="tabs-nav"] button { padding: 7px 9px; }
+  table { font-size: 12px; }
+}
