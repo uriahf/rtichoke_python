@@ -1,0 +1,46 @@
+name: Summary report preview
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - 'src/rtichoke/summary_report/**'
+      - 'examples/summary_report_demo.py'
+      - 'tests/test_calibration_renderer_asset.py'
+      - '.github/workflows/summary-report-preview.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: summary-report-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install package
+        run: uv sync
+
+      - name: Generate summary report demo
+        run: |
+          uv run python examples/summary_report_demo.py
+          test -s summary-report-demo.html
+
+      - name: Upload summary report preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: summary-report-preview-pr-${{ github.event.pull_request.number }}
+          path: summary-report-demo.html
+          if-no-files-found: error
+          retention-days: 7
