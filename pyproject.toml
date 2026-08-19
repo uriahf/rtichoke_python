@@ -9,6 +9,7 @@ dependencies = [
     "pandas>=2.2.3",
     "typing>=3.7.4.3",
     "polarstate==0.1.8",
+    "smoothstate>=0.1.0",
     "marimo>=0.17.0",
     "pyarrow>=21.0.0",
     "statsmodels>=0.14.0",
@@ -46,6 +47,9 @@ docs = [
 
 [tool.uv.workspace]
 members = ["rtichoke"]
+
+[tool.uv.sources]
+smoothstate = { git = "https://github.com/uriahf/smoothstate.git", branch = "main" }
 
 [tool.uv.dependency-groups]
 docs = {requires-python = ">=3.11"}
