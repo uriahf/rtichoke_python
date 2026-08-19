@@ -19,7 +19,8 @@ def test_create_summary_report_writes_native_html(tmp_path):
     assert "Lift Curve" in html
     assert "Decision Curve" in html
     assert "const specs=" in html
-    assert "redrawAll();" in html
+    assert "renderTabs();" in html
+    assert "draw(specs[0]);" in html
     assert "d3.scaleLinear()" in html
     assert "send_requests_to_rtichoke_r" not in html
     assert "quarto" not in html.lower()
