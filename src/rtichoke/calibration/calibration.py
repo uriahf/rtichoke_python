@@ -1340,11 +1340,11 @@ def _create_calibration_curve_list_times(
                         )
                     elif smooth_method == "secondary_cox":
                         smooth_data = calculate_secondary_cox_smooth(
-                  df_adj,
-                  horizon,
-                  performance_type,
-                  aj_risk_at_horizon=_aj_risk_at_horizon,
-              )
+                            df_adj,
+                            horizon,
+                            performance_type,
+                            aj_risk_at_horizon=_aj_risk_at_horizon,
+                        )
                     elif smooth_method == "pseudo_values":
                         pseudo_by_group = _calculate_adjusted_pseudostates(
                             df_adj, horizon
@@ -1410,11 +1410,11 @@ def _create_calibration_curve_list_times(
                     )
                 elif smooth_method == "secondary_cox":
                     smooth_data = calculate_secondary_cox_smooth(
-                  df_adj,
-                  horizon,
-                  performance_type,
-                  aj_risk_at_horizon=_aj_risk_at_horizon,
-              )
+                        df_adj,
+                        horizon,
+                        performance_type,
+                        aj_risk_at_horizon=_aj_risk_at_horizon,
+                    )
                 elif smooth_method == "pseudo_values":
                     smooth_data = _calculate_smooth_curve(
                         probs_adj, reals_adj, performance_type
