@@ -62,11 +62,14 @@ def _report_html(specs: list[dict]) -> str:
 <style>
 :root {{ color-scheme:light; font-family:Arial,sans-serif; color:#2a3f5f; }}
 body {{ margin:0; background:white; }}
-main {{ max-width:1260px; margin:auto; padding:32px 24px 60px; }}
-h1 {{ margin:0 0 28px; color:#2a3f5f; font-size:28px; font-weight:600; }}
-.grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(520px,1fr)); gap:34px 28px; }}
-.card {{ min-width:0; }}
-.card h2 {{ text-align:center; font-size:17px; font-weight:600; margin:0 0 2px; color:#2a3f5f; }}
+main {{ max-width:1000px; margin:auto; padding:32px 24px 60px; }}
+h1 {{ margin:0 0 24px; color:#2a3f5f; font-size:28px; font-weight:600; }}
+.tabs {{ display:flex; flex-wrap:wrap; border-bottom:1px solid #d9dee8; margin-bottom:18px; gap:0; }}
+.tab {{ appearance:none; border:0; border-bottom:3px solid transparent; background:transparent; color:#596780; padding:10px 16px 9px; font:inherit; font-size:14px; cursor:pointer; margin-bottom:-1px; }}
+.tab:hover {{ color:#2a3f5f; }}
+.tab.active {{ color:#2a3f5f; border-bottom-color:#636efa; font-weight:600; }}
+.panel {{ min-width:0; max-width:760px; margin:0 auto; }}
+.panel h2 {{ text-align:center; font-size:17px; font-weight:600; margin:0 0 2px; color:#2a3f5f; }}
 .legend {{ min-height:28px; display:flex; justify-content:center; flex-wrap:wrap; gap:14px; font-size:12px; margin:5px 0 0; }}
 .legend-item {{ display:inline-flex; align-items:center; gap:5px; cursor:pointer; user-select:none; }}
 .legend-item.off {{ opacity:.3; }}
@@ -84,29 +87,32 @@ svg {{ width:100%; height:auto; overflow:visible; }}
 .slider {{ width:100%; accent-color:#636efa; }}
 .tooltip {{ position:fixed; pointer-events:none; padding:8px 10px; border-radius:2px; font-size:12px; line-height:1.35; opacity:0; z-index:10; color:white; box-shadow:0 1px 4px rgba(0,0,0,.18); }}
 .note {{ margin-top:30px; color:#7f8da5; font-size:12px; }}
-@media(max-width:620px) {{ .grid{{grid-template-columns:1fr}} main{{padding:22px 12px 50px}} }}
+@media(max-width:620px) {{ main{{padding:22px 12px 50px}} .tab{{padding:9px 10px;font-size:13px}} }}
 </style>
 </head>
 <body><main>
 <h1>Model Performance Summary</h1>
-<div id="charts" class="grid"></div>
+<nav id="tabs" class="tabs" role="tablist" aria-label="Performance curves"></nav>
+<section id="chart" class="panel" role="tabpanel"></section>
 <p class="note">D3 proof of concept using the same curve data, reference lines, axis ranges, palette, and hover content as rtichoke's Plotly figures.</p>
 </main><div class="tooltip"></div>
 <script>
 const specs={payload};
 const tooltip=d3.select('.tooltip');
 const active=new Map();
+let selected=specs.length?specs[0].id:null;
 specs.forEach(s=>s.groups.forEach(g=>{{if(!active.has(g)) active.set(g,true)}}));
 function finite(v){{return v!==null&&v!==undefined&&Number.isFinite(+v)}}
 function htmlHover(s){{return String(s??'').replace(/NaN|nan/g,'')}}
 function draw(spec){{
- const card=d3.select('#charts').append('section').attr('class','card');
+ const card=d3.select('#chart');
+ card.selectAll('*').remove();
  card.append('h2').text(spec.title);
  const legend=card.append('div').attr('class','legend');
  if(spec.multiple_groups) spec.groups.forEach(g=>{{
    const item=legend.append('span').attr('class','legend-item').classed('off',!active.get(g));
    item.append('span').attr('class','legend-swatch').style('background',spec.colors[g]); item.append('span').text(g);
-   item.on('click',()=>{{active.set(g,!active.get(g)); redrawAll();}});
+   item.on('click',()=>{{active.set(g,!active.get(g)); draw(spec);}});
  }});
  const width=600,height=500,m={{top:22,right:28,bottom:62,left:72}};
  const svg=card.append('svg').attr('viewBox',`0 0 ${{width}} ${{height}}`);
@@ -149,8 +155,14 @@ function draw(spec){{
    slider.on('input',function(){{set(+this.value)}}); set(0);
  }}
 }}
-function redrawAll(){{d3.select('#charts').selectAll('*').remove();specs.forEach(draw)}}
-redrawAll();
+function renderTabs(){{
+ const tabs=d3.select('#tabs'); tabs.selectAll('*').remove();
+ specs.forEach(spec=>{{
+   tabs.append('button').attr('class','tab').classed('active',spec.id===selected).attr('type','button').attr('role','tab').attr('aria-selected',spec.id===selected?'true':'false').text(spec.title.replace(' Curve','')).on('click',()=>{{selected=spec.id;renderTabs();draw(spec)}});
+ }});
+}}
+renderTabs();
+if(specs.length) draw(specs[0]);
 </script></body></html>"""
 
 
