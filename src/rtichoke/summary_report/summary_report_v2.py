@@ -49,10 +49,7 @@ def _wire_report_style(html: str) -> str:
 
 
 def _wire_r_report_chrome(html: str) -> str:
-    """Add the lightweight equivalents of the R Markdown TOC and cheat sheet."""
-    # The R reference starts with a compact TOC and a collapsed metric cheat
-    # sheet. Keep these semantic and dependency-free rather than importing the
-    # Bootstrap/Reactable runtime that accounts for much of the R file weight.
+    """Add lightweight equivalents of the R Markdown TOC and cheat sheet."""
     toc = """<nav class=\"rt-toc\" aria-label=\"Report contents\"><ul>
 <li><a href=\"#calibration\">Calibration</a></li>
 <li><a href=\"#discrimination\">Discrimination</a></li>
@@ -64,22 +61,19 @@ def _wire_r_report_chrome(html: str) -> str:
 <tbody><tr><th>Real Positive</th><td class=\"cm-tp\">TP</td><td class=\"cm-fn\">FN</td></tr>
 <tr><th>Real Negative</th><td class=\"cm-fp\">FP</td><td class=\"cm-tn\">TN</td></tr></tbody></table>
 </details>"""
-    # Insert immediately before the first report section when possible.
     for marker in ('<section id="calibration"', '<div id="calibration"'):
         if marker in html:
             html = html.replace(marker, toc + "\n" + marker, 1)
             break
-    # Add stable anchors to the existing section headings without changing
-    # their visible text. These replacements are intentionally tolerant of
-    # the legacy template's compact markup.
-    replacements = {
-        ">Calibration<": ' id="calibration">Calibration<',
-        ">Discrimination<": ' id="discrimination">Discrimination<',
-        ">Utility<": ' id="utility">Utility<',
-        ">Performance Table<": ' id="performance-table">Performance Table<',
-    }
-    for old, new in replacements.items():
-        if old in html and f'id="{new.split("id=\"")[1].split("\"")[0]}"' not in html:
+
+    replacements = (
+        (">Calibration<", ' id="calibration">Calibration<', "calibration"),
+        (">Discrimination<", ' id="discrimination">Discrimination<', "discrimination"),
+        (">Utility<", ' id="utility">Utility<', "utility"),
+        (">Performance Table<", ' id="performance-table">Performance Table<', "performance-table"),
+    )
+    for old, new, anchor in replacements:
+        if old in html and f'id="{anchor}"' not in html:
             html = html.replace(old, new, 1)
     return html
 
