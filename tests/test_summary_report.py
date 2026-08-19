@@ -17,11 +17,13 @@ def test_create_summary_report_writes_native_html(tmp_path):
         "Smooth", "Discrete", "Discrimination", "By Probability Threshold",
         "By Predicted Positives Condition Rate (PPCR)", "ROC", "Lift",
         "Precision Recall", "Gains", "Utility (Decision Curve)",
-        "Performance Table",
+        "Performance Table", "table-threshold", "table-ppcr", "Confusion Matrix",
     ):
         assert text in html
-    assert "application/vnd.jupyter.widget-state+json" in html
-    assert "application/vnd.jupyter.widget-view+json" in html
+    assert "perfTable(R.tables.threshold" in html
+    assert "application/vnd.jupyter.widget-state+json" not in html
+    assert "application/vnd.jupyter.widget-view+json" not in html
+    assert "@jupyter-widgets" not in html
     assert "d3.scaleLinear()" in html
     assert "send_requests_to_rtichoke_r" not in html
     assert "quarto" not in html.lower()
