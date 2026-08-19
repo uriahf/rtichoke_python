@@ -9,7 +9,8 @@ def test_calibration_renderer_asset_is_available():
     assert 'text("Predicted")' in source
     assert 'text("Observed")' in source
     assert "showTip" in source
-    assert "c.colors[group]" in source
+    assert "hoverColor" in source
+    assert "c.colors[groupOf(d)]" in source
 
 
 def test_calibration_renderer_is_safe_to_inline_in_report_script():
