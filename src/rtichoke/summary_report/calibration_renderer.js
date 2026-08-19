@@ -7,10 +7,13 @@ function calibration(type, sel) {
   const card = d3.select(sel);
   card.selectAll("*").remove();
 
-  const W = 550, H = 550;
-  const X0 = 60, X1 = 540;
-  const MAIN_TOP = 55, MAIN_BOTTOM = 409.9;
-  const HIST_TOP = 428.1, HIST_BOTTOM = 510;
+  // Match the 600px square Plotly calibration figure and its two-row subplot.
+  // Plotly's default margins leave an inner plotting width of about 500px;
+  // the 0.8/0.2 row heights are represented directly below.
+  const W = 600, H = 600;
+  const X0 = 80, X1 = 580;
+  const MAIN_TOP = 100, MAIN_BOTTOM = 424;
+  const HIST_TOP = 444, HIST_BOTTOM = 525;
 
   const x = d3.scaleLinear().domain(c.ranges.xaxis).range([X0, X1]);
   const y = d3.scaleLinear().domain(c.ranges.yaxis).range([MAIN_BOTTOM, MAIN_TOP]);
@@ -56,22 +59,31 @@ function calibration(type, sel) {
     const lg = svg.append("g")
       .attr("font-family", "Open Sans, verdana, arial, sans-serif")
       .attr("font-size", 12);
-    const itemW = 93, total = itemW * c.groups.length, start = 300 - total / 2;
+    const itemW = 100, total = itemW * c.groups.length, start = W / 2 - total / 2;
     c.groups.forEach((g, i) => {
-      const q = lg.append("g").attr("transform", `translate(${start + i * itemW},24)`);
+      const q = lg.append("g").attr("transform", `translate(${start + i * itemW},62)`);
       q.append("line").attr("x1", 5).attr("x2", 35)
         .attr("stroke", c.colors[g]).attr("stroke-width", 2);
       q.append("text").attr("x", 40).attr("y", 4).attr("fill", "#444").text(g);
     });
   }
 
-  svg.append("g").attr("class", "axis").attr("transform", `translate(${X0},0)`).call(d3.axisLeft(y));
-  svg.append("g").attr("class", "axis").attr("transform", `translate(${X0},0)`).call(d3.axisLeft(yHist).ticks(5));
-  svg.append("g").attr("class", "axis").attr("transform", `translate(0,${HIST_BOTTOM})`).call(d3.axisBottom(x).ticks(5));
-  svg.append("text").attr("class", "axis-label").attr("x", (X0 + X1) / 2)
-    .attr("y", 548).attr("text-anchor", "middle").text("Predicted");
-  svg.append("text").attr("class", "axis-label").attr("transform", "rotate(-90)")
-    .attr("x", -(MAIN_TOP + MAIN_BOTTOM) / 2).attr("y", 18)
+  const styleAxis = axis => {
+    axis.attr("font-family", "Open Sans, verdana, arial, sans-serif").attr("font-size", 12).attr("color", "#444");
+    axis.select(".domain").attr("stroke", "#444").attr("stroke-width", 1);
+    axis.selectAll(".tick line").attr("stroke", "#444");
+  };
+  const mainYAxis = svg.append("g").attr("class", "axis").attr("transform", `translate(${X0},0)`).call(d3.axisLeft(y).ticks(5));
+  const histYAxis = svg.append("g").attr("class", "axis").attr("transform", `translate(${X0},0)`).call(d3.axisLeft(yHist).ticks(4));
+  const xAxis = svg.append("g").attr("class", "axis").attr("transform", `translate(0,${HIST_BOTTOM})`).call(d3.axisBottom(x).ticks(5));
+  styleAxis(mainYAxis); styleAxis(histYAxis); styleAxis(xAxis);
+
+  svg.append("text").attr("class", "axis-label")
+    .attr("font-family", "Open Sans, verdana, arial, sans-serif").attr("font-size", 14).attr("fill", "#444")
+    .attr("x", (X0 + X1) / 2).attr("y", 580).attr("text-anchor", "middle").text("Predicted");
+  svg.append("text").attr("class", "axis-label")
+    .attr("font-family", "Open Sans, verdana, arial, sans-serif").attr("font-size", 14).attr("fill", "#444")
+    .attr("transform", "rotate(-90)").attr("x", -(MAIN_TOP + MAIN_BOTTOM) / 2).attr("y", 24)
     .attr("text-anchor", "middle").text("Observed");
 
   const line = d3.line().defined(d => isFinite(+d.x) && isFinite(+d.y))
@@ -87,14 +99,10 @@ function calibration(type, sel) {
     main.append("path").datum(a).attr("fill", "none")
       .attr("stroke", c.colors[g]).attr("stroke-width", 2).attr("d", line);
     if (type === "discrete") {
-      // Plotly scatter marker size=10 renders as a 10px diameter filled circle.
-      // Its default marker line is width 0, so don't add a visible outline.
       main.selectAll(null).data(a).enter().append("circle")
         .attr("cx", d => x(+d.x)).attr("cy", d => y(+d.y))
-        .attr("r", 5)
-        .attr("fill", c.colors[g])
-        .attr("stroke", c.colors[g])
-        .attr("stroke-width", 0)
+        .attr("r", 5).attr("fill", c.colors[g])
+        .attr("stroke", c.colors[g]).attr("stroke-width", 0)
         .attr("shape-rendering", "geometricPrecision");
     }
   });
