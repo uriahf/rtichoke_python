@@ -48,6 +48,11 @@ jobs:
           mv performance-table-reactable.html great-docs/_site/performance-table-reactable.html
           cp -R examples/performance_table_reactable_files great-docs/_site/performance_table_reactable_files
 
+      - name: Generate summary report demo
+        run: |
+          uv run python examples/summary_report_demo.py
+          mv summary-report-demo.html great-docs/_site/summary-report-demo.html
+
       - name: Publish documentation
         uses: JamesIves/github-pages-deploy-action@v4
         with:
@@ -94,6 +99,13 @@ jobs:
           grep -q 'Real Positive' performance-table-reactable.html
           mv performance-table-reactable.html great-docs/_site/performance-table-reactable.html
           cp -R examples/performance_table_reactable_files great-docs/_site/performance_table_reactable_files
+
+      - name: Generate summary report demo
+        if: github.event.action != 'closed'
+        run: |
+          uv run python examples/summary_report_demo.py
+          test -s summary-report-demo.html
+          mv summary-report-demo.html great-docs/_site/summary-report-demo.html
 
       - name: Deploy PR preview
         uses: rossjrw/pr-preview-action@v1
