@@ -22,24 +22,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Install uv and Python
         uses: astral-sh/setup-uv@v5
         with:
           python-version: '3.11'
-
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
-
       - name: Install project and docs dependencies
         run: uv sync --group docs
-
       - name: Build Great Docs site
         run: uv run great-docs build
-
       - name: Export Great Tables performance table demo
         run: uv run marimo export html --no-include-code examples/performance_table_demo.py -o great-docs/_site/performance-table-demo.html
-
       - name: Export Reactable performance table demo
         run: |
           uv run quarto render examples/performance_table_reactable.qmd --output performance-table-reactable.html
@@ -47,12 +41,10 @@ jobs:
           grep -q 'Real Positive' performance-table-reactable.html
           mv performance-table-reactable.html great-docs/_site/performance-table-reactable.html
           cp -R examples/performance_table_reactable_files great-docs/_site/performance_table_reactable_files
-
       - name: Generate summary report demo
         run: |
           uv run python examples/summary_report_demo.py
           mv summary-report-demo.html great-docs/_site/summary-report-demo.html
-
       - name: Publish documentation
         uses: JamesIves/github-pages-deploy-action@v4
         with:
@@ -68,29 +60,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Install uv and Python
         if: github.event.action != 'closed'
         uses: astral-sh/setup-uv@v5
         with:
           python-version: '3.11'
-
       - name: Set up Quarto
         if: github.event.action != 'closed'
         uses: quarto-dev/quarto-actions/setup@v2
-
       - name: Install project and docs dependencies
         if: github.event.action != 'closed'
         run: uv sync --group docs
-
       - name: Build Great Docs preview
         if: github.event.action != 'closed'
         run: uv run great-docs build
-
       - name: Export Great Tables performance table demo
         if: github.event.action != 'closed'
         run: uv run marimo export html --no-include-code examples/performance_table_demo.py -o great-docs/_site/performance-table-demo.html
-
       - name: Export Reactable performance table demo
         if: github.event.action != 'closed'
         run: |
@@ -99,14 +85,46 @@ jobs:
           grep -q 'Real Positive' performance-table-reactable.html
           mv performance-table-reactable.html great-docs/_site/performance-table-reactable.html
           cp -R examples/performance_table_reactable_files great-docs/_site/performance_table_reactable_files
-
-      - name: Generate summary report demo
+      - name: Generate Python summary report demo
         if: github.event.action != 'closed'
         run: |
           uv run python examples/summary_report_demo.py
           test -s summary-report-demo.html
           mv summary-report-demo.html great-docs/_site/summary-report-demo.html
-
+      - name: Set up R for reference report
+        if: github.event.action != 'closed'
+        uses: r-lib/actions/setup-r@v2
+      - name: Set up Pandoc for R Markdown
+        if: github.event.action != 'closed'
+        uses: r-lib/actions/setup-pandoc@v2
+      - name: Render canonical R summary report
+        if: github.event.action != 'closed'
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+        shell: Rscript {0}
+        run: |
+          install.packages("remotes", repos = "https://cloud.r-project.org")
+          remotes::install_github("uriahf/rtichoke", dependencies = TRUE, upgrade = "never")
+          set.seed(2026)
+          n <- 800
+          signal <- rnorm(n)
+          p_true <- plogis(signal)
+          reals <- rbinom(n, 1, p_true)
+          probs <- list(
+            "Model A" = pmin(pmax(plogis(0.9 * signal + rnorm(n, 0, 0.55)), 0.001), 0.999),
+            "Model B" = pmin(pmax(plogis(0.6 * signal + rnorm(n, 0, 0.85)), 0.001), 0.999)
+          )
+          rtichoke::create_summary_report(
+            probs = probs,
+            reals = list(reals),
+            output_file = "summary-report-r-reference.html",
+            output_dir = file.path(getwd(), "great-docs", "_site")
+          )
+          stopifnot(file.info(file.path("great-docs", "_site", "summary-report-r-reference.html"))$size > 0)
+      - name: Record report sizes
+        if: github.event.action != 'closed'
+        run: |
+          wc -c great-docs/_site/summary-report-demo.html great-docs/_site/summary-report-r-reference.html | tee great-docs/_site/summary-report-sizes.txt
       - name: Deploy PR preview
         uses: rossjrw/pr-preview-action@v1
         with:
