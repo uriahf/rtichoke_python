@@ -12,15 +12,16 @@ def test_create_summary_report_writes_native_html(tmp_path):
 
     html = output.read_text(encoding="utf-8")
     assert result == output
-    assert "Model Performance Summary" in html
-    assert "ROC Curve" in html
-    assert "Precision-Recall Curve" in html
-    assert "Gains Curve" in html
-    assert "Lift Curve" in html
-    assert "Decision Curve" in html
-    assert "const specs=" in html
-    assert "renderTabs();" in html
-    assert "draw(specs[0]);" in html
+    for text in (
+        "Summary Report", "Performance Metrics Cheat Sheet", "Calibration",
+        "Smooth", "Discrete", "Discrimination", "By Probability Threshold",
+        "By Predicted Positives Condition Rate (PPCR)", "ROC", "Lift",
+        "Precision Recall", "Gains", "Utility (Decision Curve)",
+        "Performance Table",
+    ):
+        assert text in html
+    assert "application/vnd.jupyter.widget-state+json" in html
+    assert "application/vnd.jupyter.widget-view+json" in html
     assert "d3.scaleLinear()" in html
     assert "send_requests_to_rtichoke_r" not in html
     assert "quarto" not in html.lower()
