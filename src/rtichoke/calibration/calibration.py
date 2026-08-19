@@ -11,6 +11,7 @@ from plotly.graph_objs._figure import Figure
 import polars as pl
 import numpy as np
 from polarstate import predict_aj_estimates, prepare_event_table
+from smoothstate import smooth_state_lowess
 from ._secondary_cox import calculate_secondary_cox_smooth
 
 # from rtichoke.helpers.send_post_request_to_r_rtichoke import send_requests_to_rtichoke_r
@@ -757,8 +758,6 @@ def _calculate_smooth_curve(
     """
     Calculate the smoothed calibration curve using lowess.
     """
-    from statsmodels.nonparametric.smoothers_lowess import lowess
-
     smooth_frames = []
 
     # Helper function to process a single probability and real array
@@ -772,12 +771,9 @@ def _calculate_smooth_curve(
                 }
             )
         else:
-            # lowess returns a 2D array where the first column is x and the second is y
-            smoothed = lowess(r, p, it=0)
-            xout = np.linspace(0, 1, 101)
-            yout = np.clip(np.interp(xout, smoothed[:, 0], smoothed[:, 1]), 0.0, 1.0)
-            return pl.DataFrame(
-                {"x": xout, "y": yout, "reference_group": [group_name] * len(xout)}
+            smoothed = smooth_state_lowess(p, r)
+            return smoothed.with_columns(
+                pl.lit(group_name).alias("reference_group")
             )
 
     if isinstance(reals, dict):
