@@ -40,19 +40,19 @@ jobs:
           if removed != 1:
               raise RuntimeError(f"Expected to remove one legacy Cox/RCS block, removed {removed}")
 
-          old_call = '''smooth_data = _calculate_secondary_cox_smooth(
-                            df_adj, horizon, performance_type
-                        )'''
-          new_call = '''smooth_data = calculate_secondary_cox_smooth(
+          call_pattern = re.compile(
+              r"smooth_data = _calculate_secondary_cox_smooth\(\s*"
+              r"df_adj,\s*horizon,\s*performance_type\s*\)"
+          )
+          replacement = '''smooth_data = calculate_secondary_cox_smooth(
                             df_adj,
                             horizon,
                             performance_type,
                             aj_risk_at_horizon=_aj_risk_at_horizon,
                         )'''
-          occurrences = text.count(old_call)
+          text, occurrences = call_pattern.subn(replacement, text)
           if occurrences != 2:
               raise RuntimeError(f"Expected two secondary-Cox call sites, found {occurrences}")
-          text = text.replace(old_call, new_call)
           calibration_path.write_text(text)
 
           init_path = Path("src/rtichoke/calibration/__init__.py")
