@@ -26,7 +26,6 @@ def _wire_curve_renderer(html: str) -> str:
     marker = "function curveTabs(specs,nav,chart,strat)"
     if marker not in html:
         raise RuntimeError("Could not locate summary-report curve integration point")
-
     html = html.replace(marker, renderer + "\n" + marker, 1)
     html = html.replace(
         "draw(s,chart,strat)}}));draw(specs[0],chart,strat)",
@@ -42,12 +41,47 @@ def _wire_curve_renderer(html: str) -> str:
 
 
 def _wire_report_style(html: str) -> str:
-    """Append the shared visual layer without disturbing legacy CSS."""
     css = _style_source()
     marker = "</head>"
     if marker not in html:
         raise RuntimeError("Could not locate summary-report head element")
     return html.replace(marker, f"<style>\n{css}\n</style>\n{marker}", 1)
+
+
+def _wire_r_report_chrome(html: str) -> str:
+    """Add the lightweight equivalents of the R Markdown TOC and cheat sheet."""
+    # The R reference starts with a compact TOC and a collapsed metric cheat
+    # sheet. Keep these semantic and dependency-free rather than importing the
+    # Bootstrap/Reactable runtime that accounts for much of the R file weight.
+    toc = """<nav class=\"rt-toc\" aria-label=\"Report contents\"><ul>
+<li><a href=\"#calibration\">Calibration</a></li>
+<li><a href=\"#discrimination\">Discrimination</a></li>
+<li><a href=\"#utility\">Utility (Decision Curve)</a></li>
+<li><a href=\"#performance-table\">Performance Table</a></li>
+</ul></nav>
+<details class=\"metric-cheat-sheet\"><summary>Performance Metrics Cheat Sheet</summary>
+<table><thead><tr><th></th><th>Predicted Positive</th><th>Predicted Negative</th></tr></thead>
+<tbody><tr><th>Real Positive</th><td class=\"cm-tp\">TP</td><td class=\"cm-fn\">FN</td></tr>
+<tr><th>Real Negative</th><td class=\"cm-fp\">FP</td><td class=\"cm-tn\">TN</td></tr></tbody></table>
+</details>"""
+    # Insert immediately before the first report section when possible.
+    for marker in ('<section id="calibration"', '<div id="calibration"'):
+        if marker in html:
+            html = html.replace(marker, toc + "\n" + marker, 1)
+            break
+    # Add stable anchors to the existing section headings without changing
+    # their visible text. These replacements are intentionally tolerant of
+    # the legacy template's compact markup.
+    replacements = {
+        ">Calibration<": ' id="calibration">Calibration<',
+        ">Discrimination<": ' id="discrimination">Discrimination<',
+        ">Utility<": ' id="utility">Utility<',
+        ">Performance Table<": ' id="performance-table">Performance Table<',
+    }
+    for old, new in replacements.items():
+        if old in html and f'id="{new.split("id=\"")[1].split("\"")[0]}"' not in html:
+            html = html.replace(old, new, 1)
+    return html
 
 
 def create_summary_report(
@@ -61,6 +95,7 @@ def create_summary_report(
     _legacy_create_summary_report(probs=probs, reals=reals, output_file=out, by=by)
     html = out.read_text(encoding="utf-8")
     html = _wire_curve_renderer(html)
+    html = _wire_r_report_chrome(html)
     html = _wire_report_style(html)
     out.write_text(html, encoding="utf-8")
     return out
