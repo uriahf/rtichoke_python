@@ -1,0 +1,90 @@
+name: Runtime benchmark
+
+on:
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: before
+            ref: 08253156d0ff883986f8326825ddd062feb005eb
+          - label: after
+            ref: main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.ref }}
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.10'
+          enable-cache: false
+
+      - name: Cold runtime install
+        shell: bash
+        run: |
+          rm -rf .venv
+          start=$(python -c 'import time; print(time.perf_counter())')
+          UV_NO_CACHE=1 uv sync --no-default-groups
+          end=$(python -c 'import time; print(time.perf_counter())')
+          python - <<PY
+          start=float("$start"); end=float("$end")
+          print(f"INSTALL_SECONDS={end-start:.3f}")
+          PY
+
+      - name: Runtime dependency footprint
+        shell: bash
+        run: |
+          .venv/bin/python - <<'PY'
+          import importlib.metadata as md
+          from pathlib import Path
+          dists = list(md.distributions())
+          names = sorted({d.metadata['Name'].lower() for d in dists if d.metadata.get('Name')})
+          print('PACKAGE_COUNT=' + str(len(names)))
+          for name in ('statsmodels','scipy','pandas','smoothstate'):
+              try: print(f'{name.upper()}={md.version(name)}')
+              except md.PackageNotFoundError: print(f'{name.upper()}=ABSENT')
+          total = 0
+          root = Path('.venv').resolve()
+          for d in dists:
+              for f in d.files or ():
+                  try:
+                      p = Path(d.locate_file(f)).resolve()
+                      if root in p.parents and p.is_file(): total += p.stat().st_size
+                  except OSError: pass
+          print(f'VENV_DISTRIBUTION_BYTES={total}')
+          PY
+
+      - name: LOWESS microbenchmark
+        shell: bash
+        run: |
+          .venv/bin/python - <<'PY'
+          import timeit, numpy as np
+          rng=np.random.default_rng(2026)
+          p=np.sort(rng.uniform(.01,.99,2000))
+          y=rng.binomial(1,p).astype(float)
+          pseudo=np.clip(y+rng.normal(0,.15,len(y)),-.5,1.5)
+          try:
+              from smoothstate import smooth_state_lowess
+              def binary(): smooth_state_lowess(p,y)
+              def continuous(): smooth_state_lowess(p,pseudo)
+              backend='smoothstate'
+          except (ImportError, AttributeError):
+              from statsmodels.nonparametric.smoothers_lowess import lowess
+              def run(v):
+                  s=lowess(v,p,it=0)
+                  x=np.linspace(0,1,101)
+                  np.clip(np.interp(x,s[:,0],s[:,1]),0,1)
+              def binary(): run(y)
+              def continuous(): run(pseudo)
+              backend='statsmodels'
+          binary(); continuous()
+          n=10
+          print('BACKEND='+backend)
+          print(f'BINARY_SECONDS_PER_CALL={timeit.timeit(binary,number=n)/n:.6f}')
+          print(f'PSEUDO_SECONDS_PER_CALL={timeit.timeit(continuous,number=n)/n:.6f}')
+          PY
