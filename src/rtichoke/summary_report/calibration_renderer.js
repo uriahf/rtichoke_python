@@ -80,7 +80,7 @@ function calibration(type, sel) {
     }
   });
 
-  const hist = svg.append("g").attr("clip-path", `url(#hist-${type}})`);
+  const hist = svg.append("g").attr("clip-path", `url(#hist-${type})`);
   const opacity = 1 / Math.max(1, c.groups.length);
   c.histogram.forEach(d => {
     const mid = +d.mids, left = x(mid - .005), right = x(mid + .005);
