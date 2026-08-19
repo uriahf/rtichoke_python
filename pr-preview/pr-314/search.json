@@ -221,7 +221,7 @@
     "href": "package-info.html",
     "title": "Package Info",
     "section": "",
-    "text": "Runtime Dependencies\n\n\n\nPackage\nVersion Constraint\nLast Published\nPyPI\n\n\n\n\nplotly\n&lt;6.0.0,&gt;=5.13.1\n2026-07-09\n\n\n\npandas\n&gt;=2.2.3\n2026-07-22\n\n\n\npolarstate\n==0.1.8\n2025-07-29\n\n\n\nsmoothstate\n&gt;=0.1.1\n2026-08-19\n\n\n\npolars\n&gt;=1.31.0\n2026-08-01\n\n\n\nreactable\n&gt;=0.1.5\n2025-10-10\n\n\n\ngreat-tables\n&gt;=0.18.0\n2026-07-27\n\n\n\n\n\n\nSummary\n\nRequires: Python &gt;=3.10\nRuntime Dependencies: 7\nTotal unique dependencies: 7"
+    "text": "Runtime Dependencies\n\n\n\nPackage\nVersion Constraint\nLast Published\nPyPI\n\n\n\n\nplotly\n&lt;6.0.0,&gt;=5.13.1\n2026-07-09\n\n\n\npolarstate\n==0.1.8\n2025-07-29\n\n\n\nsmoothstate\n&gt;=0.1.1\n2026-08-19\n\n\n\npolars\n&gt;=1.31.0\n2026-08-01\n\n\n\nreactable\n&gt;=0.1.5\n2025-10-10\n\n\n\ngreat-tables\n&gt;=0.18.0\n2026-07-27\n\n\n\n\n\n\nSummary\n\nRequires: Python &gt;=3.10\nRuntime Dependencies: 6\nTotal unique dependencies: 6"
   },
   {
     "objectID": "contributing.html",
