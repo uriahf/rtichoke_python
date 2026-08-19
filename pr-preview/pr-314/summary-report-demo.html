@@ -44,8 +44,6 @@ const tooltip=d3.select('.tooltip');
 const active=new Map();
 specs.forEach(s=>s.groups.forEach(g=>{if(!active.has(g)) active.set(g,true)}));
 function finite(v){return v!==null&&v!==undefined&&Number.isFinite(+v)}
-function stripHtml(s){return String(s??'').replace(/<br\s*\/?/gi,'
-').replace(/<\/?b>/gi,'').replace(/<[^>]*>/g,'')}
 function htmlHover(s){return String(s??'').replace(/NaN|nan/g,'')}
 function draw(spec){
  const card=d3.select('#charts').append('section').attr('class','card');
@@ -72,7 +70,7 @@ function draw(spec){
  spec.groups.filter(g=>active.get(g)).forEach(g=>{
    const gd=visible.filter(d=>String(d.reference_group)===g);
    svg.append('path').datum(gd).attr('class','curve-line').attr('stroke',spec.colors[g]||'#000').attr('d',line);
-   svg.selectAll(`.pt-${spec.id}-${CSS.escape(g)}`).data(gd).enter().append('circle').attr('class','curve-point').attr('cx',d=>x(+d.x)).attr('cy',d=>y(+d.y)).attr('r',2.3).attr('fill',spec.colors[g]||'#000');
+   svg.selectAll('circle.curve-point').data(gd).enter().append('circle').attr('class','curve-point').attr('cx',d=>x(+d.x)).attr('cy',d=>y(+d.y)).attr('r',2.3).attr('fill',spec.colors[g]||'#000');
  });
  const markers=svg.append('g');
  function showCutoff(cutoff){
