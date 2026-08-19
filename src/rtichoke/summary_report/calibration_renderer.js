@@ -87,9 +87,15 @@ function calibration(type, sel) {
     main.append("path").datum(a).attr("fill", "none")
       .attr("stroke", c.colors[g]).attr("stroke-width", 2).attr("d", line);
     if (type === "discrete") {
+      // Plotly scatter marker size=10 renders as a 10px diameter filled circle.
+      // Its default marker line is width 0, so don't add a visible outline.
       main.selectAll(null).data(a).enter().append("circle")
         .attr("cx", d => x(+d.x)).attr("cy", d => y(+d.y))
-        .attr("r", 5).attr("fill", c.colors[g]);
+        .attr("r", 5)
+        .attr("fill", c.colors[g])
+        .attr("stroke", c.colors[g])
+        .attr("stroke-width", 0)
+        .attr("shape-rendering", "geometricPrecision");
     }
   });
 
@@ -102,16 +108,11 @@ function calibration(type, sel) {
       .attr("y", yHist(+d.counts)).attr("height", HIST_BOTTOM - yHist(+d.counts))
       .attr("fill", c.colors[String(d.reference_group)] || "#777")
       .attr("opacity", opacity).attr("stroke", "none")
-      .on("mouseenter", function() { d3.select(this).attr("opacity", Math.min(1, opacity + 0.18)); })
       .on("mousemove", ev => showTip(ev, d.text, hoverColor(d)))
-      .on("mouseleave", function() { d3.select(this).attr("opacity", opacity); hideTip(); });
+      .on("mouseleave", hideTip);
   });
 
   const hoverData = dat.concat(c.reference);
-  const hoverLayer = svg.append("g");
-  const marker = hoverLayer.append("circle")
-    .attr("r", 4).attr("fill", "white").attr("stroke-width", 2)
-    .style("display", "none").style("pointer-events", "none");
   svg.append("rect").attr("x", X0).attr("y", MAIN_TOP)
     .attr("width", X1 - X0).attr("height", MAIN_BOTTOM - MAIN_TOP)
     .attr("fill", "transparent")
@@ -123,14 +124,8 @@ function calibration(type, sel) {
         const dd = (x(+d.x) - mx) ** 2 + (y(+d.y) - my) ** 2;
         if (dd < dist) { dist = dd; best = d; }
       });
-      if (best && dist < 625) {
-        const color = hoverColor(best);
-        marker.attr("cx", x(+best.x)).attr("cy", y(+best.y)).attr("stroke", color).style("display", null);
-        showTip(ev, best.text, color);
-      } else {
-        marker.style("display", "none");
-        hideTip();
-      }
+      if (best && dist < 625) showTip(ev, best.text, hoverColor(best));
+      else hideTip();
     })
-    .on("mouseleave", () => { marker.style("display", "none"); hideTip(); });
+    .on("mouseleave", hideTip);
 }
