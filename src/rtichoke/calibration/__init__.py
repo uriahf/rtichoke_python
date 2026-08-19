@@ -9,7 +9,6 @@ _original_create_calibration_curve = _calibration.create_calibration_curve
 _original_create_calibration_curve_times = _calibration.create_calibration_curve_times
 
 
-
 def create_calibration_curve(*args, **kwargs):
     """Create an interactive calibration plot with a square main panel."""
     return enforce_square_calibration_panel(
