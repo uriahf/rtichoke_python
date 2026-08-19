@@ -11,7 +11,7 @@ on:
       - '.github/workflows/summary-report-preview.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: summary-report-preview-${{ github.event.pull_request.number }}
@@ -37,7 +37,38 @@ jobs:
           uv run python examples/summary_report_demo.py
           test -s summary-report-demo.html
 
-      - name: Upload summary report preview
+      - name: Publish direct PR preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin gh-pages || true
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            git worktree add /tmp/gh-pages origin/gh-pages
+          else
+            git worktree add --detach /tmp/gh-pages
+            cd /tmp/gh-pages
+            git checkout --orphan gh-pages
+            git rm -rf . || true
+          fi
+          cd /tmp/gh-pages
+          mkdir -p "pr-preview/pr-${PR_NUMBER}"
+          cp "${GITHUB_WORKSPACE}/summary-report-demo.html" "pr-preview/pr-${PR_NUMBER}/summary-report.html"
+          touch .nojekyll
+          git add .nojekyll "pr-preview/pr-${PR_NUMBER}/summary-report.html"
+          if git diff --cached --quiet; then
+            echo "Preview unchanged"
+          else
+            git commit -m "Update summary report preview for PR #${PR_NUMBER}"
+            git push origin HEAD:gh-pages
+          fi
+          echo "### Summary report preview" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/pr-preview/pr-${PR_NUMBER}/summary-report.html" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload fallback artifact
         uses: actions/upload-artifact@v4
         with:
           name: summary-report-preview-pr-${{ github.event.pull_request.number }}
