@@ -57,7 +57,7 @@ from rtichoke.performance_table import (
     render_performance_table as render_performance_table,
 )
 
-from rtichoke.summary_report.summary_report import (
+from rtichoke.summary_report.summary_report_v2 import (
     create_summary_report as create_summary_report,
 )
 
