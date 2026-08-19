@@ -11,6 +11,7 @@ from plotly.graph_objs._figure import Figure
 import polars as pl
 import numpy as np
 from polarstate import predict_aj_estimates, prepare_event_table
+from ._secondary_cox import calculate_secondary_cox_smooth
 
 # from rtichoke.helpers.send_post_request_to_r_rtichoke import send_requests_to_rtichoke_r
 
@@ -1174,137 +1175,6 @@ def _make_adjusted_deciles_data(
     return pl.DataFrame(rows).sort(["reference_group", "decile"])
 
 
-def _calculate_rcs_basis_3knots(
-    x: np.ndarray, knots: Union[np.ndarray, None] = None
-) -> tuple[np.ndarray, np.ndarray]:
-    """Calculate 3-knot restricted cubic spline basis matrix.
-
-    Follows Harrell's RCS formulation (RMS Section 2.4.1) / rms::rcs in R.
-    For 3 knots (10th, 50th, 90th percentiles of x):
-    basis matrix has 2 columns: [x, u1(x)]
-    """
-    x = np.asarray(x, dtype=float)
-    if knots is None:
-        knots = np.percentile(x, [10, 50, 90])
-    knots = np.sort(np.asarray(knots, dtype=float))
-
-    t1, t2, t3 = knots[0], knots[1], knots[2]
-
-    # Handle edge case where knots are duplicate / non-unique
-    if len(np.unique(knots)) < 3 or (t3 - t2) == 0 or (t2 - t1) == 0 or (t3 - t1) == 0:
-        return x[:, None], knots
-
-    denom = (t3 - t1) ** 2
-
-    def pos_cube(val: np.ndarray) -> np.ndarray:
-        return np.maximum(val, 0) ** 3
-
-    u1 = (
-        pos_cube(x - t1)
-        - ((t3 - t1) / (t3 - t2)) * pos_cube(x - t2)
-        + ((t2 - t1) / (t3 - t2)) * pos_cube(x - t3)
-    ) / denom
-
-    basis = np.column_stack([x, u1])
-    return basis, knots
-
-
-def _calculate_secondary_cox_smooth(
-    df_adj: pl.DataFrame,
-    horizon: float,
-    performance_type: str,
-) -> pl.DataFrame:
-    """Calculate smoothed calibration curve using secondary Cox regression (Austin et al. 2020 & McLernon et al. 2023 method)."""
-    from lifelines import CoxPHFitter
-
-    smooth_frames = []
-
-    for key, group_df in df_adj.group_by("reference_group", maintain_order=True):
-        group_name = str(key[0])
-        probs = group_df["prob"].to_numpy()
-        reals = group_df["real"].to_numpy()
-        times = group_df["time"].to_numpy()
-
-        p_clipped = np.clip(probs, 1e-6, 1 - 1e-6)
-        x = np.log(-np.log(1 - p_clipped))
-        events = (reals == 1).astype(int)
-
-        if len(np.unique(x)) <= 1 or events.sum() == 0:
-            y_est = _aj_risk_at_horizon(group_df, horizon)
-            xout = np.linspace(0, 1, 101)
-            smooth_frames.append(
-                pl.DataFrame(
-                    {
-                        "x": xout,
-                        "y": [y_est] * len(xout),
-                        "reference_group": [group_name] * len(xout),
-                    }
-                )
-            )
-            continue
-
-        basis, knots = _calculate_rcs_basis_3knots(x)
-
-        if basis.shape[1] == 2:
-            fit_df = pl.DataFrame(
-                {
-                    "time": times,
-                    "event": events,
-                    "rcs_1": basis[:, 0],
-                    "rcs_2": basis[:, 1],
-                }
-            )
-        else:
-            fit_df = pl.DataFrame(
-                {"time": times, "event": events, "rcs_1": basis[:, 0]}
-            )
-
-        try:
-            cph = CoxPHFitter(penalizer=0.01)
-            cph.fit(fit_df.to_pandas(), duration_col="time", event_col="event")
-
-            xout = np.linspace(0.001, 0.999, 101)
-            x_grid = np.log(-np.log(1 - xout))
-            grid_basis, _ = _calculate_rcs_basis_3knots(x_grid, knots=knots)
-
-            if grid_basis.shape[1] == 2 and "rcs_2" in fit_df.columns:
-                grid_df = pl.DataFrame(
-                    {"rcs_1": grid_basis[:, 0], "rcs_2": grid_basis[:, 1]}
-                )
-            else:
-                grid_df = pl.DataFrame({"rcs_1": grid_basis[:, 0]})
-
-            surv_at_t = cph.predict_survival_function(
-                grid_df.to_pandas(), times=[horizon]
-            ).values.ravel()
-            yout = np.clip(1.0 - surv_at_t, 0.0, 1.0)
-        except Exception:
-            y_est = _aj_risk_at_horizon(group_df, horizon)
-            xout = np.linspace(0, 1, 101)
-            yout = np.array([y_est] * len(xout))
-
-        smooth_frames.append(
-            pl.DataFrame(
-                {
-                    "x": xout,
-                    "y": yout,
-                    "reference_group": [group_name] * len(xout),
-                }
-            )
-        )
-
-    if not smooth_frames:
-        return pl.DataFrame(
-            schema={
-                "x": pl.Float64,
-                "y": pl.Float64,
-                "reference_group": pl.Utf8,
-            }
-        )
-
-    smooth_dat = pl.concat(smooth_frames)
-    return smooth_dat
-
 
 def _calculate_local_aj_smooth(
     df_adj: pl.DataFrame,
@@ -1469,9 +1339,12 @@ def _create_calibration_curve_list_times(
                             df_adj, horizon, performance_type, bandwidth=bandwidth
                         )
                     elif smooth_method == "secondary_cox":
-                        smooth_data = _calculate_secondary_cox_smooth(
-                            df_adj, horizon, performance_type
-                        )
+                        smooth_data = calculate_secondary_cox_smooth(
+                  df_adj,
+                  horizon,
+                  performance_type,
+                  aj_risk_at_horizon=_aj_risk_at_horizon,
+              )
                     elif smooth_method == "pseudo_values":
                         pseudo_by_group = _calculate_adjusted_pseudostates(
                             df_adj, horizon
@@ -1536,9 +1409,12 @@ def _create_calibration_curve_list_times(
                         df_adj, horizon, performance_type, bandwidth=bandwidth
                     )
                 elif smooth_method == "secondary_cox":
-                    smooth_data = _calculate_secondary_cox_smooth(
-                        df_adj, horizon, performance_type
-                    )
+                    smooth_data = calculate_secondary_cox_smooth(
+                  df_adj,
+                  horizon,
+                  performance_type,
+                  aj_risk_at_horizon=_aj_risk_at_horizon,
+              )
                 elif smooth_method == "pseudo_values":
                     smooth_data = _calculate_smooth_curve(
                         probs_adj, reals_adj, performance_type
