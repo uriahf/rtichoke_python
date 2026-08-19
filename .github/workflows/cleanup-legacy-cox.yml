@@ -1,0 +1,85 @@
+name: Cleanup legacy Cox implementation
+
+on:
+  push:
+    branches: ["agent/remove-legacy-lifelines"]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/remove-legacy-lifelines
+
+      - name: Remove legacy lifelines implementation
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          calibration_path = Path("src/rtichoke/calibration/calibration.py")
+          text = calibration_path.read_text()
+
+          import_anchor = "from polarstate import predict_aj_estimates, prepare_event_table\n"
+          direct_import = "from ._secondary_cox import calculate_secondary_cox_smooth\n"
+          if direct_import not in text:
+              text = text.replace(import_anchor, import_anchor + direct_import)
+
+          legacy_block = re.compile(
+              r"\ndef _calculate_rcs_basis_3knots\(.*?(?=\ndef _calculate_local_aj_smooth\()",
+              flags=re.S,
+          )
+          text, removed = legacy_block.subn("\n", text, count=1)
+          if removed != 1:
+              raise RuntimeError(f"Expected to remove one legacy Cox/RCS block, removed {removed}")
+
+          old_call = '''smooth_data = _calculate_secondary_cox_smooth(
+                            df_adj, horizon, performance_type
+                        )'''
+          new_call = '''smooth_data = calculate_secondary_cox_smooth(
+                            df_adj,
+                            horizon,
+                            performance_type,
+                            aj_risk_at_horizon=_aj_risk_at_horizon,
+                        )'''
+          occurrences = text.count(old_call)
+          if occurrences != 2:
+              raise RuntimeError(f"Expected two secondary-Cox call sites, found {occurrences}")
+          text = text.replace(old_call, new_call)
+          calibration_path.write_text(text)
+
+          init_path = Path("src/rtichoke/calibration/__init__.py")
+          init_text = init_path.read_text()
+          init_text = init_text.replace(
+              "from ._secondary_cox import calculate_secondary_cox_smooth\n", ""
+          )
+          patch_block = re.compile(
+              r"\n# Route the existing private secondary-Cox hook through smoothstate while\n"
+              r"# preserving rtichoke's Aalen-Johansen fallback behavior\.\n"
+              r"def _smoothstate_secondary_cox\(.*?"
+              r"_calibration\._calculate_secondary_cox_smooth = _smoothstate_secondary_cox\n",
+              flags=re.S,
+          )
+          init_text, removed_patch = patch_block.subn("", init_text, count=1)
+          if removed_patch != 1:
+              raise RuntimeError(
+                  f"Expected to remove one secondary-Cox monkey patch, removed {removed_patch}"
+              )
+          init_path.write_text(init_text)
+
+      - name: Check syntax
+        run: python -m compileall src/rtichoke/calibration
+
+      - name: Commit cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/cleanup-legacy-cox.yml
+          git add src/rtichoke/calibration/calibration.py src/rtichoke/calibration/__init__.py
+          git commit -m "Remove legacy lifelines Cox smoothing"
+          git push origin HEAD:agent/remove-legacy-lifelines
