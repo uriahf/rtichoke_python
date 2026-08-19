@@ -22,4 +22,4 @@ fig = create_gains_curve_times(
 fig.show()
 ```
 
-At the five-unit horizon, the perfect-model reference is constructed from the single horizon-specific event estimate for the full population. The empirical gains curve should therefore not appear better than the perfect reference.
+At the five-unit horizon, the perfect-model reference is constructed from one horizon-specific event estimate for the full population. The empirical gains curve should therefore not appear better than the perfect reference.
