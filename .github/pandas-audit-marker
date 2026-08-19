@@ -1,1 +1,0 @@
-pandas direct runtime dependency removed; benchmark transitive presence before legacy-code deletion.
