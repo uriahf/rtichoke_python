@@ -11,8 +11,10 @@ jobs:
         include:
           - label: before
             ref: 08253156d0ff883986f8326825ddd062feb005eb
+            backend: statsmodels
           - label: after
             ref: main
+            backend: smoothstate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -61,30 +63,37 @@ jobs:
 
       - name: LOWESS microbenchmark
         shell: bash
+        env:
+          BENCH_BACKEND: ${{ matrix.backend }}
         run: |
           .venv/bin/python - <<'PY'
-          import timeit, numpy as np
-          rng=np.random.default_rng(2026)
-          p=np.sort(rng.uniform(.01,.99,2000))
-          y=rng.binomial(1,p).astype(float)
-          pseudo=np.clip(y+rng.normal(0,.15,len(y)),-.5,1.5)
-          try:
-              from smoothstate import smooth_state_lowess
-              def binary(): smooth_state_lowess(p,y)
-              def continuous(): smooth_state_lowess(p,pseudo)
-              backend='smoothstate'
-          except (ImportError, AttributeError):
+          import os, timeit, numpy as np
+
+          rng = np.random.default_rng(2026)
+          p = np.sort(rng.uniform(.01, .99, 2000))
+          y = rng.binomial(1, p).astype(float)
+          pseudo = np.clip(y + rng.normal(0, .15, len(y)), -.5, 1.5)
+          backend = os.environ['BENCH_BACKEND']
+
+          if backend == 'statsmodels':
               from statsmodels.nonparametric.smoothers_lowess import lowess
               def run(v):
-                  s=lowess(v,p,it=0)
-                  x=np.linspace(0,1,101)
-                  np.clip(np.interp(x,s[:,0],s[:,1]),0,1)
-              def binary(): run(y)
-              def continuous(): run(pseudo)
-              backend='statsmodels'
-          binary(); continuous()
-          n=10
-          print('BACKEND='+backend)
-          print(f'BINARY_SECONDS_PER_CALL={timeit.timeit(binary,number=n)/n:.6f}')
-          print(f'PSEUDO_SECONDS_PER_CALL={timeit.timeit(continuous,number=n)/n:.6f}')
+                  s = lowess(v, p, it=0)
+                  x = np.linspace(0, 1, 101)
+                  return np.clip(np.interp(x, s[:, 0], s[:, 1]), 0, 1)
+          elif backend == 'smoothstate':
+              from smoothstate import smooth_state_lowess
+              def run(v):
+                  return smooth_state_lowess(p, v)['y'].to_numpy()
+          else:
+              raise ValueError(f'Unknown benchmark backend: {backend}')
+
+          binary_result = run(y)
+          pseudo_result = run(pseudo)
+          n = 20
+          print('BACKEND=' + backend)
+          print(f'BINARY_SECONDS_PER_CALL={timeit.timeit(lambda: run(y), number=n)/n:.6f}')
+          print(f'PSEUDO_SECONDS_PER_CALL={timeit.timeit(lambda: run(pseudo), number=n)/n:.6f}')
+          print(f'BINARY_CHECKSUM={binary_result.sum():.12f}')
+          print(f'PSEUDO_CHECKSUM={pseudo_result.sum():.12f}')
           PY
