@@ -18,6 +18,19 @@ function calibration(type, sel) {
   const yHist = d3.scaleLinear().domain([0, histMax]).nice().range([HIST_BOTTOM, HIST_TOP]);
   const svg = card.append("svg").attr("viewBox", `0 0 ${W} ${H}`);
 
+  const showTip = (ev, html, color) => {
+    tip.style("opacity", 1)
+      .style("left", (ev.clientX + 10) + "px")
+      .style("top", (ev.clientY + 10) + "px")
+      .style("background", color || "#333")
+      .style("border", "1px solid " + (color || "#333"))
+      .style("color", "white")
+      .html(String(html || ""));
+  };
+  const hideTip = () => tip.style("opacity", 0);
+  const groupOf = d => String(d.reference_group || "");
+  const hoverColor = d => groupOf(d) === "reference_line" ? "#bebebe" : (c.colors[groupOf(d)] || "#777");
+
   const defs = svg.append("defs");
   defs.append("clipPath").attr("id", `main-${type}`).append("rect")
     .attr("x", X0).attr("y", MAIN_TOP)
@@ -67,7 +80,7 @@ function calibration(type, sel) {
     }
   });
 
-  const hist = svg.append("g").attr("clip-path", `url(#hist-${type})`);
+  const hist = svg.append("g").attr("clip-path", `url(#hist-${type}})`);
   const opacity = 1 / Math.max(1, c.groups.length);
   c.histogram.forEach(d => {
     const mid = +d.mids, left = x(mid - .005), right = x(mid + .005);
@@ -76,10 +89,8 @@ function calibration(type, sel) {
       .attr("y", yHist(+d.counts)).attr("height", HIST_BOTTOM - yHist(+d.counts))
       .attr("fill", c.colors[String(d.reference_group)] || "#777")
       .attr("opacity", opacity).attr("stroke", "none")
-      .on("mousemove", ev => tip.style("opacity", 1)
-        .style("left", (ev.clientX + 10) + "px").style("top", (ev.clientY + 10) + "px")
-        .html(String(d.text || "")))
-      .on("mouseleave", () => tip.style("opacity", 0));
+      .on("mousemove", ev => showTip(ev, d.text, hoverColor(d)))
+      .on("mouseleave", hideTip);
   });
 
   const hoverData = dat.concat(c.reference);
@@ -94,10 +105,8 @@ function calibration(type, sel) {
         const dd = (x(+d.x) - mx) ** 2 + (y(+d.y) - my) ** 2;
         if (dd < dist) { dist = dd; best = d; }
       });
-      if (best && dist < 625) {
-        tip.style("opacity", 1).style("left", (ev.clientX + 10) + "px")
-          .style("top", (ev.clientY + 10) + "px").html(String(best.text || ""));
-      } else tip.style("opacity", 0);
+      if (best && dist < 625) showTip(ev, best.text, hoverColor(best));
+      else hideTip();
     })
-    .on("mouseleave", () => tip.style("opacity", 0));
+    .on("mouseleave", hideTip);
 }
