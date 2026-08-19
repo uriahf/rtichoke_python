@@ -1,16 +1,11 @@
 /* D3 renderer for performance and decision curves in the lightweight report.
- * Mirrors rtichoke's Plotly conventions: 600px figure, solid model traces,
- * dotted references, Plotly-like hover labels, and no grid lines.
+ * Mirrors rtichoke's Plotly conventions: 600px figure, markers+lines for
+ * performance data, dotted references, Plotly-like hover labels, no grid.
  */
 function drawRtichokeCurve(s, sel) {
   const card = d3.select(sel);
   card.selectAll("*").remove();
   card.append("div").attr("class", "plot-title").text(s.title);
-
-  if (s.groups.length > 1) {
-    const lg = card.append("div").attr("class", "legend");
-    s.groups.forEach(g => lg.append("span").html(`<i style="background:${s.colors[g] || '#444'}"></i>${g}`));
-  }
 
   const W = 600, H = 600, m = {top: 45, right: 35, bottom: 75, left: 75};
   const svg = card.append("svg").attr("viewBox", `0 0 ${W} ${H}`);
@@ -35,12 +30,30 @@ function drawRtichokeCurve(s, sel) {
     svg.append("path").datum(a).attr("fill","none").attr("stroke",color).attr("stroke-width",2).attr("stroke-dasharray","3,3").attr("d",line);
     traces.push(...a.map(d => ({...d, _color: color})));
   });
+
+  // The canonical R Plotly performance curves use mode="markers+lines".
+  // Decision/reference traces remain line-only. For a single model the R
+  // implementation forces black; grouped reports use the supplied palette.
+  const isDecision = String(s.title || "").toLowerCase().includes("decision");
+  const singleGroup = s.groups.length === 1;
   s.groups.forEach(g => {
     const a = s.data.filter(d => String(d.reference_group) === g);
-    const color = s.colors[g] || "#000";
+    const color = singleGroup ? "black" : (s.colors[g] || "#000");
     svg.append("path").datum(a).attr("fill","none").attr("stroke",color).attr("stroke-width",2).attr("d",line);
+    if (!isDecision) {
+      svg.append("g").selectAll("circle").data(a.filter(d => isFinite(+d.x) && isFinite(+d.y))).enter().append("circle")
+        .attr("cx", d => x(+d.x)).attr("cy", d => y(+d.y)).attr("r", 3)
+        .attr("fill", color).attr("stroke", color).attr("stroke-width", 0);
+    }
     traces.push(...a.map(d => ({...d, _color: color})));
   });
+
+  // Plotly normally suppresses the legend for these performance curves. Keep
+  // it available only when the report payload explicitly asks for it.
+  if (s.show_legend && s.groups.length > 1) {
+    const lg = card.append("div").attr("class", "legend");
+    s.groups.forEach(g => lg.append("span").html(`<i style="background:${s.colors[g] || '#444'}"></i>${g}`));
+  }
 
   const contrast = color => {
     const h=String(color||"#333").replace("#",""); if(!/^[0-9a-f]{6}$/i.test(h)) return "white";
@@ -49,7 +62,9 @@ function drawRtichokeCurve(s, sel) {
   };
   const show = (ev,d) => tip.style("opacity",1).style("left",(ev.clientX+10)+"px").style("top",(ev.clientY+10)+"px")
     .style("background",d._color).style("border","1px solid "+d._color).style("color",contrast(d._color))
-    .style("padding","6px 8px").style("border-radius","2px").html(String(d.text||""));
+    .style("padding","6px 8px").style("border-radius","2px")
+    .style("font-family","Open Sans, verdana, arial, sans-serif").style("font-size","12px").style("line-height","15px")
+    .html(String(d.text||""));
   const hide = () => tip.style("opacity",0);
   svg.append("rect").attr("x",m.left).attr("y",m.top).attr("width",W-m.left-m.right).attr("height",H-m.top-m.bottom).attr("fill","transparent")
     .on("mousemove", ev => {
