@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: documentation-deployments
+  group: documentation-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main' }}
   cancel-in-progress: false
 
 jobs:
