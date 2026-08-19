@@ -1,1 +1,0 @@
-The generated preview is published as summary-report-demo.html by the documentation workflow.
