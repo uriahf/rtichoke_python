@@ -1,189 +1,44 @@
 """Lightweight HTML summary reports for rtichoke."""
-
 from __future__ import annotations
-
 import json
 from pathlib import Path
 from typing import Dict, Union
-
 import numpy as np
-
+from ipywidgets.embed import dependency_state, embed_data
+from rtichoke.calibration.calibration import _create_calibration_curve_list
 from rtichoke.performance_data.performance_data import prepare_performance_data
+from rtichoke.performance_table_reactable import render_performance_table_reactable
 from rtichoke.processing.plotly_helper_functions import _create_rtichoke_curve_list_binary
 
-
-_CURVES = [
-    ("roc", "ROC Curve"),
-    ("precision recall", "Precision-Recall Curve"),
-    ("gains", "Gains Curve"),
-    ("lift", "Lift Curve"),
-    ("decision", "Decision Curve"),
-]
-
-
-def _curve_specs(performance_data) -> list[dict]:
-    """Build D3 specs from the same prepared curve data used by Plotly."""
-    specs = []
-    for curve, title in _CURVES:
-        curve_data = _create_rtichoke_curve_list_binary(
-            performance_data=performance_data,
-            stratified_by="probability_threshold",
-            curve=curve,
-            size=600,
-        )
-        specs.append(
-            {
-                "id": curve.replace(" ", "-"),
-                "title": title,
-                "x_label": curve_data["x_label"],
-                "y_label": curve_data["y_label"],
-                "x_range": curve_data["axes_ranges"]["xaxis"],
-                "y_range": curve_data["axes_ranges"]["yaxis"],
-                "groups": curve_data["reference_group_keys"],
-                "multiple_groups": curve_data["multiple_reference_groups"],
-                "colors": curve_data["colors_dictionary"],
-                "cutoffs": curve_data["cutoffs"],
-                "data": curve_data["performance_data_ready_for_curve"].to_dicts(),
-                "references": curve_data["reference_data"].to_dicts(),
-            }
-        )
-    return specs
-
-
-def _report_html(specs: list[dict]) -> str:
-    payload = json.dumps(specs, separators=(",", ":"), default=str).replace("</", "<\\/")
-    return f"""<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>rtichoke summary report</title>
-<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-<style>
-:root {{ color-scheme:light; font-family:Arial,sans-serif; color:#2a3f5f; }}
-body {{ margin:0; background:white; }}
-main {{ max-width:1000px; margin:auto; padding:32px 24px 60px; }}
-h1 {{ margin:0 0 24px; color:#2a3f5f; font-size:28px; font-weight:600; }}
-.tabs {{ display:flex; flex-wrap:wrap; border-bottom:1px solid #d9dee8; margin-bottom:18px; gap:0; }}
-.tab {{ appearance:none; border:0; border-bottom:3px solid transparent; background:transparent; color:#596780; padding:10px 16px 9px; font:inherit; font-size:14px; cursor:pointer; margin-bottom:-1px; }}
-.tab:hover {{ color:#2a3f5f; }}
-.tab.active {{ color:#2a3f5f; border-bottom-color:#636efa; font-weight:600; }}
-.panel {{ min-width:0; max-width:760px; margin:0 auto; }}
-.panel h2 {{ text-align:center; font-size:17px; font-weight:600; margin:0 0 2px; color:#2a3f5f; }}
-.legend {{ min-height:28px; display:flex; justify-content:center; flex-wrap:wrap; gap:14px; font-size:12px; margin:5px 0 0; }}
-.legend-item {{ display:inline-flex; align-items:center; gap:5px; cursor:pointer; user-select:none; }}
-.legend-item.off {{ opacity:.3; }}
-.legend-swatch {{ width:22px; height:3px; display:inline-block; }}
-svg {{ width:100%; height:auto; overflow:visible; }}
-.axis text {{ fill:#2a3f5f; font-size:12px; }}
-.axis path,.axis line {{ stroke:#2a3f5f; stroke-width:1px; }}
-.curve-line {{ fill:none; stroke-width:2px; }}
-.curve-point {{ stroke:none; }}
-.reference-line {{ fill:none; stroke-width:1.5px; stroke-dasharray:3 3; }}
-.hover-marker {{ stroke:#000; stroke-width:3px; pointer-events:none; }}
-.axis-label {{ fill:#2a3f5f; font-size:14px; }}
-.slider-wrap {{ margin:2px 36px 0 62px; }}
-.slider-label {{ font-size:13px; color:#2a3f5f; margin-bottom:2px; }}
-.slider {{ width:100%; accent-color:#636efa; }}
-.tooltip {{ position:fixed; pointer-events:none; padding:8px 10px; border-radius:2px; font-size:12px; line-height:1.35; opacity:0; z-index:10; color:white; box-shadow:0 1px 4px rgba(0,0,0,.18); }}
-.note {{ margin-top:30px; color:#7f8da5; font-size:12px; }}
-@media(max-width:620px) {{ main{{padding:22px 12px 50px}} .tab{{padding:9px 10px;font-size:13px}} }}
-</style>
-</head>
-<body><main>
-<h1>Model Performance Summary</h1>
-<nav id="tabs" class="tabs" role="tablist" aria-label="Performance curves"></nav>
-<section id="chart" class="panel" role="tabpanel"></section>
-<p class="note">D3 proof of concept using the same curve data, reference lines, axis ranges, palette, and hover content as rtichoke's Plotly figures.</p>
-</main><div class="tooltip"></div>
-<script>
-const specs={payload};
-const tooltip=d3.select('.tooltip');
-const active=new Map();
-let selected=specs.length?specs[0].id:null;
-specs.forEach(s=>s.groups.forEach(g=>{{if(!active.has(g)) active.set(g,true)}}));
-function finite(v){{return v!==null&&v!==undefined&&Number.isFinite(+v)}}
-function htmlHover(s){{return String(s??'').replace(/NaN|nan/g,'')}}
-function draw(spec){{
- const card=d3.select('#chart');
- card.selectAll('*').remove();
- card.append('h2').text(spec.title);
- const legend=card.append('div').attr('class','legend');
- if(spec.multiple_groups) spec.groups.forEach(g=>{{
-   const item=legend.append('span').attr('class','legend-item').classed('off',!active.get(g));
-   item.append('span').attr('class','legend-swatch').style('background',spec.colors[g]); item.append('span').text(g);
-   item.on('click',()=>{{active.set(g,!active.get(g)); draw(spec);}});
- }});
- const width=600,height=500,m={{top:22,right:28,bottom:62,left:72}};
- const svg=card.append('svg').attr('viewBox',`0 0 ${{width}} ${{height}}`);
- const x=d3.scaleLinear().domain(spec.x_range).range([m.left,width-m.right]);
- const y=d3.scaleLinear().domain(spec.y_range).range([height-m.bottom,m.top]);
- const xAxis=d3.axisBottom(x).ticks(6).tickSizeOuter(0); const yAxis=d3.axisLeft(y).ticks(6).tickSizeOuter(0);
- svg.append('g').attr('class','axis').attr('transform',`translate(0,${{height-m.bottom}})`).call(xAxis);
- svg.append('g').attr('class','axis').attr('transform',`translate(${{m.left}},0)`).call(yAxis);
- svg.append('text').attr('class','axis-label').attr('x',(m.left+width-m.right)/2).attr('y',height-15).attr('text-anchor','middle').text(spec.x_label);
- svg.append('text').attr('class','axis-label').attr('transform','rotate(-90)').attr('x',-(m.top+height-m.bottom)/2).attr('y',18).attr('text-anchor','middle').text(spec.y_label);
- const line=d3.line().defined(d=>finite(d.x)&&finite(d.y)).x(d=>x(+d.x)).y(d=>y(+d.y));
- const refs=d3.group(spec.references.filter(d=>finite(d.x)&&finite(d.y)),d=>String(d.reference_group));
- refs.forEach((rows,g)=>{{svg.append('path').datum(rows).attr('class','reference-line').attr('stroke',spec.colors[g]||'#BEBEBE').attr('d',line);}});
- const visible=spec.data.filter(d=>active.get(String(d.reference_group))&&finite(d.x)&&finite(d.y));
- spec.groups.filter(g=>active.get(g)).forEach(g=>{{
-   const gd=visible.filter(d=>String(d.reference_group)===g);
-   svg.append('path').datum(gd).attr('class','curve-line').attr('stroke',spec.colors[g]||'#000').attr('d',line);
-   svg.selectAll('circle.curve-point').data(gd).enter().append('circle').attr('class','curve-point').attr('cx',d=>x(+d.x)).attr('cy',d=>y(+d.y)).attr('r',2.3).attr('fill',spec.colors[g]||'#000');
- }});
- const markers=svg.append('g');
- function showCutoff(cutoff){{
-   markers.selectAll('*').remove();
-   spec.groups.filter(g=>active.get(g)).forEach(g=>{{
-     const gd=visible.filter(d=>String(d.reference_group)===g&&finite(d.chosen_cutoff));
-     if(!gd.length)return;
-     const nearest=gd.reduce((a,b)=>Math.abs(+b.chosen_cutoff-cutoff)<Math.abs(+a.chosen_cutoff-cutoff)?b:a);
-     markers.append('circle').attr('class','hover-marker').attr('cx',x(+nearest.x)).attr('cy',y(+nearest.y)).attr('r',6).attr('fill',spec.multiple_groups?(spec.colors[g]||'#000'):'#f6e3be');
-   }});
- }}
- const overlay=svg.append('rect').attr('x',m.left).attr('y',m.top).attr('width',width-m.left-m.right).attr('height',height-m.top-m.bottom).attr('fill','transparent');
- overlay.on('mousemove',event=>{{
-   const [mx,my]=d3.pointer(event); let nearest=null,dist=Infinity;
-   visible.forEach(d=>{{const dx=x(+d.x)-mx,dy=y(+d.y)-my,z=dx*dx+dy*dy;if(z<dist){{dist=z;nearest=d}}}});
-   if(nearest){{const c=spec.colors[String(nearest.reference_group)]||'#2a3f5f';tooltip.style('opacity',1).style('background',c).style('left',(event.clientX+12)+'px').style('top',(event.clientY+12)+'px').html(htmlHover(nearest.text));}}
- }}).on('mouseleave',()=>tooltip.style('opacity',0));
- if(spec.cutoffs.length){{
-   const wrap=card.append('div').attr('class','slider-wrap'); const label=wrap.append('div').attr('class','slider-label');
-   const slider=wrap.append('input').attr('class','slider').attr('type','range').attr('min',0).attr('max',spec.cutoffs.length-1).attr('step',1).property('value',0);
-   const set=i=>{{const c=+spec.cutoffs[i];label.text(`Prob. Threshold: ${{Number.isFinite(c)?c.toFixed(2):c}}`);showCutoff(c)}};
-   slider.on('input',function(){{set(+this.value)}}); set(0);
- }}
-}}
-function renderTabs(){{
- const tabs=d3.select('#tabs'); tabs.selectAll('*').remove();
- specs.forEach(spec=>{{
-   tabs.append('button').attr('class','tab').classed('active',spec.id===selected).attr('type','button').attr('role','tab').attr('aria-selected',spec.id===selected?'true':'false').text(spec.title.replace(' Curve','')).on('click',()=>{{selected=spec.id;renderTabs();draw(spec)}});
- }});
-}}
-renderTabs();
-if(specs.length) draw(specs[0]);
-</script></body></html>"""
-
-
-def create_summary_report(
-    probs: Dict[str, np.ndarray],
-    reals: Union[np.ndarray, Dict[str, np.ndarray]],
-    output_file: str | Path = "summary_report.html",
-    by: float = 0.01,
-) -> Path:
-    """Create a native HTML summary report for binary model performance.
-
-    Performance data are prepared once and reused by all report panels. The D3
-    renderer consumes the same curve-ready data, reference lines, axis ranges,
-    colors, and hover text as the existing Plotly implementation.
-    """
-    performance_data = prepare_performance_data(
-        probs=probs,
-        reals=reals,
-        stratified_by=("probability_threshold",),
-        by=by,
-    )
-    output_path = Path(output_file)
-    output_path.write_text(_report_html(_curve_specs(performance_data)), encoding="utf-8")
-    return output_path
+_CURVES=[("roc","ROC"),("lift","Lift"),("precision recall","Precision Recall"),("gains","Gains")]
+def _spec(data,strat,curve,label):
+ d=_create_rtichoke_curve_list_binary(performance_data=data,stratified_by=strat,curve=curve,size=500)
+ return {"id":f"{strat}-{curve.replace(' ','-')}","label":label,"title":f"{label} Curve","x_label":d["x_label"],"y_label":d["y_label"],"x_range":d["axes_ranges"]["xaxis"],"y_range":d["axes_ranges"]["yaxis"],"groups":d["reference_group_keys"],"multiple_groups":d["multiple_reference_groups"],"colors":d["colors_dictionary"],"cutoffs":d["cutoffs"],"data":d["performance_data_ready_for_curve"].to_dicts(),"references":d["reference_data"].to_dicts()}
+def _specs(data,strat): return [_spec(data,strat,c,l) for c,l in _CURVES]
+def _calibration(probs,reals):
+ d=_create_calibration_curve_list(probs,reals,size=550); colors={k:v[0] for k,v in d["colors_dictionary"].items()}
+ return {"deciles":d["deciles_dat"].to_dicts(),"smooth":d["smooth_dat"].to_dicts(),"reference":d["reference_data"].to_dicts(),"histogram":d["histogram_for_calibration"].to_dicts(),"ranges":d["axes_ranges"],"colors":colors,"groups":[k for k in colors if k!="reference_line"]}
+def _auc(y,p):
+ y=np.asarray(y).ravel().astype(int);p=np.asarray(p).ravel().astype(float);pos=p[y==1];neg=p[y==0]
+ return float("nan") if not len(pos) or not len(neg) else float(np.mean(pos[:,None]>neg[None,:])+.5*np.mean(pos[:,None]==neg[None,:]))
+def _summaries(probs,reals):
+ if isinstance(reals,dict) and probs.keys()==reals.keys(): return [{"Model":k,"Prevalence":float(np.mean(reals[k])),"AUC":_auc(reals[k],probs[k])} for k in probs]
+ if not isinstance(reals,dict): return [{"Model":k,"Prevalence":float(np.mean(reals)),"AUC":_auc(reals,p)} for k,p in probs.items()]
+ return []
+def _widgets(a,b):
+ ws=[render_performance_table_reactable(a).to_widget(),render_performance_table_reactable(b).to_widget()];d=embed_data(views=ws,state=dependency_state(ws));return d["manager_state"],d["view_specs"]
+def _html(payload,sums,state,views):
+ P=json.dumps(payload,separators=(",",":"),default=str).replace("</","<\\/");S=json.dumps(sums).replace("</","<\\/");ST=json.dumps(state).replace("</","<\\/");V=[json.dumps(x).replace("</","<\\/") for x in views]
+ return f'''<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Summary Report</title><script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script><script data-jupyter-widgets-cdn="https://cdn.jsdelivr.net/npm/" src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@*/dist/embed-amd.js"></script><script type="application/vnd.jupyter.widget-state+json">{ST}</script><style>
+body{{font-family:Arial,sans-serif;color:#333;margin:0}}main{{max-width:1040px;margin:auto;padding:30px 24px 70px}}h1{{font-size:30px;font-weight:500}}h2{{font-size:24px;font-weight:500;margin-top:34px}}summary{{cursor:pointer}}.cheat{{line-height:1.8;padding:12px 0}}table{{border-collapse:collapse;margin:12px 0 20px}}th,td{{border:1px solid #ddd;padding:8px 12px;text-align:center}}th{{font-weight:400}}.good{{background:lightgreen;font-weight:600}}.bad{{background:pink;font-weight:600}}.tabs{{display:flex;flex-wrap:wrap;border-bottom:1px solid #ddd;margin:8px 0 16px}}.tab{{border:0;background:none;padding:10px 15px;border-bottom:3px solid transparent;cursor:pointer;font:inherit;color:#555}}.tab.active{{border-bottom-color:#337ab7;color:#337ab7}}.panel{{display:none}}.panel.active{{display:block}}.chart{{max-width:650px;margin:auto}}.title{{text-align:center;font-size:17px}}.legend{{min-height:28px;display:flex;justify-content:center;gap:14px;font-size:12px}}.sw{{width:22px;height:3px;display:inline-block}}svg{{width:100%;height:auto;overflow:visible}}.axis text{{fill:#2a3f5f;font-size:12px}}.axis path,.axis line{{stroke:#2a3f5f}}.line{{fill:none;stroke-width:2px}}.ref{{fill:none;stroke-width:1.5px;stroke-dasharray:3 3}}.tip{{position:fixed;pointer-events:none;padding:8px 10px;font-size:12px;opacity:0;color:#fff;z-index:20}}.widget{{overflow-x:auto;min-height:120px}}
+</style></head><body><main><h1>Summary Report</h1><details><summary>Performance Metrics Cheat Sheet</summary><div class="cheat"><table><tr><th></th><th>Predicted Positive</th><th>Predicted Negative</th></tr><tr><th>Real Positive</th><td class="good">TP</td><td class="bad">FN</td></tr><tr><th>Real Negative</th><td class="bad">FP</td><td class="good">TN</td></tr></table><div><b>Prevalence</b> = (TP + FN) / N</div><div><b>PPCR (Predicted Positives Condition Rate)</b> = (TP + FP) / N</div><div><b>Sensitivity (Recall, True Positive Rate)</b> = TP / (TP + FN)</div><div><b>Specificity</b> = TN / (TN + FP)</div><div><b>PPV (Precision)</b> = TP / (TP + FP)</div><div><b>NPV</b> = TN / (TN + FN)</div><div><b>Lift</b> = PPV / Prevalence</div><div><b>Net Benefit</b> = TP/N - FP/N × p<sub>t</sub>/(1-p<sub>t</sub>)</div></div></details><div id="prev"></div>
+<h2>Calibration</h2><div class="tabs"><button class="tab active" data-group="cal" data-target="smooth">Smooth</button><button class="tab" data-group="cal" data-target="discrete">Discrete</button></div><div id="smooth" class="panel active"><div id="smoothchart" class="chart"></div></div><div id="discrete" class="panel"><div id="discretechart" class="chart"></div></div>
+<h2>Discrimination</h2><div id="auc"></div><div class="tabs"><button class="tab active" data-group="disc" data-target="thr">By Probability Threshold</button><button class="tab" data-group="disc" data-target="pcr">By Predicted Positives Condition Rate (PPCR)</button></div><div id="thr" class="panel active"><h3>Performance Metrics Curves</h3><div id="thrtabs" class="tabs"></div><div id="thrchart" class="chart"></div></div><div id="pcr" class="panel"><h3>Performance Metrics Curves</h3><div id="pcrtabs" class="tabs"></div><div id="pcrchart" class="chart"></div></div>
+<h2>Utility (Decision Curve)</h2><div id="decision" class="chart"></div><h2>Performance Table</h2><div class="tabs"><button class="tab active" data-group="tbl" data-target="t1">By Probability Threshold</button><button class="tab" data-group="tbl" data-target="t2">By Predicted Positives Condition Rate (PPCR)</button></div><div id="t1" class="panel active widget"><script type="application/vnd.jupyter.widget-view+json">{V[0]}</script></div><div id="t2" class="panel widget"><script type="application/vnd.jupyter.widget-view+json">{V[1]}</script></div></main><div class="tip"></div><script>
+const R={P},SUM={S},tip=d3.select('.tip');function tbl(cols){{return `<table><tr>${{cols.map(c=>`<th>${{c}}</th>`).join('')}}</tr>${{SUM.map(r=>`<tr>${{cols.map(c=>`<td>${{typeof r[c]==='number'?r[c].toFixed(3):r[c]}}</td>`).join('')}}</tr>`).join('')}}</table>`}}document.querySelector('#prev').innerHTML=tbl(['Model','Prevalence']);document.querySelector('#auc').innerHTML=tbl(['Model','AUC']);document.addEventListener('click',e=>{{if(!e.target.matches('button[data-target]'))return;let g=e.target.dataset.group,t=e.target.dataset.target;document.querySelectorAll(`button[data-group="${{g}}"]`).forEach(b=>b.classList.toggle('active',b===e.target));let ids=g==='cal'?['smooth','discrete']:g==='disc'?['thr','pcr']:['t1','t2'];ids.forEach(id=>document.getElementById(id).classList.toggle('active',id===t))}});
+function draw(s,sel){{let c=d3.select(sel);c.selectAll('*').remove();c.append('div').attr('class','title').text(s.title);let w=600,h=500,m={{top:22,right:28,bottom:62,left:72}},svg=c.append('svg').attr('viewBox',`0 0 ${{w}} ${{h}}`),x=d3.scaleLinear().domain(s.x_range).range([m.left,w-m.right]),y=d3.scaleLinear().domain(s.y_range).range([h-m.bottom,m.top]),ln=d3.line().defined(d=>Number.isFinite(+d.x)&&Number.isFinite(+d.y)).x(d=>x(+d.x)).y(d=>y(+d.y));svg.append('g').attr('class','axis').attr('transform',`translate(0,${{h-m.bottom}})`).call(d3.axisBottom(x));svg.append('g').attr('class','axis').attr('transform',`translate(${{m.left}},0)`).call(d3.axisLeft(y));d3.group(s.references,d=>String(d.reference_group)).forEach((a,g)=>svg.append('path').datum(a).attr('class','ref').attr('stroke',s.colors[g]||'#bbb').attr('d',ln));s.groups.forEach(g=>{{let a=s.data.filter(d=>String(d.reference_group)===g);svg.append('path').datum(a).attr('class','line').attr('stroke',s.colors[g]||'#000').attr('d',ln)}});svg.append('rect').attr('x',m.left).attr('y',m.top).attr('width',w-m.left-m.right).attr('height',h-m.top-m.bottom).attr('fill','transparent').on('mousemove',ev=>{{let [mx,my]=d3.pointer(ev),n=null,z=1e99;s.data.forEach(d=>{{if(!Number.isFinite(+d.x)||!Number.isFinite(+d.y))return;let q=(x(+d.x)-mx)**2+(y(+d.y)-my)**2;if(q<z){{z=q;n=d}}}});if(n)tip.style('opacity',1).style('background',s.colors[String(n.reference_group)]||'#333').style('left',(ev.clientX+10)+'px').style('top',(ev.clientY+10)+'px').html(String(n.text||''))}}).on('mouseleave',()=>tip.style('opacity',0))}}
+function ct(specs,nav,chart){{let n=d3.select(nav);specs.forEach((s,i)=>n.append('button').attr('class','tab'+(i?'':' active')).text(s.label).on('click',function(){{n.selectAll('.tab').classed('active',false);d3.select(this).classed('active',true);draw(s,chart)}}));draw(specs[0],chart)}}ct(R.threshold,'#thrtabs','#thrchart');ct(R.ppcr,'#pcrtabs','#pcrchart');draw(R.decision,'#decision');
+function cal(type,sel){{let c=R.calibration,card=d3.select(sel),w=600,h=520,m={{top:20,right:25,bottom:105,left:70}},svg=card.append('svg').attr('viewBox',`0 0 ${{w}} ${{h}}`),x=d3.scaleLinear().domain(c.ranges.xaxis).range([m.left,w-m.right]),y=d3.scaleLinear().domain(c.ranges.yaxis).range([h-m.bottom,m.top]),ln=d3.line().x(d=>x(+d.x)).y(d=>y(+d.y));svg.append('g').attr('class','axis').attr('transform',`translate(0,${{h-m.bottom}})`).call(d3.axisBottom(x));svg.append('g').attr('class','axis').attr('transform',`translate(${{m.left}},0)`).call(d3.axisLeft(y));svg.append('path').datum(c.reference).attr('class','ref').attr('stroke',c.colors.reference_line).attr('d',ln);let dat=type==='smooth'?c.smooth:c.deciles;c.groups.forEach(g=>{{let a=dat.filter(d=>String(d.reference_group)===g);svg.append('path').datum(a).attr('class','line').attr('stroke',c.colors[g]).attr('d',ln);if(type==='discrete')svg.selectAll('circle').data(a).enter().append('circle').attr('cx',d=>x(+d.x)).attr('cy',d=>y(+d.y)).attr('r',5).attr('fill',c.colors[g])}});let max=d3.max(c.histogram,d=>+d.counts)||1,hy=d3.scaleLinear().domain([0,max]).range([h-25,h-m.bottom+35]);c.histogram.forEach(d=>svg.append('rect').attr('x',x(+d.mids)-2).attr('width',4).attr('y',hy(+d.counts)).attr('height',h-25-hy(+d.counts)).attr('fill',c.colors[String(d.reference_group)]||'#777').attr('opacity',.4))}}cal('smooth','#smoothchart');cal('discrete','#discretechart');
+</script></body></html>'''
+def create_summary_report(probs:Dict[str,np.ndarray],reals:Union[np.ndarray,Dict[str,np.ndarray]],output_file:str|Path="summary_report.html",by:float=.01)->Path:
+ threshold=prepare_performance_data(probs=probs,reals=reals,stratified_by=("probability_threshold",),by=by);ppcr=prepare_performance_data(probs=probs,reals=reals,stratified_by=("ppcr",),by=by);state,views=_widgets(threshold,ppcr);payload={"threshold":_specs(threshold,"probability_threshold"),"ppcr":_specs(ppcr,"ppcr"),"decision":_spec(threshold,"probability_threshold","decision","Decision"),"calibration":_calibration(probs,reals)};out=Path(output_file);out.write_text(_html(payload,_summaries(probs,reals),state,views),encoding="utf-8");return out
