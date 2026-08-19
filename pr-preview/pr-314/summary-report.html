@@ -4,155 +4,66 @@
 /* Final layout/typography layer for the lightweight summary report.
  * Match the actual R summary-report HTML structure, not standalone widgets.
  */
-:root {
-  --rt-text: #333;
-  --rt-muted: #666;
-  --rt-border: #ddd;
-  --rt-panel: #fff;
-}
+:root { --rt-text:#333; --rt-muted:#666; --rt-border:#ddd; --rt-panel:#fff; }
+html,body { background:#fff; color:var(--rt-text); font-family:"Helvetica Neue",Helvetica,Arial,sans-serif; font-size:14px; line-height:1.42857143; }
+body { margin:0; }
+.main-container,.container,.report,main { max-width:1040px; margin-left:auto; margin-right:auto; }
+h1,h2,h3,h4,.plot-title { color:var(--rt-text); font-family:inherit; font-weight:400; line-height:1.1; }
+h1 { font-size:36px; margin:20px 0 10px; } h2 { font-size:30px; margin:20px 0 10px; } h3,.plot-title { font-size:24px; margin:20px 0 10px; }
+#calibration,#discrimination,#utility,#utility-decision-curve,#performance-table { margin-top:20px; margin-bottom:30px; }
 
-html, body {
-  background: #fff;
-  color: var(--rt-text);
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.42857143;
-}
-body { margin: 0; }
+/* R Markdown-style contents block. */
+.rt-toc { margin:0 0 20px; }
+.rt-toc ul { margin-top:0; margin-bottom:10px; padding-left:20px; }
+.rt-toc a { color:#337ab7; text-decoration:none; }
+.rt-toc a:hover { color:#23527c; text-decoration:underline; }
 
-/* R markdown reference explicitly uses a 1040px main container. */
-.main-container, .container, .report, main {
-  max-width: 1040px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-h1, h2, h3, h4, .plot-title {
-  color: var(--rt-text);
-  font-family: inherit;
-  font-weight: 400;
-  line-height: 1.1;
-}
-h1 { font-size: 36px; margin-top: 20px; margin-bottom: 10px; }
-h2 { font-size: 30px; margin-top: 20px; margin-bottom: 10px; }
-h3, .plot-title { font-size: 24px; margin-top: 20px; margin-bottom: 10px; }
-
-/* Section rhythm follows the R Markdown/bootstrap output. */
-#calibration, #discrimination, #utility-decision-curve, #performance-table {
-  margin-top: 20px;
-  margin-bottom: 30px;
-}
+/* Dependency-free equivalent of the R report's collapsed Reactable cheat sheet. */
+.metric-cheat-sheet { margin:0 0 20px; }
+.metric-cheat-sheet > summary { cursor:pointer; display:list-item; font-size:14px; }
+.metric-cheat-sheet > summary::marker { color:#555; }
+.metric-cheat-sheet table { width:310px; margin-top:18px; table-layout:fixed; }
+.metric-cheat-sheet th,.metric-cheat-sheet td { text-align:center; border-bottom:0; padding:7px; }
+.metric-cheat-sheet th:first-child { width:110px; text-align:left; font-weight:400; }
+.metric-cheat-sheet thead th { font-weight:400; background:#fff; }
+.metric-cheat-sheet td { width:100px; font-weight:600; }
+.metric-cheat-sheet .cm-tp,.metric-cheat-sheet .cm-tn { background:lightgreen; }
+.metric-cheat-sheet .cm-fp,.metric-cheat-sheet .cm-fn { background:pink; }
 
 /* Bootstrap 3 nav-tabs, matching R's tabset output. */
-.nav-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-  list-style: none;
-  padding-left: 0;
-  margin: 0 0 20px;
-  border-bottom: 1px solid var(--rt-border);
-}
-.nav-tabs button {
-  position: relative;
-  display: block;
-  padding: 10px 15px;
-  margin: 0 2px -1px 0;
-  color: #337ab7;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 4px 4px 0 0;
-  font: inherit;
-  line-height: 1.42857143;
-  cursor: pointer;
-}
-.nav-tabs button:hover {
-  background: #eee;
-  border-color: #eee #eee var(--rt-border);
-}
-.nav-tabs button.active {
-  color: #555;
-  background: #fff;
-  border: 1px solid var(--rt-border);
-  border-bottom-color: transparent;
-  cursor: default;
-}
-
-.panel { background: var(--rt-panel); border: 0; border-radius: 0; box-shadow: none; }
-.panel:not(.active) { display: none; }
-.chart, .panel { min-width: 0; }
+.nav-tabs { display:flex; flex-wrap:wrap; gap:0; list-style:none; padding-left:0; margin:0 0 20px; border-bottom:1px solid var(--rt-border); }
+.nav-tabs button { position:relative; display:block; padding:10px 15px; margin:0 2px -1px 0; color:#337ab7; background:transparent; border:1px solid transparent; border-radius:4px 4px 0 0; font:inherit; line-height:1.42857143; cursor:pointer; }
+.nav-tabs button:hover { background:#eee; border-color:#eee #eee var(--rt-border); }
+.nav-tabs button.active { color:#555; background:#fff; border:1px solid var(--rt-border); border-bottom-color:transparent; cursor:default; }
+.panel { background:var(--rt-panel); border:0; border-radius:0; box-shadow:none; } .panel:not(.active) { display:none; } .chart,.panel { min-width:0; }
 
 /* Respect the actual report-call sizes: calibration 550, other curves 500. */
-#calibration svg { display: block; width: min(100%, 550px); height: auto; margin: 0 auto; }
-#discrimination svg, #utility-decision-curve svg {
-  display: block;
-  width: min(100%, 500px);
-  height: auto;
-  margin: 0 auto;
-}
+#calibration svg { display:block; width:min(100%,550px); height:auto; margin:0 auto; }
+#discrimination svg,#utility svg,#utility-decision-curve svg { display:block; width:min(100%,500px); height:auto; margin:0 auto; }
+.axis text { fill:#444; font-size:12px; } .axis-label { fill:#444; font-size:14px; } .plot-title { text-align:left; }
+.legend { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:14px; min-height:24px; color:#444; font-size:12px; }
+.legend span { display:inline-flex; align-items:center; gap:5px; } .legend i { width:24px; height:2px; display:inline-block; }
 
-.axis text { fill: #444; font-size: 12px; }
-.axis-label { fill: #444; font-size: 14px; }
-.plot-title { text-align: left; }
-.legend {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 14px;
-  min-height: 24px;
-  color: #444;
-  font-size: 12px;
-}
-.legend span { display: inline-flex; align-items: center; gap: 5px; }
-.legend i { width: 24px; height: 2px; display: inline-block; }
-
-/* Reactable-like density for the lightweight table replacement. */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-  font-size: 13px;
-}
-thead th {
-  background: #fff;
-  color: #333;
-  font-weight: 600;
-  border-bottom: 1px solid #ddd;
-  padding: 7px;
-  vertical-align: bottom;
-}
-tbody td {
-  border-bottom: 1px solid #eee;
-  padding: 7px;
-  vertical-align: middle;
-}
-tbody tr:hover { background: #f5f5f5; }
-
-/* Plotly-style hover label shared by all D3 renderers. */
-.tooltip, #tooltip {
-  position: fixed;
-  pointer-events: none;
-  z-index: 9999;
-  border-radius: 2px;
-  box-shadow: none;
-  font-family: "Open Sans", verdana, arial, sans-serif;
-  font-size: 12px;
-  line-height: 15px;
-}
-
-@media (max-width: 760px) {
-  .main-container { padding-left: 15px; padding-right: 15px; }
-  h1 { font-size: 30px; }
-  h2 { font-size: 26px; }
-  h3, .plot-title { font-size: 20px; }
-  .nav-tabs button { padding: 8px 10px; }
-  table { font-size: 12px; }
-}
+table { width:100%; border-collapse:collapse; background:#fff; font-size:13px; }
+thead th { background:#fff; color:#333; font-weight:600; border-bottom:1px solid #ddd; padding:7px; vertical-align:bottom; }
+tbody td { border-bottom:1px solid #eee; padding:7px; vertical-align:middle; } tbody tr:hover { background:#f5f5f5; }
+.tooltip,#tooltip { position:fixed; pointer-events:none; z-index:9999; border-radius:2px; box-shadow:none; font-family:"Open Sans",verdana,arial,sans-serif; font-size:12px; line-height:15px; }
+@media(max-width:760px){.main-container{padding-left:15px;padding-right:15px}h1{font-size:30px}h2{font-size:26px}h3,.plot-title{font-size:20px}.nav-tabs button{padding:8px 10px}table{font-size:12px}}
 
 </style>
 </head><body><div class="container-fluid main-container"><div id="header"><h1 class="title toc-ignore">Summary Report</h1></div><div id="TOC"><ul><li><a href="#calibration">Calibration</a></li><li><a href="#discrimination">Discrimination</a></li><li><a href="#utility-decision-curve">Utility (Decision Curve)</a></li><li><a href="#performance-table">Performance Table</a></li></ul></div>
 <details><summary><p>Performance Metrics Cheat Sheet</p></summary><div class="cheat"><table><tr><th></th><th>Predicted Positive</th><th>Predicted Negative</th></tr><tr><th>Real Positive</th><td class="good">TP</td><td class="bad">FN</td></tr><tr><th>Real Negative</th><td class="bad">FP</td><td class="good">TN</td></tr></table></div></details><div id="prev"></div>
+<nav class="rt-toc" aria-label="Report contents"><ul>
+<li><a href="#calibration">Calibration</a></li>
+<li><a href="#discrimination">Discrimination</a></li>
+<li><a href="#utility">Utility (Decision Curve)</a></li>
+<li><a href="#performance-table">Performance Table</a></li>
+</ul></nav>
+<details class="metric-cheat-sheet"><summary>Performance Metrics Cheat Sheet</summary>
+<table><thead><tr><th></th><th>Predicted Positive</th><th>Predicted Negative</th></tr></thead>
+<tbody><tr><th>Real Positive</th><td class="cm-tp">TP</td><td class="cm-fn">FN</td></tr>
+<tr><th>Real Negative</th><td class="cm-fp">FP</td><td class="cm-tn">TN</td></tr></tbody></table>
+</details>
 <div id="calibration"><h1>Calibration</h1><div class="nav-tabs"><button class="active" data-group="cal" data-target="smooth">Smooth</button><button data-group="cal" data-target="discrete">Discrete</button></div><div id="smooth" class="panel active"><div id="smoothchart" class="chart"></div></div><div id="discrete" class="panel"><div id="discretechart" class="chart"></div></div></div>
 <div id="discrimination"><h1>Discrimination</h1><div id="auc"></div><div class="nav-tabs"><button class="active" data-group="disc" data-target="thr">By Probability Threshold</button><button data-group="disc" data-target="pcr">By Predicted Positives Condition Rate (PPCR)</button></div><div id="thr" class="panel active"><h3>Performance Metrics Curves</h3><div id="thrtabs" class="nav-tabs"></div><div id="thrchart" class="chart"></div></div><div id="pcr" class="panel"><h3>Performance Metrics Curves</h3><div id="pcrtabs" class="nav-tabs"></div><div id="pcrchart" class="chart"></div></div></div>
 <div id="utility-decision-curve"><h1>Utility (Decision Curve)</h1><div id="decision" class="chart"></div></div><div id="performance-table"><h1>Performance Table</h1><div class="nav-tabs"><button class="active" data-group="tbl" data-target="t1">By Probability Threshold</button><button data-group="tbl" data-target="t2">By Predicted Positives Condition Rate (PPCR)</button></div><div id="t1" class="panel active"><div id="table-threshold"></div></div><div id="t2" class="panel"><div id="table-ppcr"></div></div></div></div><div class="tip"></div><script>
