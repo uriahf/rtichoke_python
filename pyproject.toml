@@ -6,7 +6,6 @@ license = {text = "MIT"}
 requires-python = ">=3.10"
 dependencies = [
     "plotly<6.0.0,>=5.13.1",
-    "pandas>=2.2.3",
     "polarstate==0.1.8",
     "smoothstate>=0.1.1",
     "polars>=1.31.0",
