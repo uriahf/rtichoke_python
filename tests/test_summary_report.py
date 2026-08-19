@@ -20,7 +20,7 @@ def test_create_summary_report_writes_native_html(tmp_path):
         "Performance Table", "table-threshold", "table-ppcr", "Confusion Matrix",
     ):
         assert text in html
-    assert "perfTable(R.tables.threshold" in html
+    assert "perf(R.tables.threshold" in html
     assert "application/vnd.jupyter.widget-state+json" not in html
     assert "application/vnd.jupyter.widget-view+json" not in html
     assert "@jupyter-widgets" not in html
