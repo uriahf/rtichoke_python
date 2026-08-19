@@ -1,0 +1,1 @@
+Verify with the runtime dependency benchmark whether pandas remains transitively installed after removing it from project.dependencies.
