@@ -3,6 +3,8 @@ name: Cleanup legacy Cox implementation
 on:
   push:
     branches: ["agent/remove-legacy-lifelines"]
+  pull_request:
+    branches: ["main"]
 
 permissions:
   contents: write
@@ -17,7 +19,7 @@ jobs:
           ref: agent/remove-legacy-lifelines
 
       - name: Remove legacy lifelines implementation
-        shell: python
+        shell: python {0}
         run: |
           from pathlib import Path
           import re
