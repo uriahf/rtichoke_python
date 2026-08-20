@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 from typing import Dict, Union
 
 import numpy as np
@@ -31,10 +32,12 @@ def _wire_curve_renderer(html: str) -> str:
 
 
 def _wire_report_style(html: str) -> str:
+    """Replace the legacy inline CSS with the single parity stylesheet."""
     css = _style_source()
-    if "</head>" not in html:
-        raise RuntimeError("Could not locate summary-report head element")
-    return html.replace("</head>", f"<style>\n{css}\n</style>\n</head>", 1)
+    styled, count = re.subn(r"<style>.*?</style>", f"<style>\n{css}\n</style>", html, count=1, flags=re.DOTALL)
+    if count != 1:
+        raise RuntimeError("Could not locate summary-report style element")
+    return styled
 
 
 def _wire_r_report_content(html: str, probs: Dict[str, np.ndarray], reals: Union[np.ndarray, Dict[str, np.ndarray]]) -> str:
