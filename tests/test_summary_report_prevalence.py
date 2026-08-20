@@ -66,7 +66,10 @@ def test_summary_report_has_r_style_performance_filters(tmp_path):
     assert '"Probability Threshold"' in html
     assert '"Predicted Positives Condition Rate (PPCR)"' in html
     assert 'className="rt-dual-range"' in html
+    assert 'className="rt-check-box"' in html
+    assert 'className="rt-range-bubble"' in html
     assert "selected.has(model)" in html
+    assert '<th rowspan="2">Model</th><th rowspan="2">Predicted Positives</th>' in html
 
 
 def test_summary_report_has_r_style_curve_geometry_and_strata_slider(tmp_path):
