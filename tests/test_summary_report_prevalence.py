@@ -86,7 +86,7 @@ def test_summary_report_has_r_style_curve_geometry_and_strata_slider(tmp_path):
     assert '"Probability Threshold:"' in html
     assert 'drawRtichokeCurve(specs[0],chart,strat)' in html
     assert "drawRtichokeCurve(R.decision,'#decision','probability_threshold')" in html
-    assert 'attr("class","plot-title")' not in html
+    assert 'drawRtichokeCurve(s,chart,strat)' in html
 
 
 def test_performance_table_recovers_tp_when_legacy_payload_omits_it(tmp_path):
