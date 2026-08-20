@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Dict, Literal, Union
+from typing import Dict, Literal, Union, cast
 
 import numpy as np
 import polars as pl
@@ -86,9 +86,10 @@ def create_performance_table_times(
     """
     normalized_times: np.ndarray | dict[str, np.ndarray]
     if isinstance(times, dict):
-        normalized_times = {
-            key: np.asarray(value, dtype=float) for key, value in times.items()
-        }
+        normalized_times = cast(
+            dict[str, np.ndarray],
+            {key: np.asarray(value, dtype=float) for key, value in times.items()},
+        )
     else:
         normalized_times = np.asarray(times, dtype=float)
 
