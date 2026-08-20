@@ -94,17 +94,17 @@
     const loBubble=document.createElement("span"), hiBubble=document.createElement("span"); loBubble.className=hiBubble.className="rt-range-bubble";
     const lo=document.createElement("input"), hi=document.createElement("input");
     [lo,hi].forEach(input=>{input.type="range";input.min=minValue;input.max=maxValue;input.step=step;}); lo.value=minValue; hi.value=maxValue;
-    const sync=()=>{
+    const sync=(redraw=true)=>{
       lower=Math.min(+lo.value,+hi.value);upper=Math.max(+lo.value,+hi.value);rangeReadout.textContent=`${fmt(lower)} – ${fmt(upper)}`;
       const span=maxValue-minValue||1, lp=100*(lower-minValue)/span, hp=100*(upper-minValue)/span;
       fill.style.left=`${lp}%`;fill.style.width=`${Math.max(0,hp-lp)}%`;
       loBubble.textContent=fmt(lower);hiBubble.textContent=fmt(upper);loBubble.style.left=`${lp}%`;hiBubble.style.left=`${hp}%`;
-      page=0;drawPage();
+      if(redraw){page=0;drawPage();}
     };
     lo.addEventListener("input",sync); hi.addEventListener("input",sync); track.append(rail,loBubble,hiBubble,lo,hi); rangeFilter.append(rangeLabel,rangeReadout,track);
     if(models.length>1) filters.appendChild(modelFilter);
     filters.appendChild(rangeFilter); host.appendChild(filters);
-    sync();
+    sync(false);
 
     const wrap=document.createElement("div"); wrap.className="rt-perf-wrap";
     const table=document.createElement("table"); table.className="rt-perf";
