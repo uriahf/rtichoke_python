@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import shutil
 from importlib.resources import files
 from pathlib import Path
 
@@ -64,8 +63,8 @@ def _write_roc_browser_html(
     vendor = files("rtichoke").joinpath("_vendor", "rtichoke_viz")
     js_source = vendor.joinpath("rtichoke-viz.js")
     css_source = vendor.joinpath("rtichoke-viz.css")
-    shutil.copyfile(js_source, output.parent / "rtichoke-viz.js")
-    shutil.copyfile(css_source, output.parent / "rtichoke-viz.css")
+    (output.parent / "rtichoke-viz.js").write_bytes(js_source.read_bytes())
+    (output.parent / "rtichoke-viz.css").write_bytes(css_source.read_bytes())
 
     spec_json = json.dumps(_roc_spec_from_performance_data(performance_data)).replace(
         "</", "<\\/"
