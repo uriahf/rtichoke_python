@@ -4,6 +4,7 @@ A module for Gains Curves using Plotly helpers
 
 from typing import Dict, List, Sequence, Union
 from plotly.graph_objs._figure import Figure
+from rtichoke.processing.binary_color_values import _apply_color_values_binary
 from rtichoke.processing.plotly_helper_functions import (
     _create_rtichoke_plotly_curve_times,
     _create_rtichoke_plotly_curve_binary,
@@ -129,7 +130,7 @@ def create_gains_curve(
         color_values=color_values,
         curve="gains",
     )
-    return fig
+    return _apply_color_values_binary(fig, color_values)
 
 
 def plot_gains_curve(
