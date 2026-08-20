@@ -30,7 +30,7 @@ This function constructs the foundational binned data needed for time-to-event p
 A dictionary mapping model or dataset names (str) to their predicted probabilities.
 
 `reals: Union[np.ndarray, Dict[str, np.ndarray]]`  
-The true event statuses (e.g., 0=censored, 1=event, 2=competing).
+The true event statuses (e.g., 0=censored, 1=event, 2=competing event).
 
 `times: Union[np.ndarray, Dict[str, np.ndarray]]`  
 The event or censoring times.
