@@ -90,6 +90,7 @@ jobs:
         run: |
           uv run python examples/summary_report_demo.py
           test -s summary-report-demo.html
+          test -s summary-report-reference-data.csv
           mv summary-report-demo.html great-docs/_site/summary-report-demo.html
       - name: Set up R for reference report
         if: github.event.action != 'closed'
@@ -111,14 +112,11 @@ jobs:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         shell: Rscript {0}
         run: |
-          set.seed(2026)
-          n <- 800
-          signal <- rnorm(n)
-          p_true <- plogis(signal)
-          reals <- rbinom(n, 1, p_true)
+          dat <- read.csv("summary-report-reference-data.csv", check.names = FALSE)
+          reals <- dat[["reals"]]
           probs <- list(
-            "Model A" = pmin(pmax(plogis(0.9 * signal + rnorm(n, 0, 0.55)), 0.001), 0.999),
-            "Model B" = pmin(pmax(plogis(0.6 * signal + rnorm(n, 0, 0.85)), 0.001), 0.999)
+            "Model A" = dat[["Model A"]],
+            "Model B" = dat[["Model B"]]
           )
           rtichoke::create_summary_report(
             probs = probs,
