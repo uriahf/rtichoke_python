@@ -4,6 +4,7 @@ A module for Precision-Recall Curves using Plotly helpers
 
 from typing import Dict, List, Sequence, Union
 from plotly.graph_objs._figure import Figure
+from rtichoke.processing.binary_color_values import _apply_color_values_binary
 from rtichoke.processing.plotly_helper_functions import (
     _create_rtichoke_plotly_curve_binary,
     _plot_rtichoke_curve_binary,
@@ -82,7 +83,7 @@ def create_precision_recall_curve(
         color_values=color_values,
         curve="precision recall",
     )
-    return fig
+    return _apply_color_values_binary(fig, color_values)
 
 
 def plot_precision_recall_curve(
