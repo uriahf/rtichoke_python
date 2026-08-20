@@ -51,7 +51,8 @@
   }
 
   function confusionMatrix(r) {
-    const tp=num(r.true_positives), tn=num(r.true_negatives), fp=num(r.false_positives), fn=num(r.false_negatives);
+    const fp=num(r.false_positives), tn=num(r.true_negatives), fn=num(r.false_negatives);
+    const tp=r.true_positives == null ? Math.max(0, num(r.predicted_positives)-fp) : num(r.true_positives);
     const total=tp+tn+fp+fn || 1;
     const rows=[
       ["Predicted Positive",tp,fp,"lightgreen","pink"],

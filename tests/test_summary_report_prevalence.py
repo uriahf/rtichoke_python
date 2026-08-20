@@ -30,3 +30,15 @@ def test_summary_report_uses_paginated_modular_performance_table(tmp_path):
     assert "rt-page-info" in html
     assert "of ${sorted.length} rows" in html
     assert "perf(R.tables.threshold,'#table-threshold',false)" not in html
+
+
+def test_performance_table_recovers_tp_when_legacy_payload_omits_it(tmp_path):
+    probs = {"Model A": np.array([0.1, 0.4, 0.7, 0.9])}
+    reals = np.array([0, 1, 0, 1])
+    output = tmp_path / "report.html"
+
+    create_summary_report(probs, reals, output_file=output, by=0.1)
+
+    html = output.read_text(encoding="utf-8")
+    assert "r.true_positives == null" in html
+    assert "num(r.predicted_positives)-fp" in html
