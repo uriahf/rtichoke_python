@@ -22,7 +22,7 @@ fig = rk.create_calibration_curve(
 
 # Time-Dependent Calibration ([create_calibration_curve_times](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times))
 
-When evaluating risk predictions at a specific time horizon t:
+When evaluating risk predictions at a specific time horizon \\t\\:
 
 ``` python
 heuristics_sets = [
@@ -54,7 +54,7 @@ When `calibration_type="smooth"`, [create_calibration_curve_times](../reference/
 **Gerds' favoured local neighborhood method** (`riskRegression::plotCalibration(method="nne", cens.method="local")`):
 
 - Computes local Aalen-Johansen / Kaplan-Meier cumulative incidence estimates within nearest-neighborhood risk windows across predicted probabilities.
-- Fully non-parametric and handles both standard survival and competing risks (0=\text{censored}, 1=\text{event}, 2=\text{competing event}).
+- Fully non-parametric and handles both standard survival and competing risks (\\0=\text{censored}\\, \\1=\text{event}\\, \\2=\text{competing event}\\).
 - You can tune the neighborhood window using the optional `bandwidth` parameter (e.g., `bandwidth=0.2`).
 
 
@@ -62,15 +62,15 @@ When `calibration_type="smooth"`, [create_calibration_curve_times](../reference/
 
 **Austin, Harrell & McLernon original time-to-event method** (Austin et al. 2020 / McLernon et al. 2023):
 
-- Fits a secondary cause-specific Cox proportional hazards model on the complementary log-log transformed predictions (\log(-\log(1-p))).
-- Evaluates predicted cumulative incidence at horizon t across the grid of predicted probabilities.
+- Fits a secondary cause-specific Cox proportional hazards model on the complementary log-log transformed predictions (\\\log(-\log(1-p))\\).
+- Evaluates predicted cumulative incidence at horizon \\t\\ across the grid of predicted probabilities.
 
 
 ## 3. Pseudo-Values LOWESS (`smooth_method="pseudo_values"`)
 
 **Jackknife pseudo-observations method**:
 
-- Computes leave-one-out Aalen-Johansen pseudo-values for each subject at horizon t.
+- Computes leave-one-out Aalen-Johansen pseudo-values for each subject at horizon \\t\\.
 - Applies LOWESS smoothing against predicted probabilities.
 
 

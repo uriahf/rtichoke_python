@@ -25,7 +25,8 @@ A dictionary mapping model or dataset names (str) to their predicted probabiliti
 `reals: Union[np.ndarray, Dict[str, np.ndarray]]`  
 The true event labels. This can be a single numpy array that is aligned with all pooled probabilities or a dictionary mapping each dataset name to its corresponding array of true labels. Labels must be binary (0 or 1).
 
-`stratified_by: Sequence[str] = (``"probability_threshold",)`  
+`stratified_by: Sequence[str] = (`<span class="st">`"probability_threshold",)`\
+</span>  
 A sequence of strings specifying the variables by which to stratify the data. The default is `("probability_threshold",)`, which bins the data based on predicted probabilities.
 
 `by: float = ``0.01`  

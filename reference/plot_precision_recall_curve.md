@@ -22,7 +22,8 @@ This function is useful when you have already computed the performance metrics a
 `performance_data: pl.DataFrame`  
 A Polars DataFrame with the necessary performance metrics, including precision (ppv) and recall (tpr), along with any stratification variables.
 
-`stratified_by: Sequence[str] = [``"probability_threshold"]`  
+`stratified_by: Sequence[str] = [`<span class="st">`"probability_threshold"]`\
+</span>  
 The columns in `performance_data` used for stratification. Defaults to `["probability_threshold"]`.
 
 `size: int = ``600`  

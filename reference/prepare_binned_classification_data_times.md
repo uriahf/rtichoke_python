@@ -38,16 +38,19 @@ The event or censoring times.
 `fixed_time_horizons: list[float]`  
 A list of numeric time points for performance evaluation. Integer inputs are accepted and normalized to floats.
 
-`heuristics_sets: list[Dict] = [{``"censoring_heuristic": `<span class="st">`"adjusted"``, ``"competing_heuristic"``: ``"adjusted_as_negative"``}]`</span>  
+`heuristics_sets: list[Dict] = [{``"censoring_heuristic": `<span class="st">`"adjusted"``, ``"competing_heuristic"``: ``"adjusted_as_negative"``}]`\
+</span>  
 Specifies how to handle censored data and competing events.
 
-`stratified_by: Sequence[str] = (``"probability_threshold",)`  
+`stratified_by: Sequence[str] = (`<span class="st">`"probability_threshold",)`\
+</span>  
 Variables for stratification. Defaults to `("probability_threshold",)`.
 
 `by: float = ``0.01`  
 The step size for probability thresholds. Defaults to `0.01`.
 
-`risk_set_scope: Sequence[str] = [``"pooled_by_cutoff", `<span class="st">`"within_stratum"``]`</span>  
+`risk_set_scope: Sequence[str] = [``"pooled_by_cutoff", `<span class="st">`"within_stratum"``]`\
+</span>  
 Defines the scope for risk set calculations. Defaults to `["pooled_by_cutoff", "within_stratum"]`.
 
 

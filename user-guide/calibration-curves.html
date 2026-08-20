@@ -81,7 +81,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-84ac27f0ad322ca6b46d42a29965ff7f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-76a65898353bb5b9f4d31796b1cdb76b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -161,22 +161,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>(function(){var s=document.createElement('script');var m=document.querySelector('meta[name="quarto:offset"]');s.src=(m?m.content:'')+'gd-lightbox-annotate.js';s.defer=true;document.head.appendChild(s);})();</script>
 <script src="../theme-init.js"></script>
 
-  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
-  <script>document.addEventListener("DOMContentLoaded", function () {
- var mathElements = document.getElementsByClassName("math");
- var macros = [];
- for (var i = 0; i < mathElements.length; i++) {
-  var texText = mathElements[i].firstChild;
-  if (mathElements[i].tagName == "SPAN") {
-   katex.render(texText.data, mathElements[i], {
-    displayMode: mathElements[i].classList.contains('display'),
-    throwOnError: false,
-    macros: macros,
-    fleqn: false
-   });
-}}});
-  </script>
-  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -283,7 +269,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Getting Started</span></a>
+ <span class="menu-text">Home</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -415,7 +401,7 @@ window.Quarto = {
 </section>
 <section id="time-dependent-calibration-create_calibration_curve_times" class="level1">
 <h1>Time-Dependent Calibration (<a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times</a>)</h1>
-<p>When evaluating risk predictions at a specific time horizon <span class="math inline">t</span>:</p>
+<p>When evaluating risk predictions at a specific time horizon <span class="math inline">\(t\)</span>:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>heuristics_sets <span class="op">=</span> [</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    {</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"censoring_heuristic"</span>: <span class="st">"adjusted"</span>,</span>
@@ -441,7 +427,7 @@ window.Quarto = {
 <p><strong>Gerds’ favoured local neighborhood method</strong> (<code>riskRegression::plotCalibration(method="nne", cens.method="local")</code>):</p>
 <ul>
 <li>Computes local Aalen-Johansen / Kaplan-Meier cumulative incidence estimates within nearest-neighborhood risk windows across predicted probabilities.</li>
-<li>Fully non-parametric and handles both standard survival and competing risks (<span class="math inline">0=\text{censored}</span>, <span class="math inline">1=\text{event}</span>, <span class="math inline">2=\text{competing event}</span>).</li>
+<li>Fully non-parametric and handles both standard survival and competing risks (<span class="math inline">\(0=\text{censored}\)</span>, <span class="math inline">\(1=\text{event}\)</span>, <span class="math inline">\(2=\text{competing event}\)</span>).</li>
 <li>You can tune the neighborhood window using the optional <code>bandwidth</code> parameter (e.g., <code>bandwidth=0.2</code>).</li>
 </ul>
 </section>
@@ -449,15 +435,15 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="secondary-cox-model-smooth_methodsecondary_cox">2. Secondary Cox Model (<code>smooth_method="secondary_cox"</code>)</h2>
 <p><strong>Austin, Harrell &amp; McLernon original time-to-event method</strong> (Austin et al.&nbsp;2020 / McLernon et al.&nbsp;2023):</p>
 <ul>
-<li>Fits a secondary cause-specific Cox proportional hazards model on the complementary log-log transformed predictions (<span class="math inline">\log(-\log(1-p))</span>).</li>
-<li>Evaluates predicted cumulative incidence at horizon <span class="math inline">t</span> across the grid of predicted probabilities.</li>
+<li>Fits a secondary cause-specific Cox proportional hazards model on the complementary log-log transformed predictions (<span class="math inline">\(\log(-\log(1-p))\)</span>).</li>
+<li>Evaluates predicted cumulative incidence at horizon <span class="math inline">\(t\)</span> across the grid of predicted probabilities.</li>
 </ul>
 </section>
 <section id="pseudo-values-lowess-smooth_methodpseudo_values" class="level2">
 <h2 class="anchored" data-anchor-id="pseudo-values-lowess-smooth_methodpseudo_values">3. Pseudo-Values LOWESS (<code>smooth_method="pseudo_values"</code>)</h2>
 <p><strong>Jackknife pseudo-observations method</strong>:</p>
 <ul>
-<li>Computes leave-one-out Aalen-Johansen pseudo-values for each subject at horizon <span class="math inline">t</span>.</li>
+<li>Computes leave-one-out Aalen-Johansen pseudo-values for each subject at horizon <span class="math inline">\(t\)</span>.</li>
 <li>Applies LOWESS smoothing against predicted probabilities.</li>
 </ul>
 </section>

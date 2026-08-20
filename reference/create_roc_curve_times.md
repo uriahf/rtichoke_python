@@ -39,13 +39,15 @@ The event or censoring times.
 `fixed_time_horizons: list[float]`  
 A list of time points for performance evaluation.
 
-`heuristics_sets: list[Dict] = [{``"censoring_heuristic": `<span class="st">`"adjusted"``, ``"competing_heuristic"``: ``"adjusted_as_negative"``}]`</span>  
+`heuristics_sets: list[Dict] = [{``"censoring_heuristic": `<span class="st">`"adjusted"``, ``"competing_heuristic"``: ``"adjusted_as_negative"``}]`\
+</span>  
 Specifies how to handle censored data and competing events.
 
 `by: float = ``0.01`  
 The step size for probability thresholds. Defaults to 0.01.
 
-`stratified_by: Sequence[str] = [``"probability_threshold"]`  
+`stratified_by: Sequence[str] = [`<span class="st">`"probability_threshold"]`\
+</span>  
 Variables for stratification. Defaults to `["probability_threshold"]`.
 
 `size: int = ``600`  
@@ -72,7 +74,8 @@ The width and height of the plot in pixels. Defaults to 600.
 `    ``"#2176FF"``,`\
 `    ``"#D1603D"``,`\
 `    ``"#585123"``,`\
-`]`</span>  
+`]`\
+</span>  
 A list of hex color strings for the plot lines.
 
 

@@ -81,7 +81,7 @@
     "crumbs": [
       "Reference",
       "Performance Data",
-      "prepare_performance_data_times"
+      "[prepare_performance_data_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -93,7 +93,7 @@
     "crumbs": [
       "Reference",
       "Performance Data",
-      "prepare_binned_classification_data_times"
+      "[prepare_binned_classification_data_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -105,7 +105,7 @@
     "crumbs": [
       "Reference",
       "Discrimination",
-      "plot_roc_curve"
+      "[plot_roc_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -117,7 +117,7 @@
     "crumbs": [
       "Reference",
       "Discrimination",
-      "plot_lift_curve"
+      "[plot_lift_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -129,7 +129,7 @@
     "crumbs": [
       "Reference",
       "Utility",
-      "plot_decision_curve"
+      "[plot_decision_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -141,7 +141,7 @@
     "crumbs": [
       "Reference",
       "Discrimination",
-      "create_roc_curve_times"
+      "[create_roc_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -153,7 +153,7 @@
     "crumbs": [
       "Reference",
       "Discrimination",
-      "create_precision_recall_curve_times"
+      "[create_precision_recall_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -165,7 +165,7 @@
     "crumbs": [
       "Reference",
       "Performance Tables",
-      "create_performance_table_times"
+      "[create_performance_table_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -177,7 +177,7 @@
     "crumbs": [
       "Reference",
       "Discrimination",
-      "create_lift_curve_times"
+      "[create_lift_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -189,7 +189,7 @@
     "crumbs": [
       "Reference",
       "Discrimination",
-      "create_gains_curve_times"
+      "[create_gains_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -201,7 +201,7 @@
     "crumbs": [
       "Reference",
       "Utility",
-      "create_decision_curve_times"
+      "[create_decision_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -213,7 +213,7 @@
     "crumbs": [
       "Reference",
       "Calibration",
-      "create_calibration_curve_times"
+      "[create_calibration_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -322,7 +322,7 @@
     "text": "rtichoke is a Python library for interactive visualization of predictive-model performance. It supports discrimination, calibration, utility, and time-to-event evaluation workflows.\nFor some reproducible examples please visit rtichoke blog!\n\nInstallation\nIf you use uv to manage your Python project, add rtichoke with:\nuv add rtichoke\nThis adds rtichoke to your project dependencies and updates the uv lockfile.\nIf you are not using uv, install rtichoke from PyPI with pip:\npip install rtichoke\n\n\nImport\nimport numpy as np\nimport rtichoke as rk\n\n\nInputs\nMost rtichoke plotting functions use two dictionaries:\n\nprobs: model predictions, keyed by model or population name.\nreals: observed outcomes, keyed by population name.\n\n\n\n\n\n\n\nTip\n\n\n\nSimilar curve families can still differ in defaults and time-dependent handling. See Curve API Compatibility, and if a call fails, search Common Errors & Fixes by literal exception text.\n\n\n\n\nSingle model\nprobs_single = {\n    \"Model A\": np.array([0.1, 0.9, 0.4, 0.8, 0.3, 0.7, 0.2, 0.6])\n}\nreals_single = {\n    \"Population\": np.array([0, 1, 0, 1, 0, 1, 0, 1])\n}\n\nfig = rk.create_roc_curve(\n    probs=probs_single,\n    reals=reals_single,\n)\n\nfig.show()\n\n\nCompare models\nWhen several models are evaluated on the same population, provide one probability vector per model and one outcome vector for the shared population.\nprobs_comparison = {\n    \"Model A\": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),\n    \"Model B\": np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6]),\n    \"Random Guess\": np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),\n}\nreals_comparison = {\n    \"Population\": np.array([0, 1, 0, 1, 0, 1])\n}\n\nfig = rk.create_precision_recall_curve(\n    probs=probs_comparison,\n    reals=reals_comparison,\n)\n\nfig.show()\n\n\nCompare populations\nTo compare a model across populations, provide matching keys in probs and reals. Population sizes may differ; each probability vector only needs to match the outcome vector for the same key.\nprobs_populations = {\n    \"Train\": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),\n    \"Test\": np.array([0.2, 0.8, 0.3, 0.7]),\n}\nreals_populations = {\n    \"Train\": np.array([0, 1, 0, 1, 0, 1]),\n    \"Test\": np.array([0, 1, 0, 0]),\n}\n\nfig = rk.create_calibration_curve(\n    probs=probs_populations,\n    reals=reals_populations,\n)\n\nfig.show()\nHere, Train contains six observations and Test contains four. This matching-key contract is supported by calibration as well as the other curve families.\nFrom here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The Naming Conventions guide explains how the exported function families fit together, while Curve API Compatibility documents where those families still differ.\n\n\nLinks\nView on PyPI\n\n\nAI / Agents\nSkills llms.txt llms-full.txt\n\n\nDevelopers\n\n\n\nUriah Finkel\n\n\n\n\n\nCommunity\nContributing guide\n\n\nMeta\nRequires: Python &gt;=3.12 Package Info",
     "crumbs": [
       "Getting Started",
-      "Getting Started"
+      "Home"
     ]
   },
   {
@@ -334,7 +334,7 @@
     "crumbs": [
       "Reference",
       "Calibration",
-      "create_calibration_curve"
+      "[create_calibration_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -346,7 +346,7 @@
     "crumbs": [
       "Reference",
       "Utility",
-      "create_decision_curve"
+      "[create_decision_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -358,7 +358,7 @@
     "crumbs": [
       "Reference",
       "Discrimination",
-      "create_gains_curve"
+      "[create_gains_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -370,7 +370,7 @@
     "crumbs": [
       "Reference",
       "Discrimination",
-      "create_lift_curve"
+      "[create_lift_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -382,7 +382,7 @@
     "crumbs": [
       "Reference",
       "Performance Tables",
-      "create_performance_table"
+      "[create_performance_table()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -394,7 +394,7 @@
     "crumbs": [
       "Reference",
       "Discrimination",
-      "create_precision_recall_curve"
+      "[create_precision_recall_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -406,7 +406,7 @@
     "crumbs": [
       "Reference",
       "Discrimination",
-      "create_roc_curve"
+      "[create_roc_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -429,7 +429,7 @@
     "crumbs": [
       "Reference",
       "Discrimination",
-      "plot_gains_curve"
+      "[plot_gains_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -441,7 +441,7 @@
     "crumbs": [
       "Reference",
       "Discrimination",
-      "plot_precision_recall_curve"
+      "[plot_precision_recall_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -453,7 +453,7 @@
     "crumbs": [
       "Reference",
       "Performance Data",
-      "prepare_binned_classification_data"
+      "[prepare_binned_classification_data()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -465,7 +465,7 @@
     "crumbs": [
       "Reference",
       "Performance Data",
-      "prepare_performance_data"
+      "[prepare_performance_data()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -477,7 +477,7 @@
     "crumbs": [
       "Reference",
       "Performance Tables",
-      "render_performance_table"
+      "[render_performance_table()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
@@ -496,7 +496,7 @@
     "href": "user-guide/calibration-curves.html#local-aalen-johansen-smooth_methodlocal_aj-default",
     "title": "Calibration Curves",
     "section": "1. Local Aalen-Johansen (smooth_method=\"local_aj\", Default)",
-    "text": "1. Local Aalen-Johansen (smooth_method=\"local_aj\", Default)\nGerds’ favoured local neighborhood method (riskRegression::plotCalibration(method=\"nne\", cens.method=\"local\")):\n\nComputes local Aalen-Johansen / Kaplan-Meier cumulative incidence estimates within nearest-neighborhood risk windows across predicted probabilities.\nFully non-parametric and handles both standard survival and competing risks (0=\\text{censored}, 1=\\text{event}, 2=\\text{competing event}).\nYou can tune the neighborhood window using the optional bandwidth parameter (e.g., bandwidth=0.2).",
+    "text": "1. Local Aalen-Johansen (smooth_method=\"local_aj\", Default)\nGerds’ favoured local neighborhood method (riskRegression::plotCalibration(method=\"nne\", cens.method=\"local\")):\n\nComputes local Aalen-Johansen / Kaplan-Meier cumulative incidence estimates within nearest-neighborhood risk windows across predicted probabilities.\nFully non-parametric and handles both standard survival and competing risks (\\(0=\\text{censored}\\), \\(1=\\text{event}\\), \\(2=\\text{competing event}\\)).\nYou can tune the neighborhood window using the optional bandwidth parameter (e.g., bandwidth=0.2).",
     "crumbs": [
       "Curves",
       "Calibration Curves"
@@ -507,7 +507,7 @@
     "href": "user-guide/calibration-curves.html#secondary-cox-model-smooth_methodsecondary_cox",
     "title": "Calibration Curves",
     "section": "2. Secondary Cox Model (smooth_method=\"secondary_cox\")",
-    "text": "2. Secondary Cox Model (smooth_method=\"secondary_cox\")\nAustin, Harrell & McLernon original time-to-event method (Austin et al. 2020 / McLernon et al. 2023):\n\nFits a secondary cause-specific Cox proportional hazards model on the complementary log-log transformed predictions (\\log(-\\log(1-p))).\nEvaluates predicted cumulative incidence at horizon t across the grid of predicted probabilities.",
+    "text": "2. Secondary Cox Model (smooth_method=\"secondary_cox\")\nAustin, Harrell & McLernon original time-to-event method (Austin et al. 2020 / McLernon et al. 2023):\n\nFits a secondary cause-specific Cox proportional hazards model on the complementary log-log transformed predictions (\\(\\log(-\\log(1-p))\\)).\nEvaluates predicted cumulative incidence at horizon \\(t\\) across the grid of predicted probabilities.",
     "crumbs": [
       "Curves",
       "Calibration Curves"
@@ -518,7 +518,7 @@
     "href": "user-guide/calibration-curves.html#pseudo-values-lowess-smooth_methodpseudo_values",
     "title": "Calibration Curves",
     "section": "3. Pseudo-Values LOWESS (smooth_method=\"pseudo_values\")",
-    "text": "3. Pseudo-Values LOWESS (smooth_method=\"pseudo_values\")\nJackknife pseudo-observations method:\n\nComputes leave-one-out Aalen-Johansen pseudo-values for each subject at horizon t.\nApplies LOWESS smoothing against predicted probabilities.",
+    "text": "3. Pseudo-Values LOWESS (smooth_method=\"pseudo_values\")\nJackknife pseudo-observations method:\n\nComputes leave-one-out Aalen-Johansen pseudo-values for each subject at horizon \\(t\\).\nApplies LOWESS smoothing against predicted probabilities.",
     "crumbs": [
       "Curves",
       "Calibration Curves"

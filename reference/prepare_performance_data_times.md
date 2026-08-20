@@ -39,10 +39,12 @@ The event or censoring times corresponding to the `reals`. Can be a single array
 `fixed_time_horizons: list[float]`  
 A list of numeric time points at which to evaluate the model's performance. Integer inputs are accepted and normalized to floats.
 
-`heuristics_sets: list[Dict] = [{``"censoring_heuristic": `<span class="st">`"adjusted"``, ``"competing_heuristic"``: ``"adjusted_as_negative"``}]`</span>  
+`heuristics_sets: list[Dict] = [{``"censoring_heuristic": `<span class="st">`"adjusted"``, ``"competing_heuristic"``: ``"adjusted_as_negative"``}]`\
+</span>  
 A list of dictionaries, each specifying how to handle censored data and competing events. The default is `[{"censoring_heuristic": "adjusted", "competing_heuristic": "adjusted_as_negative"}]`.
 
-`stratified_by: Sequence[str] = (``"probability_threshold",)`  
+`stratified_by: Sequence[str] = (`<span class="st">`"probability_threshold",)`\
+</span>  
 Variables by which to stratify the analysis. Defaults to `("probability_threshold",)`.
 
 `by: float = ``0.01`  
