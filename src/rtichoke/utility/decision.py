@@ -5,13 +5,11 @@ A module for Decision Curves using Plotly helpers
 from typing import Dict, List, Sequence, Union
 from plotly.graph_objs._figure import Figure
 from rtichoke.processing.binary_color_values import _apply_color_values_binary
-from rtichoke.processing.plotly_helper_functions import (
-    _create_rtichoke_plotly_curve_binary,
-    _plot_rtichoke_curve_binary,
-)
+from rtichoke.processing.plotly_helper_functions import _plot_rtichoke_curve_binary
 from rtichoke.processing.time_reference_lines import (
     _create_rtichoke_plotly_curve_times_reference_safe,
 )
+from rtichoke.performance_data.performance_data import prepare_performance_data
 import numpy as np
 import polars as pl
 
@@ -90,17 +88,21 @@ def create_decision_curve(
     else:
         curve = "interventions avoided"
 
-    fig = _create_rtichoke_plotly_curve_binary(
-        probs,
-        reals,
-        by=by,
+    performance_data = prepare_performance_data(
+        probs=probs,
+        reals=reals,
         stratified_by=stratified_by,
-        size=size,
-        color_values=color_values,
+        by=by,
+    )
+    fig = _plot_rtichoke_curve_binary(
+        performance_data=performance_data,
+        stratified_by=stratified_by[0],
         curve=curve,
+        size=size,
         min_p_threshold=min_p_threshold,
         max_p_threshold=max_p_threshold,
     )
+    fig.update_xaxes(range=[min_p_threshold, max_p_threshold])
     return _apply_color_values_binary(fig, color_values)
 
 
@@ -151,6 +153,7 @@ def plot_decision_curve(
         min_p_threshold=min_p_threshold,
         max_p_threshold=max_p_threshold,
     )
+    fig.update_xaxes(range=[min_p_threshold, max_p_threshold])
     return fig
 
 
