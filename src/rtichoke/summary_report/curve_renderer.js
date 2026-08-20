@@ -36,10 +36,10 @@ function drawRtichokeCurve(s, sel, strat) {
   };
 
   if(strata.length>1){
-    const wrap=card.append("div").attr("class","slider-wrap curve-slider-wrap");
-    const label=wrap.append("div").attr("class","slider-label curve-slider-label");
+    const wrap=card.append("div").attr("class","slider-wrap curve-slider-wrap").style("position","absolute").style("left","60px").style("bottom","12px").style("width","430px").style("max-width","calc(100% - 70px)").style("margin","0");
+    const label=wrap.append("div").attr("class","slider-label curve-slider-label").style("font-size","12px").style("line-height","18px").style("color","black").style("margin","0 0 3px");
     const prefix=strat==="ppcr"?"Predicted Positives (Rate):":"Prob. Threshold:";
-    const input=wrap.append("input").attr("class","curve-slider").attr("type","range").attr("min",strata[0]).attr("max",strata[strata.length-1]).attr("step",Math.max(1e-6,...strata.slice(1).map((v,i)=>v-strata[i]).filter(v=>v>0).slice(0,1))).node();
+    const input=wrap.append("input").attr("class","curve-slider").attr("type","range").attr("min",strata[0]).attr("max",strata[strata.length-1]).attr("step",Math.max(1e-6,...strata.slice(1).map((v,i)=>v-strata[i]).filter(v=>v>0).slice(0,1))).style("width","100%").style("margin","0").style("accent-color","#777").node();
     input.value=strata[0];
     const update=()=>{const v=+input.value;label.textContent=`${prefix} ${Number.isFinite(v)?v.toFixed(2):""}`;drawCurrent(v)};
     input.addEventListener("input",update);update();
