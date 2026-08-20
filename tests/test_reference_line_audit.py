@@ -23,7 +23,13 @@ def _binary_inputs():
 
 
 def _visible_trace(fig, name):
-    matches = [trace for trace in fig.data if trace.name == name and trace.visible is True]
+    matches = [trace for trace in fig.data if trace.name == name and trace.visible is not False]
+    assert len(matches) == 1
+    return matches[0]
+
+
+def _y_at_x(trace, x):
+    matches = [float(y) for tx, y in zip(trace.x, trace.y) if float(tx) == pytest.approx(x)]
     assert len(matches) == 1
     return matches[0]
 
@@ -73,8 +79,8 @@ def test_binary_gains_reference_is_population_specific():
     a = _visible_trace(fig, "perfect_model_population_a")
     b = _visible_trace(fig, "perfect_model_population_b")
 
-    assert float(a.y[0]) == pytest.approx(0.01 / 0.5)
-    assert float(b.y[0]) == pytest.approx(0.01 / 0.75)
+    assert _y_at_x(a, 0.01) == pytest.approx(0.01 / 0.5)
+    assert _y_at_x(b, 0.01) == pytest.approx(0.01 / 0.75)
 
 
 def test_time_gains_reference_is_population_and_horizon_specific():
@@ -95,7 +101,7 @@ def test_time_gains_reference_is_population_and_horizon_specific():
     )
 
     traces = {(t.name, t.visible): t for t in fig.data}
-    assert float(traces[("perfect_model_population_a", True)].y[0]) == pytest.approx(0.06)
-    assert float(traces[("perfect_model_population_b", True)].y[0]) == pytest.approx(0.04)
-    assert float(traces[("perfect_model_population_a", False)].y[0]) == pytest.approx(0.03)
-    assert float(traces[("perfect_model_population_b", False)].y[0]) == pytest.approx(0.02)
+    assert _y_at_x(traces[("perfect_model_population_a", True)], 0.01) == pytest.approx(0.06)
+    assert _y_at_x(traces[("perfect_model_population_b", True)], 0.01) == pytest.approx(0.04)
+    assert _y_at_x(traces[("perfect_model_population_a", False)], 0.01) == pytest.approx(0.03)
+    assert _y_at_x(traces[("perfect_model_population_b", False)], 0.01) == pytest.approx(0.02)
