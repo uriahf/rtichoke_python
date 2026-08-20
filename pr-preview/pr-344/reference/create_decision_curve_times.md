@@ -55,7 +55,7 @@ The minimum probability threshold to plot. Defaults to 0.
 The maximum probability threshold to plot. Defaults to 1.
 
 `by: float = ``0.01`  
-The step size for the probability thresholds. Defaults to 0.01.
+The step size for probability thresholds. Defaults to 0.01.
 
 `stratified_by: Sequence[str] = [``"probability_threshold"]`  
 Variables for stratification. Defaults to `["probability_threshold"]`.
