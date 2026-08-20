@@ -3,7 +3,7 @@ import numpy as np
 from rtichoke import prepare_performance_data_times
 
 
-def test_prepare_performance_data_times_preserves_r_style_input_order():
+def test_prepare_performance_data_times_groups_reference_groups_for_comparison():
     probs = {
         "population_b": np.array([0.8, 0.2, 0.6, 0.4]),
         "population_a": np.array([0.7, 0.1, 0.9, 0.3]),
@@ -37,38 +37,37 @@ def test_prepare_performance_data_times_preserves_r_style_input_order():
         by=0.2,
     )
 
-    block_keys = []
-    for row in result.select(
+    comparison_keys = result.select(
         [
-            "reference_group",
             "fixed_time_horizon",
             "censoring_heuristic",
             "competing_heuristic",
+            "stratified_by",
+            "chosen_cutoff",
+            "reference_group",
         ]
-    ).unique(maintain_order=True).iter_rows():
-        block_keys.append(row)
+    ).iter_rows()
 
-    expected_block_keys = [
-        (
-            population,
-            horizon,
-            heuristics["censoring_heuristic"],
-            heuristics["competing_heuristic"],
-        )
-        for population in probs
-        for horizon in horizons
-        for heuristics in heuristics_sets
-    ]
+    expected_group_order = list(probs)
+    previous_comparison_key = None
+    groups_for_key = []
 
-    assert block_keys == expected_block_keys
+    for row in comparison_keys:
+        comparison_key = row[:-1]
+        reference_group = row[-1]
 
-    for block in result.partition_by(
-        [
-            "reference_group",
-            "fixed_time_horizon",
-            "censoring_heuristic",
-            "competing_heuristic",
-        ],
-        maintain_order=True,
-    ):
-        assert block["chosen_cutoff"].to_list() == sorted(block["chosen_cutoff"].to_list())
+        if previous_comparison_key is not None and comparison_key != previous_comparison_key:
+            assert groups_for_key == expected_group_order
+            groups_for_key = []
+
+        groups_for_key.append(reference_group)
+        previous_comparison_key = comparison_key
+
+    assert groups_for_key == expected_group_order
+
+    observed_horizons = (
+        result.select("fixed_time_horizon")
+        .unique(maintain_order=True)["fixed_time_horizon"]
+        .to_list()
+    )
+    assert observed_horizons == horizons
