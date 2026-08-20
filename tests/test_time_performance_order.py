@@ -37,33 +37,17 @@ def test_prepare_performance_data_times_groups_reference_groups_for_comparison()
         by=0.2,
     )
 
-    comparison_keys = result.select(
-        [
-            "fixed_time_horizon",
-            "censoring_heuristic",
-            "competing_heuristic",
-            "stratified_by",
-            "chosen_cutoff",
-            "reference_group",
-        ]
-    ).iter_rows()
-
+    comparison_columns = [
+        "fixed_time_horizon",
+        "censoring_heuristic",
+        "competing_heuristic",
+        "stratified_by",
+        "chosen_cutoff",
+    ]
     expected_group_order = list(probs)
-    previous_comparison_key = None
-    groups_for_key = []
 
-    for row in comparison_keys:
-        comparison_key = row[:-1]
-        reference_group = row[-1]
-
-        if previous_comparison_key is not None and comparison_key != previous_comparison_key:
-            assert groups_for_key == expected_group_order
-            groups_for_key = []
-
-        groups_for_key.append(reference_group)
-        previous_comparison_key = comparison_key
-
-    assert groups_for_key == expected_group_order
+    for block in result.partition_by(comparison_columns, maintain_order=True):
+        assert block["reference_group"].to_list() == expected_group_order
 
     observed_horizons = (
         result.select("fixed_time_horizon")
