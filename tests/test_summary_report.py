@@ -47,6 +47,10 @@ def test_create_summary_report_writes_native_html(tmp_path):
     # another external runtime at viewing time.
     assert "cdn.jsdelivr.net" not in html
     assert "unpkg.com" not in html
-    assert not re.search(r'<script[^>]+src=["\']https?://', html, re.IGNORECASE)
-    assert not re.search(r'<link[^>]+href=["\']https?://', html, re.IGNORECASE)
+    assert not re.search(
+        r'<script[^>]+src=["\']https?://', html, re.IGNORECASE
+    )
+    assert not re.search(
+        r'<link[^>]+href=["\']https?://', html, re.IGNORECASE
+    )
     assert "Minimal D3-compatible runtime used by rtichoke summary reports" in html
