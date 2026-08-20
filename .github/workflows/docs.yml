@@ -138,3 +138,15 @@ jobs:
           preview-branch: gh-pages
           umbrella-dir: pr-preview
           action: auto
+      - name: Verify report is in deployed documentation preview
+        if: github.event.action != 'closed'
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages
+          REPORT_PATH="pr-preview/pr-${PR_NUMBER}/summary-report-demo.html"
+          git cat-file -e "origin/gh-pages:${REPORT_PATH}"
+          echo "Verified ${REPORT_PATH} on gh-pages"
+          echo "### Summary report preview" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/${REPORT_PATH}" >> "$GITHUB_STEP_SUMMARY"
