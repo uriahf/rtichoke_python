@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any, cast
 
 import htmltools as html
 import numpy as np
@@ -141,10 +142,13 @@ def render_performance_table_reactable(
     if sort_columns:
         data = data.sort(sort_columns)
 
-    lift_max = data.get_column("lift").drop_nulls().max() or 1.0
-    nb_max = 1.0
+    lift_max = cast(float | int, data.get_column("lift").drop_nulls().max() or 1.0)
+    nb_max: float | int = 1.0
     if "net_benefit" in data.columns:
-        nb_max = data.get_column("net_benefit").drop_nulls().abs().max() or 1.0
+        nb_max = cast(
+            float | int,
+            data.get_column("net_benefit").drop_nulls().abs().max() or 1.0,
+        )
 
     models = (
         data.get_column("Model").unique(maintain_order=True).to_list()
@@ -302,6 +306,6 @@ def render_performance_table_reactable(
         compact=True,
         striped=True,
         highlight=True,
-        details=confusion_matrix,
+        details=cast(Any, confusion_matrix),
         show_sort_icon=False,
     )
