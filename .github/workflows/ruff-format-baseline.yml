@@ -1,9 +1,9 @@
 name: Ruff format baseline
 
 on:
-  push:
+  pull_request:
     branches:
-      - modernize/ruff-format-baseline
+      - main
 
 permissions:
   contents: write
@@ -15,6 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.head_ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: astral-sh/setup-uv@v6
