@@ -15,6 +15,6 @@
 
 # Summary
 
-- **Requires:** Python `>=3.10`
+- **Requires:** Python `>=3.12`
 - **Runtime Dependencies:** 6
 - **Total unique dependencies:** 6
