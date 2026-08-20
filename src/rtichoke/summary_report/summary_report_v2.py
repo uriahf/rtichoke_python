@@ -1,6 +1,7 @@
 """Readable integration layer for the lightweight summary report renderers."""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Dict, Union
 
@@ -24,29 +25,19 @@ def _wire_curve_renderer(html: str) -> str:
     if marker not in html:
         raise RuntimeError("Could not locate summary-report curve integration point")
     html = html.replace(marker, renderer + "\n" + marker, 1)
-    html = html.replace(
-        "draw(s,chart,strat)}}));draw(specs[0],chart,strat)",
-        "drawRtichokeCurve(s,chart)}}));drawRtichokeCurve(specs[0],chart)",
-        1,
-    )
-    html = html.replace(
-        "draw(R.decision,'#decision','probability_threshold');",
-        "drawRtichokeCurve(R.decision,'#decision');",
-        1,
-    )
+    html = html.replace("draw(s,chart,strat)}}));draw(specs[0],chart,strat)", "drawRtichokeCurve(s,chart)}}));drawRtichokeCurve(specs[0],chart)", 1)
+    html = html.replace("draw(R.decision,'#decision','probability_threshold');", "drawRtichokeCurve(R.decision,'#decision');", 1)
     return html
 
 
 def _wire_report_style(html: str) -> str:
     css = _style_source()
-    marker = "</head>"
-    if marker not in html:
+    if "</head>" not in html:
         raise RuntimeError("Could not locate summary-report head element")
-    return html.replace(marker, f"<style>\n{css}\n</style>\n{marker}", 1)
+    return html.replace("</head>", f"<style>\n{css}\n</style>\n</head>", 1)
 
 
-def _wire_r_report_content(html: str) -> str:
-    """Restore visible content present in the R Markdown reference report."""
+def _wire_r_report_content(html: str, probs: Dict[str, np.ndarray], reals: Union[np.ndarray, Dict[str, np.ndarray]]) -> str:
     formulas = """<div class=\"metric-formulas\">
 <div>Prevalence = <span class=\"frac\"><span>TP + FN</span><span>TP + FP + TN + FN</span></span></div>
 <div>PPCR (Predicted Positives Condition Rate) = <span class=\"frac\"><span>TP + FP</span><span>TP + FP + TN + FN</span></span></div>
@@ -59,40 +50,39 @@ def _wire_r_report_content(html: str) -> str:
 </div>"""
     needle = "</table></div></details><div id=\"prev\"></div>"
     if needle in html:
-        html = html.replace("</table></div></details><div id=\"prev\"></div>", f"</table></div>{formulas}</details><div id=\"prev\"></div>", 1)
+        html = html.replace(needle, f"</table></div>{formulas}</details><div id=\"prev\"></div>", 1)
 
-    # The R report's prevalence widget is a compact expandable Reactable with a
-    # grey proportional bar, not a generic Model/Prevalence summary table.
-    script = """<script>
-(function(){
- const host=document.getElementById('prev'); if(!host||!window.SUM)return;
+    if isinstance(reals, dict):
+        sizes = {k: int(np.asarray(reals[k]).size) for k in probs if k in reals}
+    else:
+        n = int(np.asarray(reals).size)
+        sizes = {k: n for k in probs}
+    sizes_json = json.dumps(sizes).replace("</", "<\\/")
+    script = f"""<script>
+(function(){{
+ const host=document.getElementById('prev'); if(!host||!window.SUM)return; const sizes={sizes_json};
  host.innerHTML='';
- SUM.forEach((r,i)=>{
-   const p=Number(r.Prevalence), row=document.createElement('div'); row.className='prevalence-row';
+ SUM.forEach((r,i)=>{{
+   const p=Number(r.Prevalence), n=sizes[r.Model]||0, row=document.createElement('div'); row.className='prevalence-row';
    const exp=document.createElement('button'); exp.className='prevalence-expander'; exp.textContent='›'; exp.setAttribute('aria-label','Toggle details');
    const cell=document.createElement('div'); cell.className='prevalence-cell';
    cell.innerHTML='<strong>Prevalence</strong><div class="prevalence-value"><span>'+p.toFixed(2)+'</span><span class="prevalence-track"><span style="width:'+Math.max(0,Math.min(100,p*100))+'%"></span></span></div>';
    const detail=document.createElement('div'); detail.className='prevalence-detail'; detail.hidden=true;
-   detail.textContent='Real Positives = '+Math.round(p*(r.N||0))+',  Total Population =  '+(r.N||'');
-   exp.onclick=()=>{detail.hidden=!detail.hidden;exp.textContent=detail.hidden?'›':'⌄'};
+   detail.textContent='Real Positives = '+Math.round(p*n)+',  Total Population =  '+n;
+   exp.onclick=()=>{{detail.hidden=!detail.hidden;exp.textContent=detail.hidden?'›':'⌄'}};
    row.append(exp,cell,detail); host.append(row);
- });
-})();
+ }});
+}})();
 </script>"""
     return html.replace("</body>", script + "</body>", 1)
 
 
-def create_summary_report(
-    probs: Dict[str, np.ndarray],
-    reals: Union[np.ndarray, Dict[str, np.ndarray]],
-    output_file: str | Path = "summary_report.html",
-    by: float = 0.01,
-) -> Path:
+def create_summary_report(probs: Dict[str, np.ndarray], reals: Union[np.ndarray, Dict[str, np.ndarray]], output_file: str | Path = "summary_report.html", by: float = 0.01) -> Path:
     out = Path(output_file)
     _legacy_create_summary_report(probs=probs, reals=reals, output_file=out, by=by)
     html = out.read_text(encoding="utf-8")
     html = _wire_curve_renderer(html)
-    html = _wire_r_report_content(html)
+    html = _wire_r_report_content(html, probs, reals)
     html = _wire_report_style(html)
     out.write_text(html, encoding="utf-8")
     return out
