@@ -139,7 +139,7 @@ function drawRtichokeCurve(s, sel, strat) {
   svg.append("rect").attr("x",m.left).attr("y",m.top).attr("width",W-m.left-m.right).attr("height",H-m.top-m.bottom).attr("fill","transparent").on("mousemove",ev=>{const[mx,my]=d3.pointer(ev);let best=null,dist=Infinity;traces.forEach(d=>{if(!isFinite(+d.x)||!isFinite(+d.y))return;const dd=(x(+d.x)-mx)**2+(y(+d.y)-my)**2;if(dd<dist){dist=dd;best=d}});if(best&&dist<225)show(ev,best);else hide()}).on("mouseleave",hide);
 }
 
-function curveTabs(specs,nav,chart,strat){let n=d3.select(nav);specs.forEach((s,i)=>n.append('button').attr('class',i?'':'active').text(s.label).on('click',function(){n.selectAll('button').classed('active',false);d3.select(this).classed('active',true);draw(s,chart,strat)}));draw(specs[0],chart,strat)}curveTabs(R.threshold,'#thrtabs','#thrchart','probability_threshold');curveTabs(R.ppcr,'#pcrtabs','#pcrchart','ppcr');drawRtichokeCurve(R.decision,'#decision','probability_threshold');
+function curveTabs(specs,nav,chart,strat){let n=d3.select(nav);specs.forEach((s,i)=>n.append('button').attr('class',i?'':'active').text(s.label).on('click',function(){n.selectAll('button').classed('active',false);d3.select(this).classed('active',true);drawRtichokeCurve(s,chart,strat)}));drawRtichokeCurve(specs[0],chart,strat)}curveTabs(R.threshold,'#thrtabs','#thrchart','probability_threshold');curveTabs(R.ppcr,'#pcrtabs','#pcrchart','ppcr');drawRtichokeCurve(R.decision,'#decision','probability_threshold');
 function calibration(type,sel){
  const c=R.calibration,card=d3.select(sel); card.selectAll('*').remove();
  const W=550,H=550,X0=60,X1=540,MAIN_TOP=55,MAIN_BOTTOM=409.9,HIST_TOP=428.1,HIST_BOTTOM=510;
