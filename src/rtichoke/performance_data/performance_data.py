@@ -19,6 +19,34 @@ from rtichoke.processing.transforms import (
 import numpy as np
 
 
+def _probs_with_r_binary_cutoff_semantics(
+    probs: Dict[str, np.ndarray], by: float
+) -> Dict[str, np.ndarray]:
+    """Place exact binary cutoffs on R's predicted-negative side.
+
+    R's binary implementation uses ``prob > cutoff``. The shared Python binning
+    machinery is left-closed because the time-dependent path intentionally
+    follows a ``prob >= cutoff`` convention. Move only binary probabilities
+    exactly equal to a public cutoff one representable float downward before
+    bin assignment; all other probabilities and the public cutoff grid remain
+    unchanged.
+    """
+    cutoffs = create_breaks_values(None, "probability_threshold", by)
+    nonzero_cutoffs = cutoffs[cutoffs > 0]
+    adjusted = {}
+
+    for reference_group, values in probs.items():
+        values_array = np.asarray(values, dtype=float).copy()
+        for cutoff in nonzero_cutoffs:
+            equal_to_cutoff = values_array == cutoff
+            values_array[equal_to_cutoff] = np.nextafter(
+                values_array[equal_to_cutoff], -np.inf
+            )
+        adjusted[reference_group] = values_array
+
+    return adjusted
+
+
 def prepare_binned_classification_data(
     probs: Dict[str, np.ndarray],
     reals: Union[np.ndarray, Dict[str, np.ndarray]],
@@ -69,9 +97,15 @@ def prepare_binned_classification_data(
         breaks=breaks,
     )
 
+    probs_for_binning = (
+        _probs_with_r_binary_cutoff_semantics(probs, by)
+        if "probability_threshold" in stratified_by
+        else probs
+    )
+
     list_data_to_adjust = _create_list_data_to_adjust_binary(
         aj_data_combinations,
-        probs,
+        probs_for_binning,
         reals,
         stratified_by=stratified_by,
         by=by,
