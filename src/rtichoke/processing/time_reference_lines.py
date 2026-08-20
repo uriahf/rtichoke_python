@@ -83,6 +83,7 @@ def _create_rtichoke_plotly_curve_times_reference_safe(
     curve_list = _create_rtichoke_curve_list_times(
         performance_data,
         stratified_by=stratified_by[0],
+        size=size,
         curve=curve,
         min_p_threshold=min_p_threshold,
         max_p_threshold=max_p_threshold,
