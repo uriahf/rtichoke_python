@@ -36,6 +36,9 @@ classifiers = [
 
 [project.urls]
 Documentation = "https://uriahf.github.io/rtichoke_python/"
+"Python Tutorials" = "https://uriahf.github.io/rtichoke_blog_python/"
+"R Package" = "https://github.com/uriahf/rtichoke"
+"R Tutorials" = "https://rtichoke-blog.netlify.app/"
 Source = "https://github.com/uriahf/rtichoke_python"
 Issues = "https://github.com/uriahf/rtichoke_python/issues"
 Changelog = "https://github.com/uriahf/rtichoke_python/blob/main/CHANGELOG.md"
