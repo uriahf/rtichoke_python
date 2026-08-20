@@ -18,6 +18,24 @@ def test_shared_outcomes_render_one_prevalence_population(tmp_path):
     assert "prevalenceRows.forEach" in html
 
 
+def test_summary_report_uses_r_style_auc_widget(tmp_path):
+    probs = {
+        "Model A": np.array([0.1, 0.3, 0.6, 0.8]),
+        "Model B": np.array([0.2, 0.4, 0.5, 0.7]),
+    }
+    reals = np.array([0, 0, 1, 1])
+    output = tmp_path / "report.html"
+
+    create_summary_report(probs, reals, output_file=output, by=0.1)
+
+    html = output.read_text(encoding="utf-8")
+    assert 'class="summary-table auc-table"' in html
+    assert "<th>AUROC</th>" in html
+    assert "value.toFixed(2)" in html
+    assert "background:green" in html
+    assert "model-badge" in html
+
+
 def test_summary_report_uses_paginated_modular_performance_table(tmp_path):
     probs = {"Model A": np.linspace(0.01, 0.99, 20)}
     reals = np.array([0, 1] * 10)
