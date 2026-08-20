@@ -3,8 +3,7 @@
 This module keeps the legacy report generator stable while the large inline
 HTML template is being split into maintainable assets. It post-processes the
 legacy HTML to route performance and decision curves through the dedicated
-Plotly-parity renderer, embeds the tiny visualization runtime, and applies the
-shared R-report visual polish layer.
+Plotly-parity renderer and applies the shared R-report visual polish layer.
 """
 from __future__ import annotations
 
@@ -23,19 +22,6 @@ def _asset_source(name: str) -> str:
 
 def _style_source() -> str:
     return _asset_source("report_style.css")
-
-
-def _wire_self_contained_runtime(html: str) -> str:
-    """Replace the D3 CDN tag with the bundled minimal compatible runtime."""
-    runtime = _asset_source("microd3.js")
-    cdn_tags = (
-        '<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>',
-        '<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>',
-    )
-    for tag in cdn_tags:
-        if tag in html:
-            return html.replace(tag, f"<script>\n{runtime}\n</script>", 1)
-    raise RuntimeError("Could not locate summary-report D3 CDN script tag")
 
 
 def _wire_curve_renderer(html: str) -> str:
@@ -72,11 +58,14 @@ def create_summary_report(
     output_file: str | Path = "summary_report.html",
     by: float = 0.01,
 ) -> Path:
-    """Create a lightweight, self-contained report using parity renderers."""
+    """Create a lightweight, self-contained report using parity renderers.
+
+    The base renderer already embeds the bundled visualization runtime. This
+    layer only wires the modular curve renderer and shared report styling.
+    """
     out = Path(output_file)
     _legacy_create_summary_report(probs=probs, reals=reals, output_file=out, by=by)
     html = out.read_text(encoding="utf-8")
-    html = _wire_self_contained_runtime(html)
     html = _wire_curve_renderer(html)
     html = _wire_report_style(html)
     out.write_text(html, encoding="utf-8")
