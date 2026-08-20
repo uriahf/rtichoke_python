@@ -656,7 +656,7 @@ min_p_threshold : float, optional
 max_p_threshold : float, optional
     The maximum probability threshold to plot. Defaults to 1.
 by : float, optional
-    The step size for probability thresholds. Defaults to 0.01.
+    The step size for the probability thresholds. Defaults to 0.01.
 stratified_by : Sequence[str], optional
     Variables for stratification. Defaults to ``["probability_threshold"]``.
 size : int, optional
