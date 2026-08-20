@@ -48,48 +48,23 @@ def _wire_report_style(html: str) -> str:
     return html.replace(marker, f"<style>\n{css}\n</style>\n{marker}", 1)
 
 
-def _wire_r_report_chrome(html: str) -> str:
-    """Add lightweight equivalents of the R Markdown TOC and cheat sheet."""
-    toc = """<nav class=\"rt-toc\" aria-label=\"Report contents\"><ul>
-<li><a href=\"#calibration\">Calibration</a></li>
-<li><a href=\"#discrimination\">Discrimination</a></li>
-<li><a href=\"#utility\">Utility (Decision Curve)</a></li>
-<li><a href=\"#performance-table\">Performance Table</a></li>
-</ul></nav>
-<details class=\"metric-cheat-sheet\"><summary>Performance Metrics Cheat Sheet</summary>
-<table><thead><tr><th></th><th>Predicted Positive</th><th>Predicted Negative</th></tr></thead>
-<tbody><tr><th>Real Positive</th><td class=\"cm-tp\">TP</td><td class=\"cm-fn\">FN</td></tr>
-<tr><th>Real Negative</th><td class=\"cm-fp\">FP</td><td class=\"cm-tn\">TN</td></tr></tbody></table>
-</details>"""
-    for marker in ('<section id="calibration"', '<div id="calibration"'):
-        if marker in html:
-            html = html.replace(marker, toc + "\n" + marker, 1)
-            break
-
-    replacements = (
-        (">Calibration<", ' id="calibration">Calibration<', "calibration"),
-        (">Discrimination<", ' id="discrimination">Discrimination<', "discrimination"),
-        (">Utility<", ' id="utility">Utility<', "utility"),
-        (">Performance Table<", ' id="performance-table">Performance Table<', "performance-table"),
-    )
-    for old, new, anchor in replacements:
-        if old in html and f'id="{anchor}"' not in html:
-            html = html.replace(old, new, 1)
-    return html
-
-
 def create_summary_report(
     probs: Dict[str, np.ndarray],
     reals: Union[np.ndarray, Dict[str, np.ndarray]],
     output_file: str | Path = "summary_report.html",
     by: float = 0.01,
 ) -> Path:
-    """Create the lightweight report using the modular parity renderers."""
+    """Create the lightweight report using the modular parity renderers.
+
+    The legacy renderer already emits the R-style table of contents and
+    Performance Metrics Cheat Sheet.  Keep those as the single source of truth
+    here; this integration layer only swaps in the parity curve renderer and
+    shared styling.
+    """
     out = Path(output_file)
     _legacy_create_summary_report(probs=probs, reals=reals, output_file=out, by=by)
     html = out.read_text(encoding="utf-8")
     html = _wire_curve_renderer(html)
-    html = _wire_r_report_chrome(html)
     html = _wire_report_style(html)
     out.write_text(html, encoding="utf-8")
     return out
