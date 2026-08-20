@@ -92,9 +92,9 @@ def create_breaks_values(probs_vec, stratified_by, by):
     if stratified_by != "probability_threshold":
         breaks = np.quantile(probs_vec, np.linspace(1, 0, int(1 / by) + 1))
     else:
-        breaks = np.round(
-            np.arange(0, 1 + by, by), decimals=len(str(by).split(".")[-1])
-        )
+        decimals = len(str(by).split(".")[-1])
+        breaks = np.round(np.arange(0, 1, by), decimals=decimals)
+        breaks = np.append(breaks[breaks < 1], 1.0)
     return breaks
 
 
