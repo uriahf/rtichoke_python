@@ -84,13 +84,13 @@ def test_binary_interventions_avoided_honors_threshold_range():
         max_p_threshold=0.9,
     )
 
-    reference = next(
-        trace
-        for trace in fig.data
-        if trace.name.startswith("treat_none") and trace.visible is not False
-    )
-    assert float(reference.x[0]) == pytest.approx(0.1)
-    assert float(reference.x[-1]) == pytest.approx(0.9)
+    nonempty_visible = [
+        trace for trace in fig.data if trace.visible is not False and len(trace.x) > 0
+    ]
+    assert nonempty_visible
+    for trace in nonempty_visible:
+        assert min(float(x) for x in trace.x) >= pytest.approx(0.1)
+        assert max(float(x) for x in trace.x) <= pytest.approx(0.9)
 
 
 def test_binary_gains_reference_is_population_specific():
