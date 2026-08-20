@@ -36,9 +36,17 @@ def _rtichoke_survival_dca(data: pl.DataFrame, by: float) -> pl.DataFrame:
 
 
 def _dcurves_survival_dca(data: pl.DataFrame, thresholds: list[float]):
-    """Call dcurves at the test boundary; pandas remains its transitive dependency."""
+    """Call dcurves at the test boundary without requiring Polars->pandas conversion."""
+    # dcurves requires a pandas DataFrame and already depends on pandas itself.
+    # Building it from plain Python data avoids adding pyarrow just for
+    # `pl.DataFrame.to_pandas()`.
+    pandas_df_type = type(
+        dca.__globals__["pd"].DataFrame()
+    )
+    pandas_data = pandas_df_type(data.to_dict(as_series=False))
+
     return dca(
-        data=data.to_pandas(),
+        data=pandas_data,
         outcome="cancer",
         modelnames=["cancerpredmarker"],
         thresholds=thresholds,
