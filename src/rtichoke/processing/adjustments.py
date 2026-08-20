@@ -129,7 +129,7 @@ def extract_crude_estimate_polars(data: pl.DataFrame) -> pl.DataFrame:
     all_combinations = data.select(["strata", "reals", "fixed_time_horizon"]).unique()
 
     counts = data.group_by(["strata", "reals", "fixed_time_horizon"]).agg(
-        pl.count().alias("reals_estimate")
+        pl.len().alias("reals_estimate")
     )
 
     return all_combinations.join(
@@ -420,7 +420,7 @@ def _create_adjusted_data_binary(
 
     adjusted_data_binary = (
         long_df.group_by(["strata", "stratified_by", "reference_group", "reals_labels"])
-        .agg(pl.count().alias("reals_estimate"))
+        .agg(pl.len().alias("reals_estimate"))
         .join(pl.DataFrame({"chosen_cutoff": breaks}), how="cross")
     )
 
