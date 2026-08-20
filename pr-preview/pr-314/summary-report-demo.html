@@ -53,17 +53,6 @@ tbody td { border-bottom:1px solid #eee; padding:7px; vertical-align:middle; } t
 </style>
 </head><body><div class="container-fluid main-container"><div id="header"><h1 class="title toc-ignore">Summary Report</h1></div><div id="TOC"><ul><li><a href="#calibration">Calibration</a></li><li><a href="#discrimination">Discrimination</a></li><li><a href="#utility-decision-curve">Utility (Decision Curve)</a></li><li><a href="#performance-table">Performance Table</a></li></ul></div>
 <details><summary><p>Performance Metrics Cheat Sheet</p></summary><div class="cheat"><table><tr><th></th><th>Predicted Positive</th><th>Predicted Negative</th></tr><tr><th>Real Positive</th><td class="good">TP</td><td class="bad">FN</td></tr><tr><th>Real Negative</th><td class="bad">FP</td><td class="good">TN</td></tr></table></div></details><div id="prev"></div>
-<nav class="rt-toc" aria-label="Report contents"><ul>
-<li><a href="#calibration">Calibration</a></li>
-<li><a href="#discrimination">Discrimination</a></li>
-<li><a href="#utility">Utility (Decision Curve)</a></li>
-<li><a href="#performance-table">Performance Table</a></li>
-</ul></nav>
-<details class="metric-cheat-sheet"><summary>Performance Metrics Cheat Sheet</summary>
-<table><thead><tr><th></th><th>Predicted Positive</th><th>Predicted Negative</th></tr></thead>
-<tbody><tr><th>Real Positive</th><td class="cm-tp">TP</td><td class="cm-fn">FN</td></tr>
-<tr><th>Real Negative</th><td class="cm-fp">FP</td><td class="cm-tn">TN</td></tr></tbody></table>
-</details>
 <div id="calibration"><h1>Calibration</h1><div class="nav-tabs"><button class="active" data-group="cal" data-target="smooth">Smooth</button><button data-group="cal" data-target="discrete">Discrete</button></div><div id="smooth" class="panel active"><div id="smoothchart" class="chart"></div></div><div id="discrete" class="panel"><div id="discretechart" class="chart"></div></div></div>
 <div id="discrimination"><h1>Discrimination</h1><div id="auc"></div><div class="nav-tabs"><button class="active" data-group="disc" data-target="thr">By Probability Threshold</button><button data-group="disc" data-target="pcr">By Predicted Positives Condition Rate (PPCR)</button></div><div id="thr" class="panel active"><h3>Performance Metrics Curves</h3><div id="thrtabs" class="nav-tabs"></div><div id="thrchart" class="chart"></div></div><div id="pcr" class="panel"><h3>Performance Metrics Curves</h3><div id="pcrtabs" class="nav-tabs"></div><div id="pcrchart" class="chart"></div></div></div>
 <div id="utility-decision-curve"><h1>Utility (Decision Curve)</h1><div id="decision" class="chart"></div></div><div id="performance-table"><h1>Performance Table</h1><div class="nav-tabs"><button class="active" data-group="tbl" data-target="t1">By Probability Threshold</button><button data-group="tbl" data-target="t2">By Predicted Positives Condition Rate (PPCR)</button></div><div id="t1" class="panel active"><div id="table-threshold"></div></div><div id="t2" class="panel"><div id="table-ppcr"></div></div></div></div><div class="tip"></div><script>
