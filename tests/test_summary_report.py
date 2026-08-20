@@ -2,7 +2,7 @@ import re
 
 import numpy as np
 
-from rtichoke.summary_report.summary_report import create_summary_report
+from rtichoke import create_summary_report
 
 
 def test_create_summary_report_writes_native_html(tmp_path):
@@ -34,7 +34,7 @@ def test_create_summary_report_writes_native_html(tmp_path):
         "Confusion Matrix",
     ):
         assert text in html
-    assert "perf(R.tables.threshold" in html
+    assert "perf(R.tables.threshold" not in html
     assert "application/vnd.jupyter.widget-state+json" not in html
     assert "application/vnd.jupyter.widget-view+json" not in html
     assert "@jupyter-widgets" not in html
