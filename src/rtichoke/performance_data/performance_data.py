@@ -53,6 +53,12 @@ def _validate_and_align_binary_inputs(
         raise ValueError("`probs` must be a non-empty dictionary of probability arrays.")
 
     groups = list(probs)
+    for group in groups:
+        probs_values = np.asarray(probs[group])
+        if not np.all(np.isfinite(probs_values)) or np.any(
+            (probs_values < 0) | (probs_values > 1)
+        ):
+            raise ValueError("Estimated probabilities must be between 0 and 1.")
 
     if isinstance(reals, dict):
         expected_keys = set(groups)
@@ -60,20 +66,27 @@ def _validate_and_align_binary_inputs(
             raise ValueError("`reals` dictionary keys must exactly match `probs`.")
 
         for group in groups:
+            reals_values = np.asarray(reals[group])
             n_probs = len(np.asarray(probs[group]))
-            n_reals = len(np.asarray(reals[group]))
+            n_reals = len(reals_values)
             if n_probs != n_reals:
                 raise ValueError(
                     f"Input lengths must match within group {group!r}: "
                     f"len(probs)={n_probs}, len(reals)={n_reals}."
                 )
+            if not np.all(np.isin(reals_values, [0, 1])):
+                raise ValueError("Binary outcomes must contain only 0 and 1.")
 
         if len(groups) == 1:
             return np.asarray(reals[groups[0]])
 
         return {group: np.asarray(reals[group]) for group in groups}
 
-    n_reals = len(np.asarray(reals))
+    reals_values = np.asarray(reals)
+    if not np.all(np.isin(reals_values, [0, 1])):
+        raise ValueError("Binary outcomes must contain only 0 and 1.")
+
+    n_reals = len(reals_values)
     for group in groups:
         n_probs = len(np.asarray(probs[group]))
         if n_probs != n_reals:
