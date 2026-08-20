@@ -21,6 +21,35 @@ from rtichoke.processing.transforms import (
 import numpy as np
 
 
+_PERFORMANCE_DATA_TIMES_COLUMNS = [
+    "reference_group",
+    "fixed_time_horizon",
+    "censoring_heuristic",
+    "competing_heuristic",
+    "stratified_by",
+    "chosen_cutoff",
+    "excluded",
+    "true_positives",
+    "true_negatives",
+    "false_positives",
+    "false_negatives",
+    "predicted_positives",
+    "predicted_negatives",
+    "real_positives",
+    "real_negatives",
+    "n",
+    "sensitivity",
+    "specificity",
+    "ppv",
+    "npv",
+    "false_positive_rate",
+    "lift",
+    "net_benefit",
+    "net_benefit_interventions_avoided",
+    "ppcr",
+]
+
+
 def prepare_performance_data_times(
     probs: Dict[str, np.ndarray],
     reals: Union[np.ndarray, Dict[str, np.ndarray]],
@@ -131,6 +160,7 @@ def prepare_performance_data_times(
             "_fixed_time_horizon_order",
             "_heuristic_order",
         )
+        .select(_PERFORMANCE_DATA_TIMES_COLUMNS)
     )
 
 
