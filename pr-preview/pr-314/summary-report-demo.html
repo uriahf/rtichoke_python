@@ -365,7 +365,7 @@ function perf(rows,sel,isP){
 perf(R.tables.threshold,'#table-threshold',false);perf(R.tables.ppcr,'#table-ppcr',true);
 </script><script>
 (function(){
- const host=document.getElementById('prev'); if(!host||!window.SUM)return; const sizes={"Model A": 800, "Model B": 800};
+ const host=document.getElementById('prev'); if(!host||typeof SUM==='undefined')return; const sizes={"Model A": 800, "Model B": 800};
  host.innerHTML='';
  SUM.forEach((r,i)=>{
    const p=Number(r.Prevalence), n=sizes[r.Model]||0, row=document.createElement('div'); row.className='prevalence-row';
