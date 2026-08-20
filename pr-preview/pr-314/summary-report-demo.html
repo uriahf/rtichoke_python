@@ -91,7 +91,29 @@ table { width:100%; border-collapse:collapse; background:#fff; font-size:13px; m
 .rt-dual-range input[type=range]::-moz-range-thumb { width:22px !important; height:22px !important; border:1px solid #ababab !important; background:#dedede !important; border-radius:22px !important; box-shadow:1px 1px 3px rgba(255,255,255,.3) !important; }
 @media(max-width:760px){.main-container{padding-left:15px;padding-right:15px}h1{font-size:30px}h2{font-size:26px}h3{font-size:20px}.nav-tabs button{padding:8px 10px}table{font-size:12px}.metric-formulas{font-size:14px}.auc-table th,.auc-table td{min-width:0}.auc-table .prevalence-track{min-width:80px}.rt-filters{grid-template-columns:1fr;gap:12px}}
 
-</style></head><body><div class="container-fluid main-container"><div id="header"><h1 class="title toc-ignore">Summary Report</h1></div><div id="TOC"><ul>
+</style>
+<style id="r-page-parity">
+/* R Markdown leaves two explicit line breaks after the cheat sheet. */
+details.metric-cheat-sheet, details:has(.r-math-blocks) { margin-bottom:40px; }
+.r-math-blocks { margin:28px 0 18px; font-family:"STIXGeneral-Regular","Times New Roman",serif; font-size:16px; }
+.r-math-blocks .metric-equation { display:block; margin:0 0 26px; min-height:28px; line-height:1.45; }
+.r-math-blocks .frac { font-family:inherit; }
+.r-math-blocks .frac.compound { font-size:.95em; vertical-align:middle; }
+.r-math-blocks .frac.compact { margin:0; font-size:.92em; }
+#prev.r-prevalence-multi { width:645px; max-width:100%; margin:28px 0 20px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+.r-prevalence-header,.r-prevalence-multi .prevalence-row { display:grid; grid-template-columns:45px 300px 300px; width:645px; max-width:100%; }
+.r-prevalence-header { border-bottom:1px solid #ddd; font-weight:600; }
+.r-prevalence-header span { padding:7px 10px; }
+.r-prevalence-header span:first-child { padding:0; }
+.r-prevalence-multi .prevalence-population,.r-prevalence-multi .prevalence-cell { grid-row:1; padding:7px 10px; }
+.r-prevalence-multi .prevalence-population { display:flex; align-items:center; }
+.r-prevalence-multi .prevalence-cell>strong { display:none; }
+.r-prevalence-multi .prevalence-detail { grid-column:1/4; }
+@media(max-width:700px){
+  #prev.r-prevalence-multi,.r-prevalence-header,.r-prevalence-multi .prevalence-row{width:100%;grid-template-columns:36px minmax(120px,1fr) minmax(150px,1.2fr)}
+}
+</style>
+</head><body><div class="container-fluid main-container"><div id="header"><h1 class="title toc-ignore">Summary Report</h1></div><div id="TOC"><ul>
 <li><a href="#calibration">Calibration</a><ul>
 <li><a href="#smooth">Smooth</a></li>
 <li><a href="#discrete">Discrete</a></li>
@@ -110,15 +132,15 @@ table { width:100%; border-collapse:collapse; background:#fff; font-size:13px; m
 <li><a href="#t2">By Predicted Positives Condition Rate (PPCR)</a></li>
 </ul></li>
 </ul></div>
-<details><summary><p>Performance Metrics Cheat Sheet</p></summary><div class="cheat"><table><tr><th></th><th>Predicted Positive</th><th>Predicted Negative</th></tr><tr><th>Real Positive</th><td class="good">TP</td><td class="bad">FN</td></tr><tr><th>Real Negative</th><td class="bad">FP</td><td class="good">TN</td></tr></table></div><div class="metric-formulas">
-<div>Prevalence = <span class="frac"><span>TP + FN</span><span>TP + FP + TN + FN</span></span></div>
-<div>PPCR (Predicted Positives Condition Rate) = <span class="frac"><span>TP + FP</span><span>TP + FP + TN + FN</span></span></div>
-<div>Sensitivity (Recall, True Positive Rate) = <span class="frac"><span>TP</span><span>TP + FN</span></span> = <span class="frac"><span>TP</span><span>Real Positives</span></span> = Prob( Predicted Positive | Real Positive )</div>
-<div>Specificity (True Negative Rate) = <span class="frac"><span>TN</span><span>TN + FP</span></span> = <span class="frac"><span>TN</span><span>Real Negatives</span></span> = Prob( Predicted Negative | Real Negative )</div>
-<div>PPV (Precision) = <span class="frac"><span>TP</span><span>TP + FP</span></span> = <span class="frac"><span>TP</span><span>Predicted Positives</span></span> = Prob( Real Positive | Predicted Positive )</div>
-<div>NPV = <span class="frac"><span>TN</span><span>TN + FN</span></span> = <span class="frac"><span>TN</span><span>Predicted Negatives</span></span> = Prob( Real Negative | Predicted Negative )</div>
-<div>Lift = <span class="frac"><span>PPV</span><span>Prevalence</span></span></div>
-<div>Net Benefit = <span class="frac"><span>TP</span><span>TP + FP + TN + FN</span></span> − <span class="frac"><span>FP</span><span>TP + FP + TN + FN</span></span> × <span class="frac"><span>p<sub>t</sub></span><span>1 − p<sub>t</sub></span></span></div>
+<details><summary><p>Performance Metrics Cheat Sheet</p></summary><div class="cheat"><table><tr><th></th><th>Predicted Positive</th><th>Predicted Negative</th></tr><tr><th>Real Positive</th><td class="good">TP</td><td class="bad">FN</td></tr><tr><th>Real Negative</th><td class="bad">FP</td><td class="good">TN</td></tr></table></div><div class="metric-formulas r-math-blocks">
+<div class="metric-equation">Prevalence = <span class="frac"><span>TP + FN</span><span>TP + FP + TN + FN</span></span></div>
+<div class="metric-equation">PPCR (Predicted Positives Condition Rate) = <span class="frac"><span>TP + FP</span><span>TP + FP + TN + FN</span></span></div>
+<div class="metric-equation">Sensitivity (Recall, True Positive Rate) = <span class="frac"><span>TP</span><span>TP + FN</span></span> = <span class="frac"><span>TP</span><span>Real Positives</span></span> = Prob( Predicted Positive | Real Positive )</div>
+<div class="metric-equation">Specificity (True Negative Rate) = <span class="frac"><span>TN</span><span>TN + FP</span></span> = <span class="frac"><span>TN</span><span>Real Negatives</span></span> = Prob( Predicted Negative | Real Negative )</div>
+<div class="metric-equation">PPV (Precision) = <span class="frac"><span>TP</span><span>TP + FP</span></span> = <span class="frac"><span>TP</span><span>Predicted Positives</span></span> = Prob( Real Positive | Predicted Positive )</div>
+<div class="metric-equation">NPV = <span class="frac"><span>TN</span><span>TN + FN</span></span> = <span class="frac"><span>TN</span><span>Predicted Negatives</span></span> = Prob( Real Negative | Predicted Negative )</div>
+<div class="metric-equation">Lift = <span class="frac"><span>PPV</span><span>Prevalence</span></span> = <span class="frac compound"><span><span class="frac compact"><span>TP</span><span>TP + FP</span></span></span><span><span class="frac compact"><span>TP + FN</span><span>TP + FP + TN + FN</span></span></span></span></div>
+<div class="metric-equation">Net Benefit = <span class="frac"><span>TP</span><span>TP + FP + TN + FN</span></span> − <span class="frac"><span>FP</span><span>TP + FP + TN + FN</span></span> × <span class="frac"><span>p<sub>t</sub></span><span>1 − p<sub>t</sub></span></span></div>
 </div></details><div id="prev"></div>
 <div id="calibration"><h1>Calibration</h1><div class="nav-tabs"><button class="active" data-group="cal" data-target="smooth">Smooth</button><button data-group="cal" data-target="discrete">Discrete</button></div><div id="smooth" class="panel active"><div id="smoothchart" class="chart"></div></div><div id="discrete" class="panel"><div id="discretechart" class="chart"></div></div></div>
 <div id="discrimination"><h1>Discrimination</h1><div id="auc"></div><div class="nav-tabs"><button class="active" data-group="disc" data-target="thr">By Probability Threshold</button><button data-group="disc" data-target="pcr">By Predicted Positives Condition Rate (PPCR)</button></div><div id="thr" class="panel active"><h3 id="performance-metrics-curves">Performance Metrics Curves</h3><div id="thrtabs" class="nav-tabs"></div><div id="thrchart" class="chart"></div></div><div id="pcr" class="panel"><h3 id="performance-metrics-curves-1">Performance Metrics Curves</h3><div id="pcrtabs" class="nav-tabs"></div><div id="pcrchart" class="chart"></div></div></div>
@@ -720,7 +742,6 @@ function perf(rows,sel,isP){
     Plotly.react(host,fig.data,fig.layout,config);
   };
 
-  // Replace the D3 calibration canvases with the same Plotly engine used by R.
   draw('smoothchart',RP.smooth);
   draw('discretechart',RP.discrete);
   draw('decision',RP.decision);
@@ -744,9 +765,6 @@ function perf(rows,sel,isP){
   wireCurveTabs(RP.threshold,'thrtabs','thrchart');
   wireCurveTabs(RP.ppcr,'pcrtabs','pcrchart');
 
-  // Plotly calculates dimensions while a tab is visible. Resize when outer
-  // R-Markdown-style tabs are activated so hidden PPCR/calibration plots do not
-  // retain stale geometry.
   document.addEventListener('click',ev=>{
     const b=ev.target.closest('button[data-target]'); if(!b)return;
     requestAnimationFrame(()=>{
