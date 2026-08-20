@@ -3,7 +3,7 @@ authors = [
     {name = "Uriah Finkel"},
 ]
 license = {text = "MIT"}
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "plotly<6.0.0,>=5.13.1",
     "polarstate==0.1.8",
@@ -43,7 +43,7 @@ docs = [
 members = ["rtichoke"]
 
 [tool.uv.dependency-groups]
-docs = {requires-python = ">=3.13"}
+docs = {requires-python = ">=3.12"}
 
 [build-system]
 requires = ["uv_build>=0.7.20,<0.8.0"]
