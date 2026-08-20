@@ -67,9 +67,30 @@ def test_binary_decision_reference_is_population_specific():
 
     x = float(a.x[0])
     assert x == pytest.approx(0.1)
+    assert float(a.x[-1]) == pytest.approx(0.9)
     assert float(b.x[0]) == pytest.approx(x)
     assert float(a.y[0]) == pytest.approx(0.5 - 0.5 * x / (1 - x))
     assert float(b.y[0]) == pytest.approx(0.75 - 0.25 * x / (1 - x))
+
+
+def test_binary_interventions_avoided_honors_threshold_range():
+    probs, reals = _binary_inputs()
+    fig = create_decision_curve(
+        probs,
+        reals,
+        decision_type="interventions avoided",
+        by=0.1,
+        min_p_threshold=0.1,
+        max_p_threshold=0.9,
+    )
+
+    reference = next(
+        trace
+        for trace in fig.data
+        if trace.name.startswith("treat_none") and trace.visible is not False
+    )
+    assert float(reference.x[0]) == pytest.approx(0.1)
+    assert float(reference.x[-1]) == pytest.approx(0.9)
 
 
 def test_binary_gains_reference_is_population_specific():
