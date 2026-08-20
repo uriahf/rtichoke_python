@@ -89,8 +89,8 @@ def test_binary_interventions_avoided_honors_threshold_range():
     ]
     assert nonempty_visible
     for trace in nonempty_visible:
-        assert min(float(x) for x in trace.x) >= pytest.approx(0.1)
-        assert max(float(x) for x in trace.x) <= pytest.approx(0.9)
+        assert min(float(x) for x in trace.x) >= 0.1 - 1e-12
+        assert max(float(x) for x in trace.x) <= 0.9 + 1e-12
 
 
 def test_binary_gains_reference_is_population_specific():
