@@ -64,10 +64,10 @@ def create_strata_combinations(stratified_by: str, by: float, breaks) -> pl.Data
 
 
 def format_strata_column(
-    lower_bound: list[float],
-    upper_bound: list[float],
-    include_lower_bound: list[bool],
-    include_upper_bound: list[bool],
+    lower_bound: Sequence[float] | np.ndarray,
+    upper_bound: Sequence[float] | np.ndarray,
+    include_lower_bound: Sequence[bool] | np.ndarray,
+    include_upper_bound: Sequence[bool] | np.ndarray,
     decimals: int = 3,
 ) -> list[str]:
     return [
