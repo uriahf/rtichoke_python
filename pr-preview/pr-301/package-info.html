@@ -45,7 +45,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-bf476c94c8758bc321fd5fd3b984c438.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-84ac27f0ad322ca6b46d42a29965ff7f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -76,7 +76,18 @@ ul.task-list li input[type="checkbox"] {
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const nav = document.querySelector('nav.navbar ul.navbar-nav.me-auto');
-  if (!nav || nav.querySelector('[data-rtichoke-blog-link]')) return;
+  if (!nav || nav.querySelector('[data-rtichoke-guides-link]')) return;
+
+  const guidesItem = document.createElement('li');
+  guidesItem.className = 'nav-item';
+  guidesItem.setAttribute('data-rtichoke-guides-link', '');
+
+  const guidesLink = document.createElement('a');
+  guidesLink.className = 'nav-link';
+  const offset = document.querySelector('meta[name="quarto:offset"]');
+  guidesLink.href = (offset ? offset.content : '') + 'index.html';
+  guidesLink.textContent = 'Guides';
+  guidesItem.appendChild(guidesLink);
 
   const item = document.createElement('li');
   item.className = 'nav-item';
@@ -91,8 +102,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const reference = [...nav.children].find((el) =>
     el.textContent.trim().toLowerCase().includes('reference')
   );
+  nav.insertBefore(guidesItem, reference || null);
   nav.insertBefore(item, reference || null);
 });
+</script>
+<script>
+(function () {
+  var script = document.createElement('script');
+  var offset = document.querySelector('meta[name="quarto:offset"]');
+  script.src = (offset ? offset.content : '') + 'assets/uriahtalks-horizon-explorer.js';
+  script.defer = true;
+  document.head.appendChild(script);
+})();
 </script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script>document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:(document.querySelector('meta[name="quarto:offset"]')||{content:''}).content+'termshow.css'}));</script>
@@ -127,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">rtichoke <span class="version-badge" title="Released 2026-08-12">v0.1.30</span></span>
+    <span class="navbar-title">rtichoke <span class="version-badge" title="Released 2026-08-18">v0.1.35</span></span>
     </a>
   </div>
             <div id="quarto-search" class=""></div>
@@ -148,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
     <span class="nav-link">
-<div id="github-widget" data-owner="uriahf" data-repo="rtichoke_python" data-stars="0" data-forks="0"></div>
+<div id="github-widget" data-owner="uriahf" data-repo="rtichoke_python" data-stars="1" data-forks="0"></div>
     </span>
   </li>  
 </ul>
@@ -213,40 +234,16 @@ document.addEventListener('DOMContentLoaded', () => {
 <td><a href="https://pypi.org/project/plotly/" class="gd-pypi-link"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></a></td>
 </tr>
 <tr class="even">
-<td><code class="gd-no-link">pandas</code></td>
-<td><code>&gt;=2.2.3</code></td>
-<td>2026-07-22</td>
-<td><a href="https://pypi.org/project/pandas/" class="gd-pypi-link"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></a></td>
-</tr>
-<tr class="odd">
-<td><code class="gd-no-link">typing</code></td>
-<td><code>&gt;=3.7.4.3</code></td>
-<td>2021-05-01</td>
-<td><a href="https://pypi.org/project/typing/" class="gd-pypi-link"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></a></td>
-</tr>
-<tr class="even">
 <td><code class="gd-no-link">polarstate</code></td>
 <td><code>==0.1.8</code></td>
 <td>2025-07-29</td>
 <td><a href="https://pypi.org/project/polarstate/" class="gd-pypi-link"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></a></td>
 </tr>
 <tr class="odd">
-<td><code class="gd-no-link">marimo</code></td>
-<td><code>&gt;=0.17.0</code></td>
-<td>2026-07-31</td>
-<td><a href="https://pypi.org/project/marimo/" class="gd-pypi-link"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></a></td>
-</tr>
-<tr class="even">
-<td><code class="gd-no-link">pyarrow</code></td>
-<td><code>&gt;=21.0.0</code></td>
-<td>2026-08-10</td>
-<td><a href="https://pypi.org/project/pyarrow/" class="gd-pypi-link"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></a></td>
-</tr>
-<tr class="odd">
-<td><code class="gd-no-link">statsmodels</code></td>
-<td><code>&gt;=0.14.0</code></td>
-<td>2025-12-05</td>
-<td><a href="https://pypi.org/project/statsmodels/" class="gd-pypi-link"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></a></td>
+<td><code class="gd-no-link">smoothstate</code></td>
+<td><code>&gt;=0.1.1</code></td>
+<td>2026-08-19</td>
+<td><a href="https://pypi.org/project/smoothstate/" class="gd-pypi-link"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></a></td>
 </tr>
 <tr class="even">
 <td><code class="gd-no-link">polars</code></td>
@@ -272,9 +269,9 @@ document.addEventListener('DOMContentLoaded', () => {
 <section id="summary" class="level1">
 <h1>Summary</h1>
 <ul>
-<li><strong>Requires:</strong> Python <code>&gt;=3.9</code></li>
-<li><strong>Runtime Dependencies:</strong> 10</li>
-<li><strong>Total unique dependencies:</strong> 10</li>
+<li><strong>Requires:</strong> Python <code>&gt;=3.10</code></li>
+<li><strong>Runtime Dependencies:</strong> 6</li>
+<li><strong>Total unique dependencies:</strong> 6</li>
 </ul>
 
 

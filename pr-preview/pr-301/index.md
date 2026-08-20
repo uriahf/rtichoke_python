@@ -136,5 +136,5 @@ From here, use the API Reference for the full set of curve types, parameters, an
 
 ### Meta
 
-**Requires:** Python `>=3.9`\
+**Requires:** Python `>=3.10`\
 [Package Info](package-info.md)

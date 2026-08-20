@@ -35,8 +35,7 @@ The true binary labels (0 or 1). Can be a single array for all probabilities or 
 `by: float = ``0.01`  
 The step size for the probability thresholds, controlling the curve's granularity. Defaults to 0.01.
 
-`stratified_by: Sequence[str] = [`<span class="st">`"probability_threshold"]`\
-</span>  
+`stratified_by: Sequence[str] = [``"probability_threshold"]`  
 Variables for stratification. Defaults to `["probability_threshold"]`.
 
 `size: int = ``600`  
@@ -63,8 +62,7 @@ The width and height of the plot in pixels. Defaults to 600.
 `    ``"#2176FF"``,`\
 `    ``"#D1603D"``,`\
 `    ``"#585123"``,`\
-`]`\
-</span>  
+`]`</span>  
 A list of hex color strings for the plot lines. A default palette is used if not provided.
 
 

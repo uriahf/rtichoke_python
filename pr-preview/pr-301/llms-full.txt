@@ -577,31 +577,13 @@ Figure
 Calibration visualizations for classification and time-to-event models. See Curve API Compatibility for time-dependent heuristic and horizon differences.
 
 
-create_calibration_curve(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], calibration_type: str = 'discrete', size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+create_calibration_curve(*args, **kwargs)
 
-Creates Calibration Curve
+Create an interactive calibration plot with a square main panel.
 
-Args:
-    probs (Dict[str, List[float]]): _description_
-    reals (Dict[str, List[int]]): _description_
-    calibration_type (str, optional): _description_. Defaults to "discrete".
-    size (Optional[int], optional): _description_. Defaults to None.
-    color_values (List[str], optional): _description_. Defaults to None.
-    url_api (_type_, optional): _description_. Defaults to "http://localhost:4242/".
+create_calibration_curve_times(*args, **kwargs)
 
-Returns:
-    Figure: _description_
-
-create_calibration_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: List[float], heuristics_sets: List[Dict[str, str]] = [{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}], calibration_type: str = 'discrete', size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
-
-Create a time-dependent calibration curve across fixed horizons.
-
-Adjusted censoring is used by default. In data without competing events,
-the default competing-event heuristic has no effect.
-
-Raises:
-    ValueError: If a heuristic set requests adjusted censoring or treats
-        competing events as censored, which calibration does not support.
+Create an interactive time-dependent calibration plot with a square main panel.
 
 
 ## Utility
@@ -952,23 +934,25 @@ These statements describe the effect of the heuristics on the estimates. Functio
 
 ## Time-dependent calibration heuristics
 
-`create_calibration_curve_times()` differs from its ROC, precision-recall, Gains, Lift, and decision-curve siblings in two important ways:
-
-1. `heuristics_sets` is currently required rather than defaulted.
-2. Calibration explicitly rejects unsupported heuristic combinations, including `censoring_heuristic="adjusted"` and `competing_heuristic="adjusted_as_censored"`, with an `Unsupported calibration heuristics` error instead of silently skipping every requested horizon.
-
-Pass the calibration heuristic explicitly. For the currently working exclusion-based path:
+`create_calibration_curve_times()` defaults to one adjusted heuristic set:
 
 ```python
 heuristics_sets = [
     {
-        "censoring_heuristic": "excluded",
+        "censoring_heuristic": "adjusted",
         "competing_heuristic": "adjusted_as_negative",
     }
 ]
 ```
 
-Then call:
+You can still provide a different single heuristic set explicitly. Calibration currently accepts exactly one heuristic set per call because the plot has no heuristic selector; passing several sets raises a clear `ValueError` instead of combining them into one calibration trace. Calibration also rejects unsupported combinations such as `competing_heuristic="adjusted_as_censored"`.
+
+When `calibration_type="smooth"`, you can also specify the `smooth_method`:
+- `"local_aj"` (default): Gerds' local Aalen-Johansen/KM neighborhood estimation.
+- `"secondary_cox"`: Secondary Cox regression method (Austin, Harrell & McLernon 2020).
+- `"pseudo_values"`: Leave-one-out Aalen-Johansen pseudo-observations lowess.
+
+The default call is therefore simply:
 
 ```python
 fig = rk.create_calibration_curve_times(
@@ -976,7 +960,6 @@ fig = rk.create_calibration_curve_times(
     reals=reals,
     times=times,
     fixed_time_horizons=[3.0, 6.0, 9.0],
-    heuristics_sets=heuristics_sets,
 )
 ```
 
@@ -988,6 +971,65 @@ fig = rk.create_calibration_curve_times(
 
 When moving between curve families, compare the API reference for the relevant `_times()` functions rather than assuming their defaults and accepted heuristics are identical. In particular, calibration has a narrower heuristic contract than the other time-dependent curve families.
 
+
+
+## Before You Validate
+
+### Fixed Time Horizons
+
+A time-to-event prediction must specify when the outcome is evaluated. Use
+`fixed_time_horizons` to declare those times in the same unit as `times` and
+the prediction model:
+
+```python
+fixed_time_horizons = [5.0, 10.0]  # years
+```
+
+Choose clinically meaningful horizons before inspecting performance. Changing
+the horizon changes the outcome being validated.
+
+## Update administrative censoring
+
+At a fixed horizon:
+
+- an event observed after the horizon is a 🤨 non-event *at that horizon*;
+- event-free follow-up ending before the horizon is 🤬 censored;
+- a primary event observed by the horizon remains 🤢; and
+- a competing event observed by the horizon remains 💀.
+
+## Explore the horizon
+
+Move the slider to see how the selected horizon changes each observation. The
+vertical line marks the horizon; information after it is not used.
+
+<uriahtalks-horizon-explorer
+  min="10" max="50" step="10" horizon="50"
+  accent-color="#7a9a01"
+  heading="Explore the horizon">
+</uriahtalks-horizon-explorer>
+
+The symbols are:
+
+- 🤬 censored before the horizon;
+- 🤢 primary event;
+- 🤨 non-event through the horizon; and
+- 💀 competing event.
+
+## Pass horizons to `rtichoke`
+
+```python
+performance_data = rk.prepare_performance_data_times(
+    probs=probs,
+    reals=reals,
+    times=times,
+    fixed_time_horizons=[5.0, 10.0],
+)
+```
+
+
+
+
+## Using rtichoke
 
 ### Common Errors & Fixes
 
@@ -1020,18 +1062,18 @@ See [Curve API Compatibility](curve-api-compatibility.html) for the family-by-fa
 
 ### Why it happens
 
-Calibration does not currently implement `censoring_heuristic="adjusted"` or
-`competing_heuristic="adjusted_as_censored"`. These inputs are rejected
-before curve construction rather than silently skipping every requested horizon.
+Calibration does not support `competing_heuristic="adjusted_as_censored"`.
+This input is rejected before curve construction rather than silently
+skipping every requested horizon.
 
 ### Fix
 
-Pass a supported calibration heuristic explicitly. For the exclusion-based path:
+Pass a supported calibration heuristic explicitly. For example:
 
 ```python
 heuristics_sets = [
     {
-        "censoring_heuristic": "excluded",
+        "censoring_heuristic": "adjusted",
         "competing_heuristic": "adjusted_as_negative",
     }
 ]
@@ -1219,4 +1261,92 @@ Use `renderer="reactable"` here as well if you want the Reactable backend.
 ## Related documentation
 
 For the underlying numerical data, see the `prepare_performance_data()` and `prepare_performance_data_times()` API reference. For time-dependent censoring and competing-event semantics, see [Curve API Compatibility](curve-api-compatibility.html).
+
+
+
+## Curves
+
+### Calibration Curves
+
+Calibration evaluates how well predicted risks from a classification or time-to-event model align with observed outcome rates.
+
+## Standard Calibration (`create_calibration_curve`)
+
+For binary outcomes:
+
+```python
+import rtichoke as rk
+
+fig = rk.create_calibration_curve(
+    probs={"Model A": probs_a},
+    reals=reals_binary,
+    calibration_type="smooth",
+)
+```
+
+`calibration_type` can be set to `"discrete"` (deciles) or `"smooth"` (lowess curve).
+
+## Time-Dependent Calibration (`create_calibration_curve_times`)
+
+When evaluating risk predictions at a specific time horizon $t$:
+
+```python
+heuristics_sets = [
+    {
+        "censoring_heuristic": "adjusted",
+        "competing_heuristic": "adjusted_as_negative",
+    }
+]
+
+fig = rk.create_calibration_curve_times(
+    probs={"Model A": probs_a},
+    reals=reals_time_to_event,
+    times=times,
+    fixed_time_horizons=[3.0, 5.0],
+    heuristics_sets=heuristics_sets,
+    calibration_type="smooth",
+    smooth_method="local_aj",
+)
+```
+
+## Smoothing Methods for Time-Dependent Calibration
+
+When `calibration_type="smooth"`, `create_calibration_curve_times` supports three distinct statistical smoothing methods via the `smooth_method` parameter:
+
+### 1. Local Aalen-Johansen (`smooth_method="local_aj"`, Default)
+
+**Gerds' favoured local neighborhood method** (`riskRegression::plotCalibration(method="nne", cens.method="local")`):
+
+- Computes local Aalen-Johansen / Kaplan-Meier cumulative incidence estimates within nearest-neighborhood risk windows across predicted probabilities.
+- Fully non-parametric and handles both standard survival and competing risks ($0=\text{censored}$, $1=\text{event}$, $2=\text{competing event}$).
+- You can tune the neighborhood window using the optional `bandwidth` parameter (e.g., `bandwidth=0.2`).
+
+### 2. Secondary Cox Model (`smooth_method="secondary_cox"`)
+
+**Austin, Harrell & McLernon original time-to-event method** (Austin et al. 2020 / McLernon et al. 2023):
+
+- Fits a secondary cause-specific Cox proportional hazards model on the complementary log-log transformed predictions ($\log(-\log(1-p))$).
+- Evaluates predicted cumulative incidence at horizon $t$ across the grid of predicted probabilities.
+
+### 3. Pseudo-Values LOWESS (`smooth_method="pseudo_values"`)
+
+**Jackknife pseudo-observations method**:
+
+- Computes leave-one-out Aalen-Johansen pseudo-values for each subject at horizon $t$.
+- Applies LOWESS smoothing against predicted probabilities.
+
+## Discrete (Binned) Calibration
+
+For binned decile plots at time horizons, pass `calibration_type="discrete"`:
+
+```python
+fig = rk.create_calibration_curve_times(
+    probs={"Model A": probs_a},
+    reals=reals_time_to_event,
+    times=times,
+    fixed_time_horizons=[5.0],
+    heuristics_sets=heuristics_sets,
+    calibration_type="discrete",
+)
+```
 

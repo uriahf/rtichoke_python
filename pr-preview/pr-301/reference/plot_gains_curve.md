@@ -22,8 +22,7 @@ This function is useful for plotting a Gains curve directly from a DataFrame tha
 `performance_data: pl.DataFrame`  
 A Polars DataFrame with performance metrics. It must include columns for the percentage of the population targeted and the corresponding gain, along with any stratification variables.
 
-`stratified_by: Sequence[str] = [`<span class="st">`"probability_threshold"]`\
-</span>  
+`stratified_by: Sequence[str] = [``"probability_threshold"]`  
 The columns in `performance_data` used for stratification. Defaults to `["probability_threshold"]`.
 
 `size: int = ``600`  

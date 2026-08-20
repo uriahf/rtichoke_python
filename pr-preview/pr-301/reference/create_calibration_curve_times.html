@@ -80,7 +80,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-bf476c94c8758bc321fd5fd3b984c438.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-84ac27f0ad322ca6b46d42a29965ff7f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -111,7 +111,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const nav = document.querySelector('nav.navbar ul.navbar-nav.me-auto');
-  if (!nav || nav.querySelector('[data-rtichoke-blog-link]')) return;
+  if (!nav || nav.querySelector('[data-rtichoke-guides-link]')) return;
+
+  const guidesItem = document.createElement('li');
+  guidesItem.className = 'nav-item';
+  guidesItem.setAttribute('data-rtichoke-guides-link', '');
+
+  const guidesLink = document.createElement('a');
+  guidesLink.className = 'nav-link';
+  const offset = document.querySelector('meta[name="quarto:offset"]');
+  guidesLink.href = (offset ? offset.content : '') + 'index.html';
+  guidesLink.textContent = 'Guides';
+  guidesItem.appendChild(guidesLink);
 
   const item = document.createElement('li');
   item.className = 'nav-item';
@@ -126,8 +137,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const reference = [...nav.children].find((el) =>
     el.textContent.trim().toLowerCase().includes('reference')
   );
+  nav.insertBefore(guidesItem, reference || null);
   nav.insertBefore(item, reference || null);
 });
+</script>
+<script>
+(function () {
+  var script = document.createElement('script');
+  var offset = document.querySelector('meta[name="quarto:offset"]');
+  script.src = (offset ? offset.content : '') + 'assets/uriahtalks-horizon-explorer.js';
+  script.defer = true;
+  document.head.appendChild(script);
+})();
 </script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script>document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:(document.querySelector('meta[name="quarto:offset"]')||{content:''}).content+'termshow.css'}));</script>
@@ -143,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <link rel="stylesheet" href="../site.css">
   <link rel="alternate" type="text/markdown" href="create_calibration_curve_times.md">
   <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve_times.html">
-  <meta name="description" content="Create a time-dependent calibration curve across fixed horizons.">
+  <meta name="description" content="Create an interactive time-dependent calibration plot with a square main panel.">
   <script type="application/ld+json">
 [
   {
@@ -173,12 +194,12 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
   <meta property="og:type" content="website">
   <meta property="og:title" content="create_calibration_curve_times() – rtichoke | rtichoke">
-  <meta property="og:description" content="Create a time-dependent calibration curve across fixed horizons.">
+  <meta property="og:description" content="Create an interactive time-dependent calibration plot with a square main panel.">
   <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve_times.html">
   <meta property="og:site_name" content="rtichoke">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="create_calibration_curve_times() – rtichoke | rtichoke">
-  <meta name="twitter:description" content="Create a time-dependent calibration curve across fixed horizons.">
+  <meta name="twitter:description" content="Create an interactive time-dependent calibration plot with a square main panel.">
 </head>
 
 <body class="gd-ref-sidebar nav-sidebar floating nav-fixed doc-api-page quarto-light">
@@ -189,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
-    <span class="navbar-title">rtichoke <span class="version-badge" title="Released 2026-08-12">v0.1.30</span></span>
+    <span class="navbar-title">rtichoke <span class="version-badge" title="Released 2026-08-18">v0.1.35</span></span>
     </a>
   </div>
             <div id="quarto-search" class=""></div>
@@ -210,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
     <span class="nav-link">
-<div id="github-widget" data-owner="uriahf" data-repo="rtichoke_python" data-stars="0" data-forks="0"></div>
+<div id="github-widget" data-owner="uriahf" data-repo="rtichoke_python" data-stars="1" data-forks="0"></div>
     </span>
   </li>  
 </ul>
@@ -457,35 +478,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <div class="doc-subject">
-<p>Create a time-dependent calibration curve across fixed horizons.</p>
+<p>Create an interactive time-dependent calibration plot with a square main panel.</p>
 </div>
 <div class="doc-usage-source">
 <p>Usage</p>
-<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/calibration/calibration.py#L72-L145" target="_blank" rel="noopener">Source</a></p>
+<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/calibration/__init__.py#L26-L42" target="_blank" rel="noopener">Source</a></p>
 </div>
 <div class="doc-signature doc-Kind.FUNCTION">
-<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">create_calibration_curve_times</span>(</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">probs</span>,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">reals</span>,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">times</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="va">fixed_time_horizons</span>,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">heuristics_sets</span><span class="op">=</span>[{<span class="st">&quot;censoring_heuristic&quot;</span>: <span class="st">&quot;adjusted&quot;</span>, <span class="st">&quot;competing_heuristic&quot;</span>: <span class="st">&quot;adjusted_as_negative&quot;</span>}],</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="va">calibration_type</span><span class="op">=</span><span class="st">&quot;discrete&quot;</span>,</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="va">size</span><span class="op">=</span><span class="dv">600</span>,</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="va">color_values</span><span class="op">=</span>[<span class="st">&quot;#1b9e77&quot;</span>, <span class="st">&quot;#d95f02&quot;</span>, <span class="st">&quot;#7570b3&quot;</span>, <span class="st">&quot;#e7298a&quot;</span>, <span class="st">&quot;#07004D&quot;</span>, <span class="st">&quot;#E6AB02&quot;</span>, <span class="st">&quot;#FE5F55&quot;</span>, <span class="st">&quot;#54494B&quot;</span>, <span class="st">&quot;#006E90&quot;</span>, <span class="st">&quot;#BC96E6&quot;</span>, <span class="st">&quot;#52050A&quot;</span>, <span class="st">&quot;#1F271B&quot;</span>, <span class="st">&quot;#BE7C4D&quot;</span>, <span class="st">&quot;#63768D&quot;</span>, <span class="st">&quot;#08A045&quot;</span>, <span class="st">&quot;#320A28&quot;</span>, <span class="st">&quot;#82FF9E&quot;</span>, <span class="st">&quot;#2176FF&quot;</span>, <span class="st">&quot;#D1603D&quot;</span>, <span class="st">&quot;#585123&quot;</span>]</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
-</div>
-<div class="doc-text">
-<p>Adjusted censoring is used by default. In data without competing events, the default competing-event heuristic has no effect.</p>
-<section id="raises" class="level2 doc-section doc-section-raises">
-<h2 class="doc-section doc-section-raises">Raises</h2>
-<dl>
-<dt><code><span class="parameter-annotation">ValueError</span></code></dt>
-<dd>
-<p>If a heuristic set requests adjusted censoring or treats competing events as censored, which calibration does not support.</p>
-</dd>
-</dl>
-</section>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">create_calibration_curve_times</span>(
+    <span class="op">*</span><span class="va">args</span>,
+    <span class="op">**</span><span class="va">kwargs</span>,
+)</span></code></pre></div>
 </div>
 
 

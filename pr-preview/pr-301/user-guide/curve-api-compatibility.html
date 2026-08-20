@@ -82,7 +82,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-bf476c94c8758bc321fd5fd3b984c438.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-84ac27f0ad322ca6b46d42a29965ff7f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -113,7 +113,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const nav = document.querySelector('nav.navbar ul.navbar-nav.me-auto');
-  if (!nav || nav.querySelector('[data-rtichoke-blog-link]')) return;
+  if (!nav || nav.querySelector('[data-rtichoke-guides-link]')) return;
+
+  const guidesItem = document.createElement('li');
+  guidesItem.className = 'nav-item';
+  guidesItem.setAttribute('data-rtichoke-guides-link', '');
+
+  const guidesLink = document.createElement('a');
+  guidesLink.className = 'nav-link';
+  const offset = document.querySelector('meta[name="quarto:offset"]');
+  guidesLink.href = (offset ? offset.content : '') + 'index.html';
+  guidesLink.textContent = 'Guides';
+  guidesItem.appendChild(guidesLink);
 
   const item = document.createElement('li');
   item.className = 'nav-item';
@@ -128,8 +139,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const reference = [...nav.children].find((el) =>
     el.textContent.trim().toLowerCase().includes('reference')
   );
+  nav.insertBefore(guidesItem, reference || null);
   nav.insertBefore(item, reference || null);
 });
+</script>
+<script>
+(function () {
+  var script = document.createElement('script');
+  var offset = document.querySelector('meta[name="quarto:offset"]');
+  script.src = (offset ? offset.content : '') + 'assets/uriahtalks-horizon-explorer.js';
+  script.defer = true;
+  document.head.appendChild(script);
+})();
 </script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script>document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:(document.querySelector('meta[name="quarto:offset"]')||{content:''}).content+'termshow.css'}));</script>
@@ -164,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
-    <span class="navbar-title">rtichoke <span class="version-badge" title="Released 2026-08-12">v0.1.30</span></span>
+    <span class="navbar-title">rtichoke <span class="version-badge" title="Released 2026-08-18">v0.1.35</span></span>
     </a>
   </div>
             <div id="quarto-search" class=""></div>
@@ -185,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
     <span class="nav-link">
-<div id="github-widget" data-owner="uriahf" data-repo="rtichoke_python" data-stars="0" data-forks="0"></div>
+<div id="github-widget" data-owner="uriahf" data-repo="rtichoke_python" data-stars="1" data-forks="0"></div>
     </span>
   </li>  
 </ul>
@@ -254,13 +275,41 @@ document.addEventListener('DOMContentLoaded', () => {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Model Performance</span></a>
+ <span class="menu-text">Before You Validate</span></a>
 </div>
       <ul id="quarto-sidebar-section-3" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../user-guide/fixed-time-horizons.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Fixed Time Horizons</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Model Performance</span></a>
+</div>
+      <ul id="quarto-sidebar-section-4" class="list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../user-guide/performance-tables.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Performance Tables</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Curves</span></a>
+</div>
+      <ul id="quarto-sidebar-section-5" class="list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user-guide/calibration-curves.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Calibration Curves</span></a>
   </div>
 </li>
       </ul>
@@ -340,26 +389,22 @@ len(probs["Test"])  == len(reals["Test"])</code></pre>
 </section>
 <section id="time-dependent-calibration-heuristics" class="level1">
 <h1>Time-dependent calibration heuristics</h1>
-<p><a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> differs from its ROC, precision-recall, Gains, Lift, and decision-curve siblings in two important ways:</p>
-<ol type="1">
-<li><code>heuristics_sets</code> is currently required rather than defaulted.</li>
-<li>Calibration explicitly rejects unsupported heuristic combinations, including <code>censoring_heuristic="adjusted"</code> and <code>competing_heuristic="adjusted_as_censored"</code>, with an <code>Unsupported calibration heuristics</code> error instead of silently skipping every requested horizon.</li>
-</ol>
-<p>Pass the calibration heuristic explicitly. For the currently working exclusion-based path:</p>
+<p><a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> defaults to one adjusted heuristic set:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>heuristics_sets <span class="op">=</span> [</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    {</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"censoring_heuristic"</span>: <span class="st">"excluded"</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"censoring_heuristic"</span>: <span class="st">"adjusted"</span>,</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"competing_heuristic"</span>: <span class="st">"adjusted_as_negative"</span>,</span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div>
-<p>Then call:</p>
+<p>You can still provide a different single heuristic set explicitly. Calibration currently accepts exactly one heuristic set per call because the plot has no heuristic selector; passing several sets raises a clear <code>ValueError</code> instead of combining them into one calibration trace. Calibration also rejects unsupported combinations such as <code>competing_heuristic="adjusted_as_censored"</code>.</p>
+<p>When <code>calibration_type="smooth"</code>, you can also specify the <code>smooth_method</code>: - <code>"local_aj"</code> (default): Gerds’ local Aalen-Johansen/KM neighborhood estimation. - <code>"secondary_cox"</code>: Secondary Cox regression method (Austin, Harrell &amp; McLernon 2020). - <code>"pseudo_values"</code>: Leave-one-out Aalen-Johansen pseudo-observations lowess.</p>
+<p>The default call is therefore simply:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_calibration_curve_times(</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>probs,</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals,</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    times<span class="op">=</span>times,</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    fixed_time_horizons<span class="op">=</span>[<span class="fl">3.0</span>, <span class="fl">6.0</span>, <span class="fl">9.0</span>],</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    heuristics_sets<span class="op">=</span>heuristics_sets,</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 </section>
 <section id="numeric-time-horizons" class="level1">
 <h1>Numeric time horizons</h1>

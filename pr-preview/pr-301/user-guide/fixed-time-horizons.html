@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Naming Conventions – rtichoke | rtichoke</title>
+<title>Fixed Time Horizons – rtichoke | rtichoke</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -26,6 +26,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -36,8 +71,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../user-guide/curve-api-compatibility.html" rel="next">
-<link href="../index.html" rel="prev">
+<link href="../user-guide/performance-tables.html" rel="next">
+<link href="../user-guide/common-errors.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -129,17 +164,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <link rel="stylesheet" href="../site.css">
-  <link rel="alternate" type="text/markdown" href="naming-conventions.md">
-  <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/user-guide/naming-conventions.html">
-  <meta name="description" content="For example, a direct ROC workflow uses create_roc_curve(), while a workflow that first prepares reusable performance data can pass those results to...">
+  <link rel="alternate" type="text/markdown" href="fixed-time-horizons.md">
+  <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/user-guide/fixed-time-horizons.html">
+  <meta name="description" content="A time-to-event prediction must specify when the outcome is evaluated. Use fixed_time_horizons to declare those times in the same unit as times and the...">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Naming Conventions – rtichoke | rtichoke">
-  <meta property="og:description" content="For example, a direct ROC workflow uses create_roc_curve(), while a workflow that first prepares reusable performance data can pass those results to...">
-  <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/user-guide/naming-conventions.html">
+  <meta property="og:title" content="Fixed Time Horizons – rtichoke | rtichoke">
+  <meta property="og:description" content="A time-to-event prediction must specify when the outcome is evaluated. Use fixed_time_horizons to declare those times in the same unit as times and the...">
+  <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/user-guide/fixed-time-horizons.html">
   <meta property="og:site_name" content="rtichoke">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Naming Conventions – rtichoke | rtichoke">
-  <meta name="twitter:description" content="For example, a direct ROC workflow uses create_roc_curve(), while a workflow that first prepares reusable performance data can pass those results to...">
+  <meta name="twitter:title" content="Fixed Time Horizons – rtichoke | rtichoke">
+  <meta name="twitter:description" content="A time-to-event prediction must specify when the outcome is evaluated. Use fixed_time_horizons to declare those times in the same unit as times and the...">
 </head>
 
 <body class="nav-sidebar floating nav-fixed quarto-light">
@@ -185,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <h1 class="quarto-secondary-nav-title no-breadcrumbs">Naming Conventions</h1>
+        <h1 class="quarto-secondary-nav-title no-breadcrumbs">Fixed Time Horizons</h1>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -211,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user-guide/naming-conventions.html" class="sidebar-item-text sidebar-link active">
+  <a href="../user-guide/naming-conventions.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Naming Conventions</span></a>
   </div>
 </li>
@@ -245,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <ul id="quarto-sidebar-section-3" class="list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user-guide/fixed-time-horizons.html" class="sidebar-item-text sidebar-link">
+  <a href="../user-guide/fixed-time-horizons.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Fixed Time Horizons</span></a>
   </div>
 </li>
@@ -289,11 +324,9 @@ document.addEventListener('DOMContentLoaded', () => {
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#function-families" id="toc-function-families" class="nav-link active" data-scroll-target="#function-families">Function families</a></li>
-  <li><a href="#curve-families" id="toc-curve-families" class="nav-link" data-scroll-target="#curve-families">Curve families</a></li>
-  <li><a href="#performance-tables" id="toc-performance-tables" class="nav-link" data-scroll-target="#performance-tables">Performance tables</a></li>
-  <li><a href="#time-to-event-variants" id="toc-time-to-event-variants" class="nav-link" data-scroll-target="#time-to-event-variants">Time-to-event variants</a></li>
-  <li><a href="#a-useful-mental-model" id="toc-a-useful-mental-model" class="nav-link" data-scroll-target="#a-useful-mental-model">A useful mental model</a></li>
+  <li><a href="#update-administrative-censoring" id="toc-update-administrative-censoring" class="nav-link active" data-scroll-target="#update-administrative-censoring">Update administrative censoring</a></li>
+  <li><a href="#explore-the-horizon" id="toc-explore-the-horizon" class="nav-link" data-scroll-target="#explore-the-horizon">Explore the horizon</a></li>
+  <li><a href="#pass-horizons-to-rtichoke" id="toc-pass-horizons-to-rtichoke" class="nav-link" data-scroll-target="#pass-horizons-to-rtichoke">Pass horizons to <code>rtichoke</code></a></li>
   </ul>
 </nav>
     </div>
@@ -302,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title d-none d-lg-block">Naming Conventions</h1>
+<h1 class="title d-none d-lg-block">Fixed Time Horizons</h1>
 </div>
 
 
@@ -319,139 +352,39 @@ document.addEventListener('DOMContentLoaded', () => {
 </header>
 
 
-<p><code>rtichoke</code> uses consistent function names so that the API becomes easier to predict once you know the main families.</p>
-<section id="function-families" class="level1">
-<h1>Function families</h1>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Prefix</th>
-<th>Purpose</th>
-<th>Typical input</th>
-<th>Typical output</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>prepare_*</code></td>
-<td>Prepare reusable performance data</td>
-<td>predictions and observed outcomes</td>
-<td>performance data</td>
-</tr>
-<tr class="even">
-<td><code>create_*</code></td>
-<td>Prepare data and create a visualization or table in one call</td>
-<td>predictions and observed outcomes</td>
-<td>figure or rendered table</td>
-</tr>
-<tr class="odd">
-<td><code>plot_*</code></td>
-<td>Visualize data that has already been prepared</td>
-<td>performance data</td>
-<td>interactive figure</td>
-</tr>
-<tr class="even">
-<td><code>render_*</code></td>
-<td>Render already-prepared data as a table</td>
-<td>prepared performance data</td>
-<td>rendered table</td>
-</tr>
-</tbody>
-</table>
-<p>For example, a direct ROC workflow uses <a href="../reference/create_roc_curve.html#rtichoke.create_roc_curve" class="gdls-link gdls-code">create_roc_curve()</a>, while a workflow that first prepares reusable performance data can pass those results to <a href="../reference/plot_roc_curve.html#rtichoke.plot_roc_curve" class="gdls-link gdls-code">plot_roc_curve()</a>. Performance tables follow the same direct-versus-prepared-data idea: <a href="../reference/create_performance_table.html#rtichoke.create_performance_table" class="gdls-link gdls-code">create_performance_table()</a> prepares and renders in one call, while <a href="../reference/render_performance_table.html#rtichoke.render_performance_table" class="gdls-link gdls-code">render_performance_table()</a> renders an already-prepared performance-data frame.</p>
-</section>
-<section id="curve-families" class="level1">
-<h1>Curve families</h1>
-<p>The same naming pattern repeats across the main performance curves:</p>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Performance view</th>
-<th>Direct visualization</th>
-<th>Plot prepared data</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>ROC</td>
-<td><a href="../reference/create_roc_curve.html#rtichoke.create_roc_curve" class="gdls-link gdls-code">create_roc_curve()</a></td>
-<td><a href="../reference/plot_roc_curve.html#rtichoke.plot_roc_curve" class="gdls-link gdls-code">plot_roc_curve()</a></td>
-</tr>
-<tr class="even">
-<td>Precision–Recall</td>
-<td><a href="../reference/create_precision_recall_curve.html#rtichoke.create_precision_recall_curve" class="gdls-link gdls-code">create_precision_recall_curve()</a></td>
-<td><a href="../reference/plot_precision_recall_curve.html#rtichoke.plot_precision_recall_curve" class="gdls-link gdls-code">plot_precision_recall_curve()</a></td>
-</tr>
-<tr class="odd">
-<td>Gains</td>
-<td><a href="../reference/create_gains_curve.html#rtichoke.create_gains_curve" class="gdls-link gdls-code">create_gains_curve()</a></td>
-<td><a href="../reference/plot_gains_curve.html#rtichoke.plot_gains_curve" class="gdls-link gdls-code">plot_gains_curve()</a></td>
-</tr>
-<tr class="even">
-<td>Lift</td>
-<td><a href="../reference/create_lift_curve.html#rtichoke.create_lift_curve" class="gdls-link gdls-code">create_lift_curve()</a></td>
-<td><a href="../reference/plot_lift_curve.html#rtichoke.plot_lift_curve" class="gdls-link gdls-code">plot_lift_curve()</a></td>
-</tr>
-<tr class="odd">
-<td>Decision curve</td>
-<td><a href="../reference/create_decision_curve.html#rtichoke.create_decision_curve" class="gdls-link gdls-code">create_decision_curve()</a></td>
-<td><a href="../reference/plot_decision_curve.html#rtichoke.plot_decision_curve" class="gdls-link gdls-code">plot_decision_curve()</a></td>
-</tr>
-</tbody>
-</table>
-<p>Calibration currently uses the direct <a href="../reference/create_calibration_curve.html#rtichoke.create_calibration_curve" class="gdls-link gdls-code">create_calibration_curve()</a> interface.</p>
-</section>
-<section id="performance-tables" class="level1">
-<h1>Performance tables</h1>
-<p>Performance tables use a closely related naming pattern:</p>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Workflow</th>
-<th>Function</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Prepare and render a binary-outcome table</td>
-<td><a href="../reference/create_performance_table.html#rtichoke.create_performance_table" class="gdls-link gdls-code">create_performance_table()</a></td>
-</tr>
-<tr class="even">
-<td>Prepare and render a time-to-event table</td>
-<td><a href="../reference/create_performance_table_times.html#rtichoke.create_performance_table_times" class="gdls-link gdls-code">create_performance_table_times()</a></td>
-</tr>
-<tr class="odd">
-<td>Render already-prepared performance data</td>
-<td><a href="../reference/render_performance_table.html#rtichoke.render_performance_table" class="gdls-link gdls-code">render_performance_table()</a></td>
-</tr>
-</tbody>
-</table>
-<p>The table constructors use the same underlying <a href="../reference/prepare_performance_data.html#rtichoke.prepare_performance_data" class="gdls-link gdls-code">prepare_performance_data()</a> and <a href="../reference/prepare_performance_data_times.html#rtichoke.prepare_performance_data_times" class="gdls-link gdls-code">prepare_performance_data_times()</a> pipelines as the curve functions. The <code>render_*</code> prefix is used when the numerical performance data already exist and only the presentation layer is needed.</p>
-</section>
-<section id="time-to-event-variants" class="level1">
-<h1>Time-to-event variants</h1>
-<p>Functions ending in <code>_times</code> extend the corresponding workflow to time-to-event outcomes. For example:</p>
+<p>A time-to-event prediction must specify when the outcome is evaluated. Use <code>fixed_time_horizons</code> to declare those times in the same unit as <code>times</code> and the prediction model:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>fixed_time_horizons <span class="op">=</span> [<span class="fl">5.0</span>, <span class="fl">10.0</span>]  <span class="co"># years</span></span></code></pre></div>
+<p>Choose clinically meaningful horizons before inspecting performance. Changing the horizon changes the outcome being validated.</p>
+<section id="update-administrative-censoring" class="level1">
+<h1>Update administrative censoring</h1>
+<p>At a fixed horizon:</p>
 <ul>
-<li><a href="../reference/create_roc_curve.html#rtichoke.create_roc_curve" class="gdls-link gdls-code">create_roc_curve()</a> → binary-outcome ROC curve</li>
-<li><a href="../reference/create_roc_curve_times.html#rtichoke.create_roc_curve_times" class="gdls-link gdls-code">create_roc_curve_times()</a> → time-to-event ROC curve</li>
-<li><a href="../reference/create_calibration_curve.html#rtichoke.create_calibration_curve" class="gdls-link gdls-code">create_calibration_curve()</a> → binary-outcome calibration curve</li>
-<li><a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> → time-to-event calibration curve</li>
-<li><a href="../reference/create_decision_curve.html#rtichoke.create_decision_curve" class="gdls-link gdls-code">create_decision_curve()</a> → binary-outcome decision curve</li>
-<li><a href="../reference/create_decision_curve_times.html#rtichoke.create_decision_curve_times" class="gdls-link gdls-code">create_decision_curve_times()</a> → time-to-event decision curve</li>
-<li><a href="../reference/create_performance_table.html#rtichoke.create_performance_table" class="gdls-link gdls-code">create_performance_table()</a> → binary-outcome performance table</li>
-<li><a href="../reference/create_performance_table_times.html#rtichoke.create_performance_table_times" class="gdls-link gdls-code">create_performance_table_times()</a> → time-to-event performance table</li>
+<li>an event observed after the horizon is a 🤨 non-event <em>at that horizon</em>;</li>
+<li>event-free follow-up ending before the horizon is 🤬 censored;</li>
+<li>a primary event observed by the horizon remains 🤢; and</li>
+<li>a competing event observed by the horizon remains 💀.</li>
 </ul>
-<p>The same convention is used for the performance-data preparation functions, such as <a href="../reference/prepare_performance_data.html#rtichoke.prepare_performance_data" class="gdls-link gdls-code">prepare_performance_data()</a> and <a href="../reference/prepare_performance_data_times.html#rtichoke.prepare_performance_data_times" class="gdls-link gdls-code">prepare_performance_data_times()</a>.</p>
 </section>
-<section id="a-useful-mental-model" class="level1">
-<h1>A useful mental model</h1>
-<p>Think of the API as a small grammar:</p>
-<pre class="text"><code>prepare + performance data        -&gt; reusable data
-create  + curve/table             -&gt; data to rendered output
-plot    + curve                   -&gt; prepared data to figure
-render  + table                   -&gt; prepared data to rendered table
-*_times                           -&gt; time-to-event version</code></pre>
-<p>This convention is intended to make related functions discoverable without requiring users to memorize every exported name.</p>
+<section id="explore-the-horizon" class="level1">
+<h1>Explore the horizon</h1>
+<p>Move the slider to see how the selected horizon changes each observation. The vertical line marks the horizon; information after it is not used.</p>
+<p><uriahtalks-horizon-explorer min="10" max="50" step="10" horizon="50" accent-color="#7a9a01" heading="Explore the horizon"> </uriahtalks-horizon-explorer></p>
+<p>The symbols are:</p>
+<ul>
+<li>🤬 censored before the horizon;</li>
+<li>🤢 primary event;</li>
+<li>🤨 non-event through the horizon; and</li>
+<li>💀 competing event.</li>
+</ul>
+</section>
+<section id="pass-horizons-to-rtichoke" class="level1">
+<h1>Pass horizons to <code>rtichoke</code></h1>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>performance_data <span class="op">=</span> rk.prepare_performance_data_times(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>probs,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    times<span class="op">=</span>times,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    fixed_time_horizons<span class="op">=</span>[<span class="fl">5.0</span>, <span class="fl">10.0</span>],</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 
 
 </section>
@@ -797,13 +730,13 @@ render  + table                   -&gt; prepared data to rendered table
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../index.html" class="pagination-link" aria-label="Getting Started">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Getting Started</span>
+      <a href="../user-guide/common-errors.html" class="pagination-link" aria-label="Common Errors &amp; Fixes">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Common Errors &amp; Fixes</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../user-guide/curve-api-compatibility.html" class="pagination-link" aria-label="Curve API Compatibility">
-        <span class="nav-page-text">Curve API Compatibility</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../user-guide/performance-tables.html" class="pagination-link" aria-label="Performance Tables">
+        <span class="nav-page-text">Performance Tables</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

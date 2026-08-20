@@ -36,8 +36,7 @@ The minimum probability threshold to plot. Defaults to 0.
 `max_p_threshold: float = ``1`  
 The maximum probability threshold to plot. Defaults to 1.
 
-`stratified_by: Sequence[str] = [`<span class="st">`"probability_threshold"]`\
-</span>  
+`stratified_by: Sequence[str] = [``"probability_threshold"]`  
 The columns in `performance_data` used for stratification. Defaults to `["probability_threshold"]`.
 
 `size: int = ``600`  

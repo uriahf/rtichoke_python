@@ -11,14 +11,58 @@
     ]
   },
   {
-    "objectID": "user-guide/curve-api-compatibility.html",
-    "href": "user-guide/curve-api-compatibility.html",
-    "title": "Curve API Compatibility",
+    "objectID": "user-guide/fixed-time-horizons.html",
+    "href": "user-guide/fixed-time-horizons.html",
+    "title": "Fixed Time Horizons",
     "section": "",
-    "text": "rtichoke exposes parallel function families for discrimination, calibration, and decision-curve analysis. Most of them share the same input conventions; the main differences are in time-dependent heuristic handling, especially calibration.\nThis page focuses on the conventions that are shared across curve families and on the few places where users should expect different behavior.\n\nMultiple named populations\nThe curve families accept named probability arrays, so populations such as Train and Test can be evaluated together. When outcomes are also supplied as a dictionary, matching dictionary keys are paired population-by-population. Each probability vector must match the outcome vector for its own population, but different populations may have different sample sizes.\nimport numpy as np\nimport rtichoke as rk\n\nprobs = {\n    \"Train\": np.array([0.10, 0.90, 0.20, 0.80, 0.30, 0.70]),\n    \"Test\": np.array([0.15, 0.85, 0.25, 0.75]),\n}\nreals = {\n    \"Train\": np.array([0, 1, 0, 1, 0, 1]),\n    \"Test\": np.array([0, 1, 0, 0]),\n}\n\nfig = rk.create_calibration_curve(probs=probs, reals=reals)\nHere Train has six observations and Test has four. That is supported. What matters is the within-population alignment:\nlen(probs[\"Train\"]) == len(reals[\"Train\"])\nlen(probs[\"Test\"])  == len(reals[\"Test\"])\nThe same named-population pattern is used by ROC, precision-recall, Gains, Lift, decision, and calibration curve families. For time-dependent calls, times follows the same population alignment when supplied as a dictionary.\n\n\nCensoring and competing-event heuristics\nTime-dependent functions distinguish censoring from competing events. The heuristic for an outcome type matters only when observations of that type are present:\n\nIf there are no competing events, changing competing_heuristic does not change the statistical estimates because there are no competing events for that rule to act on.\nIf there are no censored observations, changing censoring_heuristic does not change the statistical estimates because there are no censored observations for that rule to act on.\nIf neither censoring nor competing events are present, the heuristic choices do not alter the estimates.\n\nThese statements describe the effect of the heuristics on the estimates. Function-specific input validation still applies: a function can reject an unsupported heuristic combination even when the corresponding outcome type is absent.\n\n\nTime-dependent calibration heuristics\ncreate_calibration_curve_times() differs from its ROC, precision-recall, Gains, Lift, and decision-curve siblings in two important ways:\n\nheuristics_sets is currently required rather than defaulted.\nCalibration explicitly rejects unsupported heuristic combinations, including censoring_heuristic=\"adjusted\" and competing_heuristic=\"adjusted_as_censored\", with an Unsupported calibration heuristics error instead of silently skipping every requested horizon.\n\nPass the calibration heuristic explicitly. For the currently working exclusion-based path:\nheuristics_sets = [\n    {\n        \"censoring_heuristic\": \"excluded\",\n        \"competing_heuristic\": \"adjusted_as_negative\",\n    }\n]\nThen call:\nfig = rk.create_calibration_curve_times(\n    probs=probs,\n    reals=reals,\n    times=times,\n    fixed_time_horizons=[3.0, 6.0, 9.0],\n    heuristics_sets=heuristics_sets,\n)\n\n\nNumeric time horizons\nfixed_time_horizons accepts integer or floating-point numeric values. Integer horizons are normalized to floats at the shared time-dependent processing boundary, so [3, 6, 9] and [3.0, 6.0, 9.0] are equivalent.\n\n\nRelated functions\nWhen moving between curve families, compare the API reference for the relevant _times() functions rather than assuming their defaults and accepted heuristics are identical. In particular, calibration has a narrower heuristic contract than the other time-dependent curve families.",
+    "text": "A time-to-event prediction must specify when the outcome is evaluated. Use fixed_time_horizons to declare those times in the same unit as times and the prediction model:\nfixed_time_horizons = [5.0, 10.0]  # years\nChoose clinically meaningful horizons before inspecting performance. Changing the horizon changes the outcome being validated.\n\nUpdate administrative censoring\nAt a fixed horizon:\n\nan event observed after the horizon is a 🤨 non-event at that horizon;\nevent-free follow-up ending before the horizon is 🤬 censored;\na primary event observed by the horizon remains 🤢; and\na competing event observed by the horizon remains 💀.\n\n\n\nExplore the horizon\nMove the slider to see how the selected horizon changes each observation. The vertical line marks the horizon; information after it is not used.\n \nThe symbols are:\n\n🤬 censored before the horizon;\n🤢 primary event;\n🤨 non-event through the horizon; and\n💀 competing event.\n\n\n\nPass horizons to rtichoke\nperformance_data = rk.prepare_performance_data_times(\n    probs=probs,\n    reals=reals,\n    times=times,\n    fixed_time_horizons=[5.0, 10.0],\n)",
+    "crumbs": [
+      "Before You Validate",
+      "Fixed Time Horizons"
+    ]
+  },
+  {
+    "objectID": "user-guide/common-errors.html",
+    "href": "user-guide/common-errors.html",
+    "title": "Common Errors & Fixes",
+    "section": "",
+    "text": "This page is deliberately keyed by literal error text. If an rtichoke call fails, search this page for a distinctive part of the exception before tracing into the implementation.",
     "crumbs": [
       "Using rtichoke",
-      "Curve API Compatibility"
+      "Common Errors & Fixes"
+    ]
+  },
+  {
+    "objectID": "user-guide/common-errors.html#where-this-appears",
+    "href": "user-guide/common-errors.html#where-this-appears",
+    "title": "Common Errors & Fixes",
+    "section": "Where this appears",
+    "text": "Where this appears\ncreate_calibration_curve_times().",
+    "crumbs": [
+      "Using rtichoke",
+      "Common Errors & Fixes"
+    ]
+  },
+  {
+    "objectID": "user-guide/common-errors.html#why-it-happens",
+    "href": "user-guide/common-errors.html#why-it-happens",
+    "title": "Common Errors & Fixes",
+    "section": "Why it happens",
+    "text": "Why it happens\nCalibration does not support competing_heuristic=\"adjusted_as_censored\". This input is rejected before curve construction rather than silently skipping every requested horizon.",
+    "crumbs": [
+      "Using rtichoke",
+      "Common Errors & Fixes"
+    ]
+  },
+  {
+    "objectID": "user-guide/common-errors.html#fix",
+    "href": "user-guide/common-errors.html#fix",
+    "title": "Common Errors & Fixes",
+    "section": "Fix",
+    "text": "Fix\nPass a supported calibration heuristic explicitly. For example:\nheuristics_sets = [\n    {\n        \"censoring_heuristic\": \"adjusted\",\n        \"competing_heuristic\": \"adjusted_as_negative\",\n    }\n]\nDo not infer calibration defaults from the other time-dependent curve families.\nA heuristic only changes estimates when the corresponding outcome type is present: a competing-event rule has no statistical effect when there are no competing events, and a censoring rule has no statistical effect when there is no censoring. Input validation is separate from this statistical point, so unsupported calibration combinations can still be rejected even when the relevant outcome type is absent.",
+    "crumbs": [
+      "Using rtichoke",
+      "Common Errors & Fixes"
     ]
   },
   {
@@ -165,7 +209,7 @@
     "href": "reference/create_calibration_curve_times.html",
     "title": "create_calibration_curve_times()",
     "section": "",
-    "text": "Create a time-dependent calibration curve across fixed horizons.\n\n\nUsage\nSource\n\n\ncreate_calibration_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    calibration_type=\"discrete\",\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"]\n)\n\n\nAdjusted censoring is used by default. In data without competing events, the default competing-event heuristic has no effect.\nRaises: ValueError: If a heuristic set requests adjusted censoring or treats competing events as censored, which calibration does not support.",
+    "text": "Create an interactive time-dependent calibration plot with a square main panel.\n\n\nUsage\nSource\n\n\ncreate_calibration_curve_times(*args, **kwargs)",
     "crumbs": [
       "Reference",
       "Calibration",
@@ -177,7 +221,7 @@
     "href": "package-info.html",
     "title": "Package Info",
     "section": "",
-    "text": "Runtime Dependencies\n\n\n\nPackage\nVersion Constraint\nLast Published\nPyPI\n\n\n\n\nplotly\n&lt;6.0.0,&gt;=5.13.1\n2026-07-09\n\n\n\npandas\n&gt;=2.2.3\n2026-07-22\n\n\n\ntyping\n&gt;=3.7.4.3\n2021-05-01\n\n\n\npolarstate\n==0.1.8\n2025-07-29\n\n\n\nmarimo\n&gt;=0.17.0\n2026-07-31\n\n\n\npyarrow\n&gt;=21.0.0\n2026-08-10\n\n\n\nstatsmodels\n&gt;=0.14.0\n2025-12-05\n\n\n\npolars\n&gt;=1.31.0\n2026-08-01\n\n\n\nreactable\n&gt;=0.1.5\n2025-10-10\n\n\n\ngreat-tables\n&gt;=0.18.0\n2026-07-27\n\n\n\n\n\n\nSummary\n\nRequires: Python &gt;=3.9\nRuntime Dependencies: 10\nTotal unique dependencies: 10"
+    "text": "Runtime Dependencies\n\n\n\nPackage\nVersion Constraint\nLast Published\nPyPI\n\n\n\n\nplotly\n&lt;6.0.0,&gt;=5.13.1\n2026-07-09\n\n\n\npolarstate\n==0.1.8\n2025-07-29\n\n\n\nsmoothstate\n&gt;=0.1.1\n2026-08-19\n\n\n\npolars\n&gt;=1.31.0\n2026-08-01\n\n\n\nreactable\n&gt;=0.1.5\n2025-10-10\n\n\n\ngreat-tables\n&gt;=0.18.0\n2026-07-27\n\n\n\n\n\n\nSummary\n\nRequires: Python &gt;=3.10\nRuntime Dependencies: 6\nTotal unique dependencies: 6"
   },
   {
     "objectID": "contributing.html",
@@ -233,11 +277,32 @@
     "href": "changelog.html#whats-changed",
     "title": "Changelog",
     "section": "What’s Changed",
-    "text": "What’s Changed\n\nAllow adjusted calibration when censoring is absent by @uriahf in https://github.com/uriahf/rtichoke_python/pull/297\n\nFull Changelog: https://github.com/uriahf/rtichoke_python/compare/v0.1.29…v0.1.30"
+    "text": "What’s Changed\n\nClamp calibration zoom to probability bounds by @uriahf in https://github.com/uriahf/rtichoke_python/pull/312\nImprove interactive calibration panel geometry by @uriahf in https://github.com/uriahf/rtichoke_python/pull/313\n\nFull Changelog: https://github.com/uriahf/rtichoke_python/compare/v0.1.34…v0.1.35"
   },
   {
     "objectID": "changelog.html#whats-changed-1",
     "href": "changelog.html#whats-changed-1",
+    "title": "Changelog",
+    "section": "What’s Changed",
+    "text": "What’s Changed\n\nfeat: add changelog entry for v0.1.33 by @uriahf in https://github.com/uriahf/rtichoke_python/pull/310\nGuarantee square interactive calibration panels by @uriahf in https://github.com/uriahf/rtichoke_python/pull/311\n\nFull Changelog: https://github.com/uriahf/rtichoke_python/compare/v0.1.33…v0.1.34"
+  },
+  {
+    "objectID": "changelog.html#whats-changed-2",
+    "href": "changelog.html#whats-changed-2",
+    "title": "Changelog",
+    "section": "What’s Changed",
+    "text": "What’s Changed\n\nJules 11048813694386596407 e7f2a3f8 by @uriahf in https://github.com/uriahf/rtichoke_python/pull/306\nExtend smooth_method=“secondary_cox” with 3-knot Restricted Cubic Splines by @uriahf in https://github.com/uriahf/rtichoke_python/pull/308\nfeat: update release version marker to 0.1.33 for PyPI automated release by @uriahf in https://github.com/uriahf/rtichoke_python/pull/309\n\nFull Changelog: https://github.com/uriahf/rtichoke_python/compare/v0.1.32…v0.1.33"
+  },
+  {
+    "objectID": "changelog.html#whats-changed-3",
+    "href": "changelog.html#whats-changed-3",
+    "title": "Changelog",
+    "section": "What’s Changed",
+    "text": "What’s Changed\n\nAllow adjusted calibration when censoring is absent by @uriahf in https://github.com/uriahf/rtichoke_python/pull/297\n\nFull Changelog: https://github.com/uriahf/rtichoke_python/compare/v0.1.29…v0.1.30"
+  },
+  {
+    "objectID": "changelog.html#whats-changed-4",
+    "href": "changelog.html#whats-changed-4",
     "title": "Changelog",
     "section": "What’s Changed",
     "text": "What’s Changed\n\n65 create a clean marimo version of walkthrough the aj estimateqmd by @uriahf in https://github.com/uriahf/rtichoke_python/pull/84\nbuild: fix requires-python to support &gt;=3.9 by @uriahf in https://github.com/uriahf/rtichoke_python/pull/86\nObservable report by @uriahf in https://github.com/uriahf/rtichoke_python/pull/85\ntest: fix test_extract_aj_estimate_for_strata_basic by @uriahf in https://github.com/uriahf/rtichoke_python/pull/87\nclose #89 by @uriahf in https://github.com/uriahf/rtichoke_python/pull/90\ndocs: close #91 by @uriahf in https://github.com/uriahf/rtichoke_python/pull/92\nfix: remove explicit call from an absolute path by @uriahf in https://github.com/uriahf/rtichoke_python/pull/93\nbuild: add contents write permissions to yml file by @uriahf in https://github.com/uriahf/rtichoke_python/pull/94\nObservable report by @uriahf in https://github.com/uriahf/rtichoke_python/pull/88\n65 create a clean marimo version of walkthrough the aj estimateqmd by @uriahf in https://github.com/uriahf/rtichoke_python/pull/95\nObservable report by @uriahf in https://github.com/uriahf/rtichoke_python/pull/96\n65 create a clean marimo version of walkthrough the aj estimateqmd by @uriahf in https://github.com/uriahf/rtichoke_python/pull/167\nObservable report by @uriahf in https://github.com/uriahf/rtichoke_python/pull/170\n100 create prepare performance data and prepare performance data times functions by @uriahf in https://github.com/uriahf/rtichoke_python/pull/172\nbuild: give up before_we_validate.qmd for now by @uriahf in https://github.com/uriahf/rtichoke_python/pull/174\nObservable report by @uriahf in https://github.com/uriahf/rtichoke_python/pull/173\nfeat: close #171 by @uriahf in https://github.com/uriahf/rtichoke_python/pull/175\nbuild: add quartodoc build step in publish-package.yml by @uriahf in https://github.com/uriahf/rtichoke_python/pull/177\n100 create prepare performance data and prepare performance data times functions by @uriahf in https://github.com/uriahf/rtichoke_python/pull/178\n100 create prepare performance data and prepare performance data times functions by @uriahf in https://github.com/uriahf/rtichoke_python/pull/186\nbuild: try to make quarto publish work by @uriahf in https://github.com/uriahf/rtichoke_python/pull/187\nbuild: remove unecessary files from docs by @uriahf in https://github.com/uriahf/rtichoke_python/pull/189\nfix: remove tracked files that might cause some problems by @uriahf in https://github.com/uriahf/rtichoke_python/pull/190\nbuild: use quarto action instead of uv run quarto publish by @uriahf in https://github.com/uriahf/rtichoke_python/pull/191\n100 create prepare performance data and prepare performance data times functions by @uriahf in https://github.com/uriahf/rtichoke_python/pull/192\nObservable report by @uriahf in https://github.com/uriahf/rtichoke_python/pull/176\nbuild: update version number by @uriahf in https://github.com/uriahf/rtichoke_python/pull/193\n195 update functions for discrimination plots by @uriahf in https://github.com/uriahf/rtichoke_python/pull/200\nObservable report by @uriahf in https://github.com/uriahf/rtichoke_python/pull/201\n195 update functions for discrimination plots by @uriahf in https://github.com/uriahf/rtichoke_python/pull/205\n195 update functions for discrimination plots by @uriahf in https://github.com/uriahf/rtichoke_python/pull/206\nfix: add fill_null with 0 values by @uriahf in https://github.com/uriahf/rtichoke_python/pull/208\n195 update functions for discrimination plots by @uriahf in https://github.com/uriahf/rtichoke_python/pull/211\n195 update functions for discrimination plots by @uriahf in https://github.com/uriahf/rtichoke_python/pull/214\n195 update functions for discrimination plots by @uriahf in https://github.com/uriahf/rtichoke_python/pull/217\nfeat: migrate decision curves to new api by @uriahf in https://github.com/uriahf/rtichoke_python/pull/219\n199 create create rtichoke curve list times function by @uriahf in https://github.com/uriahf/rtichoke_python/pull/230\nfeat: add _create_plotly_curve_times() by @uriahf in https://github.com/uriahf/rtichoke_python/pull/231\n232 create exported functions create curve times by @uriahf in https://github.com/uriahf/rtichoke_python/pull/242\n232 create exported functions create curve times by @uriahf in https://github.com/uriahf/rtichoke_python/pull/244\nfeat: Add smoothed calibration curve by @google-labs-jules[bot] in https://github.com/uriahf/rtichoke_python/pull/260\nfeat: Add create_calibration_curve_times function by @google-labs-jules[bot] in https://github.com/uriahf/rtichoke_python/pull/264\nFeat/calibration curve times 1091703731330045434 by @uriahf in https://github.com/uriahf/rtichoke_python/pull/266\nPass ty check and update AGENTS.md by @google-labs-jules[bot] in https://github.com/uriahf/rtichoke_python/pull/267\nRefactor: helpers module by @google-labs-jules[bot] in https://github.com/uriahf/rtichoke_python/pull/268\n245 add updated functions create calibration curve and create calibration curve times by @uriahf in https://github.com/uriahf/rtichoke_python/pull/269\nImprove Documentation and Add Getting Started Tutorial by @google-labs-jules[bot] in https://github.com/uriahf/rtichoke_python/pull/271\ndocs: Update README and “Getting Started” Tutorial by @google-labs-jules[bot] in https://github.com/uriahf/rtichoke_python/pull/272\nFix: Replace unstable qcut with robust rank-based decile calculation by @google-labs-jules[bot] in https://github.com/uriahf/rtichoke_python/pull/277\n273 small changes for better calibration plots by @uriahf in https://github.com/uriahf/rtichoke_python/pull/278\nFix plot consistency and transparency by @google-labs-jules[bot] in https://github.com/uriahf/rtichoke_python/pull/280\n273 small changes for better calibration plots by @uriahf in https://github.com/uriahf/rtichoke_python/pull/281\nMigrate documentation to Great Docs by @uriahf in https://github.com/uriahf/rtichoke_python/pull/282\nSeparate PyPI publishing from package CI by @uriahf in https://github.com/uriahf/rtichoke_python/pull/283\nPrevent merged PR cleanup from cancelling docs deployment by @uriahf in https://github.com/uriahf/rtichoke_python/pull/284\nPolish Great Docs onboarding and API conventions by @uriahf in https://github.com/uriahf/rtichoke_python/pull/286\nSort performance data deterministically by @uriahf in https://github.com/uriahf/rtichoke_python/pull/287\nFix calibration multi-population input contract by @uriahf in https://github.com/uriahf/rtichoke_python/pull/291\nNormalize integer fixed time horizons by @uriahf in https://github.com/uriahf/rtichoke_python/pull/292\nRaise actionable errors for unsupported calibration heuristics by @uriahf in https://github.com/uriahf/rtichoke_python/pull/293\nDocument curve API constraints and troubleshooting by @uriahf in https://github.com/uriahf/rtichoke_python/pull/289\nAdd R-style performance table with Great Tables and Reactable renderers by @uriahf in https://github.com/uriahf/rtichoke_python/pull/288\nRelease rtichoke 0.1.29 by @uriahf in https://github.com/uriahf/rtichoke_python/pull/294\nFix 0.1.29 release workflow by @uriahf in https://github.com/uriahf/rtichoke_python/pull/295\nPublish 0.1.29 through configured trusted publisher by @uriahf in https://github.com/uriahf/rtichoke_python/pull/296"
@@ -254,7 +319,7 @@
     "href": "index.html",
     "title": "Getting Started",
     "section": "",
-    "text": "rtichoke is a Python library for interactive visualization of predictive-model performance. It supports discrimination, calibration, utility, and time-to-event evaluation workflows.\nFor some reproducible examples please visit rtichoke blog!\n\nInstallation\nIf you use uv to manage your Python project, add rtichoke with:\nuv add rtichoke\nThis adds rtichoke to your project dependencies and updates the uv lockfile.\nIf you are not using uv, install rtichoke from PyPI with pip:\npip install rtichoke\n\n\nImport\nimport numpy as np\nimport rtichoke as rk\n\n\nInputs\nMost rtichoke plotting functions use two dictionaries:\n\nprobs: model predictions, keyed by model or population name.\nreals: observed outcomes, keyed by population name.\n\n\n\n\n\n\n\nTip\n\n\n\nSimilar curve families can still differ in defaults and time-dependent handling. See Curve API Compatibility, and if a call fails, search Common Errors & Fixes by literal exception text.\n\n\n\n\nSingle model\nprobs_single = {\n    \"Model A\": np.array([0.1, 0.9, 0.4, 0.8, 0.3, 0.7, 0.2, 0.6])\n}\nreals_single = {\n    \"Population\": np.array([0, 1, 0, 1, 0, 1, 0, 1])\n}\n\nfig = rk.create_roc_curve(\n    probs=probs_single,\n    reals=reals_single,\n)\n\nfig.show()\n\n\nCompare models\nWhen several models are evaluated on the same population, provide one probability vector per model and one outcome vector for the shared population.\nprobs_comparison = {\n    \"Model A\": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),\n    \"Model B\": np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6]),\n    \"Random Guess\": np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),\n}\nreals_comparison = {\n    \"Population\": np.array([0, 1, 0, 1, 0, 1])\n}\n\nfig = rk.create_precision_recall_curve(\n    probs=probs_comparison,\n    reals=reals_comparison,\n)\n\nfig.show()\n\n\nCompare populations\nTo compare a model across populations, provide matching keys in probs and reals. Population sizes may differ; each probability vector only needs to match the outcome vector for the same key.\nprobs_populations = {\n    \"Train\": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),\n    \"Test\": np.array([0.2, 0.8, 0.3, 0.7]),\n}\nreals_populations = {\n    \"Train\": np.array([0, 1, 0, 1, 0, 1]),\n    \"Test\": np.array([0, 1, 0, 0]),\n}\n\nfig = rk.create_calibration_curve(\n    probs=probs_populations,\n    reals=reals_populations,\n)\n\nfig.show()\nHere, Train contains six observations and Test contains four. This matching-key contract is supported by calibration as well as the other curve families.\nFrom here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The Naming Conventions guide explains how the exported function families fit together, while Curve API Compatibility documents where those families still differ.\n\n\nLinks\nView on PyPI\n\n\nAI / Agents\nSkills llms.txt llms-full.txt\n\n\nDevelopers\n\n\n\nUriah Finkel\n\n\n\n\n\nCommunity\nContributing guide\n\n\nMeta\nRequires: Python &gt;=3.9 Package Info",
+    "text": "rtichoke is a Python library for interactive visualization of predictive-model performance. It supports discrimination, calibration, utility, and time-to-event evaluation workflows.\nFor some reproducible examples please visit rtichoke blog!\n\nInstallation\nIf you use uv to manage your Python project, add rtichoke with:\nuv add rtichoke\nThis adds rtichoke to your project dependencies and updates the uv lockfile.\nIf you are not using uv, install rtichoke from PyPI with pip:\npip install rtichoke\n\n\nImport\nimport numpy as np\nimport rtichoke as rk\n\n\nInputs\nMost rtichoke plotting functions use two dictionaries:\n\nprobs: model predictions, keyed by model or population name.\nreals: observed outcomes, keyed by population name.\n\n\n\n\n\n\n\nTip\n\n\n\nSimilar curve families can still differ in defaults and time-dependent handling. See Curve API Compatibility, and if a call fails, search Common Errors & Fixes by literal exception text.\n\n\n\n\nSingle model\nprobs_single = {\n    \"Model A\": np.array([0.1, 0.9, 0.4, 0.8, 0.3, 0.7, 0.2, 0.6])\n}\nreals_single = {\n    \"Population\": np.array([0, 1, 0, 1, 0, 1, 0, 1])\n}\n\nfig = rk.create_roc_curve(\n    probs=probs_single,\n    reals=reals_single,\n)\n\nfig.show()\n\n\nCompare models\nWhen several models are evaluated on the same population, provide one probability vector per model and one outcome vector for the shared population.\nprobs_comparison = {\n    \"Model A\": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),\n    \"Model B\": np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6]),\n    \"Random Guess\": np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),\n}\nreals_comparison = {\n    \"Population\": np.array([0, 1, 0, 1, 0, 1])\n}\n\nfig = rk.create_precision_recall_curve(\n    probs=probs_comparison,\n    reals=reals_comparison,\n)\n\nfig.show()\n\n\nCompare populations\nTo compare a model across populations, provide matching keys in probs and reals. Population sizes may differ; each probability vector only needs to match the outcome vector for the same key.\nprobs_populations = {\n    \"Train\": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),\n    \"Test\": np.array([0.2, 0.8, 0.3, 0.7]),\n}\nreals_populations = {\n    \"Train\": np.array([0, 1, 0, 1, 0, 1]),\n    \"Test\": np.array([0, 1, 0, 0]),\n}\n\nfig = rk.create_calibration_curve(\n    probs=probs_populations,\n    reals=reals_populations,\n)\n\nfig.show()\nHere, Train contains six observations and Test contains four. This matching-key contract is supported by calibration as well as the other curve families.\nFrom here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The Naming Conventions guide explains how the exported function families fit together, while Curve API Compatibility documents where those families still differ.\n\n\nLinks\nView on PyPI\n\n\nAI / Agents\nSkills llms.txt llms-full.txt\n\n\nDevelopers\n\n\n\nUriah Finkel\n\n\n\n\n\nCommunity\nContributing guide\n\n\nMeta\nRequires: Python &gt;=3.10 Package Info",
     "crumbs": [
       "Getting Started",
       "Getting Started"
@@ -265,7 +330,7 @@
     "href": "reference/create_calibration_curve.html",
     "title": "create_calibration_curve()",
     "section": "",
-    "text": "Creates Calibration Curve\n\n\nUsage\nSource\n\n\ncreate_calibration_curve(\n    probs,\n    reals,\n    calibration_type=\"discrete\",\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"]\n)\n\n\nArgs: probs (Dict[str, List[float]]): description reals (Dict[str, List[int]]): description calibration_type (str, optional): description. Defaults to “discrete”. size (Optional[int], optional): description. Defaults to None. color_values (List[str], optional): description. Defaults to None. url_api (type, optional): description. Defaults to “http://localhost:4242/”.\nReturns: Figure: description",
+    "text": "Create an interactive calibration plot with a square main panel.\n\n\nUsage\nSource\n\n\ncreate_calibration_curve(*args, **kwargs)",
     "crumbs": [
       "Reference",
       "Calibration",
@@ -349,7 +414,7 @@
     "href": "reference/index.html",
     "title": "API Reference",
     "section": "",
-    "text": "Performance Data\n\nPrepare classification and time-to-event data for visualization.\n\n\nprepare_performance_data()\n\nPrepare performance data for binary classification models.\n\nprepare_binned_classification_data()\n\nPrepare probability-binned classification data for binary outcomes.\n\nprepare_performance_data_times()\n\nPrepare performance data for models with time-to-event outcomes.\n\nprepare_binned_classification_data_times()\n\nPrepare binned, time-dependent classification data.\n\n\n\n\nPerformance Tables\n\nSummarize model performance across thresholds and time horizons.\n\n\ncreate_performance_table()\n\nCreate an R-style rtichoke performance table.\n\ncreate_performance_table_times()\n\nCreate a time-dependent rtichoke performance table.\n\nrender_performance_table()\n\nRender prepared performance data with a selected table backend.\n\n\n\n\nDiscrimination\n\nROC, precision-recall, gains, and lift visualizations.\n\n\ncreate_roc_curve()\n\nCreates a Receiver Operating Characteristic (ROC) curve.\n\ncreate_roc_curve_times()\n\nCreates a time-dependent Receiver Operating Characteristic (ROC) curve.\n\nplot_roc_curve()\n\nPlots an ROC curve from pre-computed performance data.\n\ncreate_precision_recall_curve()\n\nCreates a Precision-Recall curve.\n\ncreate_precision_recall_curve_times()\n\nCreates a time-dependent Precision-Recall curve.\n\nplot_precision_recall_curve()\n\nPlots a Precision-Recall curve from pre-computed performance data.\n\ncreate_gains_curve()\n\nCreates a Gains curve.\n\ncreate_gains_curve_times()\n\nCreates a time-dependent Gains curve.\n\nplot_gains_curve()\n\nPlots a Gains curve from pre-computed performance data.\n\ncreate_lift_curve()\n\nCreates a Lift curve.\n\ncreate_lift_curve_times()\n\nCreates a time-dependent Lift curve.\n\nplot_lift_curve()\n\nPlots a Lift curve from pre-computed performance data.\n\n\n\n\nCalibration\n\nCalibration visualizations for classification and time-to-event models. See Curve API Compatibility for time-dependent heuristic and horizon differences.\n\n\ncreate_calibration_curve()\n\nCreates Calibration Curve\n\ncreate_calibration_curve_times()\n\nCreate a time-dependent calibration curve across fixed horizons.\n\n\n\n\nUtility\n\nDecision-curve analysis for classification and time-to-event models.\n\n\ncreate_decision_curve()\n\nCreates a Decision Curve.\n\ncreate_decision_curve_times()\n\nCreates a time-dependent Decision Curve.\n\nplot_decision_curve()\n\nPlots a Decision Curve from pre-computed performance data.",
+    "text": "Performance Data\n\nPrepare classification and time-to-event data for visualization.\n\n\nprepare_performance_data()\n\nPrepare performance data for binary classification models.\n\nprepare_binned_classification_data()\n\nPrepare probability-binned classification data for binary outcomes.\n\nprepare_performance_data_times()\n\nPrepare performance data for models with time-to-event outcomes.\n\nprepare_binned_classification_data_times()\n\nPrepare binned, time-dependent classification data.\n\n\n\n\nPerformance Tables\n\nSummarize model performance across thresholds and time horizons.\n\n\ncreate_performance_table()\n\nCreate an R-style rtichoke performance table.\n\ncreate_performance_table_times()\n\nCreate a time-dependent rtichoke performance table.\n\nrender_performance_table()\n\nRender prepared performance data with a selected table backend.\n\n\n\n\nDiscrimination\n\nROC, precision-recall, gains, and lift visualizations.\n\n\ncreate_roc_curve()\n\nCreates a Receiver Operating Characteristic (ROC) curve.\n\ncreate_roc_curve_times()\n\nCreates a time-dependent Receiver Operating Characteristic (ROC) curve.\n\nplot_roc_curve()\n\nPlots an ROC curve from pre-computed performance data.\n\ncreate_precision_recall_curve()\n\nCreates a Precision-Recall curve.\n\ncreate_precision_recall_curve_times()\n\nCreates a time-dependent Precision-Recall curve.\n\nplot_precision_recall_curve()\n\nPlots a Precision-Recall curve from pre-computed performance data.\n\ncreate_gains_curve()\n\nCreates a Gains curve.\n\ncreate_gains_curve_times()\n\nCreates a time-dependent Gains curve.\n\nplot_gains_curve()\n\nPlots a Gains curve from pre-computed performance data.\n\ncreate_lift_curve()\n\nCreates a Lift curve.\n\ncreate_lift_curve_times()\n\nCreates a time-dependent Lift curve.\n\nplot_lift_curve()\n\nPlots a Lift curve from pre-computed performance data.\n\n\n\n\nCalibration\n\nCalibration visualizations for classification and time-to-event models. See Curve API Compatibility for time-dependent heuristic and horizon differences.\n\n\ncreate_calibration_curve()\n\nCreate an interactive calibration plot with a square main panel.\n\ncreate_calibration_curve_times()\n\nCreate an interactive time-dependent calibration plot with a square main panel.\n\n\n\n\nUtility\n\nDecision-curve analysis for classification and time-to-event models.\n\n\ncreate_decision_curve()\n\nCreates a Decision Curve.\n\ncreate_decision_curve_times()\n\nCreates a time-dependent Decision Curve.\n\nplot_decision_curve()\n\nPlots a Decision Curve from pre-computed performance data.",
     "crumbs": [
       "Reference",
       "API Index"
@@ -416,47 +481,58 @@
     ]
   },
   {
-    "objectID": "user-guide/common-errors.html",
-    "href": "user-guide/common-errors.html",
-    "title": "Common Errors & Fixes",
+    "objectID": "user-guide/calibration-curves.html",
+    "href": "user-guide/calibration-curves.html",
+    "title": "Calibration Curves",
     "section": "",
-    "text": "This page is deliberately keyed by literal error text. If an rtichoke call fails, search this page for a distinctive part of the exception before tracing into the implementation.",
+    "text": "Calibration evaluates how well predicted risks from a classification or time-to-event model align with observed outcome rates.",
     "crumbs": [
-      "Using rtichoke",
-      "Common Errors & Fixes"
+      "Curves",
+      "Calibration Curves"
     ]
   },
   {
-    "objectID": "user-guide/common-errors.html#where-this-appears",
-    "href": "user-guide/common-errors.html#where-this-appears",
-    "title": "Common Errors & Fixes",
-    "section": "Where this appears",
-    "text": "Where this appears\ncreate_calibration_curve_times().",
+    "objectID": "user-guide/calibration-curves.html#local-aalen-johansen-smooth_methodlocal_aj-default",
+    "href": "user-guide/calibration-curves.html#local-aalen-johansen-smooth_methodlocal_aj-default",
+    "title": "Calibration Curves",
+    "section": "1. Local Aalen-Johansen (smooth_method=\"local_aj\", Default)",
+    "text": "1. Local Aalen-Johansen (smooth_method=\"local_aj\", Default)\nGerds’ favoured local neighborhood method (riskRegression::plotCalibration(method=\"nne\", cens.method=\"local\")):\n\nComputes local Aalen-Johansen / Kaplan-Meier cumulative incidence estimates within nearest-neighborhood risk windows across predicted probabilities.\nFully non-parametric and handles both standard survival and competing risks (0=\\text{censored}, 1=\\text{event}, 2=\\text{competing event}).\nYou can tune the neighborhood window using the optional bandwidth parameter (e.g., bandwidth=0.2).",
     "crumbs": [
-      "Using rtichoke",
-      "Common Errors & Fixes"
+      "Curves",
+      "Calibration Curves"
     ]
   },
   {
-    "objectID": "user-guide/common-errors.html#why-it-happens",
-    "href": "user-guide/common-errors.html#why-it-happens",
-    "title": "Common Errors & Fixes",
-    "section": "Why it happens",
-    "text": "Why it happens\nCalibration does not currently implement censoring_heuristic=\"adjusted\" or competing_heuristic=\"adjusted_as_censored\". These inputs are rejected before curve construction rather than silently skipping every requested horizon.",
+    "objectID": "user-guide/calibration-curves.html#secondary-cox-model-smooth_methodsecondary_cox",
+    "href": "user-guide/calibration-curves.html#secondary-cox-model-smooth_methodsecondary_cox",
+    "title": "Calibration Curves",
+    "section": "2. Secondary Cox Model (smooth_method=\"secondary_cox\")",
+    "text": "2. Secondary Cox Model (smooth_method=\"secondary_cox\")\nAustin, Harrell & McLernon original time-to-event method (Austin et al. 2020 / McLernon et al. 2023):\n\nFits a secondary cause-specific Cox proportional hazards model on the complementary log-log transformed predictions (\\log(-\\log(1-p))).\nEvaluates predicted cumulative incidence at horizon t across the grid of predicted probabilities.",
     "crumbs": [
-      "Using rtichoke",
-      "Common Errors & Fixes"
+      "Curves",
+      "Calibration Curves"
     ]
   },
   {
-    "objectID": "user-guide/common-errors.html#fix",
-    "href": "user-guide/common-errors.html#fix",
-    "title": "Common Errors & Fixes",
-    "section": "Fix",
-    "text": "Fix\nPass a supported calibration heuristic explicitly. For the exclusion-based path:\nheuristics_sets = [\n    {\n        \"censoring_heuristic\": \"excluded\",\n        \"competing_heuristic\": \"adjusted_as_negative\",\n    }\n]\nDo not infer calibration defaults from the other time-dependent curve families.\nA heuristic only changes estimates when the corresponding outcome type is present: a competing-event rule has no statistical effect when there are no competing events, and a censoring rule has no statistical effect when there is no censoring. Input validation is separate from this statistical point, so unsupported calibration combinations can still be rejected even when the relevant outcome type is absent.",
+    "objectID": "user-guide/calibration-curves.html#pseudo-values-lowess-smooth_methodpseudo_values",
+    "href": "user-guide/calibration-curves.html#pseudo-values-lowess-smooth_methodpseudo_values",
+    "title": "Calibration Curves",
+    "section": "3. Pseudo-Values LOWESS (smooth_method=\"pseudo_values\")",
+    "text": "3. Pseudo-Values LOWESS (smooth_method=\"pseudo_values\")\nJackknife pseudo-observations method:\n\nComputes leave-one-out Aalen-Johansen pseudo-values for each subject at horizon t.\nApplies LOWESS smoothing against predicted probabilities.",
+    "crumbs": [
+      "Curves",
+      "Calibration Curves"
+    ]
+  },
+  {
+    "objectID": "user-guide/curve-api-compatibility.html",
+    "href": "user-guide/curve-api-compatibility.html",
+    "title": "Curve API Compatibility",
+    "section": "",
+    "text": "rtichoke exposes parallel function families for discrimination, calibration, and decision-curve analysis. Most of them share the same input conventions; the main differences are in time-dependent heuristic handling, especially calibration.\nThis page focuses on the conventions that are shared across curve families and on the few places where users should expect different behavior.\n\nMultiple named populations\nThe curve families accept named probability arrays, so populations such as Train and Test can be evaluated together. When outcomes are also supplied as a dictionary, matching dictionary keys are paired population-by-population. Each probability vector must match the outcome vector for its own population, but different populations may have different sample sizes.\nimport numpy as np\nimport rtichoke as rk\n\nprobs = {\n    \"Train\": np.array([0.10, 0.90, 0.20, 0.80, 0.30, 0.70]),\n    \"Test\": np.array([0.15, 0.85, 0.25, 0.75]),\n}\nreals = {\n    \"Train\": np.array([0, 1, 0, 1, 0, 1]),\n    \"Test\": np.array([0, 1, 0, 0]),\n}\n\nfig = rk.create_calibration_curve(probs=probs, reals=reals)\nHere Train has six observations and Test has four. That is supported. What matters is the within-population alignment:\nlen(probs[\"Train\"]) == len(reals[\"Train\"])\nlen(probs[\"Test\"])  == len(reals[\"Test\"])\nThe same named-population pattern is used by ROC, precision-recall, Gains, Lift, decision, and calibration curve families. For time-dependent calls, times follows the same population alignment when supplied as a dictionary.\n\n\nCensoring and competing-event heuristics\nTime-dependent functions distinguish censoring from competing events. The heuristic for an outcome type matters only when observations of that type are present:\n\nIf there are no competing events, changing competing_heuristic does not change the statistical estimates because there are no competing events for that rule to act on.\nIf there are no censored observations, changing censoring_heuristic does not change the statistical estimates because there are no censored observations for that rule to act on.\nIf neither censoring nor competing events are present, the heuristic choices do not alter the estimates.\n\nThese statements describe the effect of the heuristics on the estimates. Function-specific input validation still applies: a function can reject an unsupported heuristic combination even when the corresponding outcome type is absent.\n\n\nTime-dependent calibration heuristics\ncreate_calibration_curve_times() defaults to one adjusted heuristic set:\nheuristics_sets = [\n    {\n        \"censoring_heuristic\": \"adjusted\",\n        \"competing_heuristic\": \"adjusted_as_negative\",\n    }\n]\nYou can still provide a different single heuristic set explicitly. Calibration currently accepts exactly one heuristic set per call because the plot has no heuristic selector; passing several sets raises a clear ValueError instead of combining them into one calibration trace. Calibration also rejects unsupported combinations such as competing_heuristic=\"adjusted_as_censored\".\nWhen calibration_type=\"smooth\", you can also specify the smooth_method: - \"local_aj\" (default): Gerds’ local Aalen-Johansen/KM neighborhood estimation. - \"secondary_cox\": Secondary Cox regression method (Austin, Harrell & McLernon 2020). - \"pseudo_values\": Leave-one-out Aalen-Johansen pseudo-observations lowess.\nThe default call is therefore simply:\nfig = rk.create_calibration_curve_times(\n    probs=probs,\n    reals=reals,\n    times=times,\n    fixed_time_horizons=[3.0, 6.0, 9.0],\n)\n\n\nNumeric time horizons\nfixed_time_horizons accepts integer or floating-point numeric values. Integer horizons are normalized to floats at the shared time-dependent processing boundary, so [3, 6, 9] and [3.0, 6.0, 9.0] are equivalent.\n\n\nRelated functions\nWhen moving between curve families, compare the API reference for the relevant _times() functions rather than assuming their defaults and accepted heuristics are identical. In particular, calibration has a narrower heuristic contract than the other time-dependent curve families.",
     "crumbs": [
       "Using rtichoke",
-      "Common Errors & Fixes"
+      "Curve API Compatibility"
     ]
   },
   {
