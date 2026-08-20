@@ -4,6 +4,7 @@ A module for Decision Curves using Plotly helpers
 
 from typing import Dict, List, Sequence, Union
 from plotly.graph_objs._figure import Figure
+from rtichoke.processing.binary_color_values import _apply_color_values_binary
 from rtichoke.processing.plotly_helper_functions import (
     _create_rtichoke_plotly_curve_binary,
     _plot_rtichoke_curve_binary,
@@ -100,7 +101,7 @@ def create_decision_curve(
         min_p_threshold=min_p_threshold,
         max_p_threshold=max_p_threshold,
     )
-    return fig
+    return _apply_color_values_binary(fig, color_values)
 
 
 def plot_decision_curve(
@@ -217,7 +218,7 @@ def create_decision_curve_times(
     max_p_threshold : float, optional
         The maximum probability threshold to plot. Defaults to 1.
     by : float, optional
-        The step size for the probability thresholds. Defaults to 0.01.
+        The step size for probability thresholds. Defaults to 0.01.
     stratified_by : Sequence[str], optional
         Variables for stratification. Defaults to ``["probability_threshold"]``.
     size : int, optional
