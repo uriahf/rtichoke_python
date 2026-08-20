@@ -34,7 +34,7 @@ dev = [
     "scikit-learn>=1.6.1",
 ]
 docs = [
-    "great-docs",
+    "great-docs==0.15.0",
 ]
 
 [tool.uv.workspace]
