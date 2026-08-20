@@ -3,7 +3,6 @@
 from importlib import resources
 
 import numpy as np
-import pandas as pd
 import polars as pl
 from dcurves import dca
 from numpy.testing import assert_allclose
@@ -13,17 +12,17 @@ from rtichoke.performance_data.performance_data_times import (
 )
 
 
-def _load_dcurves_survival_data() -> pd.DataFrame:
+def _load_dcurves_survival_data() -> pl.DataFrame:
     data_resource = resources.files("dcurves").joinpath("data/df_surv.csv")
     with resources.as_file(data_resource) as path:
-        return pd.read_csv(path)
+        return pl.read_csv(path)
 
 
-def _rtichoke_survival_dca(data: pd.DataFrame, by: float) -> pl.DataFrame:
+def _rtichoke_survival_dca(data: pl.DataFrame, by: float) -> pl.DataFrame:
     return (
         prepare_performance_data_times(
             probs={"cancerpredmarker": data["cancerpredmarker"].to_numpy()},
-            reals=data["cancer"].astype(int).to_numpy(),
+            reals=data["cancer"].cast(pl.Int64).to_numpy(),
             times=data["ttcancer"].to_numpy(),
             fixed_time_horizons=[1.5],
             by=by,
@@ -36,19 +35,24 @@ def _rtichoke_survival_dca(data: pd.DataFrame, by: float) -> pl.DataFrame:
     )
 
 
-def test_survival_decision_curve_matches_dcurves_issue_127() -> None:
-    """Match dcurves TP/FP rates and net benefit on its 1.5-year example."""
-    data = _load_dcurves_survival_data()
-    thresholds = np.array([0.00, 0.01, 0.05, 0.10, 0.20, 0.50])
-
-    dcurves_result = dca(
-        data=data,
+def _dcurves_survival_dca(data: pl.DataFrame, thresholds: list[float]):
+    """Call dcurves at the test boundary; pandas remains its transitive dependency."""
+    return dca(
+        data=data.to_pandas(),
         outcome="cancer",
         modelnames=["cancerpredmarker"],
         thresholds=thresholds,
         time=1.5,
         time_to_outcome_col="ttcancer",
     )
+
+
+def test_survival_decision_curve_matches_dcurves_issue_127() -> None:
+    """Match dcurves TP/FP rates and net benefit on its 1.5-year example."""
+    data = _load_dcurves_survival_data()
+    thresholds = [0.00, 0.01, 0.05, 0.10, 0.20, 0.50]
+
+    dcurves_result = _dcurves_survival_dca(data, thresholds)
     dcurves_model = (
         dcurves_result[dcurves_result["model"] == "cancerpredmarker"]
         .sort_values("threshold")
@@ -56,10 +60,10 @@ def test_survival_decision_curve_matches_dcurves_issue_127() -> None:
     )
 
     rtichoke_result = _rtichoke_survival_dca(data, by=0.01).filter(
-        pl.col("chosen_cutoff").is_in(thresholds.tolist())
+        pl.col("chosen_cutoff").is_in(thresholds)
     )
 
-    assert data.shape[0] == 750
+    assert data.height == 750
     assert rtichoke_result.height == len(thresholds)
 
     rtichoke_prevalence = (
@@ -96,7 +100,7 @@ def test_survival_decision_curve_matches_dcurves_issue_127() -> None:
 
 def test_survival_decision_curve_includes_prediction_equal_to_threshold() -> None:
     """Keep dcurves' prediction >= threshold convention at an exact boundary."""
-    data = pd.DataFrame(
+    data = pl.DataFrame(
         {
             "cancer": [True, False, True, False, False, False],
             "ttcancer": [0.5, 2.0, 0.7, 2.0, 2.0, 2.0],
@@ -104,14 +108,7 @@ def test_survival_decision_curve_includes_prediction_equal_to_threshold() -> Non
         }
     )
 
-    dcurves_result = dca(
-        data=data,
-        outcome="cancer",
-        modelnames=["cancerpredmarker"],
-        thresholds=[0.20],
-        time=1.5,
-        time_to_outcome_col="ttcancer",
-    )
+    dcurves_result = _dcurves_survival_dca(data, [0.20])
     dcurves_model = dcurves_result[
         dcurves_result["model"] == "cancerpredmarker"
     ].iloc[0]
