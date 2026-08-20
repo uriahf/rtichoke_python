@@ -5,8 +5,9 @@
  */
 function drawRtichokeCurve(s, sel) {
   const card=d3.select(sel); card.selectAll("*").remove();
+  card.style("width","100%").style("max-width","none").style("margin-left","0").style("margin-right","0");
   const W=1000,H=550,m={top:35,right:30,bottom:65,left:65};
-  const svg=card.append("svg").attr("viewBox",`0 0 ${W} ${H}`),x=d3.scaleLinear().domain(s.x_range).range([m.left,W-m.right]),y=d3.scaleLinear().domain(s.y_range).range([H-m.bottom,m.top]);
+  const svg=card.append("svg").style("width","100%").style("max-width","none").style("margin","0").attr("viewBox",`0 0 ${W} ${H}`),x=d3.scaleLinear().domain(s.x_range).range([m.left,W-m.right]),y=d3.scaleLinear().domain(s.y_range).range([H-m.bottom,m.top]);
   const line=d3.line().defined(d=>isFinite(+d.x)&&isFinite(+d.y)).x(d=>x(+d.x)).y(d=>y(+d.y));
   const styleAxis=a=>{a.attr("font-family","Open Sans, verdana, arial, sans-serif").attr("font-size",12).attr("color","#444");a.select(".domain").attr("stroke","#444");a.selectAll(".tick line").attr("stroke","#444")};
   const xa=svg.append("g").attr("class","axis").attr("transform",`translate(0,${H-m.bottom})`).call(d3.axisBottom(x).ticks(6)),ya=svg.append("g").attr("class","axis").attr("transform",`translate(${m.left},0)`).call(d3.axisLeft(y).ticks(6)); styleAxis(xa);styleAxis(ya);
