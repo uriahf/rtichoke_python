@@ -6,7 +6,6 @@ from typing import Dict, List, Sequence, Union
 from plotly.graph_objs._figure import Figure
 from rtichoke.processing.binary_color_values import _apply_color_values_binary
 from rtichoke.processing.plotly_helper_functions import (
-    _create_rtichoke_plotly_curve_times,
     _create_rtichoke_plotly_curve_binary,
     _plot_rtichoke_curve_binary,
     _create_rtichoke_curve_list_times,
