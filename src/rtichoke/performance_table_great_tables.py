@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import cast
 
 import numpy as np
 import polars as pl
@@ -225,11 +226,13 @@ def render_performance_table_great_tables(
                 locations=loc.body(columns="Model", rows=rows),
             )
 
-    lift_max = float(data.get_column("lift").drop_nulls().max() or 1.0)
+    lift_max = float(
+        cast(float | int, data.get_column("lift").drop_nulls().max() or 1.0)
+    )
     nb_max = 1.0
     if "net_benefit" in data.columns:
         nb = data.get_column("net_benefit").drop_nulls().abs().max()
-        nb_max = float(nb or 1.0)
+        nb_max = float(cast(float | int, nb or 1.0))
 
     for row_index in range(data.height):
         ppcr_value = data[row_index, "ppcr"]
