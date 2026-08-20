@@ -6,8 +6,10 @@ from typing import Dict, List, Sequence, Union
 from plotly.graph_objs._figure import Figure
 from rtichoke.processing.plotly_helper_functions import (
     _create_rtichoke_plotly_curve_binary,
-    _create_rtichoke_plotly_curve_times,
     _plot_rtichoke_curve_binary,
+)
+from rtichoke.processing.time_reference_lines import (
+    _create_rtichoke_plotly_curve_times_reference_safe,
 )
 import numpy as np
 import polars as pl
@@ -234,7 +236,7 @@ def create_decision_curve_times(
     else:
         curve = "interventions avoided"
 
-    fig = _create_rtichoke_plotly_curve_times(
+    fig = _create_rtichoke_plotly_curve_times_reference_safe(
         probs,
         reals,
         times,
