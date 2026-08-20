@@ -75,8 +75,11 @@
 
     const wrap=document.createElement("div"); wrap.className="rt-perf-wrap";
     const table=document.createElement("table"); table.className="rt-perf";
-    const metricCount=isPpcr?5:6;
-    table.innerHTML=`<thead><tr><th rowspan="2"></th><th rowspan="2">Model</th>${isPpcr?"":"<th rowspan=\"2\">Probability Threshold</th>"}<th rowspan="2">Predicted Positives</th><th class="metric-group" colspan="${metricCount}">Performance Metrics</th></tr><tr><th>Sens</th><th>Spec</th><th>PPV</th><th>NPV</th><th>Lift</th>${isPpcr?"":"<th>Net Benefit</th>"}</tr></thead>`;
+    if(isPpcr) {
+      table.innerHTML='<thead><tr><th rowspan="2"></th><th rowspan="2">Predicted Positives</th><th rowspan="2">Model</th><th class="metric-group" colspan="5">Performance Metrics</th><th rowspan="2">Net Benefit</th></tr><tr><th>Sens</th><th>Spec</th><th>PPV</th><th>NPV</th><th>Lift</th></tr></thead>';
+    } else {
+      table.innerHTML='<thead><tr><th rowspan="2"></th><th rowspan="2">Probability Threshold</th><th rowspan="2">Model</th><th class="metric-group" colspan="6">Performance Metrics</th><th rowspan="2">Predicted Positives</th></tr><tr><th>Sens</th><th>Spec</th><th>PPV</th><th>NPV</th><th>Lift</th><th>Net Benefit</th></tr></thead>';
+    }
     const body=document.createElement("tbody"); table.appendChild(body); wrap.appendChild(table); host.appendChild(wrap);
     const pager=document.createElement("div"); pager.className="rt-pager"; host.appendChild(pager);
 
@@ -92,14 +95,27 @@
       const pages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE)); if(page>=pages) page=pages-1;
       body.innerHTML="";
       const start=page*PAGE_SIZE, pageRows=filtered.slice(start,start+PAGE_SIZE);
-      pageRows.forEach(r=>{
+      let previousThreshold=null;
+      pageRows.forEach((r,rowIndex)=>{
         const tr=document.createElement("tr");
         const model=String(r.reference_group ?? "");
         const ppcrText=`${fmt(r.predicted_positives)} (${pct(r.ppcr)})`;
+        const modelCell=`<td><span class="model-dot" style="background:${colors[model]||'#aaa'}"></span>${esc(model)}</td>`;
         const metrics=[["sensitivity",1],["specificity",1],["ppv",1],["npv",1],["lift",liftMax]];
-        tr.innerHTML=`<td class="expand">›</td><td><span class="model-dot" style="background:${colors[model]||'#aaa'}"></span>${esc(model)}</td>${isPpcr?"":`<td>${fmt(r.chosen_cutoff)}</td>`}<td class="bar-cell" style="background-image:${metricBackground(r.ppcr,1,'lightgrey')}">${ppcrText}</td>${metrics.map(([k,m])=>`<td class="bar-cell" style="background-image:${metricBackground(r[k],m)}">${fmt(r[k])}</td>`).join("")}${isPpcr?"":`<td class="bar-cell" style="background-image:${nbBackground(r.net_benefit,nbMax)}">${fmt(r.net_benefit)}</td>`}`;
+        const metricCells=metrics.map(([k,m])=>`<td class="bar-cell" style="background-image:${metricBackground(r[k],m)}">${fmt(r[k])}</td>`).join("");
+        const nbCell=`<td class="bar-cell" style="background-image:${nbBackground(r.net_benefit,nbMax)}">${fmt(r.net_benefit)}</td>`;
+        const ppcrCell=`<td class="bar-cell" style="background-image:${metricBackground(r.ppcr,1,'lightgrey')}">${ppcrText}</td>`;
+        if(isPpcr) {
+          tr.innerHTML=`<td class="expand">›</td>${ppcrCell}${modelCell}${metricCells}${nbCell}`;
+        } else {
+          const threshold=fmt(r.chosen_cutoff);
+          const repeated=rowIndex>0 && Math.abs(num(r.chosen_cutoff)-previousThreshold)<1e-12;
+          const thresholdCell=`<td${repeated?' style="visibility:hidden"':''}>${threshold}</td>`;
+          tr.innerHTML=`<td class="expand">›</td>${thresholdCell}${modelCell}${metricCells}${nbCell}${ppcrCell}`;
+          previousThreshold=num(r.chosen_cutoff);
+        }
         const detail=document.createElement("tr"); detail.className="detail"; detail.style.display="none";
-        const td=document.createElement("td"); td.colSpan=isPpcr?8:10; td.innerHTML=confusionMatrix(r); detail.appendChild(td);
+        const td=document.createElement("td"); td.colSpan=isPpcr?9:10; td.innerHTML=confusionMatrix(r); detail.appendChild(td);
         tr.querySelector(".expand").addEventListener("click",e=>{const open=detail.style.display!=="none"; detail.style.display=open?"none":"table-row"; e.currentTarget.textContent=open?"›":"⌄";});
         body.appendChild(tr); body.appendChild(detail);
       });
