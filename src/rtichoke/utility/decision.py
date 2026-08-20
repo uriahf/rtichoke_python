@@ -102,6 +102,7 @@ def create_decision_curve(
         min_p_threshold=min_p_threshold,
         max_p_threshold=max_p_threshold,
     )
+    fig.update_xaxes(range=[min_p_threshold, max_p_threshold])
     return _apply_color_values_binary(fig, color_values)
 
 
@@ -152,6 +153,7 @@ def plot_decision_curve(
         min_p_threshold=min_p_threshold,
         max_p_threshold=max_p_threshold,
     )
+    fig.update_xaxes(range=[min_p_threshold, max_p_threshold])
     return fig
 
 
