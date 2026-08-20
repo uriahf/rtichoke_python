@@ -37,36 +37,44 @@ jobs:
           uv run python examples/summary_report_demo.py
           test -s summary-report-demo.html
 
-      - name: Publish direct PR preview
+      - name: Publish standalone report preview
         env:
-          GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin gh-pages || true
-          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
-            git worktree add /tmp/gh-pages origin/gh-pages
-          else
-            git worktree add --detach /tmp/gh-pages
-            cd /tmp/gh-pages
-            git checkout --orphan gh-pages
-            git rm -rf . || true
-          fi
+          git fetch origin gh-pages
+          git worktree add /tmp/gh-pages origin/gh-pages
           cd /tmp/gh-pages
-          mkdir -p "pr-preview/pr-${PR_NUMBER}"
-          cp "${GITHUB_WORKSPACE}/summary-report-demo.html" "pr-preview/pr-${PR_NUMBER}/summary-report.html"
+
+          # Keep this outside pr-preview/, which is owned by the documentation
+          # preview deployment and may be replaced wholesale on every docs run.
+          DEST="report-preview/pr-${PR_NUMBER}"
+          mkdir -p "$DEST"
+          cp "${GITHUB_WORKSPACE}/summary-report-demo.html" "$DEST/index.html"
           touch .nojekyll
-          git add .nojekyll "pr-preview/pr-${PR_NUMBER}/summary-report.html"
-          if git diff --cached --quiet; then
-            echo "Preview unchanged"
-          else
+          git add .nojekyll "$DEST/index.html"
+          if ! git diff --cached --quiet; then
             git commit -m "Update summary report preview for PR #${PR_NUMBER}"
+            # Documentation may update gh-pages concurrently. Rebase once so
+            # this small standalone preview does not overwrite those changes.
+            git pull --rebase origin gh-pages
             git push origin HEAD:gh-pages
           fi
+
+          URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/${DEST}/"
           echo "### Summary report preview" >> "$GITHUB_STEP_SUMMARY"
-          echo "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/pr-preview/pr-${PR_NUMBER}/summary-report.html" >> "$GITHUB_STEP_SUMMARY"
+          echo "$URL" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify published file exists on gh-pages
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages
+          git cat-file -e "origin/gh-pages:report-preview/pr-${PR_NUMBER}/index.html"
+          echo "Verified report-preview/pr-${PR_NUMBER}/index.html on gh-pages"
 
       - name: Upload fallback artifact
         uses: actions/upload-artifact@v4
