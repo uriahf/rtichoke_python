@@ -67,7 +67,7 @@ def test_survival_decision_curve_matches_dcurves_issue_127() -> None:
         .select(pl.col("real_positives") / pl.col("n"))
         .item()
     )
-    dcurves_prevalence = dcurves_model["pos_rate"].iloc[0]
+    dcurves_prevalence = dcurves_model["prevalence"].iloc[0]
 
     assert round(dcurves_prevalence, 2) == 0.22
     assert_allclose(rtichoke_prevalence, dcurves_prevalence, rtol=0, atol=1e-10)
