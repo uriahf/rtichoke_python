@@ -84,6 +84,7 @@ def create_performance_table_times(
     boundary; fixed-horizon normalization is handled by the shared time-dependent
     performance pipeline.
     """
+    normalized_times: np.ndarray | dict[str, np.ndarray]
     if isinstance(times, dict):
         normalized_times = {
             key: np.asarray(value, dtype=float) for key, value in times.items()
