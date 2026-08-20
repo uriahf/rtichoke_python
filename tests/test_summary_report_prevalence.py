@@ -80,10 +80,11 @@ def test_summary_report_has_r_style_curve_geometry_and_strata_slider(tmp_path):
     create_summary_report(probs, reals, output_file=output, by=0.1)
 
     html = output.read_text(encoding="utf-8")
-    assert 'const W=500,H=550,m={top:25,right:10,bottom:40,left:60}' in html
-    assert 'attr("class","slider-wrap")' in html
+    assert 'const W=500,H=550,m={top:25,right:10,bottom:120,left:60}' in html
+    assert 'curve-slider-wrap' in html
+    assert '.style("bottom","12px")' in html
     assert '"Predicted Positives (Rate):"' in html
-    assert '"Probability Threshold:"' in html
+    assert '"Prob. Threshold:"' in html
     assert 'drawRtichokeCurve(specs[0],chart,strat)' in html
     assert "drawRtichokeCurve(R.decision,'#decision','probability_threshold')" in html
     assert 'drawRtichokeCurve(s,chart,strat)' in html
