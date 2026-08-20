@@ -98,16 +98,8 @@ def create_breaks_values(probs_vec, stratified_by, by):
         decimals = len(str(by).split(".")[-1])
         n_steps = int(np.floor((1.0 / by) + 1e-12))
         breaks = np.round(np.arange(n_steps + 1) * by, decimals=decimals)
-        if probs_vec is not None:
-            if breaks[-1] != 1.0:
-                breaks = np.append(breaks, 1.0)
-
-            # Public cutoffs follow R's exact seq() values. For internal bin
-            # assignment only, move interior edges one representable float up
-            # so prob == cutoff belongs to the lower bin and is therefore
-            # classified negative, matching R's strict `prob > cutoff` rule.
-            if len(breaks) > 2:
-                breaks[1:-1] = np.nextafter(breaks[1:-1], np.inf)
+        if probs_vec is not None and breaks[-1] != 1.0:
+            breaks = np.append(breaks, 1.0)
     return breaks
 
 
