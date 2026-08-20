@@ -5,6 +5,26 @@ from typing import Dict, Union
 import numpy as np
 
 
+def _validate_probability_values(probs: Dict[str, np.ndarray]) -> None:
+    for values in probs.values():
+        probs_values = np.asarray(values)
+        if not np.all(np.isfinite(probs_values)) or np.any(
+            (probs_values < 0) | (probs_values > 1)
+        ):
+            raise ValueError("Estimated probabilities must be between 0 and 1.")
+
+
+def _validate_time_outcome_values(
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+) -> None:
+    values = reals.values() if isinstance(reals, dict) else [reals]
+    for outcome_values in values:
+        if not np.all(np.isin(np.asarray(outcome_values), [0, 1, 2])):
+            raise ValueError(
+                "Time-dependent outcomes must contain only 0, 1, and 2."
+            )
+
+
 def _validate_time_input_alignment(
     probs: Dict[str, np.ndarray],
     reals: Union[np.ndarray, Dict[str, np.ndarray]],
@@ -13,6 +33,9 @@ def _validate_time_input_alignment(
     """Validate supported array/dict layouts before time-dependent processing."""
     if not isinstance(probs, dict) or not probs:
         raise ValueError("`probs` must be a non-empty dictionary of probability arrays.")
+
+    _validate_probability_values(probs)
+    _validate_time_outcome_values(reals)
 
     groups = list(probs)
     multiple_groups = len(groups) > 1
