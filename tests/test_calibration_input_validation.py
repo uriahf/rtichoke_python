@@ -67,12 +67,15 @@ def test_time_calibration_rejects_unsupported_event_codes(entry_point):
         )
 
 
-def test_calibration_validation_preserves_multiple_population_shape():
+def test_calibration_validation_preserves_supported_multiple_population_shape():
     fig = create_calibration_curve(
-        probs={"model": np.array([0.1, 0.2, 0.8, 0.9])},
+        probs={
+            "population_a": np.array([0.1, 0.8]),
+            "population_b": np.array([0.2, 0.9]),
+        },
         reals={
             "population_a": np.array([0, 1]),
-            "population_b": np.array([1, 1]),
+            "population_b": np.array([0, 1]),
         },
     )
 
