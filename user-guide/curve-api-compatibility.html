@@ -389,27 +389,22 @@ len(probs["Test"])  == len(reals["Test"])</code></pre>
 </section>
 <section id="time-dependent-calibration-heuristics" class="level1">
 <h1>Time-dependent calibration heuristics</h1>
-<p><a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> differs from its ROC, precision-recall, Gains, Lift, and decision-curve siblings in two important ways:</p>
-<ol type="1">
-<li><code>heuristics_sets</code> is currently required rather than defaulted.</li>
-<li>Calibration explicitly rejects unsupported heuristic combinations (specifically <code>competing_heuristic="adjusted_as_censored"</code>) with an <code>Unsupported calibration heuristics</code> error instead of silently skipping requested horizons.</li>
-</ol>
-<p>Pass the calibration heuristic explicitly. For adjusted or exclusion-based paths:</p>
+<p><a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times()</a> defaults to one adjusted heuristic set:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>heuristics_sets <span class="op">=</span> [</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    {</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"censoring_heuristic"</span>: <span class="st">"adjusted"</span>,</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"competing_heuristic"</span>: <span class="st">"adjusted_as_negative"</span>,</span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div>
+<p>You can still provide a different single heuristic set explicitly. Calibration currently accepts exactly one heuristic set per call because the plot has no heuristic selector; passing several sets raises a clear <code>ValueError</code> instead of combining them into one calibration trace. Calibration also rejects unsupported combinations such as <code>competing_heuristic="adjusted_as_censored"</code>.</p>
 <p>When <code>calibration_type="smooth"</code>, you can also specify the <code>smooth_method</code>: - <code>"local_aj"</code> (default): Gerds’ local Aalen-Johansen/KM neighborhood estimation. - <code>"secondary_cox"</code>: Secondary Cox regression method (Austin, Harrell &amp; McLernon 2020). - <code>"pseudo_values"</code>: Leave-one-out Aalen-Johansen pseudo-observations lowess.</p>
-<p>Then call:</p>
+<p>The default call is therefore simply:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_calibration_curve_times(</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>probs,</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals,</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    times<span class="op">=</span>times,</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    fixed_time_horizons<span class="op">=</span>[<span class="fl">3.0</span>, <span class="fl">6.0</span>, <span class="fl">9.0</span>],</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    heuristics_sets<span class="op">=</span>heuristics_sets,</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 </section>
 <section id="numeric-time-horizons" class="level1">
 <h1>Numeric time horizons</h1>

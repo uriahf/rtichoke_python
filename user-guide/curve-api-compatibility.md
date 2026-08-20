@@ -48,12 +48,7 @@ These statements describe the effect of the heuristics on the estimates. Functio
 
 # Time-dependent calibration heuristics
 
-[create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times) differs from its ROC, precision-recall, Gains, Lift, and decision-curve siblings in two important ways:
-
-1.  `heuristics_sets` is currently required rather than defaulted.
-2.  Calibration explicitly rejects unsupported heuristic combinations (specifically `competing_heuristic="adjusted_as_censored"`) with an `Unsupported calibration heuristics` error instead of silently skipping requested horizons.
-
-Pass the calibration heuristic explicitly. For adjusted or exclusion-based paths:
+[create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times) defaults to one adjusted heuristic set:
 
 ``` python
 heuristics_sets = [
@@ -64,9 +59,11 @@ heuristics_sets = [
 ]
 ```
 
+You can still provide a different single heuristic set explicitly. Calibration currently accepts exactly one heuristic set per call because the plot has no heuristic selector; passing several sets raises a clear `ValueError` instead of combining them into one calibration trace. Calibration also rejects unsupported combinations such as `competing_heuristic="adjusted_as_censored"`.
+
 When `calibration_type="smooth"`, you can also specify the `smooth_method`: - `"local_aj"` (default): Gerds' local Aalen-Johansen/KM neighborhood estimation. - `"secondary_cox"`: Secondary Cox regression method (Austin, Harrell & McLernon 2020). - `"pseudo_values"`: Leave-one-out Aalen-Johansen pseudo-observations lowess.
 
-Then call:
+The default call is therefore simply:
 
 ``` python
 fig = rk.create_calibration_curve_times(
@@ -74,7 +71,6 @@ fig = rk.create_calibration_curve_times(
     reals=reals,
     times=times,
     fixed_time_horizons=[3.0, 6.0, 9.0],
-    heuristics_sets=heuristics_sets,
 )
 ```
 
