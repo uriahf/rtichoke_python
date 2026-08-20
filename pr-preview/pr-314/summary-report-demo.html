@@ -300,6 +300,28 @@ function calibration(type, sel) {
   const num = v => typeof v === "number" && isFinite(v) ? v : 0;
   const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 
+  if (!document.getElementById("rt-perf-control-style")) {
+    const style=document.createElement("style");
+    style.id="rt-perf-control-style";
+    style.textContent=`
+      .rt-check-inline{display:inline-flex!important;align-items:center;padding-left:0!important;margin-right:14px!important;gap:6px}
+      .rt-check-inline input{position:absolute!important;opacity:0;pointer-events:none;margin:0!important}
+      .rt-check-box{width:16px;height:16px;border:2px solid #333;border-radius:2px;display:grid;place-content:center;background:#fff;flex:0 0 auto}
+      .rt-check-box>span{width:10px;height:10px;transform:scale(0);transition:transform .08s linear}
+      .rt-dual-range{position:relative!important;height:50px!important;margin-top:2px!important}
+      .rt-range-track{position:absolute;left:8px;right:8px;top:29px;height:6px;background:#e1e1e1;border-radius:3px}
+      .rt-range-fill{position:absolute;top:0;height:6px;background:#337ab7;border-radius:3px}
+      .rt-range-bubble{position:absolute;top:0;transform:translateX(-50%);padding:1px 5px;min-width:34px;text-align:center;background:#337ab7;color:#fff;border-radius:3px;font-size:11px;line-height:18px;white-space:nowrap}
+      .rt-dual-range input[type=range]{-webkit-appearance:none;appearance:none;position:absolute!important;left:0!important;top:20px!important;width:100%!important;height:24px;margin:0!important;background:transparent!important;pointer-events:none!important;outline:none}
+      .rt-dual-range input[type=range]::-webkit-slider-runnable-track{height:6px;background:transparent;border:0}
+      .rt-dual-range input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;margin-top:-6px;border:1px solid #999;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);pointer-events:auto}
+      .rt-dual-range input[type=range]::-moz-range-track{height:6px;background:transparent;border:0}
+      .rt-dual-range input[type=range]::-moz-range-thumb{width:18px;height:18px;border:1px solid #999;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);pointer-events:auto}
+      .rt-range-readout{display:none!important}
+    `;
+    document.head.appendChild(style);
+  }
+
   function metricBackground(value, maxValue=1, color="lightgreen") {
     if (!isFinite(+value) || maxValue <= 0) return "";
     const width = Math.min(Math.abs(+value) / maxValue, 1) * 100;
@@ -350,26 +372,37 @@ function calibration(type, sel) {
     const modelLabel=document.createElement("div"); modelLabel.className="rt-filter-label"; modelLabel.textContent="Model"; modelFilter.appendChild(modelLabel);
     models.forEach((model,i)=>{
       const label=document.createElement("label"); label.className="rt-check-inline";
-      const input=document.createElement("input"); input.type="checkbox"; input.value=model; input.style.setProperty("--rt-check-color",colors[model]||COLORS[i%COLORS.length]);
-      const text=document.createElement("span"); text.textContent=model; label.append(input,text); modelFilter.appendChild(label);
-      input.addEventListener("change",()=>{input.checked?selected.add(model):selected.delete(model);page=0;drawPage();});
+      const input=document.createElement("input"); input.type="checkbox"; input.value=model;
+      const box=document.createElement("span"); box.className="rt-check-box";
+      const boxFill=document.createElement("span"); boxFill.style.background=colors[model]||COLORS[i%COLORS.length]; box.appendChild(boxFill);
+      const text=document.createElement("span"); text.textContent=model; label.append(input,box,text); modelFilter.appendChild(label);
+      input.addEventListener("change",()=>{input.checked?selected.add(model):selected.delete(model);boxFill.style.transform=input.checked?"scale(1)":"scale(0)";page=0;drawPage();});
     });
     const rangeFilter=document.createElement("div"); rangeFilter.className="rt-filter-range"; rangeFilter.style.width="50%"; rangeFilter.style.maxWidth="520px"; rangeFilter.style.minWidth="300px";
     const rangeLabel=document.createElement("div"); rangeLabel.className="rt-filter-label"; rangeLabel.textContent=isPpcr?"Predicted Positives Condition Rate (PPCR)":"Probability Threshold";
     const rangeReadout=document.createElement("span"); rangeReadout.className="rt-range-readout";
     const track=document.createElement("div"); track.className="rt-dual-range";
+    const rail=document.createElement("div"); rail.className="rt-range-track";
+    const fill=document.createElement("div"); fill.className="rt-range-fill"; rail.appendChild(fill);
+    const loBubble=document.createElement("span"), hiBubble=document.createElement("span"); loBubble.className=hiBubble.className="rt-range-bubble";
     const lo=document.createElement("input"), hi=document.createElement("input");
     [lo,hi].forEach(input=>{input.type="range";input.min=minValue;input.max=maxValue;input.step=step;}); lo.value=minValue; hi.value=maxValue;
-    const sync=()=>{lower=Math.min(+lo.value,+hi.value);upper=Math.max(+lo.value,+hi.value);rangeReadout.textContent=`${fmt(lower)} – ${fmt(upper)}`;page=0;drawPage();};
-    lo.addEventListener("input",sync); hi.addEventListener("input",sync); track.append(lo,hi); rangeFilter.append(rangeLabel,rangeReadout,track);
+    const sync=()=>{
+      lower=Math.min(+lo.value,+hi.value);upper=Math.max(+lo.value,+hi.value);rangeReadout.textContent=`${fmt(lower)} – ${fmt(upper)}`;
+      const span=maxValue-minValue||1, lp=100*(lower-minValue)/span, hp=100*(upper-minValue)/span;
+      fill.style.left=`${lp}%`;fill.style.width=`${Math.max(0,hp-lp)}%`;
+      loBubble.textContent=fmt(lower);hiBubble.textContent=fmt(upper);loBubble.style.left=`${lp}%`;hiBubble.style.left=`${hp}%`;
+      page=0;drawPage();
+    };
+    lo.addEventListener("input",sync); hi.addEventListener("input",sync); track.append(rail,loBubble,hiBubble,lo,hi); rangeFilter.append(rangeLabel,rangeReadout,track);
     if(models.length>1) filters.appendChild(modelFilter);
     filters.appendChild(rangeFilter); host.appendChild(filters);
-    rangeReadout.textContent=`${fmt(lower)} – ${fmt(upper)}`;
+    sync();
 
     const wrap=document.createElement("div"); wrap.className="rt-perf-wrap";
     const table=document.createElement("table"); table.className="rt-perf";
     if(isPpcr) {
-      table.innerHTML='<thead><tr><th rowspan="2"></th><th rowspan="2">Predicted Positives</th><th rowspan="2">Model</th><th class="metric-group" colspan="5">Performance Metrics</th><th rowspan="2">Net Benefit</th></tr><tr><th>Sens</th><th>Spec</th><th>PPV</th><th>NPV</th><th>Lift</th></tr></thead>';
+      table.innerHTML='<thead><tr><th rowspan="2"></th><th rowspan="2">Model</th><th rowspan="2">Predicted Positives</th><th class="metric-group" colspan="5">Performance Metrics</th><th rowspan="2">Net Benefit</th></tr><tr><th>Sens</th><th>Spec</th><th>PPV</th><th>NPV</th><th>Lift</th></tr></thead>';
     } else {
       table.innerHTML='<thead><tr><th rowspan="2"></th><th rowspan="2">Probability Threshold</th><th rowspan="2">Model</th><th class="metric-group" colspan="6">Performance Metrics</th><th rowspan="2">Predicted Positives</th></tr><tr><th>Sens</th><th>Spec</th><th>PPV</th><th>NPV</th><th>Lift</th><th>Net Benefit</th></tr></thead>';
     }
@@ -399,7 +432,7 @@ function calibration(type, sel) {
         const nbCell=`<td class="bar-cell" style="background-image:${nbBackground(r.net_benefit,nbMax)}">${fmt(r.net_benefit)}</td>`;
         const ppcrCell=`<td class="bar-cell" style="background-image:${metricBackground(r.ppcr,1,'lightgrey')}">${ppcrText}</td>`;
         if(isPpcr) {
-          tr.innerHTML=`<td class="expand">›</td>${ppcrCell}${modelCell}${metricCells}${nbCell}`;
+          tr.innerHTML=`<td class="expand">›</td>${modelCell}${ppcrCell}${metricCells}${nbCell}`;
         } else {
           const threshold=fmt(r.chosen_cutoff);
           const repeated=rowIndex>0 && Math.abs(num(r.chosen_cutoff)-previousThreshold)<1e-12;
@@ -469,6 +502,28 @@ function perf(rows,sel,isP){
   const num = v => typeof v === "number" && isFinite(v) ? v : 0;
   const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 
+  if (!document.getElementById("rt-perf-control-style")) {
+    const style=document.createElement("style");
+    style.id="rt-perf-control-style";
+    style.textContent=`
+      .rt-check-inline{display:inline-flex!important;align-items:center;padding-left:0!important;margin-right:14px!important;gap:6px}
+      .rt-check-inline input{position:absolute!important;opacity:0;pointer-events:none;margin:0!important}
+      .rt-check-box{width:16px;height:16px;border:2px solid #333;border-radius:2px;display:grid;place-content:center;background:#fff;flex:0 0 auto}
+      .rt-check-box>span{width:10px;height:10px;transform:scale(0);transition:transform .08s linear}
+      .rt-dual-range{position:relative!important;height:50px!important;margin-top:2px!important}
+      .rt-range-track{position:absolute;left:8px;right:8px;top:29px;height:6px;background:#e1e1e1;border-radius:3px}
+      .rt-range-fill{position:absolute;top:0;height:6px;background:#337ab7;border-radius:3px}
+      .rt-range-bubble{position:absolute;top:0;transform:translateX(-50%);padding:1px 5px;min-width:34px;text-align:center;background:#337ab7;color:#fff;border-radius:3px;font-size:11px;line-height:18px;white-space:nowrap}
+      .rt-dual-range input[type=range]{-webkit-appearance:none;appearance:none;position:absolute!important;left:0!important;top:20px!important;width:100%!important;height:24px;margin:0!important;background:transparent!important;pointer-events:none!important;outline:none}
+      .rt-dual-range input[type=range]::-webkit-slider-runnable-track{height:6px;background:transparent;border:0}
+      .rt-dual-range input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;margin-top:-6px;border:1px solid #999;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);pointer-events:auto}
+      .rt-dual-range input[type=range]::-moz-range-track{height:6px;background:transparent;border:0}
+      .rt-dual-range input[type=range]::-moz-range-thumb{width:18px;height:18px;border:1px solid #999;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);pointer-events:auto}
+      .rt-range-readout{display:none!important}
+    `;
+    document.head.appendChild(style);
+  }
+
   function metricBackground(value, maxValue=1, color="lightgreen") {
     if (!isFinite(+value) || maxValue <= 0) return "";
     const width = Math.min(Math.abs(+value) / maxValue, 1) * 100;
@@ -519,26 +574,37 @@ function perf(rows,sel,isP){
     const modelLabel=document.createElement("div"); modelLabel.className="rt-filter-label"; modelLabel.textContent="Model"; modelFilter.appendChild(modelLabel);
     models.forEach((model,i)=>{
       const label=document.createElement("label"); label.className="rt-check-inline";
-      const input=document.createElement("input"); input.type="checkbox"; input.value=model; input.style.setProperty("--rt-check-color",colors[model]||COLORS[i%COLORS.length]);
-      const text=document.createElement("span"); text.textContent=model; label.append(input,text); modelFilter.appendChild(label);
-      input.addEventListener("change",()=>{input.checked?selected.add(model):selected.delete(model);page=0;drawPage();});
+      const input=document.createElement("input"); input.type="checkbox"; input.value=model;
+      const box=document.createElement("span"); box.className="rt-check-box";
+      const boxFill=document.createElement("span"); boxFill.style.background=colors[model]||COLORS[i%COLORS.length]; box.appendChild(boxFill);
+      const text=document.createElement("span"); text.textContent=model; label.append(input,box,text); modelFilter.appendChild(label);
+      input.addEventListener("change",()=>{input.checked?selected.add(model):selected.delete(model);boxFill.style.transform=input.checked?"scale(1)":"scale(0)";page=0;drawPage();});
     });
     const rangeFilter=document.createElement("div"); rangeFilter.className="rt-filter-range"; rangeFilter.style.width="50%"; rangeFilter.style.maxWidth="520px"; rangeFilter.style.minWidth="300px";
     const rangeLabel=document.createElement("div"); rangeLabel.className="rt-filter-label"; rangeLabel.textContent=isPpcr?"Predicted Positives Condition Rate (PPCR)":"Probability Threshold";
     const rangeReadout=document.createElement("span"); rangeReadout.className="rt-range-readout";
     const track=document.createElement("div"); track.className="rt-dual-range";
+    const rail=document.createElement("div"); rail.className="rt-range-track";
+    const fill=document.createElement("div"); fill.className="rt-range-fill"; rail.appendChild(fill);
+    const loBubble=document.createElement("span"), hiBubble=document.createElement("span"); loBubble.className=hiBubble.className="rt-range-bubble";
     const lo=document.createElement("input"), hi=document.createElement("input");
     [lo,hi].forEach(input=>{input.type="range";input.min=minValue;input.max=maxValue;input.step=step;}); lo.value=minValue; hi.value=maxValue;
-    const sync=()=>{lower=Math.min(+lo.value,+hi.value);upper=Math.max(+lo.value,+hi.value);rangeReadout.textContent=`${fmt(lower)} – ${fmt(upper)}`;page=0;drawPage();};
-    lo.addEventListener("input",sync); hi.addEventListener("input",sync); track.append(lo,hi); rangeFilter.append(rangeLabel,rangeReadout,track);
+    const sync=()=>{
+      lower=Math.min(+lo.value,+hi.value);upper=Math.max(+lo.value,+hi.value);rangeReadout.textContent=`${fmt(lower)} – ${fmt(upper)}`;
+      const span=maxValue-minValue||1, lp=100*(lower-minValue)/span, hp=100*(upper-minValue)/span;
+      fill.style.left=`${lp}%`;fill.style.width=`${Math.max(0,hp-lp)}%`;
+      loBubble.textContent=fmt(lower);hiBubble.textContent=fmt(upper);loBubble.style.left=`${lp}%`;hiBubble.style.left=`${hp}%`;
+      page=0;drawPage();
+    };
+    lo.addEventListener("input",sync); hi.addEventListener("input",sync); track.append(rail,loBubble,hiBubble,lo,hi); rangeFilter.append(rangeLabel,rangeReadout,track);
     if(models.length>1) filters.appendChild(modelFilter);
     filters.appendChild(rangeFilter); host.appendChild(filters);
-    rangeReadout.textContent=`${fmt(lower)} – ${fmt(upper)}`;
+    sync();
 
     const wrap=document.createElement("div"); wrap.className="rt-perf-wrap";
     const table=document.createElement("table"); table.className="rt-perf";
     if(isPpcr) {
-      table.innerHTML='<thead><tr><th rowspan="2"></th><th rowspan="2">Predicted Positives</th><th rowspan="2">Model</th><th class="metric-group" colspan="5">Performance Metrics</th><th rowspan="2">Net Benefit</th></tr><tr><th>Sens</th><th>Spec</th><th>PPV</th><th>NPV</th><th>Lift</th></tr></thead>';
+      table.innerHTML='<thead><tr><th rowspan="2"></th><th rowspan="2">Model</th><th rowspan="2">Predicted Positives</th><th class="metric-group" colspan="5">Performance Metrics</th><th rowspan="2">Net Benefit</th></tr><tr><th>Sens</th><th>Spec</th><th>PPV</th><th>NPV</th><th>Lift</th></tr></thead>';
     } else {
       table.innerHTML='<thead><tr><th rowspan="2"></th><th rowspan="2">Probability Threshold</th><th rowspan="2">Model</th><th class="metric-group" colspan="6">Performance Metrics</th><th rowspan="2">Predicted Positives</th></tr><tr><th>Sens</th><th>Spec</th><th>PPV</th><th>NPV</th><th>Lift</th><th>Net Benefit</th></tr></thead>';
     }
@@ -568,7 +634,7 @@ function perf(rows,sel,isP){
         const nbCell=`<td class="bar-cell" style="background-image:${nbBackground(r.net_benefit,nbMax)}">${fmt(r.net_benefit)}</td>`;
         const ppcrCell=`<td class="bar-cell" style="background-image:${metricBackground(r.ppcr,1,'lightgrey')}">${ppcrText}</td>`;
         if(isPpcr) {
-          tr.innerHTML=`<td class="expand">›</td>${ppcrCell}${modelCell}${metricCells}${nbCell}`;
+          tr.innerHTML=`<td class="expand">›</td>${modelCell}${ppcrCell}${metricCells}${nbCell}`;
         } else {
           const threshold=fmt(r.chosen_cutoff);
           const repeated=rowIndex>0 && Math.abs(num(r.chosen_cutoff)-previousThreshold)<1e-12;
