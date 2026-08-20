@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.13"]
+        python-version: ["3.12", "3.13"]
     permissions:
       contents: read
 
@@ -73,7 +73,7 @@ jobs:
         if: steps.marker.outputs.changed == 'true'
         uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.13"
+          python-version: "3.12"
 
       - name: Validate release version
         if: steps.marker.outputs.changed == 'true'
