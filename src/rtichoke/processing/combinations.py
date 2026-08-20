@@ -26,8 +26,8 @@ def create_strata_combinations(stratified_by: str, by: float, breaks) -> pl.Data
         upper_bound = bin_edges[1:]
         lower_bound = bin_edges[:-1]
         mid_point = upper_bound - by / 2
-        include_lower_bound = lower_bound > -0.1
-        include_upper_bound = upper_bound == 1.0
+        include_lower_bound = lower_bound == 0.0
+        include_upper_bound = np.ones_like(upper_bound, dtype=bool)
         strata = format_strata_column(
             lower_bound=lower_bound,
             upper_bound=upper_bound,
