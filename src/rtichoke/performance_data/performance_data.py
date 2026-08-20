@@ -44,6 +44,47 @@ _PERFORMANCE_DATA_COLUMNS = [
 ]
 
 
+def _validate_and_align_binary_inputs(
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+) -> Union[np.ndarray, Dict[str, np.ndarray]]:
+    """Validate binary input alignment and normalize outcome dictionaries."""
+    if not isinstance(probs, dict) or not probs:
+        raise ValueError("`probs` must be a non-empty dictionary of probability arrays.")
+
+    groups = list(probs)
+
+    if isinstance(reals, dict):
+        expected_keys = set(groups)
+        if set(reals) != expected_keys:
+            raise ValueError("`reals` dictionary keys must exactly match `probs`.")
+
+        for group in groups:
+            n_probs = len(np.asarray(probs[group]))
+            n_reals = len(np.asarray(reals[group]))
+            if n_probs != n_reals:
+                raise ValueError(
+                    f"Input lengths must match within group {group!r}: "
+                    f"len(probs)={n_probs}, len(reals)={n_reals}."
+                )
+
+        if len(groups) == 1:
+            return np.asarray(reals[groups[0]])
+
+        return {group: np.asarray(reals[group]) for group in groups}
+
+    n_reals = len(np.asarray(reals))
+    for group in groups:
+        n_probs = len(np.asarray(probs[group]))
+        if n_probs != n_reals:
+            raise ValueError(
+                f"Shared outcome length must match probabilities for group {group!r}: "
+                f"len(probs)={n_probs}, len(reals)={n_reals}."
+            )
+
+    return reals
+
+
 def _probs_with_r_binary_cutoff_semantics(
     probs: Dict[str, np.ndarray], by: float
 ) -> Dict[str, np.ndarray]:
@@ -113,6 +154,7 @@ def prepare_binned_classification_data(
         any other stratification variables. It forms the basis for subsequent
         performance calculations.
     """
+    reals = _validate_and_align_binary_inputs(probs=probs, reals=reals)
     breaks = create_breaks_values(None, "probability_threshold", by)
 
     aj_data_combinations = _create_aj_data_combinations_binary(
