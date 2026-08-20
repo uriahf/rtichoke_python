@@ -10,6 +10,7 @@ from rtichoke.processing.combinations import (
     create_aj_data_combinations,
     create_breaks_values,
 )
+from rtichoke.processing.time_input_validation import _validate_time_input_alignment
 from rtichoke.processing.transforms import (
     _calculate_cumulative_aj_data,
     _create_list_data_to_adjust,
@@ -187,6 +188,7 @@ def prepare_binned_classification_data_times(
         represents a unique combination of dataset, bin, time horizon,
         heuristic, and other strata.
     """
+    _validate_time_input_alignment(probs=probs, reals=reals, times=times)
     fixed_time_horizons = [float(horizon) for horizon in fixed_time_horizons]
 
     breaks = create_breaks_values(None, "probability_threshold", by)
