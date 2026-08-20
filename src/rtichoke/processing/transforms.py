@@ -13,18 +13,21 @@ def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFr
         if "probability_threshold" in stratified_by:
             last_bin_index = len(breaks) - 2
 
-            bin_indices = np.digitize(probs, bins=breaks, right=False) - 1
-            bin_indices = np.where(probs == 1.0, last_bin_index, bin_indices)
+            # R counts an observation as positive only when prob > cutoff.
+            # Right-closed bins place exact interior cutoffs in the lower bin.
+            bin_indices = np.digitize(probs, bins=breaks, right=True) - 1
+            bin_indices = np.where(probs == 0.0, 0, bin_indices)
+            bin_indices = np.clip(bin_indices, 0, last_bin_index)
 
             lower_bounds = breaks[bin_indices]
             upper_bounds = breaks[bin_indices + 1]
 
-            include_upper_bounds = bin_indices == last_bin_index
+            include_lower_bounds = bin_indices == 0
 
             strata_prob_labels = np.where(
-                include_upper_bounds,
+                include_lower_bounds,
                 [f"[{lo:.2f}, {hi:.2f}]" for lo, hi in zip(lower_bounds, upper_bounds)],
-                [f"[{lo:.2f}, {hi:.2f})" for lo, hi in zip(lower_bounds, upper_bounds)],
+                [f"({lo:.2f}, {hi:.2f}]" for lo, hi in zip(lower_bounds, upper_bounds)],
             ).astype(str)
 
             columns_to_add.append(
@@ -632,26 +635,11 @@ def _calculate_cumulative_aj_data(aj_data: pl.DataFrame) -> pl.DataFrame:
                 + pl.col("false_positives")
                 + pl.col("false_negatives")
             ).alias("n"),
-        )
-        .with_columns(
-            (pl.col("true_positives") + pl.col("false_positives")).alias(
-                "predicted_positives"
-            ),
-            (pl.col("true_negatives") + pl.col("false_negatives")).alias(
-                "predicted_negatives"
-            ),
-            (pl.col("true_positives") + pl.col("false_negatives")).alias(
-                "real_positives"
-            ),
-            (pl.col("false_positives") + pl.col("true_negatives")).alias(
-                "real_negatives"
-            ),
             (
-                pl.col("true_positives")
-                + pl.col("true_negatives")
-                + pl.col("false_positives")
-                + pl.col("false_negatives")
-            ).alias("n"),
+                pl.col("excluded")
+                if "excluded" in aj_data.columns
+                else pl.lit(0.0)
+            ).alias("excluded"),
         )
     )
 
