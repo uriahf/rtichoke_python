@@ -337,7 +337,7 @@ function calibration(type, sel) {
         const metrics=[["sensitivity",1],["specificity",1],["ppv",1],["npv",1],["lift",liftMax]];
         tr.innerHTML=`<td class="expand">›</td><td><span class="model-dot" style="background:${colors[model]||'#aaa'}"></span>${esc(model)}</td>${isPpcr?"":`<td>${fmt(r.chosen_cutoff)}</td>`}<td class="bar-cell" style="background-image:${metricBackground(r.ppcr,1,'lightgrey')}">${ppcrText}</td>${metrics.map(([k,m])=>`<td class="bar-cell" style="background-image:${metricBackground(r[k],m)}">${fmt(r[k])}</td>`).join("")}${isPpcr?"":`<td class="bar-cell" style="background-image:${nbBackground(r.net_benefit,nbMax)}">${fmt(r.net_benefit)}</td>`}`;
         const detail=document.createElement("tr"); detail.className="detail"; detail.style.display="none";
-        const td=document.createElement("td"); td.colSpan=isPpcr?9:10; td.innerHTML=confusionMatrix(r); detail.appendChild(td);
+        const td=document.createElement("td"); td.colSpan=isPpcr?8:10; td.innerHTML=confusionMatrix(r); detail.appendChild(td);
         tr.querySelector(".expand").addEventListener("click",e=>{const open=detail.style.display!=="none"; detail.style.display=open?"none":"table-row"; e.currentTarget.textContent=open?"›":"⌄";});
         body.appendChild(tr); body.appendChild(detail);
       });
@@ -482,7 +482,7 @@ function perf(rows,sel,isP){
         const metrics=[["sensitivity",1],["specificity",1],["ppv",1],["npv",1],["lift",liftMax]];
         tr.innerHTML=`<td class="expand">›</td><td><span class="model-dot" style="background:${colors[model]||'#aaa'}"></span>${esc(model)}</td>${isPpcr?"":`<td>${fmt(r.chosen_cutoff)}</td>`}<td class="bar-cell" style="background-image:${metricBackground(r.ppcr,1,'lightgrey')}">${ppcrText}</td>${metrics.map(([k,m])=>`<td class="bar-cell" style="background-image:${metricBackground(r[k],m)}">${fmt(r[k])}</td>`).join("")}${isPpcr?"":`<td class="bar-cell" style="background-image:${nbBackground(r.net_benefit,nbMax)}">${fmt(r.net_benefit)}</td>`}`;
         const detail=document.createElement("tr"); detail.className="detail"; detail.style.display="none";
-        const td=document.createElement("td"); td.colSpan=isPpcr?9:10; td.innerHTML=confusionMatrix(r); detail.appendChild(td);
+        const td=document.createElement("td"); td.colSpan=isPpcr?8:10; td.innerHTML=confusionMatrix(r); detail.appendChild(td);
         tr.querySelector(".expand").addEventListener("click",e=>{const open=detail.style.display!=="none"; detail.style.display=open?"none":"table-row"; e.currentTarget.textContent=open?"›":"⌄";});
         body.appendChild(tr); body.appendChild(detail);
       });
