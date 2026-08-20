@@ -16,13 +16,7 @@ from rtichoke.processing.plotly_helper_functions import (
 
 
 def _get_reference_aj_estimates_times(performance_data: pl.DataFrame) -> pl.DataFrame:
-    """Return one event-risk estimate per reference group and horizon.
-
-    At probability threshold 0 everyone is classified positive, so
-    ``real_positives / n`` is the horizon-specific event probability. Using
-    only cutoff 0 avoids mixing that estimate with cutoff-specific values from
-    the opposite boundary.
-    """
+    """Return the cutoff-0 event risk for each group and horizon."""
     return (
         performance_data.filter(pl.col("chosen_cutoff") == 0)
         .select("reference_group", "fixed_time_horizon", "real_positives", "n")
@@ -40,28 +34,25 @@ def _replace_reference_data_times(
     min_p_threshold: float = 0.0,
     max_p_threshold: float = 1.0,
 ) -> dict:
-    """Replace prevalence-dependent references with cutoff-0 estimates."""
+    """Rebuild prevalence-dependent references from cutoff-0 event risk."""
     aj_estimates = _get_reference_aj_estimates_times(performance_data)
     references = []
 
     for horizon in curve_list["fixed_time_horizons"]:
         aj_horizon = aj_estimates.filter(pl.col("fixed_time_horizon") == horizon)
-        multiple_populations = _check_if_multiple_populations_are_being_validated_times(
-            aj_horizon
-        )
         references.append(
             _create_reference_lines_data(
                 curve=curve,
                 aj_estimates_from_performance_data=aj_horizon,
-                multiple_populations=multiple_populations,
+                multiple_populations=(
+                    _check_if_multiple_populations_are_being_validated_times(aj_horizon)
+                ),
                 min_p_threshold=min_p_threshold,
                 max_p_threshold=max_p_threshold,
             ).with_columns(pl.lit(horizon).alias("fixed_time_horizon"))
         )
 
-    curve_list["reference_data"] = (
-        pl.concat(references, how="vertical") if references else pl.DataFrame()
-    )
+    curve_list["reference_data"] = pl.concat(references, how="vertical")
     return curve_list
 
 
@@ -79,7 +70,7 @@ def _create_rtichoke_plotly_curve_times_reference_safe(
     color_values=None,
     curve: str = "precision recall",
 ) -> Figure:
-    """Create a time-dependent curve with horizon-specific reference data."""
+    """Create a time-dependent curve with corrected reference prevalence."""
     performance_data = prepare_performance_data_times(
         probs,
         reals,
@@ -89,9 +80,6 @@ def _create_rtichoke_plotly_curve_times_reference_safe(
         heuristics_sets=heuristics_sets,
         stratified_by=stratified_by,
     )
-
-    # Preserve the existing plotting behavior here; this helper only corrects
-    # construction of prevalence-dependent reference lines.
     curve_list = _create_rtichoke_curve_list_times(
         performance_data,
         stratified_by=stratified_by[0],
@@ -99,12 +87,12 @@ def _create_rtichoke_plotly_curve_times_reference_safe(
         min_p_threshold=min_p_threshold,
         max_p_threshold=max_p_threshold,
     )
-    curve_list = _replace_reference_data_times(
-        curve_list,
-        performance_data,
-        curve=curve,
-        min_p_threshold=min_p_threshold,
-        max_p_threshold=max_p_threshold,
+    return _create_plotly_curve_times(
+        _replace_reference_data_times(
+            curve_list,
+            performance_data,
+            curve=curve,
+            min_p_threshold=min_p_threshold,
+            max_p_threshold=max_p_threshold,
+        )
     )
-
-    return _create_plotly_curve_times(curve_list)
