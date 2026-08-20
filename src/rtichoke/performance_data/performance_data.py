@@ -19,6 +19,31 @@ from rtichoke.processing.transforms import (
 import numpy as np
 
 
+_PERFORMANCE_DATA_COLUMNS = [
+    "reference_group",
+    "stratified_by",
+    "chosen_cutoff",
+    "true_positives",
+    "true_negatives",
+    "false_positives",
+    "false_negatives",
+    "predicted_positives",
+    "predicted_negatives",
+    "real_positives",
+    "real_negatives",
+    "n",
+    "sensitivity",
+    "specificity",
+    "ppv",
+    "npv",
+    "false_positive_rate",
+    "lift",
+    "net_benefit",
+    "net_benefit_interventions_avoided",
+    "ppcr",
+]
+
+
 def _probs_with_r_binary_cutoff_semantics(
     probs: Dict[str, np.ndarray], by: float
 ) -> Dict[str, np.ndarray]:
@@ -192,6 +217,6 @@ def prepare_performance_data(
 
     performance_data = _turn_cumulative_aj_to_performance_data(cumulative_aj_data)
 
-    return performance_data.sort(
+    return performance_data.select(_PERFORMANCE_DATA_COLUMNS).sort(
         ["reference_group", "stratified_by", "chosen_cutoff"]
     )
