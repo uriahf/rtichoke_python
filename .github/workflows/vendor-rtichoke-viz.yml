@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - integration/vendor-rtichoke-viz-roc
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
