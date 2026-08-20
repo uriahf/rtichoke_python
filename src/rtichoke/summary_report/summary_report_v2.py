@@ -1,10 +1,4 @@
-"""Readable integration layer for the lightweight summary report renderers.
-
-This module keeps the legacy report generator stable while the large inline
-HTML template is being split into maintainable assets. It post-processes the
-legacy HTML to route performance and decision curves through the dedicated
-Plotly-parity renderer and applies the shared R-report visual polish layer.
-"""
+"""Readable integration layer for the lightweight summary report renderers."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -25,7 +19,6 @@ def _style_source() -> str:
 
 
 def _wire_curve_renderer(html: str) -> str:
-    """Replace the legacy curve drawing calls with the dedicated renderer."""
     renderer = curve_renderer_source()
     marker = "function curveTabs(specs,nav,chart,strat)"
     if marker not in html:
@@ -52,21 +45,54 @@ def _wire_report_style(html: str) -> str:
     return html.replace(marker, f"<style>\n{css}\n</style>\n{marker}", 1)
 
 
+def _wire_r_report_content(html: str) -> str:
+    """Restore visible content present in the R Markdown reference report."""
+    formulas = """<div class=\"metric-formulas\">
+<div>Prevalence = <span class=\"frac\"><span>TP + FN</span><span>TP + FP + TN + FN</span></span></div>
+<div>PPCR (Predicted Positives Condition Rate) = <span class=\"frac\"><span>TP + FP</span><span>TP + FP + TN + FN</span></span></div>
+<div>Sensitivity (Recall, True Positive Rate) = <span class=\"frac\"><span>TP</span><span>TP + FN</span></span> = <span class=\"frac\"><span>TP</span><span>Real Positives</span></span> = Prob( Predicted Positive | Real Positive )</div>
+<div>Specificity (True Negative Rate) = <span class=\"frac\"><span>TN</span><span>TN + FP</span></span> = <span class=\"frac\"><span>TN</span><span>Real Negatives</span></span> = Prob( Predicted Negative | Real Negative )</div>
+<div>PPV (Precision) = <span class=\"frac\"><span>TP</span><span>TP + FP</span></span> = <span class=\"frac\"><span>TP</span><span>Predicted Positives</span></span> = Prob( Real Positive | Predicted Positive )</div>
+<div>NPV = <span class=\"frac\"><span>TN</span><span>TN + FN</span></span> = <span class=\"frac\"><span>TN</span><span>Predicted Negatives</span></span> = Prob( Real Negative | Predicted Negative )</div>
+<div>Lift = <span class=\"frac\"><span>PPV</span><span>Prevalence</span></span></div>
+<div>Net Benefit = <span class=\"frac\"><span>TP</span><span>TP + FP + TN + FN</span></span> − <span class=\"frac\"><span>FP</span><span>TP + FP + TN + FN</span></span> × <span class=\"frac\"><span>p<sub>t</sub></span><span>1 − p<sub>t</sub></span></span></div>
+</div>"""
+    needle = "</table></div></details><div id=\"prev\"></div>"
+    if needle in html:
+        html = html.replace("</table></div></details><div id=\"prev\"></div>", f"</table></div>{formulas}</details><div id=\"prev\"></div>", 1)
+
+    # The R report's prevalence widget is a compact expandable Reactable with a
+    # grey proportional bar, not a generic Model/Prevalence summary table.
+    script = """<script>
+(function(){
+ const host=document.getElementById('prev'); if(!host||!window.SUM)return;
+ host.innerHTML='';
+ SUM.forEach((r,i)=>{
+   const p=Number(r.Prevalence), row=document.createElement('div'); row.className='prevalence-row';
+   const exp=document.createElement('button'); exp.className='prevalence-expander'; exp.textContent='›'; exp.setAttribute('aria-label','Toggle details');
+   const cell=document.createElement('div'); cell.className='prevalence-cell';
+   cell.innerHTML='<strong>Prevalence</strong><div class="prevalence-value"><span>'+p.toFixed(2)+'</span><span class="prevalence-track"><span style="width:'+Math.max(0,Math.min(100,p*100))+'%"></span></span></div>';
+   const detail=document.createElement('div'); detail.className='prevalence-detail'; detail.hidden=true;
+   detail.textContent='Real Positives = '+Math.round(p*(r.N||0))+',  Total Population =  '+(r.N||'');
+   exp.onclick=()=>{detail.hidden=!detail.hidden;exp.textContent=detail.hidden?'›':'⌄'};
+   row.append(exp,cell,detail); host.append(row);
+ });
+})();
+</script>"""
+    return html.replace("</body>", script + "</body>", 1)
+
+
 def create_summary_report(
     probs: Dict[str, np.ndarray],
     reals: Union[np.ndarray, Dict[str, np.ndarray]],
     output_file: str | Path = "summary_report.html",
     by: float = 0.01,
 ) -> Path:
-    """Create a lightweight, self-contained report using parity renderers.
-
-    The base renderer already embeds the bundled visualization runtime. This
-    layer only wires the modular curve renderer and shared report styling.
-    """
     out = Path(output_file)
     _legacy_create_summary_report(probs=probs, reals=reals, output_file=out, by=by)
     html = out.read_text(encoding="utf-8")
     html = _wire_curve_renderer(html)
+    html = _wire_r_report_content(html)
     html = _wire_report_style(html)
     out.write_text(html, encoding="utf-8")
     return out
