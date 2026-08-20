@@ -1,10 +1,11 @@
 /* D3 renderer for performance and decision curves in the lightweight report.
- * Mirrors rtichoke R create_plotly_curve(): report size=500, transparent plot,
- * no grid, dotted references, solid lines+markers, no legend/modebar.
+ * Mirrors rtichoke R create_plotly_curve(): size=500 controls plot height (550),
+ * while the htmlwidget itself fills the report column. The R widget has no
+ * internal plot title: ROC/Lift/etc. are supplied by the tab headings.
  */
 function drawRtichokeCurve(s, sel) {
-  const card=d3.select(sel); card.selectAll("*").remove(); card.append("div").attr("class","plot-title").text(s.title);
-  const W=500,H=550,m={top:35,right:30,bottom:65,left:65};
+  const card=d3.select(sel); card.selectAll("*").remove();
+  const W=1000,H=550,m={top:35,right:30,bottom:65,left:65};
   const svg=card.append("svg").attr("viewBox",`0 0 ${W} ${H}`),x=d3.scaleLinear().domain(s.x_range).range([m.left,W-m.right]),y=d3.scaleLinear().domain(s.y_range).range([H-m.bottom,m.top]);
   const line=d3.line().defined(d=>isFinite(+d.x)&&isFinite(+d.y)).x(d=>x(+d.x)).y(d=>y(+d.y));
   const styleAxis=a=>{a.attr("font-family","Open Sans, verdana, arial, sans-serif").attr("font-size",12).attr("color","#444");a.select(".domain").attr("stroke","#444");a.selectAll(".tick line").attr("stroke","#444")};
