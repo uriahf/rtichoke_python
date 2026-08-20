@@ -57,15 +57,17 @@ def _wire_r_report_content(html: str, probs: Dict[str, np.ndarray], reals: Union
 
     if isinstance(reals, dict):
         sizes = {k: int(np.asarray(reals[k]).size) for k in probs if k in reals}
+        prevalence_rows = "SUM"
     else:
         n = int(np.asarray(reals).size)
         sizes = {k: n for k in probs}
+        prevalence_rows = "SUM.slice(0,1)"
     sizes_json = json.dumps(sizes).replace("</", "<\\/")
     script = f"""<script>
 (function(){{
- const host=document.getElementById('prev'); if(!host||typeof SUM==='undefined')return; const sizes={sizes_json};
+ const host=document.getElementById('prev'); if(!host||typeof SUM==='undefined')return; const sizes={sizes_json}; const prevalenceRows={prevalence_rows};
  host.innerHTML='';
- SUM.forEach((r,i)=>{{
+ prevalenceRows.forEach((r,i)=>{{
    const p=Number(r.Prevalence), n=sizes[r.Model]||0, row=document.createElement('div'); row.className='prevalence-row';
    const exp=document.createElement('button'); exp.className='prevalence-expander'; exp.textContent='›'; exp.setAttribute('aria-label','Toggle details');
    const cell=document.createElement('div'); cell.className='prevalence-cell';

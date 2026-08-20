@@ -1,0 +1,18 @@
+import numpy as np
+
+from rtichoke.summary_report.summary_report_v2 import create_summary_report
+
+
+def test_shared_outcomes_render_one_prevalence_population(tmp_path):
+    probs = {
+        "Model A": np.array([0.1, 0.3, 0.6, 0.8]),
+        "Model B": np.array([0.2, 0.4, 0.5, 0.7]),
+    }
+    reals = np.array([0, 0, 1, 1])
+    output = tmp_path / "report.html"
+
+    create_summary_report(probs, reals, output_file=output, by=0.1)
+
+    html = output.read_text(encoding="utf-8")
+    assert "const prevalenceRows=SUM.slice(0,1);" in html
+    assert "prevalenceRows.forEach" in html
