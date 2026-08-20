@@ -15,11 +15,23 @@ def test_create_summary_report_writes_native_html(tmp_path):
     html = output.read_text(encoding="utf-8")
     assert result == output
     for text in (
-        "Summary Report", "Performance Metrics Cheat Sheet", "Calibration",
-        "Smooth", "Discrete", "Discrimination", "By Probability Threshold",
-        "By Predicted Positives Condition Rate (PPCR)", "ROC", "Lift",
-        "Precision Recall", "Gains", "Utility (Decision Curve)",
-        "Performance Table", "table-threshold", "table-ppcr", "Confusion Matrix",
+        "Summary Report",
+        "Performance Metrics Cheat Sheet",
+        "Calibration",
+        "Smooth",
+        "Discrete",
+        "Discrimination",
+        "By Probability Threshold",
+        "By Predicted Positives Condition Rate (PPCR)",
+        "ROC",
+        "Lift",
+        "Precision Recall",
+        "Gains",
+        "Utility (Decision Curve)",
+        "Performance Table",
+        "table-threshold",
+        "table-ppcr",
+        "Confusion Matrix",
     ):
         assert text in html
     assert "perf(R.tables.threshold" in html
