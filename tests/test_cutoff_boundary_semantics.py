@@ -40,3 +40,31 @@ def test_time_probability_equal_to_cutoff_uses_same_strict_boundary():
     row = result.filter(result["chosen_cutoff"] == 0.5).row(0, named=True)
 
     _assert_r_strict_greater_than_semantics(row)
+
+
+def test_binary_cutoff_zero_still_predicts_everyone_positive():
+    result = prepare_performance_data(
+        probs={"model": np.array([0.0, 0.5, 1.0])},
+        reals=np.array([0, 1, 1]),
+        by=0.5,
+    )
+
+    row = result.filter(result["chosen_cutoff"] == 0.0).row(0, named=True)
+
+    assert row["predicted_positives"] == 3
+    assert row["true_negatives"] == 0
+    assert row["false_negatives"] == 0
+
+
+def test_binary_cutoff_one_predicts_everyone_negative():
+    result = prepare_performance_data(
+        probs={"model": np.array([0.0, 0.5, 1.0])},
+        reals=np.array([0, 1, 1]),
+        by=0.5,
+    )
+
+    row = result.filter(result["chosen_cutoff"] == 1.0).row(0, named=True)
+
+    assert row["predicted_positives"] == 0
+    assert row["true_positives"] == 0
+    assert row["false_positives"] == 0
