@@ -74,6 +74,16 @@ def _wire_r_report_content(html: str, probs: Dict[str, np.ndarray], reals: Union
     sizes_json = json.dumps(sizes).replace("</", "<\\/")
     script = f"""<script>
 (function(){{
+ const palette=['#1b9e77','#d95f02','#7570b3','#e7298a','#07004D','#E6AB02','#FE5F55','#54494B','#006E90','#BC96E6','#52050A','#1F271B','#BE7C4D','#63768D','#08A045','#320A28','#82FF9E','#2176FF','#D1603D','#585123'];
+ const aucHost=document.getElementById('auc');
+ if(aucHost&&typeof SUM!=='undefined'){{
+   const showGroup=SUM.length>1;
+   aucHost.innerHTML='<table class="summary-table auc-table"><thead><tr>'+(showGroup?'<th>Model</th>':'')+'<th>AUROC</th></tr></thead><tbody>'+SUM.map((r,i)=>{{
+     const value=Number(r.AUC), valid=Number.isFinite(value), label=valid?value.toFixed(2):'    ', width=valid?Math.max(0,Math.min(100,value*100)):0;
+     const group=showGroup?'<td><span class="model-badge" style="background:'+palette[i%palette.length]+'"></span>'+r.Model+'</td>':'';
+     return '<tr>'+group+'<td><div class="prevalence-value"><span>'+label+'</span><span class="prevalence-track"><span style="width:'+width+'%;background:green"></span></span></div></td></tr>';
+   }}).join('')+'</tbody></table>';
+ }}
  const host=document.getElementById('prev'); if(!host||typeof SUM==='undefined')return; const sizes={sizes_json}; const prevalenceRows={prevalence_rows};
  host.innerHTML='';
  prevalenceRows.forEach((r,i)=>{{
