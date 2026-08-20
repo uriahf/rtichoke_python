@@ -17,13 +17,17 @@ def create_strata_combinations(stratified_by: str, by: float, breaks) -> pl.Data
     fmt = f"{{:.{decimals}f}}"
 
     if stratified_by == "probability_threshold":
-        upper_bound = breaks[1:]  # breaks
-        lower_bound = breaks[:-1]  # np.roll(upper_bound, 1)
-        # lower_bound[0] = 0.0
+        cutoff_values = np.asarray(breaks)
+        bin_edges = (
+            cutoff_values
+            if cutoff_values[-1] == 1.0
+            else np.append(cutoff_values, 1.0)
+        )
+        upper_bound = bin_edges[1:]
+        lower_bound = bin_edges[:-1]
         mid_point = upper_bound - by / 2
         include_lower_bound = lower_bound > -0.1
-        include_upper_bound = upper_bound == 1.0  # upper_bound != 0.0
-        # chosen_cutoff = upper_bound
+        include_upper_bound = upper_bound == 1.0
         strata = format_strata_column(
             lower_bound=lower_bound,
             upper_bound=upper_bound,
@@ -33,13 +37,13 @@ def create_strata_combinations(stratified_by: str, by: float, breaks) -> pl.Data
         )
 
     elif stratified_by == "ppcr":
+        cutoff_values = np.asarray(breaks)
         strata_mid = breaks[1:]
         lower_bound = strata_mid - by / 2
         upper_bound = strata_mid + by / 2
         mid_point = breaks[1:]
         include_lower_bound = np.ones_like(strata_mid, dtype=bool)
         include_upper_bound = np.zeros_like(strata_mid, dtype=bool)
-        # chosen_cutoff = strata_mid
         strata = np.array([fmt.format(x) for x in strata_mid], dtype=object)
     else:
         raise ValueError(f"Unsupported stratified_by: {stratified_by}")
@@ -52,12 +56,11 @@ def create_strata_combinations(stratified_by: str, by: float, breaks) -> pl.Data
             "mid_point": mid_point,
             "include_lower_bound": include_lower_bound,
             "include_upper_bound": include_upper_bound,
-            # "chosen_cutoff": chosen_cutoff,
             "stratified_by": [stratified_by] * len(strata),
         }
     )
 
-    cutoffs_df = pl.DataFrame({"chosen_cutoff": breaks})
+    cutoffs_df = pl.DataFrame({"chosen_cutoff": cutoff_values})
 
     return bins_df.join(cutoffs_df, how="cross")
 
@@ -95,6 +98,8 @@ def create_breaks_values(probs_vec, stratified_by, by):
         decimals = len(str(by).split(".")[-1])
         n_steps = int(np.floor((1.0 / by) + 1e-12))
         breaks = np.round(np.arange(n_steps + 1) * by, decimals=decimals)
+        if probs_vec is not None and breaks[-1] != 1.0:
+            breaks = np.append(breaks, 1.0)
     return breaks
 
 
