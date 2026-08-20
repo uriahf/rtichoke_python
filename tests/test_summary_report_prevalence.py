@@ -69,6 +69,26 @@ def test_summary_report_has_r_style_performance_filters(tmp_path):
     assert "selected.has(model)" in html
 
 
+def test_summary_report_has_r_style_curve_geometry_and_strata_slider(tmp_path):
+    probs = {
+        "Model A": np.array([0.1, 0.3, 0.6, 0.8]),
+        "Model B": np.array([0.2, 0.4, 0.5, 0.7]),
+    }
+    reals = np.array([0, 0, 1, 1])
+    output = tmp_path / "report.html"
+
+    create_summary_report(probs, reals, output_file=output, by=0.1)
+
+    html = output.read_text(encoding="utf-8")
+    assert 'const W=500,H=550,m={top:25,right:10,bottom:40,left:60}' in html
+    assert 'attr("class","slider-wrap")' in html
+    assert '"Predicted Positives (Rate):"' in html
+    assert '"Probability Threshold:"' in html
+    assert 'drawRtichokeCurve(specs[0],chart,strat)' in html
+    assert "drawRtichokeCurve(R.decision,'#decision','probability_threshold')" in html
+    assert 'attr("class","plot-title")' not in html
+
+
 def test_performance_table_recovers_tp_when_legacy_payload_omits_it(tmp_path):
     probs = {"Model A": np.array([0.1, 0.4, 0.7, 0.9])}
     reals = np.array([0, 1, 0, 1])
