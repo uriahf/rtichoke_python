@@ -48,10 +48,11 @@ These statements describe the effect of the heuristics on the estimates. Functio
 
 ## Time-dependent calibration heuristics
 
-`create_calibration_curve_times()` differs from its ROC, precision-recall, Gains, Lift, and decision-curve siblings in two important ways:
+`create_calibration_curve_times()` differs from its ROC, precision-recall, Gains, Lift, and decision-curve siblings in three important ways:
 
 1. `heuristics_sets` is currently required rather than defaulted.
-2. Calibration explicitly rejects unsupported heuristic combinations (specifically `competing_heuristic="adjusted_as_censored"`) with an `Unsupported calibration heuristics` error instead of silently skipping requested horizons.
+2. Calibration currently supports exactly one heuristic set per call. Use separate calls when comparing heuristic choices so distinct calibration estimates are never combined into one plotted curve.
+3. Calibration explicitly rejects unsupported heuristic combinations (specifically `competing_heuristic="adjusted_as_censored"`) with an `Unsupported calibration heuristics` error instead of silently skipping requested horizons.
 
 Pass the calibration heuristic explicitly. For adjusted or exclusion-based paths:
 
