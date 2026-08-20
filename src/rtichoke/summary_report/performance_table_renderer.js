@@ -7,34 +7,6 @@
   const num = v => typeof v === "number" && isFinite(v) ? v : 0;
   const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 
-  function injectStyles() {
-    if (document.getElementById("rtichoke-perf-parity-css")) return;
-    const style = document.createElement("style");
-    style.id = "rtichoke-perf-parity-css";
-    style.textContent = `
-      .rt-perf-wrap{overflow:auto;border:1px solid #e5e5e5;border-radius:3px;background:#fff}
-      .rt-perf{width:100%;border-collapse:separate;border-spacing:0;margin:0;font-size:14px}
-      .rt-perf th,.rt-perf td{padding:8px 10px;text-align:left;border-bottom:1px solid #eee;white-space:nowrap;position:relative}
-      .rt-perf thead th{background:#fff;font-weight:600;color:#333}
-      .rt-perf .metric-group{text-align:center;border-bottom:1px solid #ddd}
-      .rt-perf .model-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;vertical-align:1px}
-      .rt-perf .expand{width:28px;text-align:center;color:#777;cursor:pointer;font-size:18px;padding-left:6px;padding-right:6px}
-      .rt-perf .bar-cell{background-repeat:no-repeat;background-position:center;background-size:98% 88%}
-      .rt-perf .detail td{background:#fafafa;padding:16px}
-      .rt-conf{display:inline-table;border-collapse:collapse;margin:4px 0 4px 8px;vertical-align:middle}
-      .rt-conf th,.rt-conf td{padding:6px 10px;border:1px solid #eee;text-align:left;min-width:105px}
-      .rt-conf th{position:static;background:#fff;font-weight:600}
-      .rt-conf .outcome{font-weight:600}
-      .rt-pager{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 0;font-size:13px;color:#555}
-      .rt-page-controls{display:flex;gap:4px;align-items:center}
-      .rt-page-controls button{border:1px solid transparent;background:#fff;color:#337ab7;padding:5px 9px;border-radius:3px;font:inherit;cursor:pointer}
-      .rt-page-controls button:hover:not(:disabled){background:#eee}
-      .rt-page-controls button.active{background:#337ab7;color:#fff}
-      .rt-page-controls button:disabled{color:#aaa;cursor:default}
-    `;
-    document.head.appendChild(style);
-  }
-
   function metricBackground(value, maxValue=1, color="lightgreen") {
     if (!isFinite(+value) || maxValue <= 0) return "";
     const width = Math.min(Math.abs(+value) / maxValue, 1) * 100;
@@ -110,7 +82,6 @@
   }
 
   window.addEventListener("load",()=>{
-    injectStyles();
     if (window.R && R.tables) {
       render(R.tables.threshold,"#table-threshold",false);
       render(R.tables.ppcr,"#table-ppcr",true);
