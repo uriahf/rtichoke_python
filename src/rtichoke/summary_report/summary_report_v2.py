@@ -60,7 +60,7 @@ def _wire_r_report_content(html: str, probs: Dict[str, np.ndarray], reals: Union
     sizes_json = json.dumps(sizes).replace("</", "<\\/")
     script = f"""<script>
 (function(){{
- const host=document.getElementById('prev'); if(!host||!window.SUM)return; const sizes={sizes_json};
+ const host=document.getElementById('prev'); if(!host||typeof SUM==='undefined')return; const sizes={sizes_json};
  host.innerHTML='';
  SUM.forEach((r,i)=>{{
    const p=Number(r.Prevalence), n=sizes[r.Model]||0, row=document.createElement('div'); row.className='prevalence-row';
