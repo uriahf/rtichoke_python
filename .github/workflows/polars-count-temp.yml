@@ -35,3 +35,4 @@ jobs:
           git add -- src/rtichoke/processing/adjustments.py
           git commit -m "Replace deprecated Polars count"
           git push
+# trigger
