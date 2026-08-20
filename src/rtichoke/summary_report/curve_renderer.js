@@ -17,31 +17,17 @@ function drawRtichokeCurve(s, sel, strat) {
   const traces=[];
   d3.group(s.references,d=>String(d.reference_group)).forEach((a,g)=>{const color=strategyColor(g);svg.append("path").datum(a).attr("fill","none").attr("stroke",color).attr("stroke-width",2).attr("stroke-dasharray","2,4").attr("stroke-linecap","round").attr("d",line);traces.push(...a.map(d=>({...d,_color:color})))});
   const single=s.groups.length===1;
-  s.groups.forEach(g=>{const a=s.data.filter(d=>String(d.reference_group)===g),color=single?"black":(s.colors[g]||"#000");svg.append("path").datum(a).attr("fill","none").attr("stroke",color).attr("stroke-width",2).attr("stroke-linejoin","round").attr("stroke-linecap","round").attr("d",line);svg.append("g").selectAll("circle").data(a.filter(d=>isFinite(+d.x)&&isFinite(+d.y))).enter().append("circle").attr("cx",d=>x(+d.x)).attr("cy",d=>y(+d.y)).attr("r",3).attr("fill",color).attr("stroke",color).attr("stroke-width",0);traces.push(...a.map(d=>({...d,_color:color})))});
+  s.groups.forEach(g=>{const a=s.data.filter(d=>String(d.reference_group)===g),color=single?"black":(s.colors[g]||"#000");svg.append("path").datum(a).attr("fill","none").attr("stroke",color).attr("stroke-width",2).attr("stroke-linejoin","round").attr("stroke-linecap","round").attr("d",line);traces.push(...a.map(d=>({...d,_color:color})))});
 
-  const markerLayer=svg.append("g").attr("class","curve-current-markers");
   const strataField=strat==="ppcr"?"ppcr":"chosen_cutoff";
   const strata=[...new Set(s.data.map(d=>+d[strataField]).filter(Number.isFinite))].sort((a,b)=>a-b);
-  const drawCurrent=value=>{
-    markerLayer.selectAll("*").remove();
-    if(!strata.length)return;
-    const nearest=strata.reduce((a,b)=>Math.abs(b-value)<Math.abs(a-value)?b:a,strata[0]);
-    s.groups.forEach(g=>{
-      const rows=s.data.filter(d=>String(d.reference_group)===g&&Number.isFinite(+d[strataField]));
-      if(!rows.length)return;
-      const d=rows.reduce((a,b)=>Math.abs(+b[strataField]-nearest)<Math.abs(+a[strataField]-nearest)?b:a,rows[0]);
-      const color=single?"#f6e3be":(s.colors[g]||"#f6e3be");
-      markerLayer.append("circle").datum({...d,_color:single?"black":(s.colors[g]||"#000")}).attr("cx",x(+d.x)).attr("cy",y(+d.y)).attr("r",6).attr("fill",color).attr("stroke","black").attr("stroke-width",3);
-    });
-  };
-
   if(strata.length>1){
     const wrap=card.append("div").attr("class","slider-wrap curve-slider-wrap").style("position","absolute").style("left","60px").style("bottom","12px").style("width","430px").style("max-width","calc(100% - 70px)").style("margin","0");
-    const label=wrap.append("div").attr("class","slider-label curve-slider-label").style("font-size","12px").style("line-height","18px").style("color","black").style("margin","0 0 3px");
+    const label=wrap.append("div").attr("class","slider-label curve-slider-label");
     const prefix=strat==="ppcr"?"Predicted Positives (Rate):":"Prob. Threshold:";
-    const input=wrap.append("input").attr("class","curve-slider").attr("type","range").attr("min",strata[0]).attr("max",strata[strata.length-1]).attr("step",Math.max(1e-6,...strata.slice(1).map((v,i)=>v-strata[i]).filter(v=>v>0).slice(0,1))).style("width","100%").style("margin","0").style("accent-color","#777").node();
+    const input=wrap.append("input").attr("class","curve-slider").attr("type","range").attr("min",strata[0]).attr("max",strata[strata.length-1]).attr("step",Math.max(1e-6,...strata.slice(1).map((v,i)=>v-strata[i]).filter(v=>v>0).slice(0,1))).node();
     input.value=strata[0];
-    const update=()=>{const v=+input.value;label.textContent=`${prefix} ${Number.isFinite(v)?v.toFixed(2):""}`;drawCurrent(v)};
+    const update=()=>{const v=+input.value;label.textContent=`${prefix} ${Number.isFinite(v)?v.toFixed(2):""}`};
     input.addEventListener("input",update);update();
   }
 
