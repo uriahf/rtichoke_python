@@ -31,6 +31,15 @@ def _wire_curve_renderer(html: str) -> str:
     return html
 
 
+def _wire_performance_table_renderer(html: str) -> str:
+    """Use the modular Reactable-like table renderer instead of legacy inline calls."""
+    renderer = _asset_source("performance_table_renderer.js")
+    marker = "perf(R.tables.threshold,'#table-threshold',false);perf(R.tables.ppcr,'#table-ppcr',true);"
+    if marker not in html:
+        raise RuntimeError("Could not locate summary-report performance-table integration point")
+    return html.replace(marker, renderer, 1)
+
+
 def _wire_report_style(html: str) -> str:
     """Replace the legacy inline CSS with the single parity stylesheet."""
     css = _style_source()
@@ -87,6 +96,7 @@ def create_summary_report(probs: Dict[str, np.ndarray], reals: Union[np.ndarray,
     _legacy_create_summary_report(probs=probs, reals=reals, output_file=out, by=by)
     html = out.read_text(encoding="utf-8")
     html = _wire_curve_renderer(html)
+    html = _wire_performance_table_renderer(html)
     html = _wire_r_report_content(html, probs, reals)
     html = _wire_report_style(html)
     out.write_text(html, encoding="utf-8")
