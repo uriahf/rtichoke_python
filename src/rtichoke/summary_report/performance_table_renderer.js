@@ -42,18 +42,52 @@
     const colors=Object.fromEntries(models.map((m,i)=>[m,COLORS[i%COLORS.length]]));
     const liftMax=Math.max(1e-12,...rows.map(r=>Math.abs(num(r.lift))));
     const nbMax=Math.max(1e-12,...rows.map(r=>Math.abs(num(r.net_benefit))));
-    const sorted=[...rows].sort((a,b)=> isPpcr ? num(a.ppcr)-num(b.ppcr) : num(a.chosen_cutoff)-num(b.chosen_cutoff));
+    const valueOf=r=>isPpcr?num(r.ppcr):num(r.chosen_cutoff);
+    const sorted=[...rows].sort((a,b)=>valueOf(a)-valueOf(b));
+    const values=sorted.map(valueOf).filter(Number.isFinite);
+    const minValue=values.length?Math.min(...values):0, maxValue=values.length?Math.max(...values):1;
+    const step=Math.max(0.000001, ...values.slice(1).map((v,i)=>v-values[i]).filter(v=>v>0).slice(0,1), 0.01);
+    const selected=new Set();
+    let lower=minValue, upper=maxValue, page=0;
+
+    const filters=document.createElement("div"); filters.className="rt-filters";
+    const modelFilter=document.createElement("div"); modelFilter.className="rt-filter-models";
+    const modelLabel=document.createElement("div"); modelLabel.className="rt-filter-label"; modelLabel.textContent="Model"; modelFilter.appendChild(modelLabel);
+    models.forEach((model,i)=>{
+      const label=document.createElement("label"); label.className="rt-check-inline";
+      const input=document.createElement("input"); input.type="checkbox"; input.value=model; input.style.setProperty("--rt-check-color",colors[model]||COLORS[i%COLORS.length]);
+      const text=document.createElement("span"); text.textContent=model; label.append(input,text); modelFilter.appendChild(label);
+      input.addEventListener("change",()=>{input.checked?selected.add(model):selected.delete(model);page=0;drawPage();});
+    });
+    const rangeFilter=document.createElement("div"); rangeFilter.className="rt-filter-range";
+    const rangeLabel=document.createElement("div"); rangeLabel.className="rt-filter-label"; rangeLabel.textContent=isPpcr?"Predicted Positives Condition Rate (PPCR)":"Probability Threshold";
+    const rangeReadout=document.createElement("span"); rangeReadout.className="rt-range-readout";
+    const track=document.createElement("div"); track.className="rt-dual-range";
+    const lo=document.createElement("input"), hi=document.createElement("input");
+    [lo,hi].forEach(input=>{input.type="range";input.min=minValue;input.max=maxValue;input.step=step;}); lo.value=minValue; hi.value=maxValue;
+    const sync=()=>{lower=Math.min(+lo.value,+hi.value);upper=Math.max(+lo.value,+hi.value);rangeReadout.textContent=`${fmt(lower)} – ${fmt(upper)}`;page=0;drawPage();};
+    lo.addEventListener("input",sync); hi.addEventListener("input",sync); track.append(lo,hi); rangeFilter.append(rangeLabel,rangeReadout,track); filters.append(modelFilter,rangeFilter); host.appendChild(filters);
+    rangeReadout.textContent=`${fmt(lower)} – ${fmt(upper)}`;
+
     const wrap=document.createElement("div"); wrap.className="rt-perf-wrap";
     const table=document.createElement("table"); table.className="rt-perf";
     const metricCount=isPpcr?5:6;
     table.innerHTML=`<thead><tr><th rowspan="2"></th><th rowspan="2">Model</th>${isPpcr?"":"<th rowspan=\"2\">Probability Threshold</th>"}<th rowspan="2">Predicted Positives</th><th class="metric-group" colspan="${metricCount}">Performance Metrics</th></tr><tr><th>Sens</th><th>Spec</th><th>PPV</th><th>NPV</th><th>Lift</th>${isPpcr?"":"<th>Net Benefit</th>"}</tr></thead>`;
     const body=document.createElement("tbody"); table.appendChild(body); wrap.appendChild(table); host.appendChild(wrap);
     const pager=document.createElement("div"); pager.className="rt-pager"; host.appendChild(pager);
-    let page=0;
+
+    function filteredRows() {
+      return sorted.filter(r=>{
+        const model=String(r.reference_group ?? ""), value=valueOf(r);
+        return (!selected.size||selected.has(model)) && value>=lower-1e-12 && value<=upper+1e-12;
+      });
+    }
 
     function drawPage() {
+      const filtered=filteredRows();
+      const pages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE)); if(page>=pages) page=pages-1;
       body.innerHTML="";
-      const start=page*PAGE_SIZE, pageRows=sorted.slice(start,start+PAGE_SIZE);
+      const start=page*PAGE_SIZE, pageRows=filtered.slice(start,start+PAGE_SIZE);
       pageRows.forEach(r=>{
         const tr=document.createElement("tr");
         const model=String(r.reference_group ?? "");
@@ -65,12 +99,10 @@
         tr.querySelector(".expand").addEventListener("click",e=>{const open=detail.style.display!=="none"; detail.style.display=open?"none":"table-row"; e.currentTarget.textContent=open?"›":"⌄";});
         body.appendChild(tr); body.appendChild(detail);
       });
-
-      const pages=Math.ceil(sorted.length/PAGE_SIZE);
       if (pages <= 1) { pager.hidden=true; return; }
       pager.hidden=false; pager.innerHTML="";
       const info=document.createElement("span"); info.className="rt-page-info";
-      info.textContent=`${start+1}–${Math.min(start+PAGE_SIZE,sorted.length)} of ${sorted.length} rows`;
+      info.textContent=filtered.length?`${start+1}–${Math.min(start+PAGE_SIZE,filtered.length)} of ${filtered.length} rows`:`0 rows`;
       const controls=document.createElement("span"); controls.className="rt-page-controls";
       const button=(label,target,disabled,current=false)=>{const b=document.createElement("button");b.textContent=label;b.disabled=disabled;b.className=current?"active":"";b.addEventListener("click",()=>{page=target;drawPage();});return b;};
       controls.appendChild(button("Previous",Math.max(0,page-1),page===0));
