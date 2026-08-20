@@ -13,6 +13,7 @@ from rtichoke.processing.plotly_helper_functions import (
     _create_reference_lines_data,
     _check_if_multiple_populations_are_being_validated_times,
 )
+from rtichoke.processing.time_reference_lines import _apply_color_values_times
 from rtichoke.performance_data.performance_data_times import prepare_performance_data_times
 import numpy as np
 import polars as pl
@@ -251,6 +252,7 @@ def create_gains_curve_times(
         color_value=color_values,
         curve="gains",
     )
+    curve_list = _apply_color_values_times(curve_list, color_values)
     curve_list = _replace_gains_reference_data_times(curve_list, performance_data)
 
     return _create_plotly_curve_times(curve_list)
