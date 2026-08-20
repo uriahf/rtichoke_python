@@ -97,16 +97,26 @@ def prepare_performance_data_times(
     # 3. Turn AJ output into performance metrics
     performance_data = _turn_cumulative_aj_to_performance_data(cumulative_aj_data)
 
-    return performance_data.sort(
-        [
-            "reference_group",
-            "fixed_time_horizon",
-            "censoring_heuristic",
-            "competing_heuristic",
-            "stratified_by",
-            "chosen_cutoff",
-        ]
-    )
+    ordered_blocks = []
+    for reference_group in probs:
+        for fixed_time_horizon in fixed_time_horizons:
+            for heuristics in heuristics_sets:
+                block = performance_data.filter(
+                    (pl.col("reference_group") == reference_group)
+                    & (pl.col("fixed_time_horizon") == float(fixed_time_horizon))
+                    & (
+                        pl.col("censoring_heuristic")
+                        == heuristics["censoring_heuristic"]
+                    )
+                    & (
+                        pl.col("competing_heuristic")
+                        == heuristics["competing_heuristic"]
+                    )
+                ).sort(["stratified_by", "chosen_cutoff"])
+                if block.height:
+                    ordered_blocks.append(block)
+
+    return pl.concat(ordered_blocks, how="vertical")
 
 
 def prepare_binned_classification_data_times(
