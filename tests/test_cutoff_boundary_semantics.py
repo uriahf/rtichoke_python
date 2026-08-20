@@ -1,4 +1,5 @@
 import numpy as np
+import polars as pl
 from polars.testing import assert_frame_equal
 
 from rtichoke import prepare_performance_data, prepare_performance_data_times
@@ -19,7 +20,7 @@ def test_binary_probability_equal_to_cutoff_is_predicted_negative_like_r():
         by=0.5,
     )
 
-    row = result.filter(result["chosen_cutoff"] == 0.5).row(0, named=True)
+    row = result.filter(pl.col("chosen_cutoff") == 0.5).row(0, named=True)
 
     for column, expected in EXPECTED_BINARY_COUNTS_AT_HALF.items():
         assert row[column] == expected
@@ -34,7 +35,7 @@ def test_time_probability_equal_to_cutoff_remains_positive_for_dcurves_parity():
         by=0.5,
     )
 
-    row = result.filter(result["chosen_cutoff"] == 0.5).row(0, named=True)
+    row = result.filter(pl.col("chosen_cutoff") == 0.5).row(0, named=True)
 
     assert row["true_positives"] == 2.0
     assert row["false_positives"] == 0.0
@@ -49,7 +50,7 @@ def test_binary_cutoff_zero_still_predicts_everyone_positive():
         by=0.5,
     )
 
-    row = result.filter(result["chosen_cutoff"] == 0.0).row(0, named=True)
+    row = result.filter(pl.col("chosen_cutoff") == 0.0).row(0, named=True)
 
     assert row["predicted_positives"] == 3
     assert row["true_negatives"] == 0
@@ -63,7 +64,7 @@ def test_binary_cutoff_one_predicts_everyone_negative():
         by=0.5,
     )
 
-    row = result.filter(result["chosen_cutoff"] == 1.0).row(0, named=True)
+    row = result.filter(pl.col("chosen_cutoff") == 1.0).row(0, named=True)
 
     assert row["predicted_positives"] == 0
     assert row["true_positives"] == 0
@@ -88,7 +89,7 @@ def test_binary_cutoff_adjustment_does_not_change_ppcr_stratification():
             stratified_by=("probability_threshold", "ppcr"),
             by=0.5,
         )
-        .filter(result_col := __import__("polars").col("stratified_by") == "ppcr")
+        .filter(pl.col("stratified_by") == "ppcr")
         .sort(["reference_group", "chosen_cutoff"])
     )
 
