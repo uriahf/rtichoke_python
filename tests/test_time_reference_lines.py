@@ -40,12 +40,12 @@ def _public_curve_inputs():
         "population_b": np.array([0.10, 0.30, 0.50, 0.70]),
     }
     reals = {
-        "population_a": np.array([0, 1, 0, 1, 0, 1]),
-        "population_b": np.array([0, 1, 1, 1]),
+        "population_a": np.array([1, 0, 1, 0, 1, 0]),
+        "population_b": np.array([1, 1, 0, 1]),
     }
     times = {
-        "population_a": np.array([2.0, 3.0, 6.0, 7.0, 11.0, 12.0]),
-        "population_b": np.array([1.0, 4.0, 8.0, 9.0]),
+        "population_a": np.array([3.0, 11.0, 7.0, 12.0, 13.0, 14.0]),
+        "population_b": np.array([4.0, 8.0, 11.0, 12.0]),
     }
     return probs, reals, times
 
@@ -144,10 +144,10 @@ def test_public_precision_recall_references_are_population_and_horizon_specific(
     a10 = _trace(fig, "random_guess_population_a", False)
     b10 = _trace(fig, "random_guess_population_b", False)
 
-    assert float(a5.y[0]) == pytest.approx(1 / 3)
-    assert float(b5.y[0]) == pytest.approx(1 / 2)
-    assert float(a10.y[0]) == pytest.approx(1 / 2)
-    assert float(b10.y[0]) == pytest.approx(3 / 4)
+    assert float(a5.y[0]) == pytest.approx(1 / 6)
+    assert float(b5.y[0]) == pytest.approx(1 / 4)
+    assert float(a10.y[0]) == pytest.approx(2 / 6)
+    assert float(b10.y[0]) == pytest.approx(2 / 4)
 
 
 def test_public_lift_references_are_population_and_horizon_specific():
@@ -161,10 +161,10 @@ def test_public_lift_references_are_population_and_horizon_specific():
     a10 = _trace(fig, "perfect_model_population_a", False)
     b10 = _trace(fig, "perfect_model_population_b", False)
 
-    assert float(a5.y[0]) == pytest.approx(3.0)
-    assert float(b5.y[0]) == pytest.approx(2.0)
-    assert float(a10.y[0]) == pytest.approx(2.0)
-    assert float(b10.y[0]) == pytest.approx(4 / 3)
+    assert float(a5.y[0]) == pytest.approx(6.0)
+    assert float(b5.y[0]) == pytest.approx(4.0)
+    assert float(a10.y[0]) == pytest.approx(3.0)
+    assert float(b10.y[0]) == pytest.approx(2.0)
 
 
 def test_public_decision_references_are_population_and_horizon_specific():
@@ -184,7 +184,6 @@ def test_public_decision_references_are_population_and_horizon_specific():
     a10 = _trace(fig, "treat_all_population_a", False)
     b10 = _trace(fig, "treat_all_population_b", False)
 
-    # Reference x-grid starts at 0.1 after threshold filtering.
     assert float(a5.x[0]) == pytest.approx(0.1)
     assert float(b5.x[0]) == pytest.approx(0.1)
     assert float(a10.x[0]) == pytest.approx(0.1)
@@ -194,7 +193,7 @@ def test_public_decision_references_are_population_and_horizon_specific():
         x = 0.1
         return p - (1 - p) * x / (1 - x)
 
-    assert float(a5.y[0]) == pytest.approx(treat_all(1 / 3))
-    assert float(b5.y[0]) == pytest.approx(treat_all(1 / 2))
-    assert float(a10.y[0]) == pytest.approx(treat_all(1 / 2))
-    assert float(b10.y[0]) == pytest.approx(treat_all(3 / 4))
+    assert float(a5.y[0]) == pytest.approx(treat_all(1 / 6))
+    assert float(b5.y[0]) == pytest.approx(treat_all(1 / 4))
+    assert float(a10.y[0]) == pytest.approx(treat_all(2 / 6))
+    assert float(b10.y[0]) == pytest.approx(treat_all(2 / 4))
