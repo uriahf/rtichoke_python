@@ -42,6 +42,14 @@ def test_create_summary_report_writes_native_html(tmp_path):
     assert "send_requests_to_rtichoke_r" not in html
     assert "quarto" not in html.lower()
 
+    # R's Plotly performance curves use add_lines(); the animation markers are
+    # intentionally invisible and exist only to provide slider frames. Keep the
+    # lightweight renderer line-only as well, without sampled-point or active
+    # cutoff markers that are not visible in the canonical R report.
+    assert 'attr("class","curve-current-markers")' not in html
+    assert 'selectAll("circle").data(a.filter' not in html
+    assert ".curve-slider::-webkit-slider-runnable-track" in html
+
     # The report must remain usable as a single offline HTML file. JavaScript
     # and styling are embedded directly rather than fetched from a CDN or
     # another external runtime at viewing time.
