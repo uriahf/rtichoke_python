@@ -34,7 +34,9 @@ def test_create_performance_table_defaults_to_great_tables():
 
 def test_create_performance_table_supports_reactable():
     probs, reals = _example()
-    assert isinstance(create_performance_table(probs, reals, by=0.1, renderer="reactable"), Reactable)
+    assert isinstance(
+        create_performance_table(probs, reals, by=0.1, renderer="reactable"), Reactable
+    )
 
 
 def test_render_performance_table_accepts_prepared_polars_data():
@@ -53,33 +55,60 @@ def test_render_performance_table_rejects_empty_data():
 
 def test_create_performance_table_supports_ppcr_stratification():
     probs, reals = _example()
-    assert isinstance(create_performance_table(probs, reals, by=0.1, stratified_by=("ppcr",)), GT)
+    assert isinstance(
+        create_performance_table(probs, reals, by=0.1, stratified_by=("ppcr",)), GT
+    )
 
 
 def test_create_performance_table_times_defaults_to_great_tables():
     probs, reals, times = _time_example()
-    assert isinstance(create_performance_table_times(probs, reals, times, fixed_time_horizons=[5, 10], by=0.1), GT)
+    assert isinstance(
+        create_performance_table_times(
+            probs, reals, times, fixed_time_horizons=[5, 10], by=0.1
+        ),
+        GT,
+    )
 
 
 def test_create_performance_table_times_supports_reactable():
     probs, reals, times = _time_example()
-    assert isinstance(create_performance_table_times(probs, reals, times, fixed_time_horizons=[5], by=0.1, renderer="reactable"), Reactable)
+    assert isinstance(
+        create_performance_table_times(
+            probs, reals, times, fixed_time_horizons=[5], by=0.1, renderer="reactable"
+        ),
+        Reactable,
+    )
 
 
 def test_render_performance_table_preserves_multiple_time_horizons():
     probs, reals, times = _time_example()
-    data = prepare_performance_data_times(probs, reals, times.astype(float), fixed_time_horizons=[5, 10], by=0.1)
-    assert sorted(data.get_column("fixed_time_horizon").unique().to_list()) == [5.0, 10.0]
+    data = prepare_performance_data_times(
+        probs, reals, times.astype(float), fixed_time_horizons=[5, 10], by=0.1
+    )
+    assert sorted(data.get_column("fixed_time_horizon").unique().to_list()) == [
+        5.0,
+        10.0,
+    ]
     assert isinstance(render_performance_table(data), GT)
 
 
 def test_create_performance_table_times_supports_multiple_heuristic_sets():
     probs, reals, times = _time_example()
     heuristics_sets = [
-        {"censoring_heuristic": "adjusted", "competing_heuristic": "adjusted_as_negative"},
+        {
+            "censoring_heuristic": "adjusted",
+            "competing_heuristic": "adjusted_as_negative",
+        },
         {"censoring_heuristic": "excluded", "competing_heuristic": "excluded"},
     ]
-    data = prepare_performance_data_times(probs, reals, times.astype(float), fixed_time_horizons=[5], heuristics_sets=heuristics_sets, by=0.1)
+    data = prepare_performance_data_times(
+        probs,
+        reals,
+        times.astype(float),
+        fixed_time_horizons=[5],
+        heuristics_sets=heuristics_sets,
+        by=0.1,
+    )
     assert data.get_column("censoring_heuristic").n_unique() == 2
     assert data.get_column("competing_heuristic").n_unique() == 2
     assert isinstance(render_performance_table(data), GT)
@@ -100,7 +129,10 @@ def test_reactable_metric_bar_matches_r_colors_and_geometry():
     assert style["backgroundPosition"] == "center"
 
 
-@pytest.mark.parametrize(("value", "color", "extent"), [(0.5, "lightgreen", "75.0%"), (-0.5, "pink", "25.0%")])
+@pytest.mark.parametrize(
+    ("value", "color", "extent"),
+    [(0.5, "lightgreen", "75.0%"), (-0.5, "pink", "25.0%")],
+)
 def test_reactable_net_benefit_bar_matches_r_diverging_scale(value, color, extent):
     style = _net_benefit_style(value, 1.0)
     assert color in style["background"]

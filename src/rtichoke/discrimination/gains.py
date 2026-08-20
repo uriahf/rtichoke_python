@@ -14,7 +14,9 @@ from rtichoke.processing.plotly_helper_functions import (
     _check_if_multiple_populations_are_being_validated_times,
 )
 from rtichoke.processing.time_reference_lines import _apply_color_values_times
-from rtichoke.performance_data.performance_data_times import prepare_performance_data_times
+from rtichoke.performance_data.performance_data_times import (
+    prepare_performance_data_times,
+)
 import numpy as np
 import polars as pl
 

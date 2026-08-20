@@ -6,7 +6,9 @@ import numpy as np
 import polars as pl
 from plotly.graph_objs._figure import Figure
 
-from rtichoke.performance_data.performance_data_times import prepare_performance_data_times
+from rtichoke.performance_data.performance_data_times import (
+    prepare_performance_data_times,
+)
 from rtichoke.processing.plotly_helper_functions import (
     _check_if_multiple_populations_are_being_validated_times,
     _create_plotly_curve_times,

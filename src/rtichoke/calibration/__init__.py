@@ -35,9 +35,7 @@ def _validate_outcome_values(reals, allowed_values):
         if not np.all(np.isin(np.asarray(outcome_values), allowed_values)):
             if allowed_values == (0, 1):
                 raise ValueError("Binary outcomes must contain only 0 and 1.")
-            raise ValueError(
-                "Time-dependent outcomes must contain only 0, 1, and 2."
-            )
+            raise ValueError("Time-dependent outcomes must contain only 0, 1, and 2.")
 
 
 def create_calibration_curve(*args, **kwargs):

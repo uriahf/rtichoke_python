@@ -51,7 +51,9 @@ def _public_curve_inputs():
 
 
 def _trace(fig, name: str, visible: bool):
-    matches = [trace for trace in fig.data if trace.name == name and trace.visible is visible]
+    matches = [
+        trace for trace in fig.data if trace.name == name and trace.visible is visible
+    ]
     assert len(matches) == 1
     return matches[0]
 

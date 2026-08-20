@@ -50,7 +50,9 @@ def _validate_and_align_binary_inputs(
 ) -> Union[np.ndarray, Dict[str, np.ndarray]]:
     """Validate binary input alignment and normalize outcome dictionaries."""
     if not isinstance(probs, dict) or not probs:
-        raise ValueError("`probs` must be a non-empty dictionary of probability arrays.")
+        raise ValueError(
+            "`probs` must be a non-empty dictionary of probability arrays."
+        )
 
     groups = list(probs)
     for group in groups:

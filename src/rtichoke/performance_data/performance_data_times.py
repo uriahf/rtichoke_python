@@ -128,7 +128,7 @@ def prepare_performance_data_times(
         float(horizon): index for index, horizon in enumerate(fixed_time_horizons)
     }
     heuristic_order = {
-        f'{heuristics["censoring_heuristic"]}\x1f{heuristics["competing_heuristic"]}': index
+        f"{heuristics['censoring_heuristic']}\x1f{heuristics['competing_heuristic']}": index
         for index, heuristics in enumerate(heuristics_sets)
     }
 
