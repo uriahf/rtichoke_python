@@ -91,6 +91,7 @@ def test_binary_cutoff_adjustment_does_not_change_ppcr_stratification():
         )
         .filter(pl.col("stratified_by") == "ppcr")
         .sort(["reference_group", "chosen_cutoff"])
+        .select(ppcr_only.columns)
     )
 
     assert_frame_equal(combined_ppcr, ppcr_only)
