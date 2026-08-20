@@ -79,7 +79,6 @@ def prepare_performance_data_times(
         thresholds and time horizons. It includes columns for cutoffs, time
         points, heuristics, and performance measures.
     """
-    # 1. Get the underlying binned time-dependent classification data
     final_adjusted_data = prepare_binned_classification_data_times(
         probs=probs,
         reals=reals,
@@ -91,13 +90,47 @@ def prepare_performance_data_times(
         risk_set_scope=["pooled_by_cutoff"],
     )
 
-    # 2. Apply AJ cumulative machinery
     cumulative_aj_data = _calculate_cumulative_aj_data(final_adjusted_data)
-
-    # 3. Turn AJ output into performance metrics
     performance_data = _turn_cumulative_aj_to_performance_data(cumulative_aj_data)
 
-    return performance_data
+    group_order = {group: index for index, group in enumerate(probs)}
+    horizon_order = {
+        float(horizon): index for index, horizon in enumerate(fixed_time_horizons)
+    }
+    heuristic_order = {
+        f'{heuristics["censoring_heuristic"]}\x1f{heuristics["competing_heuristic"]}': index
+        for index, heuristics in enumerate(heuristics_sets)
+    }
+
+    return (
+        performance_data.with_columns(
+            pl.col("reference_group")
+            .replace_strict(group_order, default=len(group_order))
+            .alias("_reference_group_order"),
+            pl.col("fixed_time_horizon")
+            .replace_strict(horizon_order, default=len(horizon_order))
+            .alias("_fixed_time_horizon_order"),
+            pl.concat_str(
+                ["censoring_heuristic", "competing_heuristic"], separator="\x1f"
+            )
+            .replace_strict(heuristic_order, default=len(heuristic_order))
+            .alias("_heuristic_order"),
+        )
+        .sort(
+            [
+                "_fixed_time_horizon_order",
+                "_heuristic_order",
+                "stratified_by",
+                "chosen_cutoff",
+                "_reference_group_order",
+            ]
+        )
+        .drop(
+            "_reference_group_order",
+            "_fixed_time_horizon_order",
+            "_heuristic_order",
+        )
+    )
 
 
 def prepare_binned_classification_data_times(
@@ -131,7 +164,7 @@ def prepare_binned_classification_data_times(
         A dictionary mapping model or dataset names (str) to their predicted
         probabilities.
     reals : Union[np.ndarray, Dict[str, np.ndarray]]
-        The true event statuses (e.g., 0=censored, 1=event, 2=competing).
+        The true event statuses (e.g., 0=censored, 1=event, 2=competing event).
     times : Union[np.ndarray, Dict[str, np.ndarray]]
         The event or censoring times.
     fixed_time_horizons : list[float]
