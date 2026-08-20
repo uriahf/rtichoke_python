@@ -2,7 +2,6 @@
 
 from importlib import resources
 
-import numpy as np
 import polars as pl
 from dcurves import dca
 from numpy.testing import assert_allclose
@@ -40,9 +39,7 @@ def _dcurves_survival_dca(data: pl.DataFrame, thresholds: list[float]):
     # dcurves requires a pandas DataFrame and already depends on pandas itself.
     # Building it from plain Python data avoids adding pyarrow just for
     # `pl.DataFrame.to_pandas()`.
-    pandas_df_type = type(
-        dca.__globals__["pd"].DataFrame()
-    )
+    pandas_df_type = type(dca.__globals__["pd"].DataFrame())
     pandas_data = pandas_df_type(data.to_dict(as_series=False))
 
     return dca(
