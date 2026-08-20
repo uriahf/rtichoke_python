@@ -53,6 +53,7 @@ jobs:
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -- src/rtichoke/_vendor/rtichoke_viz/rtichoke-viz.js src/rtichoke/_vendor/rtichoke_viz/rtichoke-viz.css src/rtichoke/_vendor/rtichoke_viz/VENDORED_FROM
+          git add -f -- src/rtichoke/_vendor/rtichoke_viz/rtichoke-viz.js src/rtichoke/_vendor/rtichoke_viz/rtichoke-viz.css
+          git add -- src/rtichoke/_vendor/rtichoke_viz/VENDORED_FROM
           git commit -m "Vendor compiled rtichoke_viz browser assets"
           git push origin HEAD:integration/vendor-rtichoke-viz-roc
