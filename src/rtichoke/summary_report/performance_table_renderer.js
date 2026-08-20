@@ -50,8 +50,10 @@
     const selected=new Set();
     let lower=minValue, upper=maxValue, page=0;
 
-    const filters=document.createElement("div"); filters.className="rt-filters";
-    const modelFilter=document.createElement("div"); modelFilter.className="rt-filter-models";
+    // R crosstalk::bscols(widths = c(12, 6, 12)): group selector on a
+    // full row, slider on a half-width row, then the full-width Reactable.
+    const filters=document.createElement("div"); filters.className="rt-filters"; filters.style.display="block"; filters.style.marginBottom="15px";
+    const modelFilter=document.createElement("div"); modelFilter.className="rt-filter-models"; modelFilter.style.width="100%"; modelFilter.style.marginBottom="15px";
     const modelLabel=document.createElement("div"); modelLabel.className="rt-filter-label"; modelLabel.textContent="Model"; modelFilter.appendChild(modelLabel);
     models.forEach((model,i)=>{
       const label=document.createElement("label"); label.className="rt-check-inline";
@@ -59,14 +61,16 @@
       const text=document.createElement("span"); text.textContent=model; label.append(input,text); modelFilter.appendChild(label);
       input.addEventListener("change",()=>{input.checked?selected.add(model):selected.delete(model);page=0;drawPage();});
     });
-    const rangeFilter=document.createElement("div"); rangeFilter.className="rt-filter-range";
+    const rangeFilter=document.createElement("div"); rangeFilter.className="rt-filter-range"; rangeFilter.style.width="50%"; rangeFilter.style.maxWidth="520px"; rangeFilter.style.minWidth="300px";
     const rangeLabel=document.createElement("div"); rangeLabel.className="rt-filter-label"; rangeLabel.textContent=isPpcr?"Predicted Positives Condition Rate (PPCR)":"Probability Threshold";
     const rangeReadout=document.createElement("span"); rangeReadout.className="rt-range-readout";
     const track=document.createElement("div"); track.className="rt-dual-range";
     const lo=document.createElement("input"), hi=document.createElement("input");
     [lo,hi].forEach(input=>{input.type="range";input.min=minValue;input.max=maxValue;input.step=step;}); lo.value=minValue; hi.value=maxValue;
     const sync=()=>{lower=Math.min(+lo.value,+hi.value);upper=Math.max(+lo.value,+hi.value);rangeReadout.textContent=`${fmt(lower)} – ${fmt(upper)}`;page=0;drawPage();};
-    lo.addEventListener("input",sync); hi.addEventListener("input",sync); track.append(lo,hi); rangeFilter.append(rangeLabel,rangeReadout,track); filters.append(modelFilter,rangeFilter); host.appendChild(filters);
+    lo.addEventListener("input",sync); hi.addEventListener("input",sync); track.append(lo,hi); rangeFilter.append(rangeLabel,rangeReadout,track);
+    if(models.length>1) filters.appendChild(modelFilter);
+    filters.appendChild(rangeFilter); host.appendChild(filters);
     rangeReadout.textContent=`${fmt(lower)} – ${fmt(upper)}`;
 
     const wrap=document.createElement("div"); wrap.className="rt-perf-wrap";
