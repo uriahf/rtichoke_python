@@ -5,9 +5,11 @@ A module for Precision-Recall Curves using Plotly helpers
 from typing import Dict, List, Sequence, Union
 from plotly.graph_objs._figure import Figure
 from rtichoke.processing.plotly_helper_functions import (
-    _create_rtichoke_plotly_curve_times,
     _create_rtichoke_plotly_curve_binary,
     _plot_rtichoke_curve_binary,
+)
+from rtichoke.processing.time_reference_lines import (
+    _create_rtichoke_plotly_curve_times_reference_safe,
 )
 import numpy as np
 import polars as pl
@@ -187,7 +189,7 @@ def create_precision_recall_curve_times(
         A Plotly ``Figure`` object for the time-dependent Precision-Recall curve.
     """
 
-    fig = _create_rtichoke_plotly_curve_times(
+    fig = _create_rtichoke_plotly_curve_times_reference_safe(
         probs,
         reals,
         times,
