@@ -26,8 +26,8 @@ def _wire_curve_renderer(html: str) -> str:
     if marker not in html:
         raise RuntimeError("Could not locate summary-report curve integration point")
     html = html.replace(marker, renderer + "\n" + marker, 1)
-    html = html.replace("draw(s,chart,strat)}}));draw(specs[0],chart,strat)", "drawRtichokeCurve(s,chart)}}));drawRtichokeCurve(specs[0],chart)", 1)
-    html = html.replace("draw(R.decision,'#decision','probability_threshold');", "drawRtichokeCurve(R.decision,'#decision');", 1)
+    html = html.replace("draw(s,chart,strat)}}));draw(specs[0],chart,strat)", "drawRtichokeCurve(s,chart,strat)}}));drawRtichokeCurve(specs[0],chart,strat)", 1)
+    html = html.replace("draw(R.decision,'#decision','probability_threshold');", "drawRtichokeCurve(R.decision,'#decision','probability_threshold');", 1)
     return html
 
 
