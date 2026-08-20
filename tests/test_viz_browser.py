@@ -11,11 +11,7 @@ from rtichoke.performance_data.performance_data import prepare_performance_data
 
 def _real_roc_performance_data():
     return prepare_performance_data(
-        probs={
-            "Model A": np.array(
-                [0.05, 0.10, 0.20, 0.35, 0.55, 0.70, 0.85, 0.95]
-            )
-        },
+        probs={"Model A": np.array([0.05, 0.10, 0.20, 0.35, 0.55, 0.70, 0.85, 0.95])},
         reals=np.array([0, 0, 0, 1, 0, 1, 1, 1]),
         by=0.1,
     )
