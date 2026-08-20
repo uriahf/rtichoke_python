@@ -93,8 +93,8 @@ def create_breaks_values(probs_vec, stratified_by, by):
         breaks = np.quantile(probs_vec, np.linspace(1, 0, int(1 / by) + 1))
     else:
         decimals = len(str(by).split(".")[-1])
-        breaks = np.round(np.arange(0, 1, by), decimals=decimals)
-        breaks = np.append(breaks[breaks < 1], 1.0)
+        n_steps = int(np.floor((1.0 / by) + 1e-12))
+        breaks = np.round(np.arange(n_steps + 1) * by, decimals=decimals)
     return breaks
 
 
@@ -124,7 +124,6 @@ def _create_aj_data_combinations_binary(
         ]
     )
 
-    # Define values for Cartesian product
     reals_labels = ["real_negatives", "real_positives"]
 
     combinations_frames: list[pl.DataFrame] = [
@@ -152,8 +151,6 @@ def create_aj_data_combinations(
     dfs = [create_strata_combinations(sb, by, breaks) for sb in stratified_by]
     strata_combinations = pl.concat(dfs, how="vertical")
 
-    # strata_enum = pl.Enum(strata_combinations["strata"])
-
     strata_cats = (
         strata_combinations.select(pl.col("strata").unique(maintain_order=True))
         .to_series()
@@ -178,7 +175,6 @@ def create_aj_data_combinations(
         }
     )
 
-    # Define values for Cartesian product
     reals_labels = [
         "real_negatives",
         "real_positives",
