@@ -27,6 +27,33 @@ def _get_reference_aj_estimates_times(performance_data: pl.DataFrame) -> pl.Data
     )
 
 
+def _apply_color_values_times(curve_list: dict, color_values) -> dict:
+    """Apply custom colors while retaining R's single-model black styling."""
+    if color_values is None or not curve_list["multiple_reference_groups"]:
+        return curve_list
+
+    reference_groups = curve_list["reference_group_keys"]
+    if len(color_values) < len(reference_groups):
+        raise ValueError(
+            "color_values must contain at least one color per reference group"
+        )
+
+    colors_dictionary = curve_list["colors_dictionary"]
+    for index, reference_group in enumerate(reference_groups):
+        color = color_values[index]
+        for key in (
+            reference_group,
+            f"random_guess_{reference_group}",
+            f"perfect_model_{reference_group}",
+            f"treat_none_{reference_group}",
+            f"treat_all_{reference_group}",
+        ):
+            if key in colors_dictionary:
+                colors_dictionary[key] = color
+
+    return curve_list
+
+
 def _replace_reference_data_times(
     curve_list: dict,
     performance_data: pl.DataFrame,
@@ -88,6 +115,7 @@ def _create_rtichoke_plotly_curve_times_reference_safe(
         min_p_threshold=min_p_threshold,
         max_p_threshold=max_p_threshold,
     )
+    curve_list = _apply_color_values_times(curve_list, color_values)
     return _create_plotly_curve_times(
         _replace_reference_data_times(
             curve_list,
