@@ -31,6 +31,9 @@ jobs:
       - name: Check lint
         run: uv run ruff check .
 
+      - name: Check format
+        run: uv run ruff format --check .
+
       - name: Build package
         run: uv build
 
