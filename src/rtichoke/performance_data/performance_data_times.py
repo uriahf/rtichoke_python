@@ -79,7 +79,6 @@ def prepare_performance_data_times(
         thresholds and time horizons. It includes columns for cutoffs, time
         points, heuristics, and performance measures.
     """
-    # 1. Get the underlying binned time-dependent classification data
     final_adjusted_data = prepare_binned_classification_data_times(
         probs=probs,
         reals=reals,
@@ -91,10 +90,7 @@ def prepare_performance_data_times(
         risk_set_scope=["pooled_by_cutoff"],
     )
 
-    # 2. Apply AJ cumulative machinery
     cumulative_aj_data = _calculate_cumulative_aj_data(final_adjusted_data)
-
-    # 3. Turn AJ output into performance metrics
     performance_data = _turn_cumulative_aj_to_performance_data(cumulative_aj_data)
 
     group_order = {group: index for index, group in enumerate(probs)}
@@ -102,10 +98,7 @@ def prepare_performance_data_times(
         float(horizon): index for index, horizon in enumerate(fixed_time_horizons)
     }
     heuristic_order = {
-        (
-            heuristics["censoring_heuristic"],
-            heuristics["competing_heuristic"],
-        ): index
+        f'{heuristics["censoring_heuristic"]}\x1f{heuristics["competing_heuristic"]}': index
         for index, heuristics in enumerate(heuristics_sets)
     }
 
@@ -117,14 +110,10 @@ def prepare_performance_data_times(
             pl.col("fixed_time_horizon")
             .replace_strict(horizon_order, default=len(horizon_order))
             .alias("_fixed_time_horizon_order"),
-            pl.struct(["censoring_heuristic", "competing_heuristic"])
-            .map_elements(
-                lambda row: heuristic_order.get(
-                    (row["censoring_heuristic"], row["competing_heuristic"]),
-                    len(heuristic_order),
-                ),
-                return_dtype=pl.Int64,
+            pl.concat_str(
+                ["censoring_heuristic", "competing_heuristic"], separator="\x1f"
             )
+            .replace_strict(heuristic_order, default=len(heuristic_order))
             .alias("_heuristic_order"),
         )
         .sort(
