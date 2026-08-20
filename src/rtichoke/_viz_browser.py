@@ -17,7 +17,9 @@ _REQUIRED_ROC_COLUMNS = {
 }
 
 
-def _roc_spec_from_performance_data(performance_data: pl.DataFrame) -> dict[str, object]:
+def _roc_spec_from_performance_data(
+    performance_data: pl.DataFrame,
+) -> dict[str, object]:
     """Map existing rtichoke_python ROC rows to the canonical rtichoke_viz spec."""
     missing = _REQUIRED_ROC_COLUMNS.difference(performance_data.columns)
     if missing:
