@@ -34,8 +34,7 @@ jobs:
       - name: Check format
         run: uv run ruff format --check .
 
-      - name: Check types (non-blocking)
-        continue-on-error: true
+      - name: Check types
         run: uv run ty check src/rtichoke
 
       - name: Build package

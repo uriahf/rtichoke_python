@@ -75,8 +75,9 @@ def create_calibration_curve_times(*args, **kwargs):
 
 
 # Keep direct imports from rtichoke.calibration.calibration aligned with the
-# public package entry points.
-_calibration.create_calibration_curve = create_calibration_curve
-_calibration.create_calibration_curve_times = create_calibration_curve_times
+# public package entry points. setattr preserves the intentional runtime rebinding
+# without presenting it to the type checker as an incompatible function assignment.
+setattr(_calibration, "create_calibration_curve", create_calibration_curve)
+setattr(_calibration, "create_calibration_curve_times", create_calibration_curve_times)
 
 __all__ = ["create_calibration_curve", "create_calibration_curve_times"]
