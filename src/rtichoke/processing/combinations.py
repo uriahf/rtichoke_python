@@ -19,9 +19,7 @@ def create_strata_combinations(stratified_by: str, by: float, breaks) -> pl.Data
     if stratified_by == "probability_threshold":
         cutoff_values = np.asarray(breaks)
         bin_edges = (
-            cutoff_values
-            if cutoff_values[-1] == 1.0
-            else np.append(cutoff_values, 1.0)
+            cutoff_values if cutoff_values[-1] == 1.0 else np.append(cutoff_values, 1.0)
         )
         upper_bound = bin_edges[1:]
         lower_bound = bin_edges[:-1]

@@ -772,9 +772,7 @@ def _calculate_smooth_curve(
             )
         else:
             smoothed = smooth_state_lowess(p, r)
-            return smoothed.with_columns(
-                pl.lit(group_name).alias("reference_group")
-            )
+            return smoothed.with_columns(pl.lit(group_name).alias("reference_group"))
 
     if isinstance(reals, dict):
         for model_name, prob_array in probs.items():
@@ -1169,7 +1167,6 @@ def _make_adjusted_deciles_data(
             }
         )
     return pl.DataFrame(rows).sort(["reference_group", "decile"])
-
 
 
 def _calculate_local_aj_smooth(

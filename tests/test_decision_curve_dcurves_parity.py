@@ -82,15 +82,13 @@ def test_survival_decision_curve_matches_dcurves_issue_127() -> None:
     assert_allclose(rtichoke_prevalence, dcurves_prevalence, rtol=0, atol=1e-10)
 
     assert_allclose(
-        rtichoke_result["true_positives"].to_numpy()
-        / rtichoke_result["n"].to_numpy(),
+        rtichoke_result["true_positives"].to_numpy() / rtichoke_result["n"].to_numpy(),
         dcurves_model["tp_rate"].to_numpy(),
         rtol=0,
         atol=1e-10,
     )
     assert_allclose(
-        rtichoke_result["false_positives"].to_numpy()
-        / rtichoke_result["n"].to_numpy(),
+        rtichoke_result["false_positives"].to_numpy() / rtichoke_result["n"].to_numpy(),
         dcurves_model["fp_rate"].to_numpy(),
         rtol=0,
         atol=1e-10,
@@ -114,9 +112,9 @@ def test_survival_decision_curve_includes_prediction_equal_to_threshold() -> Non
     )
 
     dcurves_result = _dcurves_survival_dca(data, [0.20])
-    dcurves_model = dcurves_result[
-        dcurves_result["model"] == "cancerpredmarker"
-    ].iloc[0]
+    dcurves_model = dcurves_result[dcurves_result["model"] == "cancerpredmarker"].iloc[
+        0
+    ]
 
     rtichoke_result = _rtichoke_survival_dca(data, by=0.10).filter(
         pl.col("chosen_cutoff") == 0.20

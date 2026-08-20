@@ -1,6 +1,9 @@
 import numpy as np
 
-from rtichoke.calibration import create_calibration_curve, create_calibration_curve_times
+from rtichoke.calibration import (
+    create_calibration_curve,
+    create_calibration_curve_times,
+)
 
 
 def _assert_square_main_panel(fig):
@@ -23,9 +26,7 @@ def test_interactive_calibration_main_panel_is_square():
     reals = np.array([0, 1] * 10)
 
     for calibration_type in ("discrete", "smooth"):
-        fig = create_calibration_curve(
-            probs, reals, calibration_type=calibration_type
-        )
+        fig = create_calibration_curve(probs, reals, calibration_type=calibration_type)
         _assert_square_main_panel(fig)
         _assert_tall_widget_geometry(fig)
         assert list(fig.layout.xaxis.range) == list(fig.layout.yaxis.range)

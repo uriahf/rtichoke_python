@@ -20,9 +20,7 @@ def _validate_time_outcome_values(
     values = reals.values() if isinstance(reals, dict) else [reals]
     for outcome_values in values:
         if not np.all(np.isin(np.asarray(outcome_values), [0, 1, 2])):
-            raise ValueError(
-                "Time-dependent outcomes must contain only 0, 1, and 2."
-            )
+            raise ValueError("Time-dependent outcomes must contain only 0, 1, and 2.")
 
 
 def _validate_time_input_alignment(
@@ -32,7 +30,9 @@ def _validate_time_input_alignment(
 ) -> None:
     """Validate supported array/dict layouts before time-dependent processing."""
     if not isinstance(probs, dict) or not probs:
-        raise ValueError("`probs` must be a non-empty dictionary of probability arrays.")
+        raise ValueError(
+            "`probs` must be a non-empty dictionary of probability arrays."
+        )
 
     _validate_probability_values(probs)
     _validate_time_outcome_values(reals)
@@ -83,14 +83,18 @@ def _validate_time_input_alignment(
     group = groups[0]
     if reals_is_dict:
         if group not in reals:
-            raise ValueError(f"`reals` is missing the key {group!r} required by `probs`.")
+            raise ValueError(
+                f"`reals` is missing the key {group!r} required by `probs`."
+            )
         reals_values = reals[group]
     else:
         reals_values = reals
 
     if times_is_dict:
         if group not in times:
-            raise ValueError(f"`times` is missing the key {group!r} required by `probs`.")
+            raise ValueError(
+                f"`times` is missing the key {group!r} required by `probs`."
+            )
         times_values = times[group]
     else:
         times_values = times

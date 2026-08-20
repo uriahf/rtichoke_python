@@ -45,9 +45,7 @@ def test_binary_combined_stratification_preserves_each_component():
             stratified_by=[stratification],
             by=0.25,
         )
-        from_combined = combined.filter(
-            combined["stratified_by"] == stratification
-        )
+        from_combined = combined.filter(combined["stratified_by"] == stratification)
         assert_frame_equal(
             _sort_binary(from_combined),
             _sort_binary(isolated),
@@ -97,9 +95,7 @@ def test_time_combined_stratification_preserves_each_component_across_groups_and
             stratified_by=[stratification],
             by=0.25,
         )
-        from_combined = combined.filter(
-            combined["stratified_by"] == stratification
-        )
+        from_combined = combined.filter(combined["stratified_by"] == stratification)
         assert_frame_equal(
             _sort_times(from_combined),
             _sort_times(isolated),

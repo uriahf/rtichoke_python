@@ -45,9 +45,7 @@ def test_create_calibration_curve_multiple_populations_unequal_sizes():
     }
 
     for calibration_type in ("discrete", "smooth"):
-        fig = create_calibration_curve(
-            probs, reals, calibration_type=calibration_type
-        )
+        fig = create_calibration_curve(probs, reals, calibration_type=calibration_type)
         assert {trace.name for trace in fig.data if trace.name} >= {"Train", "Test"}
 
 
@@ -56,6 +54,8 @@ def test_calibration_limits_keep_padding_without_leaving_probability_scale():
     near_one = pl.DataFrame({"x": [0.30, 0.99], "y": [0.40, 0.98]})
     mid_range = pl.DataFrame({"x": [0.20, 0.80], "y": [0.25, 0.75]})
 
-    assert _define_limits_for_calibration_plot(near_zero) == pytest.approx([0.0, 0.7345])
+    assert _define_limits_for_calibration_plot(near_zero) == pytest.approx(
+        [0.0, 0.7345]
+    )
     assert _define_limits_for_calibration_plot(near_one) == pytest.approx([0.2655, 1.0])
     assert _define_limits_for_calibration_plot(mid_range) == pytest.approx([0.17, 0.83])

@@ -9,8 +9,12 @@ import numpy as np
 import polars as pl
 
 from rtichoke.performance_data.performance_data import prepare_performance_data
-from rtichoke.performance_data.performance_data_times import prepare_performance_data_times
-from rtichoke.performance_table_great_tables import render_performance_table_great_tables
+from rtichoke.performance_data.performance_data_times import (
+    prepare_performance_data_times,
+)
+from rtichoke.performance_table_great_tables import (
+    render_performance_table_great_tables,
+)
 from rtichoke.performance_table_reactable import (
     DEFAULT_COLORS,
     render_performance_table_reactable,
@@ -33,9 +37,13 @@ def render_performance_table(
 ):
     """Render prepared performance data with a selected table backend."""
     if renderer == "great_tables":
-        return render_performance_table_great_tables(performance_data, color_values=color_values)
+        return render_performance_table_great_tables(
+            performance_data, color_values=color_values
+        )
     if renderer == "reactable":
-        return render_performance_table_reactable(performance_data, color_values=color_values)
+        return render_performance_table_reactable(
+            performance_data, color_values=color_values
+        )
     raise ValueError("renderer must be either 'great_tables' or 'reactable'")
 
 
@@ -48,8 +56,12 @@ def create_performance_table(
     renderer: PerformanceTableRenderer = "great_tables",
 ):
     """Create an R-style rtichoke performance table."""
-    performance_data = prepare_performance_data(probs=probs, reals=reals, by=by, stratified_by=stratified_by)
-    return render_performance_table(performance_data, color_values=color_values, renderer=renderer)
+    performance_data = prepare_performance_data(
+        probs=probs, reals=reals, by=by, stratified_by=stratified_by
+    )
+    return render_performance_table(
+        performance_data, color_values=color_values, renderer=renderer
+    )
 
 
 def create_performance_table_times(
@@ -88,4 +100,6 @@ def create_performance_table_times(
         by=by,
         stratified_by=stratified_by,
     )
-    return render_performance_table(performance_data, color_values=color_values, renderer=renderer)
+    return render_performance_table(
+        performance_data, color_values=color_values, renderer=renderer
+    )

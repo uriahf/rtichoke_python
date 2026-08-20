@@ -77,9 +77,9 @@ def test_gains_reference_is_population_and_horizon_specific():
         "fixed_time_horizons": [5.0, 10.0],
         "reference_data": pl.DataFrame(),
     }
-    reference_data = _replace_gains_reference_data_times(
-        curve_list, performance_data
-    )["reference_data"]
+    reference_data = _replace_gains_reference_data_times(curve_list, performance_data)[
+        "reference_data"
+    ]
 
     expected_y_at_point_one = {
         ("perfect_model_population_a", 5.0): 0.1 / 0.2,

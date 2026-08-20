@@ -43,7 +43,9 @@ def test_multiple_groups_reject_mixed_dict_and_array_outcomes():
 def test_multiple_population_lengths_must_match_within_group():
     bad_times = {**TIMES, "test": TIMES["test"][:-1]}
 
-    with pytest.raises(ValueError, match="Input lengths must match within group 'test'"):
+    with pytest.raises(
+        ValueError, match="Input lengths must match within group 'test'"
+    ):
         _call(times=bad_times)
 
 
