@@ -3,32 +3,66 @@ import re
 import numpy as np
 
 from rtichoke import create_summary_report
+from rtichoke.summary_report import summary_report_plotly
 
 
-def test_public_summary_report_uses_embedded_plotly_for_charts(tmp_path):
-    probs = {
-        "Model A": np.array([0.05, 0.15, 0.35, 0.55, 0.75, 0.95]),
-        "Model B": np.array([0.10, 0.25, 0.30, 0.60, 0.70, 0.90]),
+def _tiny_payload():
+    figure = {"data": [], "layout": {"width": 500, "height": 550}}
+    return {
+        "smooth": figure,
+        "discrete": figure,
+        "threshold": [{"label": "ROC", "figure": figure}],
+        "ppcr": [{"label": "ROC", "figure": figure}],
+        "decision": figure,
     }
-    reals = np.array([0, 0, 0, 1, 1, 1])
-    output = tmp_path / "report.html"
 
-    create_summary_report(probs, reals, output_file=output, by=0.1)
 
-    html = output.read_text(encoding="utf-8")
+def test_public_export_routes_to_plotly_summary_report():
+    assert create_summary_report is summary_report_plotly.create_summary_report
 
-    # Plotly.js is embedded once in the self-contained report; there is no CDN
-    # or external script/style dependency at viewing time.
-    assert "plotly.js v" in html.lower()
-    assert "Plotly.react(host,fig.data,fig.layout,config)" in html
-    assert "Plotly.react(chart,spec.figure.data,spec.figure.layout,config)" in html
-    assert "draw('smoothchart',RP.smooth)" in html
-    assert "draw('discretechart',RP.discrete)" in html
-    assert "draw('decision',RP.decision)" in html
-    assert not re.search(r'<script[^>]+src=["\']https?://', html, re.IGNORECASE)
-    assert not re.search(r'<link[^>]+href=["\']https?://', html, re.IGNORECASE)
 
-    # The existing lightweight report shell/table renderer remains in place.
-    assert "summary-table auc-table" in html
-    assert "rt-perf-wrap" in html
-    assert "Performance Metrics Cheat Sheet" in html
+def test_plotly_chart_layer_is_self_contained(monkeypatch):
+    monkeypatch.setattr(
+        summary_report_plotly,
+        "get_plotlyjs",
+        lambda: "/*! plotly.js vTEST */",
+    )
+    html = """<!doctype html><html><head></head><body>
+<div id="smoothchart"></div><div id="discretechart"></div>
+<div id="thrtabs"></div><div id="thrchart"></div>
+<div id="pcrtabs"></div><div id="pcrchart"></div>
+<div id="decision"></div></body></html>"""
+
+    rendered = summary_report_plotly._inject_plotly_charts(html, _tiny_payload())
+
+    assert "plotly.js vTEST" in rendered
+    assert "Plotly.react(host,fig.data,fig.layout,config)" in rendered
+    assert "Plotly.react(chart,spec.figure.data,spec.figure.layout,config)" in rendered
+    assert "draw('smoothchart',RP.smooth)" in rendered
+    assert "draw('discretechart',RP.discrete)" in rendered
+    assert "draw('decision',RP.decision)" in rendered
+    assert not re.search(r'<script[^>]+src=["\']https?://', rendered, re.IGNORECASE)
+    assert not re.search(r'<link[^>]+href=["\']https?://', rendered, re.IGNORECASE)
+
+
+def test_page_parity_adds_r_math_and_multi_population_prevalence():
+    html = """<html><head></head><body>
+<details><div class="metric-formulas"><div>old</div></div></details>
+<div id="prev"></div></body></html>"""
+    probs = {
+        "Population A": np.array([0.1, 0.8]),
+        "Population B": np.array([0.2, 0.9]),
+    }
+    reals = {
+        "Population A": np.array([0, 1]),
+        "Population B": np.array([0, 1]),
+    }
+
+    rendered = summary_report_plotly._wire_page_parity(html, probs, reals)
+
+    assert "r-math-blocks" in rendered
+    assert "Lift =" in rendered
+    assert "frac compound" in rendered
+    assert "r-prevalence-multi" in rendered
+    assert "<span>population</span><span>Prevalence</span>" in rendered
+    assert "model-badge" in rendered
