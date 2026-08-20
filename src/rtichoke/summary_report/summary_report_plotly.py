@@ -1,9 +1,9 @@
 """Plotly-backed chart layer for the lightweight summary report.
 
 The report shell, prevalence/AUROC widgets, and performance tables remain the
-small self-contained HTML implementation.  Charts are rendered by Plotly—the
+small self-contained HTML implementation. Charts are rendered by Plotly—the
 same rendering engine used by the canonical R summary report—so visual parity
-is not limited by a hand-written SVG approximation.  Plotly.js is embedded
+is not limited by a hand-written SVG approximation. Plotly.js is embedded
 once in the generated file; no network access or new runtime dependency is
 required.
 """
@@ -17,15 +17,11 @@ import numpy as np
 from plotly.offline import get_plotlyjs
 
 from rtichoke.calibration.calibration import create_calibration_curve
-from rtichoke.discrimination.gains import plot_gains_curve
-from rtichoke.discrimination.lift import plot_lift_curve
-from rtichoke.discrimination.precision_recall import plot_precision_recall_curve
-from rtichoke.discrimination.roc import plot_roc_curve
 from rtichoke.performance_data.performance_data import prepare_performance_data
+from rtichoke.processing.plotly_helper_functions import _plot_rtichoke_curve_binary
 from rtichoke.summary_report.summary_report_v2 import (
     create_summary_report as _create_lightweight_report,
 )
-from rtichoke.utility.decision import plot_decision_curve
 
 
 def _figure_payload(fig) -> dict:
@@ -52,15 +48,52 @@ def _plotly_payload(
         by=by,
     )
 
-    def curves(data):
+    def curves(data, stratified_by: str):
         return [
-            {"label": "ROC", "figure": _figure_payload(plot_roc_curve(data, size=500))},
-            {"label": "Lift", "figure": _figure_payload(plot_lift_curve(data, size=500))},
+            {
+                "label": "ROC",
+                "figure": _figure_payload(
+                    _plot_rtichoke_curve_binary(
+                        data,
+                        stratified_by=stratified_by,
+                        curve="roc",
+                        size=500,
+                    )
+                ),
+            },
+            {
+                "label": "Lift",
+                "figure": _figure_payload(
+                    _plot_rtichoke_curve_binary(
+                        data,
+                        stratified_by=stratified_by,
+                        curve="lift",
+                        size=500,
+                    )
+                ),
+            },
             {
                 "label": "Precision Recall",
-                "figure": _figure_payload(plot_precision_recall_curve(data, size=500)),
+                "figure": _figure_payload(
+                    _plot_rtichoke_curve_binary(
+                        data,
+                        stratified_by=stratified_by,
+                        curve="precision recall",
+                        size=500,
+                    )
+                ),
             },
-            {"label": "Gains", "figure": _figure_payload(plot_gains_curve(data, size=500))},
+            {
+                "label": "Gains",
+                "figure": _figure_payload(
+                    _plot_rtichoke_curve_binary(
+                        data,
+                        stratified_by=stratified_by,
+                        curve="gains",
+                        size=500,
+                    )
+                ),
+            },
         ]
 
     return {
@@ -80,9 +113,16 @@ def _plotly_payload(
                 size=550,
             )
         ),
-        "threshold": curves(threshold),
-        "ppcr": curves(ppcr),
-        "decision": _figure_payload(plot_decision_curve(threshold, size=500)),
+        "threshold": curves(threshold, "probability_threshold"),
+        "ppcr": curves(ppcr, "ppcr"),
+        "decision": _figure_payload(
+            _plot_rtichoke_curve_binary(
+                threshold,
+                stratified_by="probability_threshold",
+                curve="decision",
+                size=500,
+            )
+        ),
     }
 
 
