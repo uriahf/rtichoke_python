@@ -16,6 +16,32 @@ name = "rtichoke"
 version = "0.1.35"
 description = "interactive visualizations for performance of predictive models"
 readme = "README.md"
+keywords = [
+    "prediction",
+    "model-performance",
+    "calibration",
+    "roc",
+    "survival-analysis",
+    "competing-risks",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering",
+]
+
+[project.urls]
+Documentation = "https://uriahf.github.io/rtichoke_python/"
+"Python Tutorials" = "https://uriahf.github.io/rtichoke_blog_python/"
+"R Package" = "https://github.com/uriahf/rtichoke"
+"R Tutorials" = "https://rtichoke-blog.netlify.app/posts"
+Source = "https://github.com/uriahf/rtichoke_python"
+Issues = "https://github.com/uriahf/rtichoke_python/issues"
+Changelog = "https://github.com/uriahf/rtichoke_python/blob/main/CHANGELOG.md"
 
 [dependency-groups]
 dev = [
