@@ -90,17 +90,18 @@ function legend(c,s){let l=c.append('div').attr('class','legend');s.groups.forEa
 function draw(s,sel,strat){let c=d3.select(sel);c.selectAll('*').remove();c.append('div').attr('class','plot-title').text(s.title);legend(c,s);let w=550,h=strat?675:550,m={top:25,right:30,bottom:strat?145:70,left:60},svg=c.append('svg').attr('viewBox',`0 0 ${w} ${h}`),x=d3.scaleLinear().domain(s.x_range).range([m.left,w-m.right]),y=d3.scaleLinear().domain(s.y_range).range([h-m.bottom,m.top]),line=d3.line().defined(d=>isFinite(+d.x)&&isFinite(+d.y)).x(d=>x(+d.x)).y(d=>y(+d.y));svg.append('g').attr('class','axis').attr('transform',`translate(0,${h-m.bottom})`).call(d3.axisBottom(x));svg.append('g').attr('class','axis').attr('transform',`translate(${m.left},0)`).call(d3.axisLeft(y));svg.append('text').attr('class','axis-label').attr('x',(m.left+w-m.right)/2).attr('y',h-m.bottom+45).attr('text-anchor','middle').text(s.x_label);svg.append('text').attr('class','axis-label').attr('transform','rotate(-90)').attr('x',-(m.top+h-m.bottom)/2).attr('y',18).attr('text-anchor','middle').text(s.y_label);d3.group(s.references,d=>String(d.reference_group)).forEach((a,g)=>svg.append('path').datum(a).attr('class','ref').attr('stroke',s.colors[g]||'#999').attr('d',line));s.groups.forEach(g=>svg.append('path').datum(s.data.filter(d=>String(d.reference_group)===g)).attr('class','line').attr('stroke',s.colors[g]||'#000').attr('d',line));}
 /* D3 renderer for performance and decision curves in the lightweight report.
  * Mirrors the R Plotly geometry used by create_summary_report(): a 500px-wide,
- * 550px-high widget with no internal title. ROC/Lift/etc. are tab headings.
+ * 550px-high widget with the animation slider inside the widget and no internal
+ * title. ROC/Lift/etc. are supplied by the tab headings.
  */
 function drawRtichokeCurve(s, sel, strat) {
   const card=d3.select(sel); card.selectAll("*").remove();
-  card.style("width","500px").style("max-width","100%").style("margin-left","0").style("margin-right","0");
-  const W=500,H=550,m={top:25,right:10,bottom:40,left:60};
-  const svg=card.append("svg").style("width","500px").style("max-width","100%").style("margin","0").attr("viewBox",`0 0 ${W} ${H}`),x=d3.scaleLinear().domain(s.x_range).range([m.left,W-m.right]),y=d3.scaleLinear().domain(s.y_range).range([H-m.bottom,m.top]);
+  card.style("width","500px").style("height","550px").style("max-width","100%").style("margin-left","0").style("margin-right","0").style("position","relative");
+  const W=500,H=550,m={top:25,right:10,bottom:120,left:60};
+  const svg=card.append("svg").style("width","500px").style("height","550px").style("max-width","100%").style("margin","0").attr("viewBox",`0 0 ${W} ${H}`),x=d3.scaleLinear().domain(s.x_range).range([m.left,W-m.right]),y=d3.scaleLinear().domain(s.y_range).range([H-m.bottom,m.top]);
   const line=d3.line().defined(d=>isFinite(+d.x)&&isFinite(+d.y)).x(d=>x(+d.x)).y(d=>y(+d.y));
   const styleAxis=a=>{a.attr("font-family","Open Sans, verdana, arial, sans-serif").attr("font-size",12).attr("color","#444");a.select(".domain").attr("stroke","#444");a.selectAll(".tick line").attr("stroke","#444")};
   const xa=svg.append("g").attr("class","axis").attr("transform",`translate(0,${H-m.bottom})`).call(d3.axisBottom(x).ticks(6)),ya=svg.append("g").attr("class","axis").attr("transform",`translate(${m.left},0)`).call(d3.axisLeft(y).ticks(6)); styleAxis(xa);styleAxis(ya);
-  svg.append("text").attr("class","axis-label").attr("x",(m.left+W-m.right)/2).attr("y",H-8).attr("text-anchor","middle").text(s.x_label);
+  svg.append("text").attr("class","axis-label").attr("x",(m.left+W-m.right)/2).attr("y",H-m.bottom+42).attr("text-anchor","middle").text(s.x_label);
   svg.append("text").attr("class","axis-label").attr("transform","rotate(-90)").attr("x",-(m.top+H-m.bottom)/2).attr("y",18).attr("text-anchor","middle").text(s.y_label);
   const strategyColor=g=>{const k=String(g||"").toLowerCase();if(k==="treat_none")return "#808080";return s.colors[g]||"#BEBEBE"};
   const traces=[];
@@ -125,10 +126,10 @@ function drawRtichokeCurve(s, sel, strat) {
   };
 
   if(strata.length>1){
-    const wrap=card.append("div").attr("class","slider-wrap");
-    const label=wrap.append("div").attr("class","slider-label");
-    const prefix=strat==="ppcr"?"Predicted Positives (Rate):":"Probability Threshold:";
-    const input=wrap.append("input").attr("type","range").attr("min",strata[0]).attr("max",strata[strata.length-1]).attr("step",Math.max(1e-6,...strata.slice(1).map((v,i)=>v-strata[i]).filter(v=>v>0).slice(0,1))).node();
+    const wrap=card.append("div").attr("class","slider-wrap curve-slider-wrap");
+    const label=wrap.append("div").attr("class","slider-label curve-slider-label");
+    const prefix=strat==="ppcr"?"Predicted Positives (Rate):":"Prob. Threshold:";
+    const input=wrap.append("input").attr("class","curve-slider").attr("type","range").attr("min",strata[0]).attr("max",strata[strata.length-1]).attr("step",Math.max(1e-6,...strata.slice(1).map((v,i)=>v-strata[i]).filter(v=>v>0).slice(0,1))).node();
     input.value=strata[0];
     const update=()=>{const v=+input.value;label.textContent=`${prefix} ${Number.isFinite(v)?v.toFixed(2):""}`;drawCurrent(v)};
     input.addEventListener("input",update);update();
