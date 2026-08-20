@@ -26,8 +26,8 @@ def create_strata_combinations(stratified_by: str, by: float, breaks) -> pl.Data
         upper_bound = bin_edges[1:]
         lower_bound = bin_edges[:-1]
         mid_point = upper_bound - by / 2
-        include_lower_bound = lower_bound == 0.0
-        include_upper_bound = np.ones_like(upper_bound, dtype=bool)
+        include_lower_bound = lower_bound > -0.1
+        include_upper_bound = upper_bound == 1.0
         strata = format_strata_column(
             lower_bound=lower_bound,
             upper_bound=upper_bound,
@@ -98,8 +98,16 @@ def create_breaks_values(probs_vec, stratified_by, by):
         decimals = len(str(by).split(".")[-1])
         n_steps = int(np.floor((1.0 / by) + 1e-12))
         breaks = np.round(np.arange(n_steps + 1) * by, decimals=decimals)
-        if probs_vec is not None and breaks[-1] != 1.0:
-            breaks = np.append(breaks, 1.0)
+        if probs_vec is not None:
+            if breaks[-1] != 1.0:
+                breaks = np.append(breaks, 1.0)
+
+            # Public cutoffs follow R's exact seq() values. For internal bin
+            # assignment only, move interior edges one representable float up
+            # so prob == cutoff belongs to the lower bin and is therefore
+            # classified negative, matching R's strict `prob > cutoff` rule.
+            if len(breaks) > 2:
+                breaks[1:-1] = np.nextafter(breaks[1:-1], np.inf)
     return breaks
 
 
