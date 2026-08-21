@@ -149,9 +149,9 @@ def _write_calibration_browser_html(
     output.parent.mkdir(parents=True, exist_ok=True)
     _copy_viz_assets(output.parent)
 
-    spec_json = json.dumps(_calibration_spec_from_curve_list(calibration_curve_list)).replace(
-        "</", "<\\/"
-    )
+    spec_json = json.dumps(
+        _calibration_spec_from_curve_list(calibration_curve_list)
+    ).replace("</", "<\\/")
     html = f"""<!doctype html>
 <html lang=\"en\">
 <head>
