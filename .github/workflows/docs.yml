@@ -93,7 +93,7 @@ jobs:
           grep -q '.Reactable {' performance-table-reactable.html
           grep -q 'Real Positive' performance-table-reactable.html
           mv performance-table-reactable.html great-docs/_site/performance-table-reactable.html
-          cp -R examples/performance_table_reactable_files great-docs/_site/performance-table-reactable_files
+          cp -R examples/performance_table_reactable_files great-docs/_site/performance_table_reactable_files
 
       - name: Generate rtichoke_viz ROC proof
         if: github.event.action != 'closed'
@@ -101,6 +101,13 @@ jobs:
           uv run python examples/rtichoke_viz_roc.py
           mkdir -p great-docs/_site/rtichoke-viz-roc
           cp -R rtichoke_viz_roc_proof/. great-docs/_site/rtichoke-viz-roc/
+
+      - name: Generate rtichoke_viz calibration proof
+        if: github.event.action != 'closed'
+        run: |
+          uv run python examples/rtichoke_viz_calibration.py
+          mkdir -p great-docs/_site/rtichoke-viz-calibration
+          cp -R rtichoke_viz_calibration_proof/. great-docs/_site/rtichoke-viz-calibration/
 
       - name: Deploy PR preview
         uses: rossjrw/pr-preview-action@v1
