@@ -84,6 +84,12 @@ def render_performance_table_great_tables(
         raise ValueError("performance_data must contain exactly one stratification")
     stratified_by = stratifications[0]
 
+    group_label = "Model"
+    if "__group_role" in performance_data.columns:
+        group_roles = performance_data.get_column("__group_role").unique().to_list()
+        if group_roles == ["population"]:
+            group_label = "Population"
+
     context_columns = [
         "fixed_time_horizon",
         "censoring_heuristic",
@@ -106,7 +112,7 @@ def render_performance_table_great_tables(
         [c for c in source_columns if c in performance_data.columns]
     )
     if "reference_group" in data.columns:
-        data = data.rename({"reference_group": "Model"})
+        data = data.rename({"reference_group": group_label})
     if "fixed_time_horizon" in data.columns:
         data = data.rename({"fixed_time_horizon": "Time"})
     if "censoring_heuristic" in data.columns:
@@ -120,13 +126,13 @@ def render_performance_table_great_tables(
     if stratified_by == "probability_threshold":
         data = data.rename({"chosen_cutoff": "Threshold"})
         sort_columns = context_sort + [
-            c for c in ("Threshold", "Model") if c in data.columns
+            c for c in ("Threshold", group_label) if c in data.columns
         ]
     else:
         if "chosen_cutoff" in data.columns:
             data = data.drop("chosen_cutoff")
         sort_columns = context_sort + [
-            c for c in ("ppcr", "Model") if c in data.columns
+            c for c in ("ppcr", group_label) if c in data.columns
         ]
     if sort_columns:
         data = data.sort(sort_columns)
@@ -153,7 +159,7 @@ def render_performance_table_great_tables(
     display_columns = [
         c
         for c in [
-            "Model",
+            group_label,
             "Time",
             "Censoring",
             "Competing Event",
@@ -171,7 +177,7 @@ def render_performance_table_great_tables(
     display = data.select(display_columns)
 
     labels = {
-        "Model": "Model",
+        group_label: group_label,
         "Time": "Time Horizon",
         "Censoring": "Censoring",
         "Competing Event": "Competing Event",
@@ -210,20 +216,20 @@ def render_performance_table_great_tables(
             locations=loc.body(columns="net_benefit"),
         )
 
-    if "Model" in data.columns:
-        models = data.get_column("Model").unique(maintain_order=True).to_list()
-        for index, model in enumerate(models):
+    if group_label in data.columns:
+        groups = data.get_column(group_label).unique(maintain_order=True).to_list()
+        for index, group in enumerate(groups):
             color = color_values[index % len(color_values)]
             rows = [
                 i
-                for i, value in enumerate(data.get_column("Model").to_list())
-                if value == model
+                for i, value in enumerate(data.get_column(group_label).to_list())
+                if value == group
             ]
             table = table.tab_style(
                 style=style.css(
                     f"color:{color};font-weight:600;text-shadow:0 0 0 currentColor;"
                 ),
-                locations=loc.body(columns="Model", rows=rows),
+                locations=loc.body(columns=group_label, rows=rows),
             )
 
     lift_max = float(
