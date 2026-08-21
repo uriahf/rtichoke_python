@@ -54,7 +54,7 @@ def _net_benefit_style(value: float | None, maximum: float) -> dict[str, str]:
     if value is None or not np.isfinite(value) or maximum <= 0:
         return {}
     width = max(-1.0, min(float(value) / maximum, 1.0))
-    position = (0.5 + width / 2) * 100
+    position = (0.5 + width / 2.0) * 100
     if width >= 0:
         background = (
             "linear-gradient(90deg, transparent 50%, lightgreen 50%, "
@@ -95,6 +95,12 @@ def render_performance_table_reactable(
         raise ValueError("performance_data must contain exactly one stratification")
     stratified_by = stratifications[0]
 
+    group_label = "Model"
+    if "__group_role" in performance_data.columns:
+        group_roles = performance_data.get_column("__group_role").unique().to_list()
+        if group_roles == ["population"]:
+            group_label = "Population"
+
     display_columns = [
         "reference_group",
         "fixed_time_horizon",
@@ -118,7 +124,7 @@ def render_performance_table_reactable(
         [c for c in display_columns if c in performance_data.columns]
     )
     rename_map = {
-        "reference_group": "Model",
+        "reference_group": group_label,
         "fixed_time_horizon": "Time",
         "censoring_heuristic": "Censoring",
         "competing_heuristic": "Competing Event",
@@ -131,13 +137,13 @@ def render_performance_table_reactable(
     if stratified_by == "probability_threshold":
         data = data.rename({"chosen_cutoff": "Threshold"})
         sort_columns = context_sort + [
-            c for c in ("Threshold", "Model") if c in data.columns
+            c for c in ("Threshold", group_label) if c in data.columns
         ]
     else:
         if "chosen_cutoff" in data.columns:
             data = data.drop("chosen_cutoff")
         sort_columns = context_sort + [
-            c for c in ("ppcr", "Model") if c in data.columns
+            c for c in ("ppcr", group_label) if c in data.columns
         ]
     if sort_columns:
         data = data.sort(sort_columns)
@@ -150,16 +156,16 @@ def render_performance_table_reactable(
             data.get_column("net_benefit").drop_nulls().abs().max() or 1.0,
         )
 
-    models = (
-        data.get_column("Model").unique(maintain_order=True).to_list()
-        if "Model" in data.columns
+    groups = (
+        data.get_column(group_label).unique(maintain_order=True).to_list()
+        if group_label in data.columns
         else []
     )
     colors = {
-        model: color_values[i % len(color_values)] for i, model in enumerate(models)
+        group: color_values[i % len(color_values)] for i, group in enumerate(groups)
     }
 
-    def model_cell(info: CellInfo):
+    def group_cell(info: CellInfo):
         value = info.value
         color = colors.get(value, "#aaa")
         return html.span(
@@ -239,7 +245,7 @@ def render_performance_table_reactable(
         )
         return html.div(nested.to_widget(), style="padding:16px;")
 
-    columns = [Column(id="Model", cell=model_cell, min_width=120)]
+    columns = [Column(id=group_label, cell=group_cell, min_width=120)]
     if "Time" in data.columns:
         columns.append(
             Column(
