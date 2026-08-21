@@ -90,7 +90,9 @@ def _shared_reference_names():
 def _population_reference_names(populations):
     return {
         "roc": {"random_guess"},
-        "precision recall": {f"random_guess_{population}" for population in populations},
+        "precision recall": {
+            f"random_guess_{population}" for population in populations
+        },
         "gains": {"random_guess"}
         | {f"perfect_model_{population}" for population in populations},
         "lift": {"random_guess"}
@@ -145,7 +147,9 @@ def test_multiple_models_keep_series_labels_colors_and_legends_across_horizons(
         assert all(trace.showlegend is True for trace in series)
         assert sum(trace.visible is True for trace in series) == 1
 
-        cutoff_markers = [trace for trace in fig.data if trace.name == f"{model} @ cutoff"]
+        cutoff_markers = [
+            trace for trace in fig.data if trace.name == f"{model} @ cutoff"
+        ]
         assert len(cutoff_markers) == len(HORIZONS)
         assert all(trace.showlegend is False for trace in cutoff_markers)
 
