@@ -19,6 +19,7 @@ from rtichoke.performance_table_reactable import (
     DEFAULT_COLORS,
     render_performance_table_reactable,
 )
+from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 
 PerformanceTableRenderer = Literal["great_tables", "reactable"]
 
@@ -28,6 +29,26 @@ _DEFAULT_HEURISTICS = [
         "competing_heuristic": "adjusted_as_negative",
     }
 ]
+
+
+def _with_evaluation_group_role(
+    performance_data: pl.DataFrame,
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    times: Union[np.ndarray, Dict[str, np.ndarray], None] = None,
+) -> pl.DataFrame:
+    """Attach transient semantic role metadata for table rendering only."""
+    metadata = _build_evaluation_metadata(
+        probs,
+        reals,
+        np.array([]) if times is None else times,
+    )
+    group_role = (
+        "model"
+        if all(evaluation.model is not None for evaluation in metadata.values())
+        else "population"
+    )
+    return performance_data.with_columns(pl.lit(group_role).alias("__group_role"))
 
 
 def render_performance_table(
@@ -58,6 +79,11 @@ def create_performance_table(
     """Create an R-style rtichoke performance table."""
     performance_data = prepare_performance_data(
         probs=probs, reals=reals, by=by, stratified_by=stratified_by
+    )
+    performance_data = _with_evaluation_group_role(
+        performance_data,
+        probs=probs,
+        reals=reals,
     )
     return render_performance_table(
         performance_data, color_values=color_values, renderer=renderer
@@ -101,6 +127,12 @@ def create_performance_table_times(
         heuristics_sets=heuristics_sets,
         by=by,
         stratified_by=stratified_by,
+    )
+    performance_data = _with_evaluation_group_role(
+        performance_data,
+        probs=probs,
+        reals=reals,
+        times=normalized_times,
     )
     return render_performance_table(
         performance_data, color_values=color_values, renderer=renderer

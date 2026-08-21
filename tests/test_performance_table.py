@@ -3,6 +3,7 @@ import pytest
 from great_tables import GT
 from reactable import Reactable
 
+import rtichoke.performance_table as performance_table_module
 from rtichoke.performance_table_reactable import _bar_style, _net_benefit_style
 
 from rtichoke import (
@@ -25,6 +26,14 @@ def _time_example():
     reals = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
     times = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     return probs, reals, times
+
+
+def _capture_table_data(monkeypatch):
+    monkeypatch.setattr(
+        performance_table_module,
+        "render_performance_table",
+        lambda performance_data, **kwargs: performance_data,
+    )
 
 
 def test_create_performance_table_defaults_to_great_tables():
@@ -60,6 +69,35 @@ def test_create_performance_table_supports_ppcr_stratification():
     )
 
 
+def test_create_performance_table_propagates_model_role(monkeypatch):
+    _capture_table_data(monkeypatch)
+    probs = {
+        "Model A": np.array([0.1, 0.2, 0.8, 0.9]),
+        "Model B": np.array([0.2, 0.3, 0.7, 0.8]),
+    }
+    reals = np.array([0, 0, 1, 1])
+
+    data = performance_table_module.create_performance_table(probs, reals, by=0.25)
+
+    assert data.get_column("__group_role").unique().to_list() == ["model"]
+
+
+def test_create_performance_table_propagates_population_role(monkeypatch):
+    _capture_table_data(monkeypatch)
+    probs = {
+        "Population A": np.array([0.1, 0.2, 0.8, 0.9]),
+        "Population B": np.array([0.2, 0.3, 0.7, 0.8]),
+    }
+    reals = {
+        "Population A": np.array([0, 0, 1, 1]),
+        "Population B": np.array([0, 1, 0, 1]),
+    }
+
+    data = performance_table_module.create_performance_table(probs, reals, by=0.25)
+
+    assert data.get_column("__group_role").unique().to_list() == ["population"]
+
+
 def test_create_performance_table_times_defaults_to_great_tables():
     probs, reals, times = _time_example()
     assert isinstance(
@@ -78,6 +116,65 @@ def test_create_performance_table_times_supports_reactable():
         ),
         Reactable,
     )
+
+
+def test_create_performance_table_times_propagates_model_role(monkeypatch):
+    _capture_table_data(monkeypatch)
+    probs = {
+        "Model A": np.array([0.1, 0.2, 0.8, 0.9]),
+        "Model B": np.array([0.2, 0.3, 0.7, 0.8]),
+    }
+    reals = np.array([0, 0, 1, 1])
+    times = np.array([2.0, 6.0, 3.0, 7.0])
+
+    data = performance_table_module.create_performance_table_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=[5],
+        by=0.25,
+    )
+
+    assert data.get_column("__group_role").unique().to_list() == ["model"]
+
+
+def test_create_performance_table_times_propagates_population_role(monkeypatch):
+    _capture_table_data(monkeypatch)
+    probs = {
+        "Population A": np.array([0.1, 0.2, 0.8, 0.9]),
+        "Population B": np.array([0.2, 0.3, 0.7, 0.8]),
+    }
+    reals = {
+        "Population A": np.array([0, 0, 1, 1]),
+        "Population B": np.array([0, 1, 0, 1]),
+    }
+    times = {
+        "Population A": np.array([2.0, 6.0, 3.0, 7.0]),
+        "Population B": np.array([1.0, 4.0, 6.0, 8.0]),
+    }
+
+    data = performance_table_module.create_performance_table_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=[5],
+        by=0.25,
+    )
+
+    assert data.get_column("__group_role").unique().to_list() == ["population"]
+
+
+def test_prepare_performance_data_times_schema_has_no_transient_group_role():
+    probs, reals, times = _time_example()
+    data = prepare_performance_data_times(
+        probs,
+        reals,
+        times.astype(float),
+        fixed_time_horizons=[5],
+        by=0.1,
+    )
+
+    assert "__group_role" not in data.columns
 
 
 def test_render_performance_table_preserves_multiple_time_horizons():
