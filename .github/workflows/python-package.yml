@@ -31,10 +31,8 @@ jobs:
       - name: Check lint
         run: uv run ruff check .
 
-      - name: Show Ruff formatting
-        run: |
-          uv run ruff format tests/test_time_semantic_characterization.py
-          cat tests/test_time_semantic_characterization.py
+      - name: Check format
+        run: uv run ruff format --check .
 
       - name: Check types
         run: uv run ty check src/rtichoke
