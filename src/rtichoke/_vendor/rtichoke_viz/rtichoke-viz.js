@@ -2691,6 +2691,172 @@ var RtichokeChartSpecSchema = Type.Union([
   title: "rtichoke visualization specification"
 });
 
+// src/spec/v2/common.ts
+var EvaluationSpecSchema = Type.Object({
+  id: Type.String(),
+  model: Type.Optional(Type.String()),
+  population: Type.String(),
+  label: Type.Optional(Type.String())
+});
+var DisplayRoleSchema = Type.Union([
+  Type.Literal("model"),
+  Type.Literal("population"),
+  Type.Literal("evaluation"),
+  Type.Literal("context")
+]);
+var DisplayGroupingSpecSchema = Type.Object({
+  label: Type.String(),
+  group: Type.String(),
+  role: DisplayRoleSchema
+});
+var SeriesSpecSchema = Type.Object({
+  id: Type.String(),
+  evaluationId: Type.String(),
+  horizon: Type.Optional(Type.Number({ minimum: 0 })),
+  display: DisplayGroupingSpecSchema
+});
+var ReferenceGeometrySchema = Type.Object({
+  type: Type.Union([
+    Type.Literal("identity"),
+    Type.Literal("horizontal"),
+    Type.Literal("vertical")
+  ]),
+  value: Type.Optional(Type.Number()),
+  label: Type.Optional(Type.String())
+});
+var GlobalReferenceLineSpecSchema = Type.Intersect([
+  ReferenceGeometrySchema,
+  Type.Object({ scope: Type.Literal("global") })
+]);
+var PopulationReferenceLineSpecSchema = Type.Intersect([
+  ReferenceGeometrySchema,
+  Type.Object({
+    scope: Type.Literal("population"),
+    population: Type.String()
+  })
+]);
+var PopulationHorizonReferenceLineSpecSchema = Type.Intersect([
+  ReferenceGeometrySchema,
+  Type.Object({
+    scope: Type.Literal("population_horizon"),
+    population: Type.String(),
+    horizon: Type.Number({ minimum: 0 })
+  })
+]);
+var ReferenceLineV2SpecSchema = Type.Union([
+  GlobalReferenceLineSpecSchema,
+  PopulationReferenceLineSpecSchema,
+  PopulationHorizonReferenceLineSpecSchema
+]);
+var BaseChartV2SpecSchema = Type.Object({
+  schemaVersion: Type.Literal("2.0"),
+  title: Type.Optional(Type.String()),
+  evaluations: Type.Array(EvaluationSpecSchema),
+  series: Type.Array(SeriesSpecSchema),
+  xAxis: AxisSpecSchema,
+  yAxis: AxisSpecSchema,
+  references: Type.Optional(Type.Array(ReferenceLineV2SpecSchema))
+});
+
+// src/spec/v2/calibration.ts
+var CalibrationV2DatumSchema = Type.Object({
+  seriesId: Type.String(),
+  predicted: Type.Number({ minimum: 0, maximum: 1 }),
+  observed: Type.Number({ minimum: 0, maximum: 1 }),
+  method: Type.Union([Type.Literal("discrete"), Type.Literal("smooth")]),
+  events: Type.Optional(Type.Number({ minimum: 0 })),
+  total: Type.Optional(Type.Number({ minimum: 0 }))
+});
+var CalibrationV2DistributionDatumSchema = Type.Object({
+  seriesId: Type.String(),
+  midpoint: Type.Number({ minimum: 0, maximum: 1 }),
+  count: Type.Number({ minimum: 0 }),
+  binWidth: Type.Number({ exclusiveMinimum: 0, maximum: 1 })
+});
+var CalibrationV2SpecSchema = Type.Intersect([
+  BaseChartV2SpecSchema,
+  Type.Object({
+    type: Type.Literal("calibration"),
+    data: Type.Array(CalibrationV2DatumSchema),
+    distribution: Type.Optional(Type.Array(CalibrationV2DistributionDatumSchema)),
+    x: Type.Literal("predicted"),
+    y: Type.Literal("observed")
+  })
+]);
+
+// src/spec/v2/precision_recall.ts
+var PrecisionRecallV2DatumSchema = Type.Object({
+  seriesId: Type.String(),
+  cutoff: Type.Number(),
+  sensitivity: Type.Number({ minimum: 0, maximum: 1 }),
+  ppv: Type.Number({ minimum: 0, maximum: 1 })
+});
+var PrecisionRecallV2SpecSchema = Type.Intersect([
+  BaseChartV2SpecSchema,
+  Type.Object({
+    type: Type.Literal("precision_recall"),
+    data: Type.Array(PrecisionRecallV2DatumSchema),
+    x: Type.Literal("sensitivity"),
+    y: Type.Literal("ppv")
+  })
+]);
+
+// src/spec/v2/roc.ts
+var RocV2DatumSchema = Type.Object({
+  seriesId: Type.String(),
+  cutoff: Type.Number(),
+  sensitivity: Type.Number({ minimum: 0, maximum: 1 }),
+  specificity: Type.Number({ minimum: 0, maximum: 1 })
+});
+var RocV2SpecSchema = Type.Intersect([
+  BaseChartV2SpecSchema,
+  Type.Object({
+    type: Type.Literal("roc"),
+    data: Type.Array(RocV2DatumSchema),
+    x: Type.Literal("false_positive_rate"),
+    y: Type.Literal("sensitivity")
+  })
+]);
+
+// src/spec/v2/chart.ts
+var RtichokeChartSpecV2Schema = Type.Union(
+  [RocV2SpecSchema, CalibrationV2SpecSchema, PrecisionRecallV2SpecSchema],
+  {
+    $id: "https://rtichoke.dev/schema/viz/2.0.json",
+    title: "rtichoke visualization specification v2"
+  }
+);
+
+// src/spec/v2/validate.ts
+function assertV2ReferentialIntegrity(spec) {
+  const evaluationIds = new Set(spec.evaluations.map((evaluation) => evaluation.id));
+  const seriesIds = /* @__PURE__ */ new Set();
+  if (evaluationIds.size !== spec.evaluations.length) {
+    throw new Error("duplicate evaluation id");
+  }
+  for (const series of spec.series) {
+    if (seriesIds.has(series.id)) {
+      throw new Error(`duplicate series id: ${series.id}`);
+    }
+    seriesIds.add(series.id);
+    if (!evaluationIds.has(series.evaluationId)) {
+      throw new Error(`unknown evaluation id: ${series.evaluationId}`);
+    }
+  }
+  for (const datum2 of spec.data) {
+    if (!seriesIds.has(datum2.seriesId)) {
+      throw new Error(`unknown series id: ${datum2.seriesId}`);
+    }
+  }
+  if (spec.type === "calibration") {
+    for (const datum2 of spec.distribution ?? []) {
+      if (!seriesIds.has(datum2.seriesId)) {
+        throw new Error(`unknown distribution series id: ${datum2.seriesId}`);
+      }
+    }
+  }
+}
+
 // src/adapters/roc.ts
 function buildRocSpec(data) {
   return {
@@ -2755,6 +2921,103 @@ function calibrationSpecFromRtichokeRows(rows, method, distributionRows) {
     xAxis: { label: "Predicted probability", domain: [0, 1] },
     yAxis: { label: "Observed probability", domain: [0, 1] },
     references: [{ type: "identity" }]
+  };
+}
+
+// src/adapters/v2.ts
+function identityForGroup(group2, context) {
+  const population = context.role === "model" ? context.population ?? "population" : group2;
+  const evaluationId = `evaluation:${group2}`;
+  return {
+    evaluation: {
+      id: evaluationId,
+      ...context.role === "model" ? { model: group2 } : {},
+      population,
+      label: group2
+    },
+    series: {
+      id: `series:${group2}`,
+      evaluationId,
+      display: { label: group2, group: group2, role: context.role }
+    }
+  };
+}
+function identities(groups2, context) {
+  const unique = [...new Set(groups2)];
+  return unique.map((group2) => identityForGroup(group2, context));
+}
+function rocV2SpecFromRtichokeR(rows, population = "population") {
+  const byGroup = identities(rows.map((row) => row.model), { role: "model", population });
+  return {
+    schemaVersion: "2.0",
+    type: "roc",
+    evaluations: byGroup.map((item) => item.evaluation),
+    series: byGroup.map((item) => item.series),
+    data: rows.map((row) => ({
+      seriesId: `series:${row.model}`,
+      cutoff: row.probability_threshold,
+      sensitivity: row.sensitivity,
+      specificity: row.specificity
+    })),
+    x: "false_positive_rate",
+    y: "sensitivity",
+    xAxis: { label: "1 - Specificity", domain: [0, 1] },
+    yAxis: { label: "Sensitivity", domain: [0, 1] },
+    references: [{ type: "identity", scope: "global", label: "Random Guess" }]
+  };
+}
+function rocV2SpecFromRtichokePython(rows, context) {
+  const byGroup = identities(rows.map((row) => row.reference_group), context);
+  return {
+    schemaVersion: "2.0",
+    type: "roc",
+    evaluations: byGroup.map((item) => item.evaluation),
+    series: byGroup.map((item) => item.series),
+    data: rows.map((row) => ({
+      seriesId: `series:${row.reference_group}`,
+      cutoff: row.chosen_cutoff,
+      sensitivity: row.sensitivity,
+      specificity: row.specificity
+    })),
+    x: "false_positive_rate",
+    y: "sensitivity",
+    xAxis: { label: "1 - Specificity", domain: [0, 1] },
+    yAxis: { label: "Sensitivity", domain: [0, 1] },
+    references: [{ type: "identity", scope: "global", label: "Random Guess" }]
+  };
+}
+function calibrationV2SpecFromRtichokeRows(rows, method, context, distributionRows) {
+  const byGroup = identities(rows.map((row) => row.reference_group), context);
+  return {
+    schemaVersion: "2.0",
+    type: "calibration",
+    evaluations: byGroup.map((item) => item.evaluation),
+    series: byGroup.map((item) => item.series),
+    data: rows.map((row) => {
+      const events = row.sum_reals ?? row.n_reals;
+      const total = row.total_obs ?? row.n;
+      return {
+        seriesId: `series:${row.reference_group}`,
+        predicted: row.x,
+        observed: row.y,
+        method,
+        ...method === "discrete" && events !== void 0 ? { events } : {},
+        ...method === "discrete" && total !== void 0 ? { total } : {}
+      };
+    }),
+    ...distributionRows ? {
+      distribution: distributionRows.map((row) => ({
+        seriesId: `series:${row.reference_group}`,
+        midpoint: row.mids,
+        count: row.counts,
+        binWidth: 0.01
+      }))
+    } : {},
+    x: "predicted",
+    y: "observed",
+    xAxis: { label: "Predicted probability", domain: [0, 1] },
+    yAxis: { label: "Observed probability", domain: [0, 1] },
+    references: [{ type: "identity", scope: "global", label: "Perfectly Calibrated" }]
   };
 }
 
@@ -18322,13 +18585,206 @@ function renderRoc(spec) {
     marks: marks2
   });
 }
+
+// src/render/v2.ts
+var RTICHOKE_COLORS3 = [
+  "#1b9e77",
+  "#d95f02",
+  "#7570b3",
+  "#e7298a",
+  "#07004D",
+  "#E6AB02",
+  "#FE5F55",
+  "#54494B",
+  "#006E90",
+  "#BC96E6"
+];
+var BASE_STYLE2 = {
+  background: "transparent",
+  color: "#222",
+  fontFamily: "Arial, Helvetica, sans-serif",
+  fontSize: "13px"
+};
+function displayBySeries(spec) {
+  return new Map(spec.series.map((series) => [series.id, series.display]));
+}
+function seriesRenderData(spec, data) {
+  const displays = displayBySeries(spec);
+  return data.map((datum2) => ({
+    ...datum2,
+    group: displays.get(datum2.seriesId).group,
+    label: displays.get(datum2.seriesId).label
+  }));
+}
+function renderRocV2(spec) {
+  assertV2ReferentialIntegrity(spec);
+  const groups2 = [...new Set(spec.series.map((series) => series.display.group))];
+  const showLegend = groups2.length > 1;
+  const data = seriesRenderData(spec, spec.data).map((datum2) => ({
+    ...datum2,
+    false_positive_rate: 1 - datum2.specificity
+  }));
+  const marks2 = [];
+  if (spec.references?.some((reference) => reference.type === "identity")) {
+    marks2.push(line([{ x: 0, y: 0 }, { x: 1, y: 1 }], {
+      x: "x",
+      y: "y",
+      stroke: "#BEBEBE",
+      strokeWidth: 2
+    }));
+  }
+  marks2.push(line(data, {
+    x: "false_positive_rate",
+    y: "sensitivity",
+    z: "seriesId",
+    stroke: "group",
+    strokeWidth: 2,
+    tip: true
+  }));
+  return plot({
+    width: 600,
+    height: 600,
+    marginLeft: 64,
+    marginBottom: 56,
+    style: BASE_STYLE2,
+    x: { label: spec.xAxis.label, domain: spec.xAxis.domain, grid: false, ticks: 6 },
+    y: { label: spec.yAxis.label, domain: spec.yAxis.domain, grid: false, ticks: 6 },
+    color: { legend: showLegend, range: showLegend ? RTICHOKE_COLORS3 : ["#000000"] },
+    marks: marks2
+  });
+}
+function renderCalibrationV2(spec) {
+  assertV2ReferentialIntegrity(spec);
+  const groups2 = [...new Set(spec.series.map((series) => series.display.group))];
+  const showLegend = groups2.length > 1;
+  const colorRange = showLegend ? RTICHOKE_COLORS3 : ["#000000"];
+  const data = seriesRenderData(spec, spec.data);
+  const marks2 = [];
+  if (spec.references?.some((reference) => reference.type === "identity")) {
+    marks2.push(line([{ x: 0, y: 0 }, { x: 1, y: 1 }], {
+      x: "x",
+      y: "y",
+      stroke: "#BEBEBE",
+      strokeWidth: 2,
+      strokeDasharray: "4,4"
+    }));
+  }
+  marks2.push(line(data, {
+    x: "predicted",
+    y: "observed",
+    z: "seriesId",
+    stroke: "group",
+    strokeWidth: 2,
+    tip: true
+  }));
+  const discrete = data.filter((datum2) => datum2.method === "discrete");
+  if (discrete.length > 0) {
+    marks2.push(dot(discrete, {
+      x: "predicted",
+      y: "observed",
+      fill: "group",
+      stroke: "white",
+      strokeWidth: 1.5,
+      r: 5,
+      tip: true
+    }));
+  }
+  const hasDistribution = (spec.distribution?.length ?? 0) > 0;
+  const calibration = plot({
+    width: 600,
+    height: hasDistribution ? 480 : 600,
+    marginLeft: 64,
+    marginBottom: hasDistribution ? 16 : 56,
+    style: BASE_STYLE2,
+    x: { label: hasDistribution ? null : spec.xAxis.label, domain: spec.xAxis.domain, grid: false, ticks: 6, axis: hasDistribution ? null : "bottom" },
+    y: { label: spec.yAxis.label, domain: spec.yAxis.domain, grid: false, ticks: 6 },
+    color: { legend: showLegend, range: colorRange },
+    marks: marks2
+  });
+  if (!hasDistribution || !spec.distribution) return calibration;
+  const distribution = seriesRenderData(spec, spec.distribution);
+  const histogram = plot({
+    width: 600,
+    height: 120,
+    marginLeft: 64,
+    marginTop: 0,
+    marginBottom: 48,
+    style: BASE_STYLE2,
+    x: { label: spec.xAxis.label, domain: spec.xAxis.domain, grid: false, ticks: 6 },
+    y: { label: null, grid: false, ticks: 3 },
+    color: { legend: false, range: colorRange },
+    marks: [rectY(distribution, {
+      x1: (datum2) => datum2.midpoint - datum2.binWidth / 2,
+      x2: (datum2) => datum2.midpoint + datum2.binWidth / 2,
+      y: "count",
+      fill: "group",
+      fillOpacity: 1 / Math.max(groups2.length, 1),
+      tip: true
+    })]
+  });
+  const container = document.createElement("div");
+  container.style.width = "600px";
+  container.style.maxWidth = "100%";
+  container.append(calibration, histogram);
+  return container;
+}
+function renderPrecisionRecallV2(spec) {
+  assertV2ReferentialIntegrity(spec);
+  const groups2 = [...new Set(spec.series.map((series) => series.display.group))];
+  const showLegend = groups2.length > 1;
+  const data = seriesRenderData(spec, spec.data);
+  const marks2 = [];
+  for (const reference of spec.references ?? []) {
+    if (reference.type !== "horizontal" || reference.value === void 0) continue;
+    marks2.push(ruleY([reference.value], {
+      stroke: "#BEBEBE",
+      strokeWidth: 2,
+      strokeDasharray: "4,4"
+    }));
+  }
+  marks2.push(line(data, {
+    x: "sensitivity",
+    y: "ppv",
+    z: "seriesId",
+    stroke: "group",
+    strokeWidth: 2,
+    tip: true
+  }));
+  return plot({
+    width: 600,
+    height: 600,
+    marginLeft: 64,
+    marginBottom: 56,
+    style: BASE_STYLE2,
+    x: { label: spec.xAxis.label, domain: spec.xAxis.domain, grid: false, ticks: 6 },
+    y: { label: spec.yAxis.label, domain: spec.yAxis.domain, grid: false, ticks: 6 },
+    color: { legend: showLegend, range: showLegend ? RTICHOKE_COLORS3 : ["#000000"] },
+    marks: marks2
+  });
+}
 export {
   CalibrationSpecSchema,
+  CalibrationV2SpecSchema,
+  DisplayGroupingSpecSchema,
+  DisplayRoleSchema,
+  EvaluationSpecSchema,
+  PrecisionRecallV2SpecSchema,
+  ReferenceLineV2SpecSchema,
   RocSpecSchema,
+  RocV2SpecSchema,
   RtichokeChartSpecSchema,
+  RtichokeChartSpecV2Schema,
+  SeriesSpecSchema,
+  assertV2ReferentialIntegrity,
   calibrationSpecFromRtichokeRows,
+  calibrationV2SpecFromRtichokeRows,
   renderCalibration,
+  renderCalibrationV2,
+  renderPrecisionRecallV2,
   renderRoc,
+  renderRocV2,
   rocSpecFromRtichokePython,
-  rocSpecFromRtichokeR
+  rocSpecFromRtichokeR,
+  rocV2SpecFromRtichokePython,
+  rocV2SpecFromRtichokeR
 };
