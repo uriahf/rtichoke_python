@@ -32,7 +32,7 @@ jobs:
         run: uv run ruff check .
 
       - name: Check format
-        run: uv run ruff format --check .
+        run: uv run ruff format --diff .
 
       - name: Check types
         run: uv run ty check src/rtichoke
