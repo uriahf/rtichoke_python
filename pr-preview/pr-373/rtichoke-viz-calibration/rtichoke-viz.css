@@ -2,6 +2,7 @@
   overflow-x: auto;
   min-height: 600px;
 }
+
 .rtichoke-viz-chart > * {
   display: block;
 }
