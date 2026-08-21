@@ -13,7 +13,10 @@ from rtichoke.processing.plotly_helper_functions import (
     _create_reference_lines_data,
     _check_if_multiple_populations_are_being_validated_times,
 )
-from rtichoke.processing.time_reference_lines import _apply_color_values_times
+from rtichoke.processing.time_reference_lines import (
+    _apply_color_values_times,
+    _create_rtichoke_plotly_curve_times_reference_safe,
+)
 from rtichoke.performance_data.performance_data_times import (
     prepare_performance_data_times,
 )
@@ -237,7 +240,7 @@ def create_gains_curve_times(
     Figure
         A Plotly ``Figure`` object for the time-dependent Gains curve.
     """
-    performance_data = prepare_performance_data_times(
+    return _create_rtichoke_plotly_curve_times_reference_safe(
         probs,
         reals,
         times,
@@ -245,16 +248,7 @@ def create_gains_curve_times(
         heuristics_sets=heuristics_sets,
         by=by,
         stratified_by=stratified_by,
-    )
-
-    curve_list = _create_rtichoke_curve_list_times(
-        performance_data,
-        stratified_by=stratified_by[0],
         size=size,
-        color_value=color_values,
+        color_values=color_values,
         curve="gains",
     )
-    curve_list = _apply_color_values_times(curve_list, color_values)
-    curve_list = _replace_gains_reference_data_times(curve_list, performance_data)
-
-    return _create_plotly_curve_times(curve_list)
