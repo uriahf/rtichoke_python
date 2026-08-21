@@ -3,6 +3,59 @@
 This changelog is generated automatically from [GitHub Releases](https://github.com/uriahf/rtichoke_python/releases).
 
 
+# v0.1.36
+
+*2026-08-21* · [GitHub](https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.36)
+
+
+## What's Changed
+
+- Integrate smoothstate secondary Cox smoothing by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/315
+- Use smoothstate from PyPI by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/316
+- Trim unused runtime dependencies by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/317
+- Remove legacy lifelines Cox smoothing by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/318
+- Use smoothstate LOWESS and drop statsmodels by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/319
+- Add runtime dependency benchmark by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/321
+- Fix LOWESS runtime benchmark backend by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/322
+- Remove pandas as direct runtime dependency by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/324
+- Fix documentation preview concurrency by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/326
+- Fix time-dependent gains perfect reference by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/325
+- test: lock dcurves parity for issue [\#127](https://github.com/uriahf/rtichoke_python/issues/127) by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/327
+- Fix time-dependent reference prevalence by horizon by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/328
+- Default and validate time calibration heuristics by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/301
+- Honor size in time-dependent curves by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/330
+- Order time-dependent performance data for cross-group comparison by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/331
+- Validate time-dependent input alignment by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/332
+- Match R cutoff-grid endpoint behavior by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/333
+- Honor custom colors in time-dependent curves by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/334
+- Honor custom colors in binary curves by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/335
+- Keep top-level public exports in sync by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/336
+- Match R cutoff equality semantics by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/337
+- Stabilize binary performance-data column order by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/338
+- Stabilize time-dependent performance-data column order by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/339
+- Align binary outcome dictionaries by population key by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/340
+- Validate probability and outcome domains by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/341
+- Validate calibration probability and outcome domains by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/342
+- Audit combined stratification isolation by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/343
+- Audit binary and time reference-line isolation by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/344
+- Enforce Ruff lint in package CI by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/345
+- Establish Ruff format baseline by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/346
+- Probe ty readiness in CI by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/347
+- Clear ty baseline and enforce type checking by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/348
+- Test supported Python versions in CI by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/349
+- Remove duplicate dev dependencies by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/350
+- Support Plotly 6 by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/351
+- Replace deprecated Polars count by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/352
+- Probe Python 3.14 compatibility by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/353
+- Refresh lockfile for Plotly 6 by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/354
+- Update pre-commit tooling versions by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/355
+- Upgrade Great Docs to 0.15.0 by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/356
+- Improve package metadata by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/357
+- Release rtichoke 0.1.36 by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/359
+
+**Full Changelog**: [https://github.com/uriahf/rtichoke_python/compare/v0.1.35…v0.1.36](https://github.com/uriahf/rtichoke_python/compare/v0.1.35...v0.1.36)
+
+
 # v0.1.35
 
 *2026-08-18* · [GitHub](https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.35)

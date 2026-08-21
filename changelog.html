@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">rtichoke <span class="version-badge" title="Released 2026-08-18">v0.1.35</span></span>
+    <span class="navbar-title">rtichoke <span class="version-badge" title="Released 2026-08-21">v0.1.36</span></span>
     </a>
   </div>
             <div id="quarto-search" class=""></div>
@@ -188,26 +188,30 @@ document.addEventListener('DOMContentLoaded', () => {
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#v0.1.35" id="toc-v0.1.35" class="nav-link active" data-scroll-target="#v0.1.35">v0.1.35</a>
+  <li><a href="#v0.1.36" id="toc-v0.1.36" class="nav-link active" data-scroll-target="#v0.1.36">v0.1.36</a>
   <ul class="collapse">
   <li><a href="#whats-changed" id="toc-whats-changed" class="nav-link" data-scroll-target="#whats-changed">What’s Changed</a></li>
   </ul></li>
-  <li><a href="#v0.1.34" id="toc-v0.1.34" class="nav-link" data-scroll-target="#v0.1.34">v0.1.34</a>
+  <li><a href="#v0.1.35" id="toc-v0.1.35" class="nav-link" data-scroll-target="#v0.1.35">v0.1.35</a>
   <ul class="collapse">
   <li><a href="#whats-changed-1" id="toc-whats-changed-1" class="nav-link" data-scroll-target="#whats-changed-1">What’s Changed</a></li>
   </ul></li>
-  <li><a href="#v0.1.33" id="toc-v0.1.33" class="nav-link" data-scroll-target="#v0.1.33">v0.1.33</a>
+  <li><a href="#v0.1.34" id="toc-v0.1.34" class="nav-link" data-scroll-target="#v0.1.34">v0.1.34</a>
   <ul class="collapse">
   <li><a href="#whats-changed-2" id="toc-whats-changed-2" class="nav-link" data-scroll-target="#whats-changed-2">What’s Changed</a></li>
+  </ul></li>
+  <li><a href="#v0.1.33" id="toc-v0.1.33" class="nav-link" data-scroll-target="#v0.1.33">v0.1.33</a>
+  <ul class="collapse">
+  <li><a href="#whats-changed-3" id="toc-whats-changed-3" class="nav-link" data-scroll-target="#whats-changed-3">What’s Changed</a></li>
   </ul></li>
   <li><a href="#v0.1.32" id="toc-v0.1.32" class="nav-link" data-scroll-target="#v0.1.32">v0.1.32</a></li>
   <li><a href="#v0.1.30" id="toc-v0.1.30" class="nav-link" data-scroll-target="#v0.1.30">v0.1.30</a>
   <ul class="collapse">
-  <li><a href="#whats-changed-3" id="toc-whats-changed-3" class="nav-link" data-scroll-target="#whats-changed-3">What’s Changed</a></li>
+  <li><a href="#whats-changed-4" id="toc-whats-changed-4" class="nav-link" data-scroll-target="#whats-changed-4">What’s Changed</a></li>
   </ul></li>
   <li><a href="#v0.1.29" id="toc-v0.1.29" class="nav-link" data-scroll-target="#v0.1.29">v0.1.29</a>
   <ul class="collapse">
-  <li><a href="#whats-changed-4" id="toc-whats-changed-4" class="nav-link" data-scroll-target="#whats-changed-4">What’s Changed</a></li>
+  <li><a href="#whats-changed-5" id="toc-whats-changed-5" class="nav-link" data-scroll-target="#whats-changed-5">What’s Changed</a></li>
   <li><a href="#new-contributors" id="toc-new-contributors" class="nav-link" data-scroll-target="#new-contributors">New Contributors</a></li>
   </ul></li>
   </ul>
@@ -236,11 +240,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <p>This changelog is generated automatically from <a href="https://github.com/uriahf/rtichoke_python/releases">GitHub Releases</a>.</p>
+<section id="v0.1.36" class="level1 changelog-version">
+<h1 class="changelog-version">v0.1.36</h1>
+<p><em>2026-08-21</em> · <a href="https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.36">GitHub</a></p>
+<section id="whats-changed" class="level2">
+<h2 class="anchored" data-anchor-id="whats-changed">What’s Changed</h2>
+<ul>
+<li>Integrate smoothstate secondary Cox smoothing by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/315</li>
+<li>Use smoothstate from PyPI by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/316</li>
+<li>Trim unused runtime dependencies by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/317</li>
+<li>Remove legacy lifelines Cox smoothing by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/318</li>
+<li>Use smoothstate LOWESS and drop statsmodels by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/319</li>
+<li>Add runtime dependency benchmark by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/321</li>
+<li>Fix LOWESS runtime benchmark backend by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/322</li>
+<li>Remove pandas as direct runtime dependency by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/324</li>
+<li>Fix documentation preview concurrency by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/326</li>
+<li>Fix time-dependent gains perfect reference by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/325</li>
+<li>test: lock dcurves parity for issue <a href="https://github.com/uriahf/rtichoke_python/issues/127">#127</a> by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/327</li>
+<li>Fix time-dependent reference prevalence by horizon by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/328</li>
+<li>Default and validate time calibration heuristics by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/301</li>
+<li>Honor size in time-dependent curves by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/330</li>
+<li>Order time-dependent performance data for cross-group comparison by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/331</li>
+<li>Validate time-dependent input alignment by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/332</li>
+<li>Match R cutoff-grid endpoint behavior by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/333</li>
+<li>Honor custom colors in time-dependent curves by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/334</li>
+<li>Honor custom colors in binary curves by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/335</li>
+<li>Keep top-level public exports in sync by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/336</li>
+<li>Match R cutoff equality semantics by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/337</li>
+<li>Stabilize binary performance-data column order by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/338</li>
+<li>Stabilize time-dependent performance-data column order by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/339</li>
+<li>Align binary outcome dictionaries by population key by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/340</li>
+<li>Validate probability and outcome domains by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/341</li>
+<li>Validate calibration probability and outcome domains by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/342</li>
+<li>Audit combined stratification isolation by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/343</li>
+<li>Audit binary and time reference-line isolation by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/344</li>
+<li>Enforce Ruff lint in package CI by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/345</li>
+<li>Establish Ruff format baseline by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/346</li>
+<li>Probe ty readiness in CI by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/347</li>
+<li>Clear ty baseline and enforce type checking by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/348</li>
+<li>Test supported Python versions in CI by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/349</li>
+<li>Remove duplicate dev dependencies by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/350</li>
+<li>Support Plotly 6 by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/351</li>
+<li>Replace deprecated Polars count by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/352</li>
+<li>Probe Python 3.14 compatibility by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/353</li>
+<li>Refresh lockfile for Plotly 6 by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/354</li>
+<li>Update pre-commit tooling versions by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/355</li>
+<li>Upgrade Great Docs to 0.15.0 by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/356</li>
+<li>Improve package metadata by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/357</li>
+<li>Release rtichoke 0.1.36 by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/359</li>
+</ul>
+<p><strong>Full Changelog</strong>: <a href="https://github.com/uriahf/rtichoke_python/compare/v0.1.35...v0.1.36">https://github.com/uriahf/rtichoke_python/compare/v0.1.35…v0.1.36</a></p>
+</section>
+</section>
 <section id="v0.1.35" class="level1 changelog-version">
 <h1 class="changelog-version">v0.1.35</h1>
 <p><em>2026-08-18</em> · <a href="https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.35">GitHub</a></p>
-<section id="whats-changed" class="level2">
-<h2 class="anchored" data-anchor-id="whats-changed">What’s Changed</h2>
+<section id="whats-changed-1" class="level2">
+<h2 class="anchored" data-anchor-id="whats-changed-1">What’s Changed</h2>
 <ul>
 <li>Clamp calibration zoom to probability bounds by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/312</li>
 <li>Improve interactive calibration panel geometry by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/313</li>
@@ -251,8 +307,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <section id="v0.1.34" class="level1 changelog-version">
 <h1 class="changelog-version">v0.1.34</h1>
 <p><em>2026-08-18</em> · <a href="https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.34">GitHub</a></p>
-<section id="whats-changed-1" class="level2">
-<h2 class="anchored" data-anchor-id="whats-changed-1">What’s Changed</h2>
+<section id="whats-changed-2" class="level2">
+<h2 class="anchored" data-anchor-id="whats-changed-2">What’s Changed</h2>
 <ul>
 <li>feat: add changelog entry for v0.1.33 by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/310</li>
 <li>Guarantee square interactive calibration panels by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/311</li>
@@ -263,8 +319,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <section id="v0.1.33" class="level1 changelog-version">
 <h1 class="changelog-version">v0.1.33</h1>
 <p><em>2026-08-17</em> · <a href="https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.33">GitHub</a></p>
-<section id="whats-changed-2" class="level2">
-<h2 class="anchored" data-anchor-id="whats-changed-2">What’s Changed</h2>
+<section id="whats-changed-3" class="level2">
+<h2 class="anchored" data-anchor-id="whats-changed-3">What’s Changed</h2>
 <ul>
 <li>Jules 11048813694386596407 e7f2a3f8 by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/306</li>
 <li>Extend smooth_method=“secondary_cox” with 3-knot Restricted Cubic Splines by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/308</li>
@@ -280,8 +336,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <section id="v0.1.30" class="level1 changelog-version">
 <h1 class="changelog-version">v0.1.30</h1>
 <p><em>2026-08-12</em> · <a href="https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.30">GitHub</a></p>
-<section id="whats-changed-3" class="level2">
-<h2 class="anchored" data-anchor-id="whats-changed-3">What’s Changed</h2>
+<section id="whats-changed-4" class="level2">
+<h2 class="anchored" data-anchor-id="whats-changed-4">What’s Changed</h2>
 <ul>
 <li>Allow adjusted calibration when censoring is absent by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/297</li>
 </ul>
@@ -291,8 +347,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <section id="v0.1.29" class="level1 changelog-version">
 <h1 class="changelog-version">v0.1.29</h1>
 <p><em>2026-08-12</em> · <a href="https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.29">GitHub</a></p>
-<section id="whats-changed-4" class="level2">
-<h2 class="anchored" data-anchor-id="whats-changed-4">What’s Changed</h2>
+<section id="whats-changed-5" class="level2">
+<h2 class="anchored" data-anchor-id="whats-changed-5">What’s Changed</h2>
 <ul>
 <li>65 create a clean marimo version of walkthrough the aj estimateqmd by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/84</li>
 <li>build: fix requires-python to support &gt;=3.9 by <a href="https://github.com/uriahf"><span class="citation" data-cites="uriahf">@uriahf</span></a> in https://github.com/uriahf/rtichoke_python/pull/86</li>
