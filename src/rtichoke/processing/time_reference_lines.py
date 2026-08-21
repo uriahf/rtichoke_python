@@ -125,9 +125,9 @@ def _create_rtichoke_plotly_curve_times_reference_safe(
     curve_list = _apply_color_values_times(curve_list, color_values)
 
     evaluation_metadata = _build_evaluation_metadata(probs, reals, times)
-    multiple_populations = len(
-        {metadata.population for metadata in evaluation_metadata.values()}
-    ) > 1
+    multiple_populations = (
+        len({metadata.population for metadata in evaluation_metadata.values()}) > 1
+    )
 
     return _create_plotly_curve_times(
         _replace_reference_data_times(
