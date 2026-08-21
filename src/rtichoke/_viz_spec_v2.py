@@ -54,10 +54,12 @@ def _roc_v2_spec_from_performance_data(
 
     ordered_groups = [group for group in evaluation_metadata if group in row_groups]
     evaluation_ids = {
-        group: f"evaluation-{index}" for index, group in enumerate(ordered_groups, start=1)
+        group: f"evaluation-{index}"
+        for index, group in enumerate(ordered_groups, start=1)
     }
     series_ids = {
-        group: f"series-{index}" for index, group in enumerate(ordered_groups, start=1)
+        group: f"series-{index}"
+        for index, group in enumerate(ordered_groups, start=1)
     }
 
     evaluations: list[dict[str, object]] = []
