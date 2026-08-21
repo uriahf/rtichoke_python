@@ -36,9 +36,7 @@ def _roc_v2_spec_from_performance_data(
     missing = _REQUIRED_ROC_COLUMNS.difference(performance_data.columns)
     if missing:
         missing_columns = ", ".join(sorted(missing))
-        raise ValueError(
-            f"ROC performance data is missing columns: {missing_columns}"
-        )
+        raise ValueError(f"ROC performance data is missing columns: {missing_columns}")
 
     rows = performance_data.select(
         "reference_group",
