@@ -36,7 +36,9 @@ def _roc_v2_spec_from_performance_data(
     missing = _REQUIRED_ROC_COLUMNS.difference(performance_data.columns)
     if missing:
         missing_columns = ", ".join(sorted(missing))
-        raise ValueError(f"ROC performance data is missing columns: {missing_columns}")
+        raise ValueError(
+            f"ROC performance data is missing columns: {missing_columns}"
+        )
 
     rows = performance_data.select(
         "reference_group",
@@ -50,7 +52,9 @@ def _roc_v2_spec_from_performance_data(
     missing_metadata = row_groups.difference(metadata_groups)
     if missing_metadata:
         groups = ", ".join(sorted(missing_metadata))
-        raise ValueError(f"ROC performance rows are missing evaluation metadata: {groups}")
+        raise ValueError(
+            f"ROC performance rows are missing evaluation metadata: {groups}"
+        )
 
     ordered_groups = [group for group in evaluation_metadata if group in row_groups]
     evaluation_ids = {
