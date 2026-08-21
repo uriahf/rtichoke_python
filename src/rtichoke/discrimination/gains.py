@@ -8,17 +8,11 @@ from rtichoke.processing.binary_color_values import _apply_color_values_binary
 from rtichoke.processing.plotly_helper_functions import (
     _create_rtichoke_plotly_curve_binary,
     _plot_rtichoke_curve_binary,
-    _create_rtichoke_curve_list_times,
-    _create_plotly_curve_times,
     _create_reference_lines_data,
     _check_if_multiple_populations_are_being_validated_times,
 )
 from rtichoke.processing.time_reference_lines import (
-    _apply_color_values_times,
     _create_rtichoke_plotly_curve_times_reference_safe,
-)
-from rtichoke.performance_data.performance_data_times import (
-    prepare_performance_data_times,
 )
 import numpy as np
 import polars as pl
