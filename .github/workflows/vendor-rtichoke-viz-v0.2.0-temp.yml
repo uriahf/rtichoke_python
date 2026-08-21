@@ -1,0 +1,78 @@
+name: Temporary vendor rtichoke_viz v0.2.0
+
+on:
+  push:
+    branches:
+      - chore/vendor-rtichoke-viz-v0.2.0
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/vendor-rtichoke-viz-v0.2.0
+
+      - name: Download and verify immutable release
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG='v0.2.0'
+          SOURCE_COMMIT='45dc109a6a0679d0f8f3f9452d8de9306a89b906'
+          ARCHIVE='rtichoke-viz-0.2.0.tar.gz'
+          SHA256='3861277c01b3983f8b344a9ee0237c7d09fd0ba4c3d1e0cce489962e7b559d9f'
+          BASE_URL="https://github.com/uriahf/rtichoke_viz/releases/download/${TAG}"
+          TMP="$(mktemp -d)"
+          trap 'rm -rf "$TMP"' EXIT
+
+          curl -fL "${BASE_URL}/${ARCHIVE}" -o "${TMP}/${ARCHIVE}"
+          curl -fL "${BASE_URL}/${ARCHIVE}.sha256" -o "${TMP}/${ARCHIVE}.sha256"
+          PUBLISHED="$(awk '{print $1}' "${TMP}/${ARCHIVE}.sha256")"
+          ACTUAL="$(sha256sum "${TMP}/${ARCHIVE}" | awk '{print $1}')"
+          test "${ACTUAL}" = "${PUBLISHED}"
+          test "${ACTUAL}" = "${SHA256}"
+
+          tar -C "${TMP}" -xzf "${TMP}/${ARCHIVE}"
+          BUNDLE="${TMP}/rtichoke-viz-0.2.0"
+          test -s "${BUNDLE}/rtichoke-viz.js"
+          test -s "${BUNDLE}/rtichoke-viz.css"
+          test -s "${BUNDLE}/rtichoke-viz.schema.json"
+          test -s "${BUNDLE}/rtichoke-viz-v2.schema.json"
+          grep -qx 'version=0.2.0' "${BUNDLE}/MANIFEST"
+          grep -qx "commit=${SOURCE_COMMIT}" "${BUNDLE}/MANIFEST"
+          grep -Fq 'https://rtichoke.dev/schema/viz/1.0.json' "${BUNDLE}/rtichoke-viz.schema.json"
+          grep -Fq 'https://rtichoke.dev/schema/viz/2.0.json' "${BUNDLE}/rtichoke-viz-v2.schema.json"
+
+          DEST='src/rtichoke/_vendor/rtichoke_viz'
+          cp "${BUNDLE}/rtichoke-viz.js" "${DEST}/rtichoke-viz.js"
+          cp "${BUNDLE}/rtichoke-viz.css" "${DEST}/rtichoke-viz.css"
+          cp "${BUNDLE}/rtichoke-viz.schema.json" "${DEST}/rtichoke-viz.schema.json"
+          cp "${BUNDLE}/rtichoke-viz-v2.schema.json" "${DEST}/rtichoke-viz-v2.schema.json"
+          cat > "${DEST}/VENDORED_FROM" <<EOF
+          repository=https://github.com/uriahf/rtichoke_viz
+          release=${TAG}
+          source_commit=${SOURCE_COMMIT}
+          archive=${ARCHIVE}
+          sha256=${SHA256}
+          checksum=${ARCHIVE}.sha256
+          EOF
+
+      - name: Commit vendored release bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- \
+            src/rtichoke/_vendor/rtichoke_viz/VENDORED_FROM \
+            src/rtichoke/_vendor/rtichoke_viz/rtichoke-viz.js \
+            src/rtichoke/_vendor/rtichoke_viz/rtichoke-viz.css \
+            src/rtichoke/_vendor/rtichoke_viz/rtichoke-viz.schema.json \
+            src/rtichoke/_vendor/rtichoke_viz/rtichoke-viz-v2.schema.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Vendor rtichoke_viz v0.2.0 release artifact'
+          git push origin HEAD:chore/vendor-rtichoke-viz-v0.2.0
