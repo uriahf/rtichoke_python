@@ -76,9 +76,7 @@ def _reference_names_by_horizon(reference_data):
 
 
 def test_one_model_one_population_is_one_series_per_horizon():
-    performance_data = _performance(
-        {"model": PROBS_A}, REALS_SHARED, TIMES_SHARED
-    )
+    performance_data = _performance({"model": PROBS_A}, REALS_SHARED, TIMES_SHARED)
 
     assert _series_keys(performance_data) == {
         ("model", 5.0),
