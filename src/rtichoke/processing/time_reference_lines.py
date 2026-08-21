@@ -9,6 +9,7 @@ from plotly.graph_objs._figure import Figure
 from rtichoke.performance_data.performance_data_times import (
     prepare_performance_data_times,
 )
+from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 from rtichoke.processing.plotly_helper_functions import (
     _check_if_multiple_populations_are_being_validated_times,
     _create_plotly_curve_times,
@@ -62,6 +63,7 @@ def _replace_reference_data_times(
     curve: str,
     min_p_threshold: float = 0.0,
     max_p_threshold: float = 1.0,
+    multiple_populations: bool | None = None,
 ) -> dict:
     """Rebuild prevalence-dependent references from cutoff-0 event risk."""
     aj_estimates = _get_reference_aj_estimates_times(performance_data)
@@ -69,13 +71,16 @@ def _replace_reference_data_times(
 
     for horizon in curve_list["fixed_time_horizons"]:
         aj_horizon = aj_estimates.filter(pl.col("fixed_time_horizon") == horizon)
+        horizon_has_multiple_populations = (
+            multiple_populations
+            if multiple_populations is not None
+            else _check_if_multiple_populations_are_being_validated_times(aj_horizon)
+        )
         references.append(
             _create_reference_lines_data(
                 curve=curve,
                 aj_estimates_from_performance_data=aj_horizon,
-                multiple_populations=(
-                    _check_if_multiple_populations_are_being_validated_times(aj_horizon)
-                ),
+                multiple_populations=horizon_has_multiple_populations,
                 min_p_threshold=min_p_threshold,
                 max_p_threshold=max_p_threshold,
             ).with_columns(pl.lit(horizon).alias("fixed_time_horizon"))
@@ -99,7 +104,7 @@ def _create_rtichoke_plotly_curve_times_reference_safe(
     color_values=None,
     curve: str = "precision recall",
 ) -> Figure:
-    """Create a time-dependent curve with corrected reference prevalence."""
+    """Create a time-dependent curve with population-scoped references."""
     performance_data = prepare_performance_data_times(
         probs,
         reals,
@@ -118,6 +123,12 @@ def _create_rtichoke_plotly_curve_times_reference_safe(
         max_p_threshold=max_p_threshold,
     )
     curve_list = _apply_color_values_times(curve_list, color_values)
+
+    evaluation_metadata = _build_evaluation_metadata(probs, reals, times)
+    multiple_populations = (
+        len({metadata.population for metadata in evaluation_metadata.values()}) > 1
+    )
+
     return _create_plotly_curve_times(
         _replace_reference_data_times(
             curve_list,
@@ -125,5 +136,6 @@ def _create_rtichoke_plotly_curve_times_reference_safe(
             curve=curve,
             min_p_threshold=min_p_threshold,
             max_p_threshold=max_p_threshold,
+            multiple_populations=multiple_populations,
         )
     )
