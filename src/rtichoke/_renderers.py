@@ -303,7 +303,5 @@ def _render_lift_v2(
     if selected == "matplotlib":
         return _render_lift_matplotlib(spec, size=size, color_values=color_values)
     if selected in {"browser", "rtichoke_viz"}:
-        raise ValueError(
-            "Browser rendering for Lift curves requires a newer vendored release of rtichoke_viz containing Lift support."
-        )
+        return RtichokeBrowserChart(spec=spec, size=size)
     raise ValueError("The Plotly renderer must use the existing production path.")

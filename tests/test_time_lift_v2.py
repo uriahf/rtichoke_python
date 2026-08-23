@@ -1,9 +1,9 @@
 import matplotlib.figure
 import numpy as np
 import plotly.graph_objects as go
-import pytest
 
 from rtichoke import create_lift_curve_times
+from rtichoke._renderers import RtichokeBrowserChart
 from rtichoke._viz_spec_v2 import _lift_times_v2_spec_from_performance_data
 from rtichoke.performance_data.performance_data_times import (
     prepare_performance_data_times,
@@ -161,26 +161,25 @@ def test_time_lift_censoring_and_competing_risk_reference_comes_from_performance
         ]
 
 
-def test_time_lift_renderers_preserve_plotly_default_and_horizons():
+def test_time_lift_renderers_preserve_plotly_default_and_horizons(tmp_path):
     probs, reals, times = _shared_inputs()
     default = create_lift_curve_times(
         probs, reals, times, HORIZONS, heuristics_sets=HEURISTICS, by=0.25
     )
     assert isinstance(default, go.Figure)
 
-    with pytest.raises(
-        ValueError,
-        match="Browser rendering for Lift curves requires a newer vendored release of rtichoke_viz",
-    ):
-        create_lift_curve_times(
-            probs,
-            reals,
-            times,
-            HORIZONS,
-            heuristics_sets=HEURISTICS,
-            by=0.25,
-            renderer="browser",
-        )
+    browser = create_lift_curve_times(
+        probs,
+        reals,
+        times,
+        HORIZONS,
+        heuristics_sets=HEURISTICS,
+        by=0.25,
+        renderer="browser",
+    )
+    assert isinstance(browser, RtichokeBrowserChart)
+    html = browser.write_html(tmp_path / "lift-times.html").read_text(encoding="utf-8")
+    assert "renderLiftV2" in html
 
     matplotlib_result = create_lift_curve_times(
         probs,
