@@ -309,4 +309,3 @@ def create_gains_curve_times(
         color_values=color_values,
         curve="gains",
     )
-
