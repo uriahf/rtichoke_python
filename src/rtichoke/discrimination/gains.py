@@ -17,7 +17,10 @@ from rtichoke.processing.time_reference_lines import (
 import numpy as np
 import polars as pl
 from rtichoke._renderers import _render_gains_v2, _validate_renderer
-from rtichoke._viz_spec_v2 import _gains_v2_spec_from_performance_data
+from rtichoke._viz_spec_v2 import (
+    _gains_times_v2_spec_from_performance_data,
+    _gains_v2_spec_from_performance_data,
+)
 from rtichoke.performance_data.performance_data import prepare_performance_data
 from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 
@@ -232,7 +235,8 @@ def create_gains_curve_times(
         "#D1603D",
         "#585123",
     ],
-) -> Figure:
+    renderer: str = "plotly",
+) -> Any:
     """Creates a time-dependent Gains curve.
 
     Generates a Gains curve for time-to-event models, which is evaluated at
@@ -258,12 +262,41 @@ def create_gains_curve_times(
         The width and height of the plot in pixels. Defaults to 600.
     color_values : List[str], optional
         A list of hex color strings for the plot lines.
+    renderer : {"plotly", "matplotlib", "browser", "rtichoke_viz"}, optional
+        Rendering backend. Plotly remains the default production behavior.
 
     Returns
     -------
-    Figure
-        A Plotly ``Figure`` object for the time-dependent Gains curve.
+    Figure or RtichokeBrowserChart
+        A Plotly or Matplotlib figure, or an offline browser chart, depending
+        on ``renderer``.
     """
+    selected_renderer = _validate_renderer(renderer)
+    if selected_renderer != "plotly":
+        from rtichoke.performance_data.performance_data_times import (
+            prepare_performance_data_times,
+        )
+
+        performance_data = prepare_performance_data_times(
+            probs,
+            reals,
+            times,
+            fixed_time_horizons=fixed_time_horizons,
+            heuristics_sets=heuristics_sets,
+            by=by,
+            stratified_by=stratified_by,
+        )
+        evaluation_metadata = _build_evaluation_metadata(probs, reals, times)
+        spec = _gains_times_v2_spec_from_performance_data(
+            performance_data, evaluation_metadata
+        )
+        return _render_gains_v2(
+            spec,
+            renderer=selected_renderer,
+            size=size,
+            color_values=color_values,
+        )
+
     return _create_rtichoke_plotly_curve_times_reference_safe(
         probs,
         reals,
@@ -276,3 +309,4 @@ def create_gains_curve_times(
         color_values=color_values,
         curve="gains",
     )
+
