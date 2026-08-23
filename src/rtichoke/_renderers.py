@@ -189,4 +189,3 @@ def _render_gains_v2(
     if selected in {"browser", "rtichoke_viz"}:
         return RtichokeBrowserChart(spec=spec, size=size)
     raise ValueError("The Plotly renderer must use the existing production path.")
-
