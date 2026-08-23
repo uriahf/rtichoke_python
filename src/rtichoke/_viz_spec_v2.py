@@ -411,4 +411,3 @@ def _curve_v2_spec_from_performance_data(
         "yAxis": {"label": "Sensitivity", "domain": [0, 1]},
         "references": [],
     }
-
