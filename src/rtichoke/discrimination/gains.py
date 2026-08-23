@@ -2,7 +2,7 @@
 A module for Gains Curves using Plotly helpers
 """
 
-from typing import Dict, List, Sequence, Union
+from typing import Any, Dict, List, Sequence, Union
 from plotly.graph_objs._figure import Figure
 from rtichoke.processing.binary_color_values import _apply_color_values_binary
 from rtichoke.processing.plotly_helper_functions import (
@@ -16,6 +16,10 @@ from rtichoke.processing.time_reference_lines import (
 )
 import numpy as np
 import polars as pl
+from rtichoke._renderers import _render_gains_v2, _validate_renderer
+from rtichoke._viz_spec_v2 import _gains_v2_spec_from_performance_data
+from rtichoke.performance_data.performance_data import prepare_performance_data
+from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 
 
 def _get_gains_aj_estimates_times(performance_data: pl.DataFrame) -> pl.DataFrame:
@@ -90,7 +94,8 @@ def create_gains_curve(
         "#D1603D",
         "#585123",
     ],
-) -> Figure:
+    renderer: str = "plotly",
+) -> Any:
     """Creates a Gains curve.
 
     A Gains curve is a marketing and business analytics tool that evaluates
@@ -113,12 +118,37 @@ def create_gains_curve(
         The width and height of the plot in pixels. Defaults to 600.
     color_values : List[str], optional
         A list of hex color strings for the plot lines.
+    renderer : {"plotly", "matplotlib", "browser", "rtichoke_viz"}, optional
+        Rendering backend. The default, ``"plotly"``, preserves the existing
+        return value and behavior. ``"matplotlib"`` requires the optional
+        Matplotlib dependency. ``"browser"`` and its ``"rtichoke_viz"`` alias
+        return an offline browser chart backed by the packaged TypeScript bundle.
 
     Returns
     -------
-    Figure
-        A Plotly ``Figure`` object representing the Gains curve.
+    Figure or RtichokeBrowserChart
+        A Plotly or Matplotlib figure, or an offline browser chart, depending
+        on ``renderer``.
     """
+    selected_renderer = _validate_renderer(renderer)
+    if selected_renderer != "plotly":
+        performance_data = prepare_performance_data(
+            probs=probs,
+            reals=reals,
+            stratified_by=stratified_by,
+            by=by,
+        )
+        evaluation_metadata = _build_evaluation_metadata(probs, reals, np.array([]))
+        spec = _gains_v2_spec_from_performance_data(
+            performance_data, evaluation_metadata
+        )
+        return _render_gains_v2(
+            spec,
+            renderer=selected_renderer,
+            size=size,
+            color_values=color_values,
+        )
+
     fig = _create_rtichoke_plotly_curve_binary(
         probs,
         reals,
