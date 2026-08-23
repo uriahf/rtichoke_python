@@ -3,24 +3,89 @@ on:
   pull_request:
     branches: [main]
 permissions:
-  contents: read
+  contents: write
 jobs:
-  fetch:
+  adopt:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch immutable rtichoke_viz release
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - name: Vendor immutable rtichoke_viz v0.4.0 and enable Lift browser
+        env:
+          EXPECTED_SHA256: 9a687cd938f1875d577e592664ca75447455166169f6132dd7f79406515e14e1
         run: |
           set -euxo pipefail
-          curl -L --fail -o rtichoke-viz-0.4.0.tar.gz https://github.com/uriahf/rtichoke_viz/releases/download/v0.4.0/rtichoke-viz-0.4.0.tar.gz
-          curl -L --fail -o rtichoke-viz-0.4.0.tar.gz.sha256 https://github.com/uriahf/rtichoke_viz/releases/download/v0.4.0/rtichoke-viz-0.4.0.tar.gz.sha256
-          cat rtichoke-viz-0.4.0.tar.gz.sha256
-          sha256sum rtichoke-viz-0.4.0.tar.gz
-          tar -xzf rtichoke-viz-0.4.0.tar.gz
-          grep -q renderLiftV2 rtichoke-viz-0.4.0/rtichoke-viz.js
-      - uses: actions/upload-artifact@v4
-        with:
-          name: rtichoke-viz-v0.4.0-release
-          path: |
-            rtichoke-viz-0.4.0.tar.gz
-            rtichoke-viz-0.4.0.tar.gz.sha256
-            rtichoke-viz-0.4.0/
+          curl -L --fail -o /tmp/rtichoke-viz-0.4.0.tar.gz https://github.com/uriahf/rtichoke_viz/releases/download/v0.4.0/rtichoke-viz-0.4.0.tar.gz
+          printf '%s  %s\n' "$EXPECTED_SHA256" /tmp/rtichoke-viz-0.4.0.tar.gz | sha256sum -c -
+          rm -rf /tmp/rtichoke-viz-0.4.0
+          tar -xzf /tmp/rtichoke-viz-0.4.0.tar.gz -C /tmp
+          grep -q '^version=0.4.0$' /tmp/rtichoke-viz-0.4.0/MANIFEST
+          grep -q '^commit=2125c7099839cadd536c6f38f3f7e23a17ca4348$' /tmp/rtichoke-viz-0.4.0/MANIFEST
+          grep -q renderLiftV2 /tmp/rtichoke-viz-0.4.0/rtichoke-viz.js
+
+          vendor=src/rtichoke/_vendor/rtichoke_viz
+          rm -f "$vendor"/rtichoke-viz-0.3.1.tar.gz
+          cp /tmp/rtichoke-viz-0.4.0.tar.gz "$vendor"/rtichoke-viz-0.4.0.tar.gz
+          cp /tmp/rtichoke-viz-0.4.0/rtichoke-viz.js "$vendor"/rtichoke-viz.js
+          cp /tmp/rtichoke-viz-0.4.0/rtichoke-viz.css "$vendor"/rtichoke-viz.css
+          cp /tmp/rtichoke-viz-0.4.0/rtichoke-viz.schema.json "$vendor"/rtichoke-viz.schema.json
+          cp /tmp/rtichoke-viz-0.4.0/rtichoke-viz-v2.schema.json "$vendor"/rtichoke-viz-v2.schema.json
+          cat > "$vendor"/VENDORED_FROM <<'EOF'
+          repository=https://github.com/uriahf/rtichoke_viz
+          release=v0.4.0
+          source_commit=2125c7099839cadd536c6f38f3f7e23a17ca4348
+          archive=rtichoke-viz-0.4.0.tar.gz
+          sha256=9a687cd938f1875d577e592664ca75447455166169f6132dd7f79406515e14e1
+          EOF
+
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/rtichoke/_renderers.py')
+          text = path.read_text()
+          old = '''    if selected in {"browser", "rtichoke_viz"}:\n        raise ValueError(\n            "Browser rendering for Lift curves requires a newer vendored release of rtichoke_viz containing Lift support."\n        )\n'''
+          new = '''    if selected in {"browser", "rtichoke_viz"}:\n        return RtichokeBrowserChart(spec=spec, size=size)\n'''
+          if old not in text:
+              raise SystemExit('Lift browser gate not found')
+          path.write_text(text.replace(old, new))
+
+          path = Path('tests/test_rtichoke_viz_vendor.py')
+          text = path.read_text()
+          text = text.replace('test_vendored_rtichoke_viz_v031_provenance_archive_and_schemas', 'test_vendored_rtichoke_viz_v040_provenance_archive_and_schemas')
+          text = text.replace('test_v031_bundle_keeps_v1_adds_v2_exports_and_time_horizon_control', 'test_v040_bundle_keeps_existing_exports_adds_lift_and_time_horizon_control')
+          text = text.replace('v0.3.1', 'v0.4.0').replace('0.3.1', '0.4.0')
+          text = text.replace('5ccde928a0bf9fa6ece2b7572687b442c57a98a9', '2125c7099839cadd536c6f38f3f7e23a17ca4348')
+          text = text.replace('121aa8eb8d0f8427ecfb2c01dab0fb05668eaedf47ddcfc0cd282a7ecf1ce448', '9a687cd938f1875d577e592664ca75447455166169f6132dd7f79406515e14e1')
+          text = text.replace('        "renderGainsV2",\n', '        "renderGainsV2",\n        "renderLiftV2",\n')
+          path.write_text(text)
+
+          path = Path('tests/test_lift_v2.py')
+          text = path.read_text().replace('import pytest\n', '')
+          text = text.replace('from rtichoke import create_lift_curve\n', 'from rtichoke import create_lift_curve\nfrom rtichoke._renderers import RtichokeBrowserChart\n')
+          text = text.replace('def test_static_lift_renderers():', 'def test_static_lift_renderers(tmp_path):')
+          old = '''    with pytest.raises(\n        ValueError,\n        match="Browser rendering for Lift curves requires a newer vendored release of rtichoke_viz",\n    ):\n        create_lift_curve(probs, reals, by=0.25, renderer="browser")\n'''
+          new = '''    browser = create_lift_curve(probs, reals, by=0.25, renderer="browser")\n    assert isinstance(browser, RtichokeBrowserChart)\n    html = browser.write_html(tmp_path / "lift.html").read_text(encoding="utf-8")\n    assert "renderLiftV2" in html\n'''
+          if old not in text:
+              raise SystemExit('Static Lift browser gate test not found')
+          path.write_text(text.replace(old, new))
+
+          path = Path('tests/test_time_lift_v2.py')
+          text = path.read_text().replace('import pytest\n', '')
+          text = text.replace('from rtichoke import create_lift_curve_times\n', 'from rtichoke import create_lift_curve_times\nfrom rtichoke._renderers import RtichokeBrowserChart\n')
+          text = text.replace('def test_time_lift_renderers_preserve_plotly_default_and_horizons():', 'def test_time_lift_renderers_preserve_plotly_default_and_horizons(tmp_path):')
+          old = '''    with pytest.raises(\n        ValueError,\n        match="Browser rendering for Lift curves requires a newer vendored release of rtichoke_viz",\n    ):\n        create_lift_curve_times(\n            probs,\n            reals,\n            times,\n            HORIZONS,\n            heuristics_sets=HEURISTICS,\n            by=0.25,\n            renderer="browser",\n        )\n'''
+          new = '''    browser = create_lift_curve_times(\n        probs,\n        reals,\n        times,\n        HORIZONS,\n        heuristics_sets=HEURISTICS,\n        by=0.25,\n        renderer="browser",\n    )\n    assert isinstance(browser, RtichokeBrowserChart)\n    html = browser.write_html(tmp_path / "lift-times.html").read_text(encoding="utf-8")\n    assert "renderLiftV2" in html\n'''
+          if old not in text:
+              raise SystemExit('Time Lift browser gate test not found')
+          path.write_text(text.replace(old, new))
+          PY
+
+          rm .github/workflows/fetch-viz-release.yml
+          git config user.name github-actions
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Adopt rtichoke_viz v0.4.0 and enable browser Lift"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
