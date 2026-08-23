@@ -2579,6 +2579,11 @@ dependencies = [
     { name = "smoothstate" },
 ]
 
+[package.optional-dependencies]
+matplotlib = [
+    { name = "matplotlib" },
+]
+
 [package.dev-dependencies]
 dev = [
     { name = "dcurves" },
@@ -2602,12 +2607,14 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "great-tables", specifier = ">=0.18.0" },
+    { name = "matplotlib", marker = "extra == 'matplotlib'", specifier = ">=3.9.0" },
     { name = "plotly", specifier = ">=6.0.0,<7.0.0" },
     { name = "polars", specifier = ">=1.31.0" },
     { name = "polarstate", specifier = "==0.1.8" },
     { name = "reactable", specifier = ">=0.1.5" },
     { name = "smoothstate", specifier = ">=0.1.1" },
 ]
+provides-extras = ["matplotlib"]
 
 [package.metadata.requires-dev]
 dev = [
