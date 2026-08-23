@@ -54,6 +54,7 @@ class RtichokeBrowserChart:
             "calibration": "renderCalibrationV2",
             "precision_recall": "renderPrecisionRecallV2",
             "gains": "renderGainsV2",
+            "lift": "renderLiftV2",
         }.get(str(self.spec.get("type")))
         if render_export is None:
             raise ValueError(
@@ -188,4 +189,121 @@ def _render_gains_v2(
         return _render_gains_matplotlib(spec, size=size, color_values=color_values)
     if selected in {"browser", "rtichoke_viz"}:
         return RtichokeBrowserChart(spec=spec, size=size)
+    raise ValueError("The Plotly renderer must use the existing production path.")
+
+
+def _render_lift_matplotlib(
+    spec: dict[str, Any], *, size: int, color_values: list[str]
+) -> Any:
+    """Render canonical lift quantities with an optional Matplotlib backend."""
+    try:
+        from matplotlib.figure import Figure
+    except ImportError as error:
+        raise ImportError(
+            "The 'matplotlib' renderer requires the optional matplotlib dependency. "
+            "Install it with `pip install 'rtichoke[matplotlib]'`."
+        ) from error
+
+    series = spec.get("series", [])
+    data = spec.get("data", [])
+    assert isinstance(series, list) and isinstance(data, list)
+    horizons = list(
+        dict.fromkeys(
+            item["horizon"] for item in series if item.get("horizon") is not None
+        )
+    )
+    panels: list[float | None] = horizons or [None]
+    figure = Figure(figsize=(size / 100 * len(panels), size / 100), dpi=100)
+    axes_value = figure.subplots(1, len(panels), squeeze=False)
+    axes = list(axes_value[0])
+    references = spec.get("references", [])
+    assert isinstance(references, list)
+    display_groups = list(dict.fromkeys(item["display"]["group"] for item in series))
+    colors = {
+        group: (
+            "black"
+            if len(display_groups) == 1
+            else color_values[index % len(color_values)]
+        )
+        for index, group in enumerate(display_groups)
+    }
+    x_axis = spec["xAxis"]
+    y_axis = spec["yAxis"]
+    for axis, horizon in zip(axes, panels):
+        for reference in references:
+            if not isinstance(reference, dict):
+                continue
+            if (
+                reference.get("scope") == "population_horizon"
+                and reference.get("horizon") != horizon
+            ):
+                continue
+            if reference.get("type") == "horizontal":
+                value = reference.get("value", 1.0)
+                axis.axhline(
+                    y=value,
+                    color="#BEBEBE",
+                    linestyle="--",
+                    linewidth=2,
+                )
+            elif reference.get("type") == "path":
+                points = reference.get("points", [])
+                x_values = [point["x"] for point in points]
+                y_values = [point["y"] for point in points]
+                axis.plot(
+                    x_values,
+                    y_values,
+                    color="#BEBEBE",
+                    linestyle="--",
+                    linewidth=2,
+                )
+            else:
+                continue
+
+        panel_series = [
+            item
+            for item in series
+            if item.get("horizon") is None or item.get("horizon") == horizon
+        ]
+        for item in panel_series:
+            rows = [row for row in data if row["seriesId"] == item["id"]]
+            display = item["display"]
+            axis.plot(
+                [row["ppcr"] for row in rows],
+                [row["lift"] for row in rows],
+                label=display["label"],
+                color=colors[display["group"]],
+                linewidth=2,
+            )
+
+        axis.set_xlabel(x_axis["label"])
+        axis.set_ylabel(y_axis["label"])
+        axis.set_xlim(*x_axis["domain"])
+        if y_axis["domain"][1] is not None:
+            axis.set_ylim(*y_axis["domain"])
+        else:
+            axis.set_ylim(bottom=y_axis["domain"][0])
+        if horizon is not None:
+            axis.set_title(f"Fixed Time Horizon: {horizon:g}")
+        if len(panel_series) > 1:
+            axis.legend()
+    figure.tight_layout()
+    return figure
+
+
+def _render_lift_v2(
+    spec: dict[str, Any],
+    *,
+    renderer: str,
+    size: int,
+    color_values: list[str],
+) -> Any:
+    """Render a canonical lift v2 spec with a non-default backend."""
+    selected = _validate_renderer(renderer)
+    if selected == "matplotlib":
+        return _render_lift_matplotlib(spec, size=size, color_values=color_values)
+    if selected in {"browser", "rtichoke_viz"}:
+        raise ValueError(
+            "Browser rendering for Lift curves requires a newer vendored release of rtichoke_viz containing Lift support."
+        )
     raise ValueError("The Plotly renderer must use the existing production path.")

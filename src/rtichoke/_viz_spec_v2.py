@@ -27,6 +27,14 @@ _REQUIRED_GAINS_COLUMNS = {
     "real_positives",
     "n",
 }
+_REQUIRED_LIFT_COLUMNS = {
+    "reference_group",
+    "chosen_cutoff",
+    "lift",
+    "ppcr",
+    "real_positives",
+    "n",
+}
 
 
 def _roc_v2_spec_from_performance_data(
@@ -73,6 +81,44 @@ def _gains_v2_spec_from_performance_data(
             for population in populations
         ],
     ]
+    return spec
+
+
+def _lift_v2_spec_from_performance_data(
+    performance_data: pl.DataFrame,
+    evaluation_metadata: Mapping[str, _EvaluationMetadata],
+) -> dict[str, object]:
+    """Build a canonical lift-v2 spec from production performance quantities."""
+    spec = _curve_v2_spec_from_performance_data(
+        performance_data,
+        evaluation_metadata,
+        chart_type="lift",
+    )
+    prevalence = _gains_population_prevalence(performance_data, evaluation_metadata)
+
+    populations = list(
+        dict.fromkeys(metadata.population for metadata in evaluation_metadata.values())
+    )
+    references: list[dict[str, object]] = [
+        {"type": "horizontal", "value": 1.0, "scope": "global", "label": "Random"}
+    ]
+    for population in populations:
+        p = prevalence[population]
+        if p > 0:
+            references.append(
+                {
+                    "type": "path",
+                    "scope": "population",
+                    "population": population,
+                    "label": "Perfect Model",
+                    "points": [
+                        {"x": 0.0, "y": 1.0 / p},
+                        {"x": p, "y": 1.0 / p},
+                        {"x": 1.0, "y": 1.0},
+                    ],
+                }
+            )
+    spec["references"] = references
     return spec
 
 
@@ -207,6 +253,140 @@ def _gains_times_v2_spec_from_performance_data(
     }
 
 
+def _lift_times_v2_spec_from_performance_data(
+    performance_data: pl.DataFrame,
+    evaluation_metadata: Mapping[str, _EvaluationMetadata],
+) -> dict[str, object]:
+    """Build canonical time-dependent lift from calculated production data."""
+    required = _REQUIRED_LIFT_COLUMNS | {
+        "fixed_time_horizon",
+        "censoring_heuristic",
+        "competing_heuristic",
+    }
+    missing = required.difference(performance_data.columns)
+    if missing:
+        raise ValueError(
+            "Time-dependent lift performance data is missing columns: "
+            + ", ".join(sorted(missing))
+        )
+
+    rows = performance_data.select(
+        "reference_group",
+        "fixed_time_horizon",
+        "censoring_heuristic",
+        "competing_heuristic",
+        "chosen_cutoff",
+        "lift",
+        "ppcr",
+    ).to_dicts()
+    row_groups = {str(row["reference_group"]) for row in rows}
+    missing_metadata = row_groups.difference(evaluation_metadata)
+    if missing_metadata:
+        raise ValueError(
+            "Time-dependent lift rows are missing evaluation metadata: "
+            + ", ".join(sorted(missing_metadata))
+        )
+
+    ordered_groups = [group for group in evaluation_metadata if group in row_groups]
+    evaluation_ids = {
+        group: f"evaluation-{index}"
+        for index, group in enumerate(ordered_groups, start=1)
+    }
+    evaluations = []
+    for group in ordered_groups:
+        metadata = evaluation_metadata[group]
+        evaluation: dict[str, object] = {
+            "id": evaluation_ids[group],
+            "population": metadata.population,
+        }
+        if metadata.model is not None:
+            evaluation["model"] = metadata.model
+        evaluations.append(evaluation)
+
+    series_keys = list(
+        dict.fromkeys(
+            (
+                str(row["reference_group"]),
+                float(row["fixed_time_horizon"]),
+                str(row["censoring_heuristic"]),
+                str(row["competing_heuristic"]),
+            )
+            for row in rows
+        )
+    )
+    series_ids = {
+        key: f"series-{index}" for index, key in enumerate(series_keys, start=1)
+    }
+    series = []
+    for key in series_keys:
+        group, horizon, _, _ = key
+        metadata = evaluation_metadata[group]
+        display_value = metadata.model or metadata.population
+        series.append(
+            {
+                "id": series_ids[key],
+                "evaluationId": evaluation_ids[group],
+                "horizon": horizon,
+                "display": {
+                    "label": display_value,
+                    "group": display_value,
+                    "role": "model" if metadata.model is not None else "population",
+                },
+            }
+        )
+
+    data = []
+    for row in rows:
+        key = (
+            str(row["reference_group"]),
+            float(row["fixed_time_horizon"]),
+            str(row["censoring_heuristic"]),
+            str(row["competing_heuristic"]),
+        )
+        data.append(
+            {
+                "seriesId": series_ids[key],
+                "cutoff": row["chosen_cutoff"],
+                "ppcr": row["ppcr"],
+                "lift": row["lift"],
+            }
+        )
+
+    risks = _gains_population_horizon_risk(performance_data, evaluation_metadata)
+    references: list[dict[str, object]] = [
+        {"type": "horizontal", "value": 1.0, "scope": "global", "label": "Random"}
+    ]
+    for (population, horizon), risk in risks.items():
+        if risk > 0:
+            references.append(
+                {
+                    "type": "path",
+                    "scope": "population_horizon",
+                    "population": population,
+                    "horizon": horizon,
+                    "label": "Perfect Model",
+                    "points": [
+                        {"x": 0.0, "y": 1.0 / risk},
+                        {"x": risk, "y": 1.0 / risk},
+                        {"x": 1.0, "y": 1.0},
+                    ],
+                }
+            )
+
+    return {
+        "schemaVersion": "2.0",
+        "type": "lift",
+        "evaluations": evaluations,
+        "series": series,
+        "data": data,
+        "x": "ppcr",
+        "y": "lift",
+        "xAxis": {"label": "Predicted Positives (Rate)", "domain": [0, 1]},
+        "yAxis": {"label": "Lift", "domain": [0, None]},
+        "references": references,
+    }
+
+
 def _gains_population_horizon_risk(
     performance_data: pl.DataFrame,
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
@@ -312,6 +492,9 @@ def _curve_v2_spec_from_performance_data(
     elif chart_type == "gains":
         required = _REQUIRED_GAINS_COLUMNS
         selected = ["reference_group", "chosen_cutoff", "sensitivity", "ppcr"]
+    elif chart_type == "lift":
+        required = _REQUIRED_LIFT_COLUMNS
+        selected = ["reference_group", "chosen_cutoff", "lift", "ppcr"]
     else:
         raise ValueError(f"Unsupported v2 curve type: {chart_type}")
 
@@ -377,12 +560,16 @@ def _curve_v2_spec_from_performance_data(
         datum = {
             "seriesId": series_ids[str(row["reference_group"])],
             "cutoff": row["chosen_cutoff"],
-            "sensitivity": row["sensitivity"],
         }
         if chart_type == "roc":
+            datum["sensitivity"] = row["sensitivity"]
             datum["specificity"] = row["specificity"]
-        else:
+        elif chart_type == "gains":
+            datum["sensitivity"] = row["sensitivity"]
             datum["ppcr"] = row["ppcr"]
+        elif chart_type == "lift":
+            datum["ppcr"] = row["ppcr"]
+            datum["lift"] = row["lift"]
         data.append(datum)
 
     if chart_type == "roc":
@@ -399,15 +586,29 @@ def _curve_v2_spec_from_performance_data(
             "references": [{"type": "identity", "scope": "global"}],
         }
 
+    if chart_type == "gains":
+        return {
+            "schemaVersion": "2.0",
+            "type": "gains",
+            "evaluations": evaluations,
+            "series": series,
+            "data": data,
+            "x": "ppcr",
+            "y": "sensitivity",
+            "xAxis": {"label": "Predicted Positives (Rate)", "domain": [0, 1]},
+            "yAxis": {"label": "Sensitivity", "domain": [0, 1]},
+            "references": [],
+        }
+
     return {
         "schemaVersion": "2.0",
-        "type": "gains",
+        "type": "lift",
         "evaluations": evaluations,
         "series": series,
         "data": data,
         "x": "ppcr",
-        "y": "sensitivity",
+        "y": "lift",
         "xAxis": {"label": "Predicted Positives (Rate)", "domain": [0, 1]},
-        "yAxis": {"label": "Sensitivity", "domain": [0, 1]},
+        "yAxis": {"label": "Lift", "domain": [0, None]},
         "references": [],
     }

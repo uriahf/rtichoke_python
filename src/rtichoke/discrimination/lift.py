@@ -2,7 +2,7 @@
 A module for Lift Curves using Plotly helpers
 """
 
-from typing import Dict, List, Sequence, Union
+from typing import Any, Dict, List, Sequence, Union
 from plotly.graph_objs._figure import Figure
 from rtichoke.processing.binary_color_values import _apply_color_values_binary
 from rtichoke.processing.plotly_helper_functions import (
@@ -14,6 +14,13 @@ from rtichoke.processing.time_reference_lines import (
 )
 import numpy as np
 import polars as pl
+from rtichoke._renderers import _render_lift_v2, _validate_renderer
+from rtichoke._viz_spec_v2 import (
+    _lift_times_v2_spec_from_performance_data,
+    _lift_v2_spec_from_performance_data,
+)
+from rtichoke.performance_data.performance_data import prepare_performance_data
+from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 
 
 def create_lift_curve(
@@ -44,7 +51,8 @@ def create_lift_curve(
         "#D1603D",
         "#585123",
     ],
-) -> Figure:
+    renderer: str = "plotly",
+) -> Any:
     """Creates a Lift curve.
 
     A Lift curve is a visual tool used to evaluate the performance of a
@@ -68,11 +76,37 @@ def create_lift_curve(
     color_values : List[str], optional
         A list of hex color strings for the plot lines.
 
+    renderer : {"plotly", "matplotlib", "browser", "rtichoke_viz"}, optional
+        Rendering backend. The default, ``"plotly"``, preserves the existing
+        return value and behavior. ``"matplotlib"`` requires the optional
+        Matplotlib dependency. ``"browser"`` and its ``"rtichoke_viz"`` alias
+        return an offline browser chart backed by the packaged TypeScript bundle.
+
     Returns
     -------
-    Figure
-        A Plotly ``Figure`` object representing the Lift curve.
+    Figure or RtichokeBrowserChart
+        A Plotly or Matplotlib figure, or an offline browser chart, depending
+        on ``renderer``.
     """
+    selected_renderer = _validate_renderer(renderer)
+    if selected_renderer != "plotly":
+        performance_data = prepare_performance_data(
+            probs=probs,
+            reals=reals,
+            stratified_by=stratified_by,
+            by=by,
+        )
+        evaluation_metadata = _build_evaluation_metadata(probs, reals, np.array([]))
+        spec = _lift_v2_spec_from_performance_data(
+            performance_data, evaluation_metadata
+        )
+        return _render_lift_v2(
+            spec,
+            renderer=selected_renderer,
+            size=size,
+            color_values=color_values,
+        )
+
     fig = _create_rtichoke_plotly_curve_binary(
         probs,
         reals,
@@ -156,7 +190,8 @@ def create_lift_curve_times(
         "#D1603D",
         "#585123",
     ],
-) -> Figure:
+    renderer: str = "plotly",
+) -> Any:
     """Creates a time-dependent Lift curve.
 
     Generates a Lift curve for time-to-event models, which is evaluated at
@@ -183,11 +218,40 @@ def create_lift_curve_times(
     color_values : List[str], optional
         A list of hex color strings for the plot lines.
 
+    renderer : {"plotly", "matplotlib", "browser", "rtichoke_viz"}, optional
+        Rendering backend. Plotly remains the default production behavior.
+
     Returns
     -------
-    Figure
-        A Plotly ``Figure`` object for the time-dependent Lift curve.
+    Figure or RtichokeBrowserChart
+        A Plotly or Matplotlib figure, or an offline browser chart, depending
+        on ``renderer``.
     """
+    selected_renderer = _validate_renderer(renderer)
+    if selected_renderer != "plotly":
+        from rtichoke.performance_data.performance_data_times import (
+            prepare_performance_data_times,
+        )
+
+        performance_data = prepare_performance_data_times(
+            probs,
+            reals,
+            times,
+            fixed_time_horizons=fixed_time_horizons,
+            heuristics_sets=heuristics_sets,
+            by=by,
+            stratified_by=stratified_by,
+        )
+        evaluation_metadata = _build_evaluation_metadata(probs, reals, times)
+        spec = _lift_times_v2_spec_from_performance_data(
+            performance_data, evaluation_metadata
+        )
+        return _render_lift_v2(
+            spec,
+            renderer=selected_renderer,
+            size=size,
+            color_values=color_values,
+        )
 
     fig = _create_rtichoke_plotly_curve_times_reference_safe(
         probs,
