@@ -493,7 +493,7 @@ Returns
 Figure
     A Plotly ``Figure`` object representing the Gains curve.
 
-create_lift_curve(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], by: float = 0.01, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+create_lift_curve(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], by: float = 0.01, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'], renderer: str = 'plotly') -> Any
 
 Creates a Lift curve.
 
@@ -518,12 +518,19 @@ size : int, optional
 color_values : List[str], optional
     A list of hex color strings for the plot lines.
 
+renderer : {"plotly", "matplotlib", "browser", "rtichoke_viz"}, optional
+    Rendering backend. The default, ``"plotly"``, preserves the existing
+    return value and behavior. ``"matplotlib"`` requires the optional
+    Matplotlib dependency. ``"browser"`` and its ``"rtichoke_viz"`` alias
+    return an offline browser chart backed by the packaged TypeScript bundle.
+
 Returns
 -------
-Figure
-    A Plotly ``Figure`` object representing the Lift curve.
+Figure or RtichokeBrowserChart
+    A Plotly or Matplotlib figure, or an offline browser chart, depending
+    on ``renderer``.
 
-create_lift_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: list[float], heuristics_sets: list[typing.Dict] = [{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}], by: float = 0.01, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123']) -> plotly.graph_objs._figure.Figure
+create_lift_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: list[float], heuristics_sets: list[typing.Dict] = [{'censoring_heuristic': 'adjusted', 'competing_heuristic': 'adjusted_as_negative'}], by: float = 0.01, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'], renderer: str = 'plotly') -> Any
 
 Creates a time-dependent Lift curve.
 
@@ -551,10 +558,14 @@ size : int, optional
 color_values : List[str], optional
     A list of hex color strings for the plot lines.
 
+renderer : {"plotly", "matplotlib", "browser", "rtichoke_viz"}, optional
+    Rendering backend. Plotly remains the default production behavior.
+
 Returns
 -------
-Figure
-    A Plotly ``Figure`` object for the time-dependent Lift curve.
+Figure or RtichokeBrowserChart
+    A Plotly or Matplotlib figure, or an offline browser chart, depending
+    on ``renderer``.
 
 plot_lift_curve(performance_data: polars.dataframe.frame.DataFrame, stratified_by: Sequence[str] = ['probability_threshold'], size: int = 600) -> plotly.graph_objs._figure.Figure
 
