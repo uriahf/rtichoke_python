@@ -102,9 +102,12 @@ def _lift_v2_spec_from_performance_data(
     references: list[dict[str, object]] = [
         {"type": "horizontal", "value": 1.0, "scope": "global", "label": "Random"}
     ]
+    perfect_heights: list[float] = []
     for population in populations:
         p = prevalence[population]
         if p > 0:
+            perfect_height = 1.0 / p
+            perfect_heights.append(perfect_height)
             references.append(
                 {
                     "type": "path",
@@ -112,12 +115,16 @@ def _lift_v2_spec_from_performance_data(
                     "population": population,
                     "label": "Perfect Model",
                     "points": [
-                        {"x": 0.0, "y": 1.0 / p},
-                        {"x": p, "y": 1.0 / p},
+                        {"x": 0.0, "y": perfect_height},
+                        {"x": p, "y": perfect_height},
                         {"x": 1.0, "y": 1.0},
                     ],
                 }
             )
+    spec["yAxis"] = {
+        "label": "Lift",
+        "domain": [0, _lift_y_axis_upper_bound(performance_data, perfect_heights)],
+    }
     spec["references"] = references
     return spec
 
@@ -356,8 +363,11 @@ def _lift_times_v2_spec_from_performance_data(
     references: list[dict[str, object]] = [
         {"type": "horizontal", "value": 1.0, "scope": "global", "label": "Random"}
     ]
+    perfect_heights: list[float] = []
     for (population, horizon), risk in risks.items():
         if risk > 0:
+            perfect_height = 1.0 / risk
+            perfect_heights.append(perfect_height)
             references.append(
                 {
                     "type": "path",
@@ -366,8 +376,8 @@ def _lift_times_v2_spec_from_performance_data(
                     "horizon": horizon,
                     "label": "Perfect Model",
                     "points": [
-                        {"x": 0.0, "y": 1.0 / risk},
-                        {"x": risk, "y": 1.0 / risk},
+                        {"x": 0.0, "y": perfect_height},
+                        {"x": risk, "y": perfect_height},
                         {"x": 1.0, "y": 1.0},
                     ],
                 }
@@ -382,7 +392,10 @@ def _lift_times_v2_spec_from_performance_data(
         "x": "ppcr",
         "y": "lift",
         "xAxis": {"label": "Predicted Positives (Rate)", "domain": [0, 1]},
-        "yAxis": {"label": "Lift", "domain": [0, None]},
+        "yAxis": {
+            "label": "Lift",
+            "domain": [0, _lift_y_axis_upper_bound(performance_data, perfect_heights)],
+        },
         "references": references,
     }
 
@@ -471,6 +484,15 @@ def _gains_population_prevalence(
             )
         prevalence[population] = next(iter(values))
     return prevalence
+
+
+def _lift_y_axis_upper_bound(
+    performance_data: pl.DataFrame,
+    perfect_heights: list[float],
+) -> float:
+    """Return the finite numeric Lift bound implied by existing plot quantities."""
+    observed_lift = float(performance_data["lift"].max())
+    return max(1.0, observed_lift, *perfect_heights)
 
 
 def _curve_v2_spec_from_performance_data(
@@ -609,6 +631,9 @@ def _curve_v2_spec_from_performance_data(
         "x": "ppcr",
         "y": "lift",
         "xAxis": {"label": "Predicted Positives (Rate)", "domain": [0, 1]},
-        "yAxis": {"label": "Lift", "domain": [0, None]},
+        "yAxis": {
+            "label": "Lift",
+            "domain": [0, _lift_y_axis_upper_bound(performance_data, [])],
+        },
         "references": [],
     }
