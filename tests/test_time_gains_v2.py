@@ -164,4 +164,3 @@ def test_time_gains_renderers_preserve_plotly_default_and_horizons(tmp_path: Pat
         "Fixed Time Horizon: 5",
         "Fixed Time Horizon: 10",
     ]
-
