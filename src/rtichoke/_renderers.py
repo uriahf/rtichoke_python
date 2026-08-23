@@ -97,32 +97,20 @@ def _render_gains_matplotlib(
             "Install it with `pip install 'rtichoke[matplotlib]'`."
         ) from error
 
-    figure = Figure(figsize=(size / 100, size / 100), dpi=100)
-    axis = figure.subplots()
-    references = spec.get("references", [])
-    assert isinstance(references, list)
-    for reference in references:
-        if not isinstance(reference, dict):
-            continue
-        if reference.get("type") == "identity":
-            x_values, y_values = [0, 1], [0, 1]
-        elif reference.get("type") == "path":
-            points = reference.get("points", [])
-            x_values = [point["x"] for point in points]
-            y_values = [point["y"] for point in points]
-        else:
-            continue
-        axis.plot(
-            x_values,
-            y_values,
-            color="#BEBEBE",
-            linestyle="--",
-            linewidth=2,
-        )
-
     series = spec.get("series", [])
     data = spec.get("data", [])
     assert isinstance(series, list) and isinstance(data, list)
+    horizons = list(
+        dict.fromkeys(
+            item["horizon"] for item in series if item.get("horizon") is not None
+        )
+    )
+    panels: list[float | None] = horizons or [None]
+    figure = Figure(figsize=(size / 100 * len(panels), size / 100), dpi=100)
+    axes_value = figure.subplots(1, len(panels), squeeze=False)
+    axes = list(axes_value[0])
+    references = spec.get("references", [])
+    assert isinstance(references, list)
     display_groups = list(dict.fromkeys(item["display"]["group"] for item in series))
     colors = {
         group: (
@@ -132,25 +120,57 @@ def _render_gains_matplotlib(
         )
         for index, group in enumerate(display_groups)
     }
-    for item in series:
-        rows = [row for row in data if row["seriesId"] == item["id"]]
-        display = item["display"]
-        axis.plot(
-            [row["ppcr"] for row in rows],
-            [row["sensitivity"] for row in rows],
-            label=display["label"],
-            color=colors[display["group"]],
-            linewidth=2,
-        )
-
     x_axis = spec["xAxis"]
     y_axis = spec["yAxis"]
-    axis.set_xlabel(x_axis["label"])
-    axis.set_ylabel(y_axis["label"])
-    axis.set_xlim(*x_axis["domain"])
-    axis.set_ylim(*y_axis["domain"])
-    if len(series) > 1:
-        axis.legend()
+    for axis, horizon in zip(axes, panels):
+        for reference in references:
+            if not isinstance(reference, dict):
+                continue
+            if (
+                reference.get("scope") == "population_horizon"
+                and reference.get("horizon") != horizon
+            ):
+                continue
+            if reference.get("type") == "identity":
+                x_values, y_values = [0, 1], [0, 1]
+            elif reference.get("type") == "path":
+                points = reference.get("points", [])
+                x_values = [point["x"] for point in points]
+                y_values = [point["y"] for point in points]
+            else:
+                continue
+            axis.plot(
+                x_values,
+                y_values,
+                color="#BEBEBE",
+                linestyle="--",
+                linewidth=2,
+            )
+
+        panel_series = [
+            item
+            for item in series
+            if item.get("horizon") is None or item.get("horizon") == horizon
+        ]
+        for item in panel_series:
+            rows = [row for row in data if row["seriesId"] == item["id"]]
+            display = item["display"]
+            axis.plot(
+                [row["ppcr"] for row in rows],
+                [row["sensitivity"] for row in rows],
+                label=display["label"],
+                color=colors[display["group"]],
+                linewidth=2,
+            )
+
+        axis.set_xlabel(x_axis["label"])
+        axis.set_ylabel(y_axis["label"])
+        axis.set_xlim(*x_axis["domain"])
+        axis.set_ylim(*y_axis["domain"])
+        if horizon is not None:
+            axis.set_title(f"Fixed Time Horizon: {horizon:g}")
+        if len(panel_series) > 1:
+            axis.legend()
     figure.tight_layout()
     return figure
 

@@ -76,6 +76,185 @@ def _gains_v2_spec_from_performance_data(
     return spec
 
 
+def _gains_times_v2_spec_from_performance_data(
+    performance_data: pl.DataFrame,
+    evaluation_metadata: Mapping[str, _EvaluationMetadata],
+) -> dict[str, object]:
+    """Build canonical time-dependent gains from calculated production data."""
+    required = _REQUIRED_GAINS_COLUMNS | {
+        "fixed_time_horizon",
+        "censoring_heuristic",
+        "competing_heuristic",
+    }
+    missing = required.difference(performance_data.columns)
+    if missing:
+        raise ValueError(
+            "Time-dependent gains performance data is missing columns: "
+            + ", ".join(sorted(missing))
+        )
+
+    rows = performance_data.select(
+        "reference_group",
+        "fixed_time_horizon",
+        "censoring_heuristic",
+        "competing_heuristic",
+        "chosen_cutoff",
+        "sensitivity",
+        "ppcr",
+    ).to_dicts()
+    row_groups = {str(row["reference_group"]) for row in rows}
+    missing_metadata = row_groups.difference(evaluation_metadata)
+    if missing_metadata:
+        raise ValueError(
+            "Time-dependent gains rows are missing evaluation metadata: "
+            + ", ".join(sorted(missing_metadata))
+        )
+
+    ordered_groups = [group for group in evaluation_metadata if group in row_groups]
+    evaluation_ids = {
+        group: f"evaluation-{index}"
+        for index, group in enumerate(ordered_groups, start=1)
+    }
+    evaluations = []
+    for group in ordered_groups:
+        metadata = evaluation_metadata[group]
+        evaluation: dict[str, object] = {
+            "id": evaluation_ids[group],
+            "population": metadata.population,
+        }
+        if metadata.model is not None:
+            evaluation["model"] = metadata.model
+        evaluations.append(evaluation)
+
+    series_keys = list(
+        dict.fromkeys(
+            (
+                str(row["reference_group"]),
+                float(row["fixed_time_horizon"]),
+                str(row["censoring_heuristic"]),
+                str(row["competing_heuristic"]),
+            )
+            for row in rows
+        )
+    )
+    series_ids = {
+        key: f"series-{index}" for index, key in enumerate(series_keys, start=1)
+    }
+    series = []
+    for key in series_keys:
+        group, horizon, _, _ = key
+        metadata = evaluation_metadata[group]
+        display_value = metadata.model or metadata.population
+        series.append(
+            {
+                "id": series_ids[key],
+                "evaluationId": evaluation_ids[group],
+                "horizon": horizon,
+                "display": {
+                    "label": display_value,
+                    "group": display_value,
+                    "role": "model" if metadata.model is not None else "population",
+                },
+            }
+        )
+
+    data = []
+    for row in rows:
+        key = (
+            str(row["reference_group"]),
+            float(row["fixed_time_horizon"]),
+            str(row["censoring_heuristic"]),
+            str(row["competing_heuristic"]),
+        )
+        data.append(
+            {
+                "seriesId": series_ids[key],
+                "cutoff": row["chosen_cutoff"],
+                "ppcr": row["ppcr"],
+                "sensitivity": row["sensitivity"],
+            }
+        )
+
+    risks = _gains_population_horizon_risk(performance_data, evaluation_metadata)
+    references = [{"type": "identity", "scope": "global", "label": "Random"}]
+    for (population, horizon), risk in risks.items():
+        references.append(
+            {
+                "type": "path",
+                "scope": "population_horizon",
+                "population": population,
+                "horizon": horizon,
+                "label": "Perfect Model",
+                "points": [
+                    {"x": 0, "y": 0},
+                    {"x": risk, "y": 1},
+                    {"x": 1, "y": 1},
+                ],
+            }
+        )
+
+    return {
+        "schemaVersion": "2.0",
+        "type": "gains",
+        "evaluations": evaluations,
+        "series": series,
+        "data": data,
+        "x": "ppcr",
+        "y": "sensitivity",
+        "xAxis": {"label": "Predicted Positives (Rate)", "domain": [0, 1]},
+        "yAxis": {"label": "Sensitivity", "domain": [0, 1]},
+        "references": references,
+    }
+
+
+def _gains_population_horizon_risk(
+    performance_data: pl.DataFrame,
+    evaluation_metadata: Mapping[str, _EvaluationMetadata],
+) -> dict[tuple[str, float], float]:
+    """Map calculated cutoff-0 AJ event risk to semantic population/horizon."""
+    group_risks = (
+        performance_data.filter(pl.col("chosen_cutoff") == 0)
+        .select(
+            "reference_group",
+            "fixed_time_horizon",
+            (pl.col("real_positives") / pl.col("n")).alias("event_risk"),
+        )
+        .unique()
+        .to_dicts()
+    )
+    values: dict[tuple[str, float], set[float]] = {}
+    for row in group_risks:
+        group = str(row["reference_group"])
+        metadata = evaluation_metadata.get(group)
+        if metadata is None:
+            continue
+        key = (metadata.population, float(row["fixed_time_horizon"]))
+        values.setdefault(key, set()).add(float(row["event_risk"]))
+
+    populations = list(
+        dict.fromkeys(metadata.population for metadata in evaluation_metadata.values())
+    )
+    horizons = sorted(
+        float(value)
+        for value in performance_data["fixed_time_horizon"].unique().to_list()
+    )
+    risks: dict[tuple[str, float], float] = {}
+    for key in (
+        (population, horizon)
+        for horizon in horizons
+        for population in populations
+        if (population, horizon) in values
+    ):
+        candidates = values[key]
+        if len(candidates) != 1:
+            raise ValueError(
+                "Time-dependent gains must have one calculated event risk per "
+                f"population and horizon: {key[0]} at {key[1]}"
+            )
+        risks[key] = next(iter(candidates))
+    return risks
+
+
 def _gains_population_prevalence(
     performance_data: pl.DataFrame,
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
