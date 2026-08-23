@@ -86,6 +86,24 @@ def test_time_lift_uses_one_evaluation_and_series_per_model_horizon():
     }
 
 
+def test_time_lift_v2_y_axis_domain_is_numeric_and_covers_plot():
+    probs, reals, times = _shared_inputs()
+    spec = _spec(probs, reals, times)
+
+    upper = spec["yAxis"]["domain"][1]
+    observed_upper = max(float(row["lift"]) for row in spec["data"])
+    perfect_upper = max(
+        float(point["y"])
+        for reference in spec["references"]
+        if reference["type"] == "path"
+        for point in reference["points"]
+    )
+
+    assert isinstance(upper, (int, float))
+    assert np.isfinite(upper)
+    assert spec["yAxis"]["domain"] == [0, max(1.0, observed_upper, perfect_upper)]
+
+
 def test_equal_risk_population_horizons_remain_distinct_lift_reference_owners():
     probs = {
         "Population A": np.array([0.05, 0.2, 0.7, 0.95]),
