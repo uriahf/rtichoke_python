@@ -61,6 +61,31 @@ def test_static_lift_v2_spec_single_model():
     ]
 
 
+def test_static_lift_v2_y_axis_domain_is_numeric_and_covers_plot():
+    probs = {
+        "Population A": np.array([0.1, 0.2, 0.7, 0.9]),
+        "Population B": np.array([0.1, 0.3, 0.4, 0.8]),
+    }
+    reals = {
+        "Population A": np.array([0, 0, 1, 1]),
+        "Population B": np.array([0, 0, 0, 1]),
+    }
+    spec = _spec(probs, reals)
+
+    upper = spec["yAxis"]["domain"][1]
+    observed_upper = max(float(row["lift"]) for row in spec["data"])
+    perfect_upper = max(
+        float(point["y"])
+        for reference in spec["references"]
+        if reference["type"] == "path"
+        for point in reference["points"]
+    )
+
+    assert isinstance(upper, (int, float))
+    assert np.isfinite(upper)
+    assert spec["yAxis"]["domain"] == [0, max(1.0, observed_upper, perfect_upper)]
+
+
 def test_static_lift_v2_spec_shared_population():
     probs, reals = _shared_model_inputs()
     spec = _spec(probs, reals)
