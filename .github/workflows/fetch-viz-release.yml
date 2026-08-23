@@ -1,0 +1,26 @@
+name: fetch-viz-release
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch immutable rtichoke_viz release
+        run: |
+          set -euxo pipefail
+          curl -L --fail -o rtichoke-viz-0.4.0.tar.gz https://github.com/uriahf/rtichoke_viz/releases/download/v0.4.0/rtichoke-viz-0.4.0.tar.gz
+          curl -L --fail -o rtichoke-viz-0.4.0.tar.gz.sha256 https://github.com/uriahf/rtichoke_viz/releases/download/v0.4.0/rtichoke-viz-0.4.0.tar.gz.sha256
+          cat rtichoke-viz-0.4.0.tar.gz.sha256
+          sha256sum rtichoke-viz-0.4.0.tar.gz
+          tar -xzf rtichoke-viz-0.4.0.tar.gz
+          grep -q renderLiftV2 rtichoke-viz-0.4.0/rtichoke-viz.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rtichoke-viz-v0.4.0-release
+          path: |
+            rtichoke-viz-0.4.0.tar.gz
+            rtichoke-viz-0.4.0.tar.gz.sha256
+            rtichoke-viz-0.4.0/
