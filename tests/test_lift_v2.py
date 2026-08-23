@@ -95,8 +95,12 @@ def test_static_lift_v2_spec_multiple_populations():
     assert len(spec["series"]) == 2
     assert len(spec["references"]) == 3  # 1 global Random + 2 population Perfect
 
-    pop_a_ref = [r for r in spec["references"] if r.get("population") == "Population A"][0]
-    pop_b_ref = [r for r in spec["references"] if r.get("population") == "Population B"][0]
+    pop_a_ref = [
+        r for r in spec["references"] if r.get("population") == "Population A"
+    ][0]
+    pop_b_ref = [
+        r for r in spec["references"] if r.get("population") == "Population B"
+    ][0]
 
     # Pop A prevalence = 0.5 -> y = 2.0
     assert pop_a_ref["points"] == [
