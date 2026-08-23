@@ -1,0 +1,37 @@
+name: verify-wheel-vendor
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - run: uv build
+      - name: Verify wheel contains immutable rtichoke_viz payload
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          wheel = next(Path("dist").glob("*.whl"))
+          with ZipFile(wheel) as archive:
+              names = set(archive.namelist())
+          required = {
+              "rtichoke/_vendor/rtichoke_viz/README",
+              "rtichoke/_vendor/rtichoke_viz/VENDORED_FROM",
+              "rtichoke/_vendor/rtichoke_viz/rtichoke-viz-0.4.0.tar.gz",
+              "rtichoke/_vendor/rtichoke_viz/rtichoke-viz.js",
+              "rtichoke/_vendor/rtichoke_viz/rtichoke-viz.css",
+              "rtichoke/_vendor/rtichoke_viz/rtichoke-viz.schema.json",
+              "rtichoke/_vendor/rtichoke_viz/rtichoke-viz-v2.schema.json",
+          }
+          missing = required - names
+          assert not missing, f"wheel is missing vendored files: {sorted(missing)}"
+          assert not any(name.endswith("rtichoke-viz-0.3.1.tar.gz") for name in names)
+          PY
