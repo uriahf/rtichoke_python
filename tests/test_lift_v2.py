@@ -1,12 +1,9 @@
-from pathlib import Path
-
 import matplotlib.figure
 import numpy as np
 import plotly.graph_objects as go
 import pytest
 
 from rtichoke import create_lift_curve
-from rtichoke._renderers import RtichokeBrowserChart
 from rtichoke._viz_spec_v2 import _lift_v2_spec_from_performance_data
 from rtichoke.performance_data.performance_data import prepare_performance_data
 from rtichoke.processing.evaluation_semantics import (
