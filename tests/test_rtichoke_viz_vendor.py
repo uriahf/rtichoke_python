@@ -51,4 +51,3 @@ def test_v031_bundle_keeps_v1_adds_v2_exports_and_time_horizon_control():
         assert export_name in bundle
 
     assert "Fixed Time Horizon" in bundle
-
