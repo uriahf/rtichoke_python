@@ -143,4 +143,5 @@ From here, use the API Reference for the full set of curve types, parameters, an
 ### Meta
 
 **Requires:** Python `>=3.12`\
+**Provides-Extra:** `matplotlib`\
 [Package Info](package-info.md)
