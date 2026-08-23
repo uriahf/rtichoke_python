@@ -491,8 +491,9 @@ def _lift_y_axis_upper_bound(
     perfect_heights: list[float],
 ) -> float:
     """Return the finite numeric Lift bound implied by existing plot quantities."""
-    observed_lift = float(performance_data["lift"].max())
-    return max(1.0, observed_lift, *perfect_heights)
+    observed_lift = performance_data["lift"].max()
+    assert isinstance(observed_lift, (int, float))
+    return max(1.0, float(observed_lift), *perfect_heights)
 
 
 def _curve_v2_spec_from_performance_data(
