@@ -4,6 +4,7 @@ from pathlib import Path
 
 
 _VENDOR = Path(__file__).parents[1] / "src" / "rtichoke" / "_vendor" / "rtichoke_viz"
+_RELEASE_DIR = "rtichoke-viz-0.4.0"
 
 
 def test_vendored_rtichoke_viz_v040_provenance_archive_and_schemas():
@@ -22,13 +23,22 @@ def test_vendored_rtichoke_viz_v040_provenance_archive_and_schemas():
     )
     with tarfile.open(archive, "r:gz") as release:
         assert set(release.getnames()) == {
-            "rtichoke-viz-0.4.0",
-            "rtichoke-viz-0.4.0/MANIFEST",
-            "rtichoke-viz-0.4.0/rtichoke-viz.css",
-            "rtichoke-viz-0.4.0/rtichoke-viz.js",
-            "rtichoke-viz-0.4.0/rtichoke-viz.schema.json",
-            "rtichoke-viz-0.4.0/rtichoke-viz-v2.schema.json",
+            _RELEASE_DIR,
+            f"{_RELEASE_DIR}/MANIFEST",
+            f"{_RELEASE_DIR}/rtichoke-viz.css",
+            f"{_RELEASE_DIR}/rtichoke-viz.js",
+            f"{_RELEASE_DIR}/rtichoke-viz.schema.json",
+            f"{_RELEASE_DIR}/rtichoke-viz-v2.schema.json",
         }
+        for filename in (
+            "rtichoke-viz.css",
+            "rtichoke-viz.js",
+            "rtichoke-viz.schema.json",
+            "rtichoke-viz-v2.schema.json",
+        ):
+            packaged = release.extractfile(f"{_RELEASE_DIR}/{filename}")
+            assert packaged is not None
+            assert (_VENDOR / filename).read_bytes() == packaged.read()
 
     assert (_VENDOR / "rtichoke-viz.js").stat().st_size > 0
     assert (_VENDOR / "rtichoke-viz.css").stat().st_size > 0
