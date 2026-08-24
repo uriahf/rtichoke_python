@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from importlib.resources import files
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 import polars as pl
 
@@ -167,6 +167,45 @@ def _write_calibration_browser_html(
     import {{ renderCalibration }} from \"./rtichoke-viz.js\";
     const spec = JSON.parse(document.querySelector(\"#calibration-spec\").textContent);
     document.querySelector(\"#calibration-chart\").append(renderCalibration(spec));
+  </script>
+</body>
+</html>
+"""
+    output.write_text(html, encoding="utf-8")
+    return output
+
+
+def _write_report_browser_html(
+    report_spec: Mapping[str, object],
+    output_path: str | Path,
+) -> Path:
+    """Render a complete canonical ReportSpec through shared ``renderReport()``.
+
+    This helper is intentionally composition-only: it serializes the supplied
+    ReportSpec unchanged, writes the vendored browser dependencies, and invokes
+    the shared TypeScript report composer. It does not inspect, dispatch, or
+    normalize individual report components.
+    """
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    _copy_viz_assets(output.parent)
+
+    spec_json = json.dumps(report_spec, separators=(",", ":")).replace("</", "<\\/")
+    html = f"""<!doctype html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"utf-8\">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+  <title>rtichoke canonical report</title>
+  <link rel=\"stylesheet\" href=\"./rtichoke-viz.css\">
+</head>
+<body>
+  <div id=\"rtichoke-report\"></div>
+  <script id=\"rtichoke-report-spec\" type=\"application/json\">{spec_json}</script>
+  <script type=\"module\">
+    import {{ renderReport }} from \"./rtichoke-viz.js\";
+    const spec = JSON.parse(document.querySelector(\"#rtichoke-report-spec\").textContent);
+    document.querySelector(\"#rtichoke-report\").append(renderReport(spec));
   </script>
 </body>
 </html>
