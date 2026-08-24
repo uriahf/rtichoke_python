@@ -4,23 +4,19 @@ from pathlib import Path
 
 
 _VENDOR = Path(__file__).parents[1] / "src" / "rtichoke" / "_vendor" / "rtichoke_viz"
-_RELEASE_DIR = "rtichoke-viz-0.4.0"
+_RELEASE_DIR = "rtichoke-viz-0.5.0"
+_SHA256 = "ab36ae71f9090b4de62da8f552ebe84ac35885ab04958667faaf070db2c98f65"
 
 
-def test_vendored_rtichoke_viz_v040_provenance_archive_and_schemas():
+def test_vendored_rtichoke_viz_v050_provenance_archive_and_schemas():
     provenance = (_VENDOR / "VENDORED_FROM").read_text()
-    assert "release=v0.4.0" in provenance
-    assert "source_commit=2125c7099839cadd536c6f38f3f7e23a17ca4348" in provenance
-    assert "archive=rtichoke-viz-0.4.0.tar.gz" in provenance
-    assert (
-        "sha256=9a687cd938f1875d577e592664ca75447455166169f6132dd7f79406515e14e1"
-        in provenance
-    )
+    assert "release=v0.5.0" in provenance
+    assert "source_commit=9c5a114ebe968e8cef4d2f14bf82ed552d2c8a17" in provenance
+    assert "archive=rtichoke-viz-0.5.0.tar.gz" in provenance
+    assert f"sha256={_SHA256}" in provenance
 
-    archive = _VENDOR / "rtichoke-viz-0.4.0.tar.gz"
-    assert hashlib.sha256(archive.read_bytes()).hexdigest() == (
-        "9a687cd938f1875d577e592664ca75447455166169f6132dd7f79406515e14e1"
-    )
+    archive = _VENDOR / "rtichoke-viz-0.5.0.tar.gz"
+    assert hashlib.sha256(archive.read_bytes()).hexdigest() == _SHA256
     with tarfile.open(archive, "r:gz") as release:
         assert set(release.getnames()) == {
             _RELEASE_DIR,
@@ -30,6 +26,9 @@ def test_vendored_rtichoke_viz_v040_provenance_archive_and_schemas():
             f"{_RELEASE_DIR}/rtichoke-viz.schema.json",
             f"{_RELEASE_DIR}/rtichoke-viz-v2.schema.json",
         }
+        manifest = release.extractfile(f"{_RELEASE_DIR}/MANIFEST")
+        assert manifest is not None
+        assert manifest.read()
         for filename in (
             "rtichoke-viz.css",
             "rtichoke-viz.js",
@@ -40,6 +39,7 @@ def test_vendored_rtichoke_viz_v040_provenance_archive_and_schemas():
             assert packaged is not None
             assert (_VENDOR / filename).read_bytes() == packaged.read()
 
+    assert not (_VENDOR / "rtichoke-viz-0.4.0.tar.gz").exists()
     assert (_VENDOR / "rtichoke-viz.js").stat().st_size > 0
     assert (_VENDOR / "rtichoke-viz.css").stat().st_size > 0
 
@@ -49,7 +49,7 @@ def test_vendored_rtichoke_viz_v040_provenance_archive_and_schemas():
     assert '"$id": "https://rtichoke.dev/schema/viz/2.0.json"' in v2_schema
 
 
-def test_v040_bundle_keeps_existing_exports_adds_lift_and_time_horizon_control():
+def test_v050_bundle_keeps_existing_exports_and_adds_report_exports():
     bundle = (_VENDOR / "rtichoke-viz.js").read_text(encoding="utf-8")
     for export_name in (
         "renderRoc",
@@ -58,6 +58,8 @@ def test_v040_bundle_keeps_existing_exports_adds_lift_and_time_horizon_control()
         "renderGainsV2",
         "renderLiftV2",
         "RtichokeChartSpecV2Schema",
+        "renderPerformanceTable",
+        "renderReport",
     ):
         assert export_name in bundle
 

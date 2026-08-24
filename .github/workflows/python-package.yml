@@ -40,6 +40,28 @@ jobs:
       - name: Build package
         run: uv build
 
+      - name: Verify vendored browser assets in wheel
+        run: |
+          uv run python - <<'PY'
+          from pathlib import Path
+          import zipfile
+
+          wheel = next(Path("dist").glob("*.whl"))
+          with zipfile.ZipFile(wheel) as archive:
+              names = set(archive.namelist())
+          prefix = "rtichoke/_vendor/rtichoke_viz/"
+          required = {
+              f"{prefix}VENDORED_FROM",
+              f"{prefix}rtichoke-viz-0.5.0.tar.gz",
+              f"{prefix}rtichoke-viz.js",
+              f"{prefix}rtichoke-viz.css",
+              f"{prefix}rtichoke-viz.schema.json",
+              f"{prefix}rtichoke-viz-v2.schema.json",
+          }
+          assert required <= names
+          assert f"{prefix}rtichoke-viz-0.4.0.tar.gz" not in names
+          PY
+
       - name: Run tests
         run: uv run pytest tests
 
