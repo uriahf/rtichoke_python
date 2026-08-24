@@ -7,7 +7,7 @@ semantic evaluation metadata. They do not calculate or render statistics.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, TypedDict
 
 import math
 import polars as pl
@@ -32,10 +32,52 @@ _METRICS = (
 )
 
 
+class _EvaluationSpec(TypedDict, total=False):
+    id: str
+    model: str
+    population: str
+
+
+class _MetricDefinition(TypedDict):
+    id: str
+    label: str
+
+
+class _OperatingPoint(TypedDict):
+    type: str
+    value: float
+
+
+class _MetricValue(TypedDict):
+    metricId: str
+    estimate: float | int | None
+
+
+class _EvaluationContext(TypedDict):
+    censoringHeuristic: str
+    competingEventHeuristic: str
+
+
+class _PerformanceTableRow(TypedDict, total=False):
+    evaluationId: str
+    operatingPoint: _OperatingPoint
+    values: list[_MetricValue]
+    horizon: float
+    context: _EvaluationContext
+
+
+class _PerformanceTableSpec(TypedDict):
+    schemaVersion: str
+    type: str
+    evaluations: list[_EvaluationSpec]
+    metrics: list[_MetricDefinition]
+    rows: list[_PerformanceTableRow]
+
+
 def _performance_table_spec_from_performance_data(
     performance_data: pl.DataFrame,
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
-) -> dict[str, object]:
+) -> _PerformanceTableSpec:
     """Build the canonical static PerformanceTableSpec."""
     return _build_performance_table_spec(
         performance_data, evaluation_metadata, time_dependent=False
@@ -45,7 +87,7 @@ def _performance_table_spec_from_performance_data(
 def _performance_table_times_spec_from_performance_data(
     performance_data: pl.DataFrame,
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
-) -> dict[str, object]:
+) -> _PerformanceTableSpec:
     """Build the canonical time-dependent PerformanceTableSpec."""
     return _build_performance_table_spec(
         performance_data, evaluation_metadata, time_dependent=True
@@ -57,7 +99,7 @@ def _build_performance_table_spec(
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
     *,
     time_dependent: bool,
-) -> dict[str, object]:
+) -> _PerformanceTableSpec:
     required = {"reference_group", "stratified_by", "chosen_cutoff"}
     if time_dependent:
         required |= {
@@ -71,7 +113,7 @@ def _build_performance_table_spec(
             "Performance-table data is missing columns: " + ", ".join(sorted(missing))
         )
 
-    metric_definitions = [
+    metric_definitions: list[_MetricDefinition] = [
         {"id": metric_id, "label": label}
         for metric_id, label in _METRICS
         if metric_id in performance_data.columns
@@ -106,10 +148,10 @@ def _build_performance_table_spec(
         group: f"evaluation-{index}"
         for index, group in enumerate(ordered_groups, start=1)
     }
-    evaluations: list[dict[str, object]] = []
+    evaluations: list[_EvaluationSpec] = []
     for group in ordered_groups:
         metadata = evaluation_metadata[group]
-        evaluation: dict[str, object] = {
+        evaluation: _EvaluationSpec = {
             "id": evaluation_ids[group],
             "population": metadata.population,
         }
@@ -117,10 +159,11 @@ def _build_performance_table_spec(
             evaluation["model"] = metadata.model
         evaluations.append(evaluation)
 
-    canonical_rows: list[dict[str, object]] = []
+    canonical_rows: list[_PerformanceTableRow] = []
     for row in rows:
         group = str(row["reference_group"])
         stratified_by = str(row["stratified_by"])
+        operating_point: _OperatingPoint
         if stratified_by == "probability_threshold":
             operating_point = {
                 "type": "probability_threshold",
@@ -134,7 +177,7 @@ def _build_performance_table_spec(
                 f"or ppcr operating points, not {stratified_by!r}"
             )
 
-        canonical_row: dict[str, object] = {
+        canonical_row: _PerformanceTableRow = {
             "evaluationId": evaluation_ids[group],
             "operatingPoint": operating_point,
             "values": [
