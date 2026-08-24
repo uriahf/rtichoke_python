@@ -6,12 +6,18 @@ from rtichoke._performance_table_spec import (
     _performance_table_times_spec_from_performance_data,
 )
 from rtichoke.performance_data.performance_data import prepare_performance_data
-from rtichoke.performance_data.performance_data_times import prepare_performance_data_times
+from rtichoke.performance_data.performance_data_times import (
+    prepare_performance_data_times,
+)
 from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 
 
-def _static(probs, reals, *, by=0.5, stratified_by=("probability_threshold",)):
-    data = prepare_performance_data(probs, reals, by=by, stratified_by=stratified_by)
+def _static(
+    probs, reals, *, by=0.5, stratified_by=("probability_threshold",)
+):
+    data = prepare_performance_data(
+        probs, reals, by=by, stratified_by=stratified_by
+    )
     metadata = _build_evaluation_metadata(probs, reals, np.array([]))
     return _performance_table_spec_from_performance_data(data, metadata)
 
@@ -63,7 +69,10 @@ def test_static_multiple_models_share_population_and_ids_are_deterministic():
     assert {item["population"] for item in first["evaluations"]} == {
         "__shared_population__"
     }
-    assert {item["model"] for item in first["evaluations"]} == {"Model A", "Model B"}
+    assert {item["model"] for item in first["evaluations"]} == {
+        "Model A",
+        "Model B",
+    }
 
 
 def test_keyed_inputs_are_distinct_populations_with_unknown_model():
@@ -97,7 +106,9 @@ def test_static_probability_threshold_and_ppcr_operating_points():
         "probability_threshold"
     }
     assert {row["operatingPoint"]["type"] for row in ppcr["rows"]} == {"ppcr"}
-    assert all(0 <= row["operatingPoint"]["value"] <= 1 for row in ppcr["rows"])
+    assert all(
+        0 <= row["operatingPoint"]["value"] <= 1 for row in ppcr["rows"]
+    )
 
 
 def test_zero_is_preserved_and_missing_metric_is_null():
@@ -116,7 +127,8 @@ def test_zero_is_preserved_and_missing_metric_is_null():
     )
     spec = _performance_table_spec_from_performance_data(data, metadata)
     values = {
-        value["metricId"]: value["estimate"] for value in spec["rows"][0]["values"]
+        value["metricId"]: value["estimate"]
+        for value in spec["rows"][0]["values"]
     }
 
     assert values == {"sensitivity": 0.0, "ppv": None}
