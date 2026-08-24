@@ -92,6 +92,16 @@ Create an interactive calibration plot with a square main panel.
 Create an interactive time-dependent calibration plot with a square main panel.
 
 
+## Summary Reports
+
+
+Create historical R-backed reports or explicitly opt into canonical browser ReportSpec rendering.
+
+
+[create_summary_report()](create_summary_report.md#rtichoke.create_summary_report)  
+Create an rtichoke model-performance summary report.
+
+
 ## Utility
 
 

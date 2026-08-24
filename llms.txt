@@ -43,6 +43,11 @@
 - [create_calibration_curve](https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve.html): Create an interactive calibration plot with a square main panel
 - [create_calibration_curve_times](https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve_times.html): Create an interactive time-dependent calibration plot with a square main panel
 
+#### Summary Reports
+> Create historical R-backed reports or explicitly opt into canonical browser ReportSpec rendering.
+
+- [create_summary_report](https://uriahf.github.io/rtichoke_python/reference/create_summary_report.html): Create an rtichoke model-performance summary report
+
 #### Utility
 > Decision-curve analysis for classification and time-to-event models.
 
