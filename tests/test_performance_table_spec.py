@@ -69,10 +69,8 @@ def test_static_multiple_models_share_population_and_ids_are_deterministic():
     assert {item["population"] for item in first["evaluations"]} == {
         "__shared_population__"
     }
-    assert {item["model"] for item in first["evaluations"]} == {
-        "Model A",
-        "Model B",
-    }
+    models = {item["model"] for item in first["evaluations"]}
+    assert models == {"Model A", "Model B"}
 
 
 def test_keyed_inputs_are_distinct_populations_with_unknown_model():
@@ -143,7 +141,10 @@ def test_time_table_maps_horizon_and_heuristic_context():
             "censoring_heuristic": "adjusted",
             "competing_heuristic": "adjusted_as_negative",
         },
-        {"censoring_heuristic": "excluded", "competing_heuristic": "excluded"},
+        {
+            "censoring_heuristic": "excluded",
+            "competing_heuristic": "excluded",
+        },
     ]
     data = prepare_performance_data_times(
         probs,
