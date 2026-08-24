@@ -98,9 +98,7 @@ def _create_browser_summary_report(
         performance_data, metadata
     )
     roc = _roc_v2_spec_from_performance_data(performance_data, metadata)
-    calibration = _calibration_v2_spec_from_curve_list(
-        calibration_curve_list, metadata
-    )
+    calibration = _calibration_v2_spec_from_curve_list(calibration_curve_list, metadata)
 
     report = _report_spec_from_components(
         [
@@ -110,9 +108,7 @@ def _create_browser_summary_report(
         ],
         title="rtichoke summary report",
     )
-    return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(
-        output_file
-    )
+    return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(output_file)
 
 
 def render_summary_report():
