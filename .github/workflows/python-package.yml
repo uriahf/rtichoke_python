@@ -32,7 +32,12 @@ jobs:
         run: uv run ruff check .
 
       - name: Check format
-        run: uv run ruff format --check .
+        run: |
+          if ! uv run ruff format --check .; then
+            uv run ruff format tests/test_report_spec.py
+            git diff -- tests/test_report_spec.py
+            exit 1
+          fi
 
       - name: Check types
         run: uv run ty check src/rtichoke
