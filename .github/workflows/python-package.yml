@@ -32,10 +32,7 @@ jobs:
         run: uv run ruff check .
 
       - name: Check format
-        run: |
-          uv run ruff format .
-          git diff -- src/rtichoke/_calibration_viz_spec_v2.py tests/test_calibration_v2.py
-          exit 1
+        run: uv run ruff format --check .
 
       - name: Check types
         run: uv run ty check src/rtichoke
