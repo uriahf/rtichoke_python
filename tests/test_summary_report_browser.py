@@ -160,7 +160,8 @@ def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(
 
     assert result == output
     assert output.exists()
-    assert (tmp_path / "rtichoke-viz.js").exists()
+    viz_js_path = tmp_path / "rtichoke-viz.js"
+    assert viz_js_path.exists()
     assert (tmp_path / "rtichoke-viz.css").exists()
 
     html = output.read_text(encoding="utf-8")
@@ -177,11 +178,9 @@ def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(
     ]
     assert report["components"][1]["spec"]["schemaVersion"] == "2.0"
     assert report["components"][2]["spec"]["schemaVersion"] == "2.0"
-    assert 'import { renderReport } from "./rtichoke-viz.js";' in html
+    assert 'import { renderReport } from "./rtichoke-viz.js";' not in html
+    assert viz_js_path.read_text(encoding="utf-8") in html
     assert "append(renderReport(spec))" in html
-    assert "renderPerformanceTable" not in html
-    assert "renderRocV2" not in html
-    assert "renderCalibrationV2" not in html
 
 
 def test_browser_summary_report_executes_when_opened_directly(tmp_path):
