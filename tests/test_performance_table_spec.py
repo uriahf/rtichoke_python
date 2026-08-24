@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 import numpy as np
 import polars as pl
 
@@ -13,7 +15,11 @@ from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 
 
 def _static(
-    probs, reals, *, by=0.5, stratified_by=("probability_threshold",)
+    probs: dict[str, np.ndarray],
+    reals: np.ndarray | dict[str, np.ndarray],
+    *,
+    by: float = 0.5,
+    stratified_by: Sequence[str] = ("probability_threshold",),
 ):
     data = prepare_performance_data(
         probs, reals, by=by, stratified_by=stratified_by
