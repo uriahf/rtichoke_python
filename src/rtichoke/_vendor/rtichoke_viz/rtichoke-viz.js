@@ -2817,6 +2817,23 @@ var GainsV2SpecSchema = Type.Intersect([
   })
 ]);
 
+// src/spec/v2/lift.ts
+var LiftV2DatumSchema = Type.Object({
+  seriesId: Type.String(),
+  cutoff: Type.Number(),
+  ppcr: Type.Number({ minimum: 0, maximum: 1 }),
+  lift: Type.Number()
+});
+var LiftV2SpecSchema = Type.Intersect([
+  BaseChartV2SpecSchema,
+  Type.Object({
+    type: Type.Literal("lift"),
+    data: Type.Array(LiftV2DatumSchema),
+    x: Type.Literal("ppcr"),
+    y: Type.Literal("lift")
+  })
+]);
+
 // src/spec/v2/precision_recall.ts
 var PrecisionRecallV2DatumSchema = Type.Object({
   seriesId: Type.String(),
@@ -2857,13 +2874,99 @@ var RtichokeChartSpecV2Schema = Type.Union(
     RocV2SpecSchema,
     CalibrationV2SpecSchema,
     PrecisionRecallV2SpecSchema,
-    GainsV2SpecSchema
+    GainsV2SpecSchema,
+    LiftV2SpecSchema
   ],
   {
     $id: "https://rtichoke.dev/schema/viz/2.0.json",
     title: "rtichoke visualization specification v2"
   }
 );
+
+// src/spec/v2/performance-table.ts
+var PerformanceMetricIdSchema = Type.Union([
+  Type.Literal("true_positives"),
+  Type.Literal("true_negatives"),
+  Type.Literal("false_positives"),
+  Type.Literal("false_negatives"),
+  Type.Literal("sensitivity"),
+  Type.Literal("specificity"),
+  Type.Literal("false_positive_rate"),
+  Type.Literal("ppv"),
+  Type.Literal("npv"),
+  Type.Literal("lift"),
+  Type.Literal("predicted_positives"),
+  Type.Literal("ppcr"),
+  Type.Literal("net_benefit"),
+  Type.Literal("net_benefit_interventions_avoided")
+]);
+var PerformanceMetricDefinitionSchema = Type.Object({
+  id: PerformanceMetricIdSchema,
+  label: Type.String()
+});
+var PerformanceMetricValueSchema = Type.Object({
+  metricId: PerformanceMetricIdSchema,
+  estimate: Type.Union([Type.Number(), Type.Null()]),
+  lower: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+  upper: Type.Optional(Type.Union([Type.Number(), Type.Null()]))
+});
+var OperatingPointSchema = Type.Union([
+  Type.Object({
+    type: Type.Literal("probability_threshold"),
+    value: Type.Number()
+  }),
+  Type.Object({
+    type: Type.Literal("ppcr"),
+    value: Type.Number({ minimum: 0, maximum: 1 })
+  })
+]);
+var PerformanceEvaluationContextSchema = Type.Object({
+  censoringHeuristic: Type.Optional(Type.String()),
+  competingEventHeuristic: Type.Optional(Type.String())
+});
+var PerformanceTableRowSchema = Type.Object({
+  evaluationId: Type.String(),
+  horizon: Type.Optional(Type.Number({ minimum: 0 })),
+  operatingPoint: OperatingPointSchema,
+  context: Type.Optional(PerformanceEvaluationContextSchema),
+  values: Type.Array(PerformanceMetricValueSchema)
+});
+var PerformanceTableSpecSchema = Type.Object({
+  schemaVersion: Type.Literal("2.0"),
+  type: Type.Literal("performance_table"),
+  title: Type.Optional(Type.String()),
+  evaluations: Type.Array(EvaluationSpecSchema),
+  metrics: Type.Array(PerformanceMetricDefinitionSchema),
+  rows: Type.Array(PerformanceTableRowSchema)
+});
+
+// src/spec/v2/validate-performance-table.ts
+function assertPerformanceTableReferentialIntegrity(spec) {
+  const evaluationIds = /* @__PURE__ */ new Set();
+  for (const evaluation of spec.evaluations) {
+    if (evaluationIds.has(evaluation.id)) {
+      throw new Error(`duplicate evaluation id: ${evaluation.id}`);
+    }
+    evaluationIds.add(evaluation.id);
+  }
+  const metricIds = /* @__PURE__ */ new Set();
+  for (const metric of spec.metrics) {
+    if (metricIds.has(metric.id)) {
+      throw new Error(`duplicate metric id: ${metric.id}`);
+    }
+    metricIds.add(metric.id);
+  }
+  for (const row of spec.rows) {
+    if (!evaluationIds.has(row.evaluationId)) {
+      throw new Error(`unknown evaluation id: ${row.evaluationId}`);
+    }
+    for (const value of row.values) {
+      if (!metricIds.has(value.metricId)) {
+        throw new Error(`unknown metric id: ${value.metricId}`);
+      }
+    }
+  }
+}
 
 // src/spec/v2/validate.ts
 function assertV2ReferentialIntegrity(spec) {
@@ -18843,7 +18946,7 @@ function renderRocV2(spec, options = {}) {
     ...datum2,
     false_positive_rate: 1 - datum2.specificity,
     title: tooltip(theme.tip.digits, [
-      ["Model", datum2.label],
+      ["Series", datum2.label],
       ["Cutoff", datum2.cutoff],
       ["Sensitivity", datum2.sensitivity],
       ["Specificity", datum2.specificity]
@@ -18879,7 +18982,7 @@ function renderCalibrationV2(spec, options = {}) {
   const data = seriesRenderData(spec, spec.data).map((datum2) => ({
     ...datum2,
     title: tooltip(theme.tip.digits, [
-      ["Model", datum2.label],
+      ["Series", datum2.label],
       ["Predicted", datum2.predicted],
       ["Observed", datum2.observed],
       ["Events", datum2.events],
@@ -18935,7 +19038,7 @@ function renderCalibrationV2(spec, options = {}) {
     (datum2) => ({
       ...datum2,
       title: tooltip(theme.tip.digits, [
-        ["Model", datum2.label],
+        ["Series", datum2.label],
         ["Midpoint", datum2.midpoint],
         ["Count", datum2.count]
       ])
@@ -18989,13 +19092,14 @@ function renderLineChart(spec, options, x2, y2) {
     spec.data
   ).map((datum2) => {
     const values2 = datum2;
+    const yLabel = y2 === "ppv" ? "PPV" : y2 === "sensitivity" ? "Sensitivity" : "Lift";
     return {
       ...datum2,
       title: tooltip(theme.tip.digits, [
-        ["Model", datum2.label],
+        ["Series", datum2.label],
         ["Cutoff", values2.cutoff],
         [x2 === "ppcr" ? "PPCR" : "Sensitivity", values2[x2]],
-        [y2 === "ppv" ? "PPV" : "Sensitivity", values2[y2]]
+        [yLabel, values2[y2]]
       ])
     };
   });
@@ -19076,6 +19180,9 @@ function renderPrecisionRecallV2(spec, options = {}) {
 function renderGainsV2(spec, options = {}) {
   return renderHorizonLineChart(spec, options, "ppcr", "sensitivity");
 }
+function renderLiftV2(spec, options = {}) {
+  return renderHorizonLineChart(spec, options, "ppcr", "lift");
+}
 export {
   CalibrationSpecSchema,
   CalibrationV2SpecSchema,
@@ -19083,6 +19190,14 @@ export {
   DisplayRoleSchema,
   EvaluationSpecSchema,
   GainsV2SpecSchema,
+  LiftV2SpecSchema,
+  OperatingPointSchema,
+  PerformanceEvaluationContextSchema,
+  PerformanceMetricDefinitionSchema,
+  PerformanceMetricIdSchema,
+  PerformanceMetricValueSchema,
+  PerformanceTableRowSchema,
+  PerformanceTableSpecSchema,
   PrecisionRecallV2SpecSchema,
   RTICHOKE_BROWSER_THEME,
   RTICHOKE_COLORS3 as RTICHOKE_COLORS,
@@ -19092,12 +19207,14 @@ export {
   RtichokeChartSpecSchema,
   RtichokeChartSpecV2Schema,
   SeriesSpecSchema,
+  assertPerformanceTableReferentialIntegrity,
   assertV2ReferentialIntegrity,
   calibrationSpecFromRtichokeRows,
   calibrationV2SpecFromRtichokeRows,
   renderCalibration,
   renderCalibrationV2,
   renderGainsV2,
+  renderLiftV2,
   renderPrecisionRecallV2,
   renderRoc,
   renderRocV2,
@@ -19107,4 +19224,3 @@ export {
   rocV2SpecFromRtichokePython,
   rocV2SpecFromRtichokeR
 };
-

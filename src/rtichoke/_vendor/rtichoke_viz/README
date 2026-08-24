@@ -1,3 +1,3 @@
 Vendored from the immutable rtichoke_viz release recorded in VENDORED_FROM.
 The JS/CSS and both schema files are copied byte-for-byte from that release archive.
-Production browser integration remains on the existing v1 spec until a separate adoption change.
+Browser integrations use only renderer exports present in the recorded immutable release.

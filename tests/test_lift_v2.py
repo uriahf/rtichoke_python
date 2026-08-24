@@ -1,9 +1,9 @@
 import matplotlib.figure
 import numpy as np
 import plotly.graph_objects as go
-import pytest
 
 from rtichoke import create_lift_curve
+from rtichoke._renderers import RtichokeBrowserChart
 from rtichoke._viz_spec_v2 import _lift_v2_spec_from_performance_data
 from rtichoke.performance_data.performance_data import prepare_performance_data
 from rtichoke.processing.evaluation_semantics import (
@@ -158,7 +158,7 @@ def test_equal_prevalence_distinct_populations_maintain_separate_references():
     assert perfect_refs[0]["points"] == perfect_refs[1]["points"]
 
 
-def test_static_lift_renderers():
+def test_static_lift_renderers(tmp_path):
     probs, reals = _shared_model_inputs()
 
     default_fig = create_lift_curve(probs, reals, by=0.25)
@@ -167,8 +167,7 @@ def test_static_lift_renderers():
     mpl_fig = create_lift_curve(probs, reals, by=0.25, renderer="matplotlib")
     assert isinstance(mpl_fig, matplotlib.figure.Figure)
 
-    with pytest.raises(
-        ValueError,
-        match="Browser rendering for Lift curves requires a newer vendored release of rtichoke_viz",
-    ):
-        create_lift_curve(probs, reals, by=0.25, renderer="browser")
+    browser = create_lift_curve(probs, reals, by=0.25, renderer="browser")
+    assert isinstance(browser, RtichokeBrowserChart)
+    html = browser.write_html(tmp_path / "lift.html").read_text(encoding="utf-8")
+    assert "renderLiftV2" in html

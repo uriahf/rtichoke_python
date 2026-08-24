@@ -1,6 +1,5 @@
 repository=https://github.com/uriahf/rtichoke_viz
-release=v0.3.1
-source_commit=5ccde928a0bf9fa6ece2b7572687b442c57a98a9
-archive=rtichoke-viz-0.3.1.tar.gz
-sha256=121aa8eb8d0f8427ecfb2c01dab0fb05668eaedf47ddcfc0cd282a7ecf1ce448
-
+release=v0.4.0
+source_commit=2125c7099839cadd536c6f38f3f7e23a17ca4348
+archive=rtichoke-viz-0.4.0.tar.gz
+sha256=9a687cd938f1875d577e592664ca75447455166169f6132dd7f79406515e14e1
