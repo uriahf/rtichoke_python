@@ -100,6 +100,7 @@ def _serve(directory: Path) -> Iterator[str]:
 
 def _assert_report_rendered(browser: subprocess.CompletedProcess[str]) -> None:
     assert browser.returncode == 0, browser.stderr
+    assert "INFO:CONSOLE" not in browser.stderr, browser.stderr
     rendered = _rendered_report_html(browser.stdout)
     assert "Performance" in rendered, browser.stderr
     assert "ROC" in rendered
