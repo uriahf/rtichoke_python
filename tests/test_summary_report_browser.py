@@ -42,7 +42,12 @@ def _embedded_report(html: str) -> dict[str, Any]:
 
 
 def _chrome_executable() -> str:
-    for candidate in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser"):
+    for candidate in (
+        "google-chrome",
+        "google-chrome-stable",
+        "chromium",
+        "chromium-browser",
+    ):
         executable = shutil.which(candidate)
         if executable is not None:
             return executable
