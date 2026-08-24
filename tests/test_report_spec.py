@@ -8,6 +8,20 @@ from rtichoke._report_spec import _report_spec_from_components
 from rtichoke.summary_report import summary_report as legacy_summary_report
 
 
+def _evaluation(
+    evaluation_id: str,
+    population: str,
+    model: str | None = None,
+) -> dict[str, object]:
+    result: dict[str, object] = {
+        "id": evaluation_id,
+        "population": population,
+    }
+    if model is not None:
+        result["model"] = model
+    return result
+
+
 def _curve_spec(
     chart_type: str,
     *,
@@ -15,12 +29,17 @@ def _curve_spec(
     horizon: float | None = None,
 ) -> dict[str, Any]:
     evaluations = evaluations or [
-        {"id": "evaluation-1", "model": "model-a", "population": "population-a"}
+        _evaluation("evaluation-1", "population-a", "model-a")
     ]
+    display = {
+        "label": "Model A",
+        "group": "Model A",
+        "role": "model",
+    }
     series: dict[str, object] = {
         "id": "series-1",
         "evaluationId": "evaluation-1",
-        "display": {"label": "Model A", "group": "Model A", "role": "model"},
+        "display": display,
     }
     if horizon is not None:
         series["horizon"] = horizon
@@ -41,8 +60,16 @@ def _curve_spec(
 def _performance_table_spec(*, time_dependent: bool = False) -> dict[str, Any]:
     row: dict[str, object] = {
         "evaluationId": "evaluation-1",
-        "operatingPoint": {"type": "probability_threshold", "value": 0.5},
-        "values": [{"metricId": "sensitivity", "estimate": 0.8}],
+        "operatingPoint": {
+            "type": "probability_threshold",
+            "value": 0.5,
+        },
+        "values": [
+            {
+                "metricId": "sensitivity",
+                "estimate": 0.8,
+            }
+        ],
     }
     if time_dependent:
         row["horizon"] = 365.0
@@ -54,23 +81,34 @@ def _performance_table_spec(*, time_dependent: bool = False) -> dict[str, Any]:
         "schemaVersion": "2.0",
         "type": "performance_table",
         "evaluations": [
-            {"id": "evaluation-1", "model": "model-a", "population": "population-a"}
+            _evaluation("evaluation-1", "population-a", "model-a")
         ],
-        "metrics": [{"id": "sensitivity", "label": "Sensitivity"}],
+        "metrics": [
+            {
+                "id": "sensitivity",
+                "label": "Sensitivity",
+            }
+        ],
         "rows": [row],
     }
 
 
-def test_report_composes_performance_table_roc_and_calibration_in_order() -> None:
+def test_core_composition_and_order() -> None:
     performance_table = _performance_table_spec()
     roc = _curve_spec("roc")
     calibration = _curve_spec("calibration")
 
     report = _report_spec_from_components(
         [
-            {"spec": performance_table, "title": "Performance"},
+            {
+                "spec": performance_table,
+                "title": "Performance",
+            },
             {"spec": roc},
-            {"spec": calibration, "title": "Calibration"},
+            {
+                "spec": calibration,
+                "title": "Calibration",
+            },
         ],
         title="Model report",
     )
@@ -78,45 +116,50 @@ def test_report_composes_performance_table_roc_and_calibration_in_order() -> Non
     assert report["schemaVersion"] == "1.0"
     assert report["type"] == "report"
     assert report["title"] == "Model report"
-    assert [component["id"] for component in report["components"]] == [
+    component_ids = [component["id"] for component in report["components"]]
+    component_types = [component["spec"]["type"] for component in report["components"]]
+    assert component_ids == [
         "performance-table",
         "roc",
         "calibration",
     ]
-    assert [component["spec"]["type"] for component in report["components"]] == [
+    assert component_types == [
         "performance_table",
         "roc",
         "calibration",
     ]
 
 
-def test_component_ids_are_deterministic_unique_and_separate_from_series_ids() -> (
-    None
-):
+def test_component_ids_are_deterministic_and_unique() -> None:
     first_roc = _curve_spec("roc")
     second_roc = _curve_spec("roc")
+    inputs = [
+        {"spec": first_roc},
+        {"spec": second_roc},
+        {"spec": _curve_spec("lift")},
+    ]
 
-    first = _report_spec_from_components(
-        [{"spec": first_roc}, {"spec": second_roc}, {"spec": _curve_spec("lift")}]
-    )
-    second = _report_spec_from_components(
-        [{"spec": first_roc}, {"spec": second_roc}, {"spec": _curve_spec("lift")}]
-    )
+    first = _report_spec_from_components(inputs)
+    second = _report_spec_from_components(inputs)
 
     ids = [component["id"] for component in first["components"]]
+    second_ids = [component["id"] for component in second["components"]]
     assert ids == ["roc", "roc-2", "lift"]
-    assert ids == [component["id"] for component in second["components"]]
+    assert ids == second_ids
     assert len(ids) == len(set(ids))
     assert "series-1" not in ids
 
 
-def test_embedded_specs_are_complete_unchanged_and_evaluations_are_component_local() -> (
-    None
-):
+def test_specs_remain_complete_and_component_local() -> None:
     roc = _curve_spec("roc")
     calibration = _curve_spec("calibration")
 
-    report = _report_spec_from_components([{"spec": roc}, {"spec": calibration}])
+    report = _report_spec_from_components(
+        [
+            {"spec": roc},
+            {"spec": calibration},
+        ]
+    )
 
     assert report["components"][0]["spec"] is roc
     assert report["components"][1]["spec"] is calibration
@@ -125,25 +168,31 @@ def test_embedded_specs_are_complete_unchanged_and_evaluations_are_component_loc
     assert calibration["evaluations"][0]["id"] == "evaluation-1"
 
 
-def test_report_preserves_model_known_unknown_and_multiple_populations() -> None:
+def test_semantics_pass_through_unchanged() -> None:
     known = _curve_spec(
         "roc",
         evaluations=[
-            {"id": "evaluation-1", "model": "model-a", "population": "population-a"},
-            {"id": "evaluation-2", "model": "model-b", "population": "population-b"},
+            _evaluation("evaluation-1", "population-a", "model-a"),
+            _evaluation("evaluation-2", "population-b", "model-b"),
         ],
     )
     unknown = _curve_spec(
         "calibration",
-        evaluations=[{"id": "evaluation-1", "population": "population-c"}],
+        evaluations=[_evaluation("evaluation-1", "population-c")],
     )
 
-    report = _report_spec_from_components([{"spec": known}, {"spec": unknown}])
+    report = _report_spec_from_components(
+        [
+            {"spec": known},
+            {"spec": unknown},
+        ]
+    )
 
     assert report["components"][0]["spec"] is known
     assert report["components"][1]["spec"] is unknown
     assert known["evaluations"][0]["model"] == "model-a"
-    assert {item["population"] for item in known["evaluations"]} == {
+    populations = {item["population"] for item in known["evaluations"]}
+    assert populations == {
         "population-a",
         "population-b",
     }
@@ -151,11 +200,16 @@ def test_report_preserves_model_known_unknown_and_multiple_populations() -> None
     assert unknown["evaluations"][0]["population"] == "population-c"
 
 
-def test_time_dependent_component_is_embedded_without_recomputation() -> None:
+def test_time_dependent_specs_pass_through_unchanged() -> None:
     table = _performance_table_spec(time_dependent=True)
     gains = _curve_spec("gains", horizon=365.0)
 
-    report = _report_spec_from_components([{"spec": table}, {"spec": gains}])
+    report = _report_spec_from_components(
+        [
+            {"spec": table},
+            {"spec": gains},
+        ]
+    )
 
     assert report["components"][0]["spec"] is table
     assert report["components"][1]["spec"] is gains
@@ -163,7 +217,7 @@ def test_time_dependent_component_is_embedded_without_recomputation() -> None:
     assert gains["series"][0]["horizon"] == 365.0
 
 
-def test_all_first_report_component_types_are_supported() -> None:
+def test_first_report_component_types_are_supported() -> None:
     specs = [
         _performance_table_spec(),
         _curve_spec("roc"),
@@ -175,7 +229,8 @@ def test_all_first_report_component_types_are_supported() -> None:
 
     report = _report_spec_from_components([{"spec": spec} for spec in specs])
 
-    assert [component["id"] for component in report["components"]] == [
+    component_ids = [component["id"] for component in report["components"]]
+    assert component_ids == [
         "performance-table",
         "roc",
         "calibration",
@@ -185,15 +240,26 @@ def test_all_first_report_component_types_are_supported() -> None:
     ]
 
 
-def test_report_requires_components_and_rejects_out_of_scope_types() -> None:
+def test_invalid_report_components_are_rejected() -> None:
     with pytest.raises(ValueError, match="at least one component"):
         _report_spec_from_components([])
 
-    with pytest.raises(ValueError, match="Unsupported ReportSpec component type"):
-        _report_spec_from_components([{"spec": {"type": "decision_curve"}}])
+    with pytest.raises(
+        ValueError,
+        match="Unsupported ReportSpec component type",
+    ):
+        _report_spec_from_components(
+            [
+                {
+                    "spec": {
+                        "type": "decision_curve",
+                    }
+                }
+            ]
+        )
 
 
-def test_existing_public_summary_report_still_uses_r_backend(
+def test_existing_summary_report_still_uses_r_backend(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[dict[str, Any]] = []
@@ -221,7 +287,9 @@ def test_existing_public_summary_report_still_uses_r_backend(
     assert calls == [
         {
             "dictionary_to_send": {
-                "probs": {"model-a": [0.1, 0.9]},
+                "probs": {
+                    "model-a": [0.1, 0.9],
+                },
                 "reals": [0, 1],
             },
             "url_api": "http://example.test/",
