@@ -60,15 +60,11 @@ def _calibration_v2_spec_from_curve_list(
 
     point_rows = point_frame.to_dicts()
     distribution_rows = distribution_frame.to_dicts()
-    row_groups = {
-        str(row["reference_group"]) for row in point_rows + distribution_rows
-    }
+    row_groups = {str(row["reference_group"]) for row in point_rows + distribution_rows}
     missing_metadata = row_groups.difference(evaluation_metadata)
     if missing_metadata:
         groups = ", ".join(sorted(missing_metadata))
-        raise ValueError(
-            "Calibration rows are missing evaluation metadata: " + groups
-        )
+        raise ValueError("Calibration rows are missing evaluation metadata: " + groups)
 
     ordered_groups = [group for group in evaluation_metadata if group in row_groups]
     evaluation_ids = {
@@ -78,15 +74,10 @@ def _calibration_v2_spec_from_curve_list(
 
     series_keys: list[tuple[str, float | None]] = []
     for group in ordered_groups:
-        group_rows = [
-            row for row in point_rows if str(row["reference_group"]) == group
-        ]
+        group_rows = [row for row in point_rows if str(row["reference_group"]) == group]
         horizons = (
             sorted(
-                {
-                    float(cast(float, row["fixed_time_horizon"]))
-                    for row in group_rows
-                }
+                {float(cast(float, row["fixed_time_horizon"])) for row in group_rows}
             )
             if has_horizon
             else [None]
@@ -133,9 +124,7 @@ def _calibration_v2_spec_from_curve_list(
     data: list[dict[str, object]] = []
     for row in point_rows:
         group = str(row["reference_group"])
-        horizon = (
-            float(cast(float, row["fixed_time_horizon"])) if has_horizon else None
-        )
+        horizon = float(cast(float, row["fixed_time_horizon"])) if has_horizon else None
         datum: dict[str, object] = {
             "seriesId": series_ids[(group, horizon)],
             "predicted": row["x"],
@@ -150,9 +139,7 @@ def _calibration_v2_spec_from_curve_list(
     distribution: list[dict[str, object]] = []
     for row in distribution_rows:
         group = str(row["reference_group"])
-        horizon = (
-            float(cast(float, row["fixed_time_horizon"])) if has_horizon else None
-        )
+        horizon = float(cast(float, row["fixed_time_horizon"])) if has_horizon else None
         distribution.append(
             {
                 "seriesId": series_ids[(group, horizon)],
@@ -179,9 +166,7 @@ def _calibration_v2_spec_from_curve_list(
     }
 
 
-def _require_frame(
-    calibration_curve_list: Mapping[str, Any], key: str
-) -> pl.DataFrame:
+def _require_frame(calibration_curve_list: Mapping[str, Any], key: str) -> pl.DataFrame:
     value = calibration_curve_list.get(key)
     if not isinstance(value, pl.DataFrame):
         raise ValueError(f"Calibration production output is missing DataFrame {key!r}.")
