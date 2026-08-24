@@ -101,10 +101,14 @@ reference:
       - create_calibration_curve
       - create_calibration_curve_times
 
+  - title: Summary Reports
+    desc: Create historical R-backed reports or explicitly opt into canonical browser ReportSpec rendering.
+    contents:
+      - create_summary_report
+
   - title: Utility
     desc: Decision-curve analysis for classification and time-to-event models.
     contents:
       - create_decision_curve
       - create_decision_curve_times
       - plot_decision_curve
-
