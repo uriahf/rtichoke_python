@@ -235,7 +235,7 @@
     "href": "package-info.html",
     "title": "Package Info",
     "section": "",
-    "text": "Package\nVersion Constraint\nLast Published\nPyPI\n\n\n\n\nplotly\n&lt;7.0.0,&gt;=6.0.0\n2026-07-09\n\n\n\npolarstate\n==0.1.8\n2025-07-29\n\n\n\nsmoothstate\n&gt;=0.1.1\n2026-08-19\n\n\n\npolars\n&gt;=1.31.0\n2026-08-24\n\n\n\nreactable\n&gt;=0.1.5\n2025-10-10\n\n\n\ngreat-tables\n&gt;=0.18.0\n2026-07-27"
+    "text": "Package\nVersion Constraint\nLast Published\nPyPI\n\n\n\n\nplotly\n&lt;7.0.0,&gt;=6.0.0\n2026-07-09\n\n\n\npolarstate\n==0.1.8\n2025-07-29\n\n\n\nsmoothstate\n&gt;=0.1.1\n2026-08-19\n\n\n\npolars\n&gt;=1.31.0\n2026-08-24\n\n\n\nreactable\n&gt;=0.1.5\n2025-10-10\n\n\n\ngreat-tables\n&gt;=0.18.0\n2026-08-24"
   },
   {
     "objectID": "package-info.html#matplotlib",
