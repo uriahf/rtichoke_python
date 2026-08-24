@@ -9,7 +9,9 @@ from typing import Any, Dict, Literal, Union, cast
 import numpy as np
 
 from rtichoke._calibration_viz_spec_v2 import _calibration_v2_spec_from_curve_list
-from rtichoke._performance_table_spec import _performance_table_spec_from_performance_data
+from rtichoke._performance_table_spec import (
+    _performance_table_spec_from_performance_data,
+)
 from rtichoke._report_browser import RtichokeBrowserReport
 from rtichoke._report_spec import _report_spec_from_components
 from rtichoke._viz_spec_v2 import _roc_v2_spec_from_performance_data
@@ -108,7 +110,9 @@ def _create_browser_summary_report(
         ],
         title="rtichoke summary report",
     )
-    return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(output_file)
+    return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(
+        output_file
+    )
 
 
 def render_summary_report():
