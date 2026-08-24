@@ -13,7 +13,7 @@ def _curve_spec(
     *,
     evaluations: list[dict[str, object]] | None = None,
     horizon: float | None = None,
-) -> dict[str, object]:
+) -> dict[str, Any]:
     evaluations = evaluations or [
         {"id": "evaluation-1", "model": "model-a", "population": "population-a"}
     ]
@@ -38,7 +38,7 @@ def _curve_spec(
     }
 
 
-def _performance_table_spec(*, time_dependent: bool = False) -> dict[str, object]:
+def _performance_table_spec(*, time_dependent: bool = False) -> dict[str, Any]:
     row: dict[str, object] = {
         "evaluationId": "evaluation-1",
         "operatingPoint": {"type": "probability_threshold", "value": 0.5},
@@ -90,7 +90,9 @@ def test_report_composes_performance_table_roc_and_calibration_in_order() -> Non
     ]
 
 
-def test_component_ids_are_deterministic_unique_and_separate_from_series_ids() -> None:
+def test_component_ids_are_deterministic_unique_and_separate_from_series_ids() -> (
+    None
+):
     first_roc = _curve_spec("roc")
     second_roc = _curve_spec("roc")
 
@@ -108,7 +110,9 @@ def test_component_ids_are_deterministic_unique_and_separate_from_series_ids() -
     assert "series-1" not in ids
 
 
-def test_embedded_specs_are_complete_unchanged_and_evaluations_are_component_local() -> None:
+def test_embedded_specs_are_complete_unchanged_and_evaluations_are_component_local() -> (
+    None
+):
     roc = _curve_spec("roc")
     calibration = _curve_spec("calibration")
 
@@ -117,8 +121,8 @@ def test_embedded_specs_are_complete_unchanged_and_evaluations_are_component_loc
     assert report["components"][0]["spec"] is roc
     assert report["components"][1]["spec"] is calibration
     assert roc["evaluations"] == calibration["evaluations"]
-    assert report["components"][0]["spec"]["evaluations"][0]["id"] == "evaluation-1"
-    assert report["components"][1]["spec"]["evaluations"][0]["id"] == "evaluation-1"
+    assert roc["evaluations"][0]["id"] == "evaluation-1"
+    assert calibration["evaluations"][0]["id"] == "evaluation-1"
 
 
 def test_report_preserves_model_known_unknown_and_multiple_populations() -> None:
@@ -136,15 +140,15 @@ def test_report_preserves_model_known_unknown_and_multiple_populations() -> None
 
     report = _report_spec_from_components([{"spec": known}, {"spec": unknown}])
 
-    known_evaluations = report["components"][0]["spec"]["evaluations"]
-    unknown_evaluation = report["components"][1]["spec"]["evaluations"][0]
-    assert known_evaluations[0]["model"] == "model-a"
-    assert {item["population"] for item in known_evaluations} == {
+    assert report["components"][0]["spec"] is known
+    assert report["components"][1]["spec"] is unknown
+    assert known["evaluations"][0]["model"] == "model-a"
+    assert {item["population"] for item in known["evaluations"]} == {
         "population-a",
         "population-b",
     }
-    assert "model" not in unknown_evaluation
-    assert unknown_evaluation["population"] == "population-c"
+    assert "model" not in unknown["evaluations"][0]
+    assert unknown["evaluations"][0]["population"] == "population-c"
 
 
 def test_time_dependent_component_is_embedded_without_recomputation() -> None:
@@ -189,7 +193,9 @@ def test_report_requires_components_and_rejects_out_of_scope_types() -> None:
         _report_spec_from_components([{"spec": {"type": "decision_curve"}}])
 
 
-def test_existing_public_summary_report_still_uses_r_backend(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_existing_public_summary_report_still_uses_r_backend(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     calls: list[dict[str, Any]] = []
 
     class _Response:
