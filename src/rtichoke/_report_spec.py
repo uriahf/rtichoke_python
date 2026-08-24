@@ -35,11 +35,6 @@ _COMPONENT_ID_BASES = {
 }
 
 
-class _ReportComponentInput(TypedDict, total=False):
-    spec: Mapping[str, object]
-    title: str
-
-
 class _ReportComponent(TypedDict, total=False):
     id: str
     title: str
@@ -54,7 +49,7 @@ class _ReportSpec(TypedDict, total=False):
 
 
 def _report_spec_from_components(
-    components: Sequence[_ReportComponentInput],
+    components: Sequence[Mapping[str, object]],
     *,
     title: str | None = None,
 ) -> _ReportSpec:
@@ -73,7 +68,7 @@ def _report_spec_from_components(
     report_components: list[_ReportComponent] = []
     for component in components:
         spec = component.get("spec")
-        if spec is None:
+        if not isinstance(spec, Mapping):
             raise ValueError("Report component is missing spec")
 
         component_type = spec.get("type")
@@ -93,6 +88,8 @@ def _report_spec_from_components(
         }
         component_title = component.get("title")
         if component_title is not None:
+            if not isinstance(component_title, str):
+                raise ValueError("Report component title must be a string")
             assembled["title"] = component_title
         report_components.append(assembled)
 
