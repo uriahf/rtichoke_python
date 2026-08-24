@@ -1,11 +1,12 @@
 name: Temporary vendor rtichoke_viz v0.5.0
 
 on:
-  push:
+  pull_request:
     branches:
-      - feature/browser-report-viz-0.5.0
+      - main
     paths:
       - .github/workflows/temp-vendor-viz-050.yml
+      - src/rtichoke/_report_browser.py
 
 permissions:
   contents: write
@@ -35,9 +36,7 @@ jobs:
           cp "$(find /tmp/rtichoke-viz-0.5.0 -name rtichoke-viz.css -print -quit)" "$vendor/rtichoke-viz.css"
           cp "$(find /tmp/rtichoke-viz-0.5.0 -name rtichoke-viz.schema.json -print -quit)" "$vendor/rtichoke-viz.schema.json"
           cp "$(find /tmp/rtichoke-viz-0.5.0 -name rtichoke-viz-v2.schema.json -print -quit)" "$vendor/rtichoke-viz-v2.schema.json"
-          manifest="$(find /tmp/rtichoke-viz-0.5.0 -name MANIFEST -print -quit)"
-          test -n "$manifest"
-          cp "$manifest" "$vendor/MANIFEST"
+          cp "$(find /tmp/rtichoke-viz-0.5.0 -name MANIFEST -print -quit)" "$vendor/MANIFEST"
       - name: Commit vendored artifact
         shell: bash
         run: |
