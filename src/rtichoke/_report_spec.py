@@ -6,10 +6,9 @@ create report-global semantic registries.
 
 This path is intentionally separate from the existing public summary-report
 API, which currently delegates to the historical R backend and Quarto
-composition. A future migration can replace that composition layer with the
-shared browser ``renderReport()`` once an immutable vendored ``rtichoke_viz``
-release exposes the report renderer. The existing public report behavior is
-left unchanged here.
+composition. Complete ReportSpec values can now use the internal shared-browser
+path backed by the immutable vendored ``rtichoke_viz`` release, while the
+existing public report behavior remains unchanged.
 """
 
 from __future__ import annotations
