@@ -11,7 +11,20 @@ from rtichoke.summary_report.summary_report import create_summary_report
 def _inputs():
     probs = {
         "Model A": np.array(
-            [0.03, 0.08, 0.12, 0.18, 0.25, 0.32, 0.40, 0.50, 0.62, 0.75, 0.88, 0.96]
+            [
+                0.03,
+                0.08,
+                0.12,
+                0.18,
+                0.25,
+                0.32,
+                0.40,
+                0.50,
+                0.62,
+                0.75,
+                0.88,
+                0.96,
+            ]
         )
     }
     reals = np.array([0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1])
@@ -54,17 +67,17 @@ def test_default_summary_report_keeps_historical_r_backend(monkeypatch, capsys):
     result = create_summary_report(probs, reals)
 
     assert result is None
-    assert calls == [
-        {
-            "dictionary_to_send": {"probs": probs, "reals": reals},
-            "url_api": "http://localhost:4242/",
-            "endpoint": "create_summary_report",
-        }
-    ]
+    assert len(calls) == 1
+    assert calls[0]["dictionary_to_send"]["probs"] is probs
+    assert calls[0]["dictionary_to_send"]["reals"] is reals
+    assert calls[0]["url_api"] == "http://localhost:4242/"
+    assert calls[0]["endpoint"] == "create_summary_report"
     assert "dict_keys(['historical'])" in capsys.readouterr().out
 
 
-def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(tmp_path):
+def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(
+    tmp_path,
+):
     probs, reals = _inputs()
     output = tmp_path / "canonical-summary.html"
 
