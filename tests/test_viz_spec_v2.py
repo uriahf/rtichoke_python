@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 import numpy as np
 
 from rtichoke._viz_spec_v2 import (
@@ -24,6 +26,7 @@ def test_roc_v2_one_model_one_population():
         performance_data,
         _static_metadata(probs, reals),
     )
+    spec = cast(dict[str, Any], spec)
 
     assert spec["schemaVersion"] == "2.0"
     assert spec["type"] == "roc"
@@ -57,6 +60,7 @@ def test_roc_v2_multiple_models_share_one_population():
         performance_data,
         _static_metadata(probs, reals),
     )
+    spec = cast(dict[str, Any], spec)
 
     evaluations = spec["evaluations"]
     assert [evaluation["id"] for evaluation in evaluations] == [
@@ -87,6 +91,7 @@ def test_roc_v2_keyed_populations_keep_model_identity_unknown():
         performance_data,
         _static_metadata(probs, reals),
     )
+    spec = cast(dict[str, Any], spec)
 
     assert spec["evaluations"] == [
         {"id": "evaluation-1", "population": "Population A"},
@@ -112,6 +117,7 @@ def test_roc_v2_ids_do_not_encode_compatibility_group_labels():
         prepare_performance_data(probs, reals, by=0.25),
         _static_metadata(probs, reals),
     )
+    spec = cast(dict[str, Any], spec)
 
     renamed_reals = {
         "Cohort X": reals["Population A"],
@@ -125,6 +131,7 @@ def test_roc_v2_ids_do_not_encode_compatibility_group_labels():
         prepare_performance_data(renamed_probs, renamed_reals, by=0.25),
         _static_metadata(renamed_probs, renamed_reals),
     )
+    renamed_spec = cast(dict[str, Any], renamed_spec)
 
     assert [evaluation["id"] for evaluation in spec["evaluations"]] == [
         evaluation["id"] for evaluation in renamed_spec["evaluations"]
@@ -142,6 +149,7 @@ def test_gains_v2_uses_production_prevalence_for_perfect_path():
     spec = _gains_v2_spec_from_performance_data(
         performance_data, _static_metadata(probs, reals)
     )
+    spec = cast(dict[str, Any], spec)
 
     assert spec["type"] == "gains"
     assert spec["x"] == "ppcr"
@@ -171,6 +179,7 @@ def test_gains_v2_shares_one_perfect_path_across_models():
         prepare_performance_data(probs, reals, by=0.25),
         _static_metadata(probs, reals),
     )
+    spec = cast(dict[str, Any], spec)
 
     assert len(spec["series"]) == 2
     assert len(spec["references"]) == 2
@@ -191,6 +200,7 @@ def test_gains_v2_keeps_equal_prevalence_populations_distinct():
         prepare_performance_data(probs, reals, by=0.25),
         _static_metadata(probs, reals),
     )
+    spec = cast(dict[str, Any], spec)
 
     perfect = spec["references"][1:]
     assert [reference["population"] for reference in perfect] == [

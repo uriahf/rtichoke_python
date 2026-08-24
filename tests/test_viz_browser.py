@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any, cast
 
 import numpy as np
 
@@ -35,6 +36,7 @@ def test_real_roc_output_maps_to_canonical_spec():
     performance_data = _real_roc_performance_data()
 
     spec = _roc_spec_from_performance_data(performance_data)
+    spec = cast(dict[str, Any], spec)
 
     assert spec["schemaVersion"] == "1.0"
     assert spec["type"] == "roc"
@@ -47,6 +49,7 @@ def test_real_roc_output_maps_to_canonical_spec():
 
 def test_real_calibration_output_maps_to_canonical_spec():
     spec = _calibration_spec_from_curve_list(_real_calibration_curve_list())
+    spec = cast(dict[str, Any], spec)
 
     assert spec["schemaVersion"] == "1.0"
     assert spec["type"] == "calibration"

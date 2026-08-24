@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any, cast
 
 import matplotlib.figure
 import numpy as np
@@ -116,6 +117,7 @@ def test_censoring_and_competing_risk_reference_comes_from_performance_layer():
     spec = _gains_times_v2_spec_from_performance_data(
         performance, _build_evaluation_metadata(probs, reals, times)
     )
+    references = cast(list[dict[str, Any]], spec["references"])
     calculated = {
         float(row["fixed_time_horizon"]): float(row["real_positives"] / row["n"])
         for row in performance.filter(performance["chosen_cutoff"] == 0)
@@ -126,7 +128,7 @@ def test_censoring_and_competing_risk_reference_comes_from_performance_layer():
 
     assert {
         reference["horizon"]: reference["points"][1]["x"]
-        for reference in spec["references"][1:]
+        for reference in references[1:]
     } == calculated
 
 

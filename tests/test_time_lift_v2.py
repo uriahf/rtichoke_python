@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 import matplotlib.figure
 import numpy as np
 import plotly.graph_objects as go
@@ -143,6 +145,7 @@ def test_time_lift_censoring_and_competing_risk_reference_comes_from_performance
     spec = _lift_times_v2_spec_from_performance_data(
         performance, _build_evaluation_metadata(probs, reals, times)
     )
+    references = cast(list[dict[str, Any]], spec["references"])
     calculated_risks = {
         float(row["fixed_time_horizon"]): float(row["real_positives"] / row["n"])
         for row in performance.filter(performance["chosen_cutoff"] == 0)
@@ -151,7 +154,7 @@ def test_time_lift_censoring_and_competing_risk_reference_comes_from_performance
         .to_dicts()
     }
 
-    for reference in spec["references"][1:]:
+    for reference in references[1:]:
         horizon = reference["horizon"]
         risk = calculated_risks[horizon]
         assert reference["points"] == [
