@@ -5,7 +5,9 @@ import numpy as np
 from plotly.graph_objs._figure import Figure
 
 from rtichoke._calibration_viz_spec_v2 import _calibration_v2_spec_from_curve_list
-from rtichoke._performance_table_spec import _performance_table_spec_from_performance_data
+from rtichoke._performance_table_spec import (
+    _performance_table_spec_from_performance_data,
+)
 from rtichoke._report_browser import RtichokeBrowserReport
 from rtichoke._report_spec import _report_spec_from_components
 from rtichoke._viz_browser import _calibration_spec_from_curve_list
@@ -82,16 +84,15 @@ def test_calibration_v2_discrete_values_pass_through_without_recalculation():
         _calibration_v2_spec_from_curve_list(curve_list, _metadata(probs, reals)),
     )
 
-    production_rows = curve_list["deciles_dat"].select(
-        "reference_group", "x", "y", "n_reals", "n"
-    ).to_dicts()
+    production_rows = (
+        curve_list["deciles_dat"]
+        .select("reference_group", "x", "y", "n_reals", "n")
+        .to_dicts()
+    )
     assert [
         (row["predicted"], row["observed"], row["events"], row["total"])
         for row in spec["data"]
-    ] == [
-        (row["x"], row["y"], row["n_reals"], row["n"])
-        for row in production_rows
-    ]
+    ] == [(row["x"], row["y"], row["n_reals"], row["n"]) for row in production_rows]
     assert {row["method"] for row in spec["data"]} == {"discrete"}
 
 
@@ -107,9 +108,9 @@ def test_calibration_v2_smooth_values_pass_through_without_refitting():
         ),
     )
 
-    production_rows = curve_list["smooth_dat"].select(
-        "reference_group", "x", "y"
-    ).to_dicts()
+    production_rows = (
+        curve_list["smooth_dat"].select("reference_group", "x", "y").to_dicts()
+    )
     assert [(row["predicted"], row["observed"]) for row in spec["data"]] == [
         (row["x"], row["y"]) for row in production_rows
     ]
@@ -125,9 +126,11 @@ def test_calibration_v2_distribution_values_and_series_ownership_pass_through():
         _calibration_v2_spec_from_curve_list(curve_list, _metadata(probs, reals)),
     )
 
-    production_rows = curve_list["histogram_for_calibration"].select(
-        "reference_group", "mids", "counts"
-    ).to_dicts()
+    production_rows = (
+        curve_list["histogram_for_calibration"]
+        .select("reference_group", "mids", "counts")
+        .to_dicts()
+    )
     assert [(row["midpoint"], row["count"]) for row in spec["distribution"]] == [
         (row["mids"], row["counts"]) for row in production_rows
     ]
@@ -177,9 +180,7 @@ def test_calibration_v2_multiple_models_share_semantic_population():
     )
 
     assert [item["model"] for item in spec["evaluations"]] == ["Model A", "Model B"]
-    assert {item["population"] for item in spec["evaluations"]} == {
-        _SHARED_POPULATION
-    }
+    assert {item["population"] for item in spec["evaluations"]} == {_SHARED_POPULATION}
     assert {item["display"]["role"] for item in spec["series"]} == {"model"}
     assert {row["seriesId"] for row in spec["data"]} == {"series-1", "series-2"}
     assert {row["seriesId"] for row in spec["distribution"]} == {
