@@ -131,8 +131,7 @@ def test_zero_is_preserved_and_missing_metric_is_null():
     )
     spec = _performance_table_spec_from_performance_data(data, metadata)
     values = {
-        value["metricId"]: value["estimate"]
-        for value in spec["rows"][0]["values"]
+        value["metricId"]: value["estimate"] for value in spec["rows"][0]["values"]
     }
 
     assert values == {"sensitivity": 0.0, "ppv": None}
