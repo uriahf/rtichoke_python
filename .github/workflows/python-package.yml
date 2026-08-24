@@ -31,8 +31,8 @@ jobs:
       - name: Check lint
         run: uv run ruff check .
 
-      - name: Show format diff
-        run: uv run ruff format --diff .
+      - name: Check format
+        run: uv run ruff format --check .
 
       - name: Check types
         run: uv run ty check src/rtichoke
