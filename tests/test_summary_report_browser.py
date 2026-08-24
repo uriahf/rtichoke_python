@@ -138,9 +138,7 @@ def test_browser_summary_report_preserves_component_local_identity(tmp_path):
     assert "populations" not in report
     assert "horizon" not in report
 
-    table, roc, calibration = [
-        component["spec"] for component in report["components"]
-    ]
+    table, roc, calibration = [component["spec"] for component in report["components"]]
     assert table["evaluations"][0]["id"] == "evaluation-1"
     assert roc["evaluations"][0]["id"] == "evaluation-1"
     assert calibration["evaluations"][0]["id"] == "evaluation-1"
