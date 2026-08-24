@@ -1,11 +1,11 @@
+from typing import cast
+
 import numpy as np
 import pytest
 from great_tables import GT
 from reactable import Reactable
 
 import rtichoke.performance_table as performance_table_module
-from rtichoke.performance_table_reactable import _bar_style, _net_benefit_style
-
 from rtichoke import (
     create_performance_table,
     create_performance_table_times,
@@ -13,6 +13,8 @@ from rtichoke import (
     prepare_performance_data_times,
     render_performance_table,
 )
+from rtichoke.performance_table import PerformanceTableRenderer
+from rtichoke.performance_table_reactable import _bar_style, _net_benefit_style
 
 
 def _example():
@@ -215,7 +217,9 @@ def test_invalid_renderer_is_rejected():
     probs, reals = _example()
     data = prepare_performance_data(probs, reals, by=0.1)
     with pytest.raises(ValueError, match="renderer"):
-        render_performance_table(data, renderer="unknown")
+        render_performance_table(
+            data, renderer=cast(PerformanceTableRenderer, "unknown")
+        )
 
 
 def test_reactable_metric_bar_matches_r_colors_and_geometry():

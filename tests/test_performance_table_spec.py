@@ -21,9 +21,7 @@ def _static(
     by: float = 0.5,
     stratified_by: Sequence[str] = ("probability_threshold",),
 ):
-    data = prepare_performance_data(
-        probs, reals, by=by, stratified_by=stratified_by
-    )
+    data = prepare_performance_data(probs, reals, by=by, stratified_by=stratified_by)
     metadata = _build_evaluation_metadata(probs, reals, np.array([]))
     return _performance_table_spec_from_performance_data(data, metadata)
 
@@ -110,9 +108,7 @@ def test_static_probability_threshold_and_ppcr_operating_points():
         "probability_threshold"
     }
     assert {row["operatingPoint"]["type"] for row in ppcr["rows"]} == {"ppcr"}
-    assert all(
-        0 <= row["operatingPoint"]["value"] <= 1 for row in ppcr["rows"]
-    )
+    assert all(0 <= row["operatingPoint"]["value"] <= 1 for row in ppcr["rows"])
 
 
 def test_zero_is_preserved_and_missing_metric_is_null():

@@ -1,8 +1,9 @@
+from collections.abc import Sequence
+
 import pandas as pd
 import polars as pl
-from polarstate import predict_aj_estimates
-from polarstate import prepare_event_table
-from collections.abc import Sequence
+from polarstate import predict_aj_estimates, prepare_event_table
+
 from rtichoke.processing.transforms import assign_and_explode_polars
 
 
@@ -529,7 +530,7 @@ def _aj_estimates_by_cutoff_per_horizon(
             df.filter(pl.col("fixed_time_horizon") == h)
             .group_by("strata")
             .map_groups(
-                lambda group: extract_aj_estimate_by_cutoffs(
+                lambda group, h=h: extract_aj_estimate_by_cutoffs(
                     group, [h], breaks, stratified_by, full_event_table=False
                 )
             )
@@ -547,7 +548,7 @@ def _aj_estimates_per_horizon(
             df.filter(pl.col("fixed_time_horizon") == h)
             .group_by("strata")
             .map_groups(
-                lambda group: extract_aj_estimate_for_strata(
+                lambda group, h=h: extract_aj_estimate_for_strata(
                     group, [h], full_event_table
                 )
             )
@@ -650,6 +651,8 @@ def _aj_adjusted_events(
             adjusted = extract_aj_estimate_by_cutoffs(
                 non_competing, horizons, breaks, stratified_by, full_event_table
             )
+        else:
+            raise ValueError(f"Unsupported risk-set scope: {risk_set_scope!r}")
 
         adjusted = adjusted.with_columns(
             [
@@ -704,6 +707,8 @@ def _aj_adjusted_events(
             adjusted = _aj_estimates_by_cutoff_per_horizon(
                 base_df, horizons, breaks, stratified_by
             )
+        else:
+            raise ValueError(f"Unsupported risk-set scope: {risk_set_scope!r}")
 
         adjusted = adjusted.with_columns(
             pl.lit(risk_set_scope)
@@ -730,6 +735,8 @@ def _aj_adjusted_events(
             adjusted = extract_aj_estimate_by_cutoffs(
                 base_df, horizons, breaks, stratified_by, full_event_table
             )
+        else:
+            raise ValueError(f"Unsupported risk-set scope: {risk_set_scope!r}")
 
         adjusted = adjusted.with_columns(
             [

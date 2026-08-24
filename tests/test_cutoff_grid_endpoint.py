@@ -1,3 +1,5 @@
+from typing import cast
+
 import numpy as np
 import pytest
 
@@ -17,7 +19,7 @@ def test_probability_threshold_breaks_match_r_seq_semantics(by, expected):
     breaks = create_breaks_values(None, "probability_threshold", by)
 
     assert breaks.tolist() == expected
-    assert np.max(breaks) <= 1.0
+    assert float(np.max(breaks)) <= 1.0
 
 
 @pytest.mark.parametrize(
@@ -33,7 +35,7 @@ def test_binary_performance_data_matches_r_cutoff_endpoint(by, expected_max):
 
     assert cutoffs.min() == 0.0
     assert cutoffs.max() == expected_max
-    assert cutoffs.max() <= 1.0
+    assert cast(float, cutoffs.max()) <= 1.0
 
 
 @pytest.mark.parametrize(
@@ -56,4 +58,4 @@ def test_time_performance_data_matches_r_cutoff_endpoint(by, expected_max):
 
     assert cutoffs.min() == 0.0
     assert cutoffs.max() == expected_max
-    assert cutoffs.max() <= 1.0
+    assert cast(float, cutoffs.max()) <= 1.0

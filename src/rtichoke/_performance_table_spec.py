@@ -6,15 +6,15 @@ semantic evaluation metadata. They do not calculate or render statistics.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import Any, TypedDict
-
 import math
+from collections.abc import Mapping
+from typing import Any, TypedDict, cast
+
 import polars as pl
 
 from rtichoke.processing.evaluation_semantics import _EvaluationMetadata
 
-_METRICS = (
+_METRICS: tuple[tuple[str, str], ...] = (
     ("true_positives", "True Positives"),
     ("true_negatives", "True Negatives"),
     ("false_positives", "False Positives"),
@@ -114,7 +114,7 @@ def _build_performance_table_spec(
         )
 
     metric_definitions: list[_MetricDefinition] = [
-        {"id": metric_id, "label": label}
+        cast(_MetricDefinition, {"id": metric_id, "label": label})
         for metric_id, label in _METRICS
         if metric_id in performance_data.columns
     ]
@@ -180,10 +180,16 @@ def _build_performance_table_spec(
         canonical_row: _PerformanceTableRow = {
             "evaluationId": evaluation_ids[group],
             "operatingPoint": operating_point,
-            "values": [
-                {"metricId": metric_id, "estimate": _nullable_number(row[metric_id])}
-                for metric_id in metric_ids
-            ],
+            "values": cast(
+                list[_MetricValue],
+                [
+                    {
+                        "metricId": metric_id,
+                        "estimate": _nullable_number(row[metric_id]),
+                    }
+                    for metric_id in metric_ids
+                ],
+            ),
         }
         if time_dependent:
             canonical_row["horizon"] = _number(row["fixed_time_horizon"])
