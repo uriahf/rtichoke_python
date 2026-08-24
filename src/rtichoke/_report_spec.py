@@ -15,7 +15,7 @@ left unchanged here.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from typing import TypedDict
+from typing import TypedDict, cast
 
 _SUPPORTED_COMPONENT_TYPES = {
     "performance_table",
@@ -67,9 +67,10 @@ def _report_spec_from_components(
     type_counts: dict[str, int] = {}
     report_components: list[_ReportComponent] = []
     for component in components:
-        spec = component.get("spec")
-        if not isinstance(spec, Mapping):
+        raw_spec = component.get("spec")
+        if not isinstance(raw_spec, Mapping):
             raise ValueError("Report component is missing spec")
+        spec = cast(Mapping[str, object], raw_spec)
 
         component_type = spec.get("type")
         if not isinstance(component_type, str):
