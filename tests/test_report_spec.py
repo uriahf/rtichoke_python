@@ -80,9 +80,7 @@ def _performance_table_spec(*, time_dependent: bool = False) -> dict[str, Any]:
     return {
         "schemaVersion": "2.0",
         "type": "performance_table",
-        "evaluations": [
-            _evaluation("evaluation-1", "population-a", "model-a")
-        ],
+        "evaluations": [_evaluation("evaluation-1", "population-a", "model-a")],
         "metrics": [
             {
                 "id": "sensitivity",
