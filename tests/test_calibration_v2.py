@@ -273,6 +273,7 @@ def test_real_performance_table_roc_calibration_report_uses_shared_renderer(tmp_
         tmp_path / "report.html"
     )
     html = output.read_text(encoding="utf-8")
+    viz_js = (tmp_path / "rtichoke-viz.js").read_text(encoding="utf-8")
 
     assert [component["id"] for component in report["components"]] == [
         "performance-table",
@@ -281,11 +282,9 @@ def test_real_performance_table_roc_calibration_report_uses_shared_renderer(tmp_
     ]
     assert report["components"][2]["spec"] is calibration
     assert _embedded_report(html) == report
-    assert 'import { renderReport } from "./rtichoke-viz.js";' in html
+    assert 'import { renderReport } from "./rtichoke-viz.js";' not in html
+    assert viz_js in html
     assert "append(renderReport(spec))" in html
-    assert "renderCalibrationV2" not in html
-    assert "renderRocV2" not in html
-    assert "renderPerformanceTable" not in html
 
 
 def test_duplicate_evaluation_ids_remain_component_local_in_real_report():

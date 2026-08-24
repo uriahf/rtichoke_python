@@ -24,6 +24,7 @@ class RtichokeBrowserReport:
             (output.parent / asset).write_bytes(vendor.joinpath(asset).read_bytes())
 
         spec_json = json.dumps(self.spec, separators=(",", ":")).replace("</", "<\\/")
+        viz_js = vendor.joinpath("rtichoke-viz.js").read_text(encoding="utf-8")
         html = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -36,7 +37,7 @@ class RtichokeBrowserReport:
   <div id="rtichoke-report"></div>
   <script id="rtichoke-report-spec" type="application/json">{spec_json}</script>
   <script type="module">
-    import {{ renderReport }} from "./rtichoke-viz.js";
+{viz_js}
     const spec = JSON.parse(
       document.querySelector("#rtichoke-report-spec").textContent
     );

@@ -49,12 +49,11 @@ def test_browser_report_uses_real_producers_and_only_shared_render_report(tmp_pa
         tmp_path / "report.html"
     )
     html = output.read_text(encoding="utf-8")
+    viz_js = (tmp_path / "rtichoke-viz.js").read_text(encoding="utf-8")
 
-    assert 'import { renderReport } from "./rtichoke-viz.js";' in html
+    assert 'import { renderReport } from "./rtichoke-viz.js";' not in html
+    assert viz_js in html
     assert "append(renderReport(spec))" in html
-    assert "renderRocV2" not in html
-    assert "renderPerformanceTable" not in html
-    assert "renderGainsV2" not in html
     assert _embedded_report(html) == report
     assert [component["id"] for component in report["components"]] == [
         "performance-table",

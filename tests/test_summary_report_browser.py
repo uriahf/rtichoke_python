@@ -1,8 +1,15 @@
 import json
+import shutil
+import subprocess
+from contextlib import contextmanager
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any, cast
+from threading import Thread
+from typing import Any, Iterator, cast
 
 import numpy as np
+import pytest
 
 from rtichoke.summary_report import summary_report as summary_report_module
 from rtichoke.summary_report.summary_report import create_summary_report
@@ -36,6 +43,70 @@ def _embedded_report(html: str) -> dict[str, Any]:
     start = html.index(">", start) + 1
     end = html.index("</script>", start)
     return cast(dict[str, Any], json.loads(html[start:end]))
+
+
+def _chrome_executable() -> str:
+    for candidate in (
+        "google-chrome",
+        "google-chrome-stable",
+        "chromium",
+        "chromium-browser",
+    ):
+        executable = shutil.which(candidate)
+        if executable is not None:
+            return executable
+    pytest.skip("headless Chrome/Chromium is not available")
+
+
+def _dump_dom(url: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [
+            _chrome_executable(),
+            "--headless=new",
+            "--no-sandbox",
+            "--disable-gpu",
+            "--enable-logging=stderr",
+            "--log-level=0",
+            "--dump-dom",
+            url,
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+
+def _rendered_report_html(dom: str) -> str:
+    marker = '<div id="rtichoke-report">'
+    start = dom.index(marker) + len(marker)
+    end = dom.index('<script id="rtichoke-report-spec"', start)
+    return dom[start:end]
+
+
+@contextmanager
+def _serve(directory: Path) -> Iterator[str]:
+    handler = partial(SimpleHTTPRequestHandler, directory=str(directory))
+    server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f"http://127.0.0.1:{server.server_port}"
+    finally:
+        server.shutdown()
+        thread.join()
+        server.server_close()
+
+
+def _assert_report_rendered(browser: subprocess.CompletedProcess[str]) -> None:
+    assert browser.returncode == 0, browser.stderr
+    assert "INFO:CONSOLE" not in browser.stderr, browser.stderr
+    rendered = _rendered_report_html(browser.stdout)
+    assert "Performance" in rendered, browser.stderr
+    assert "ROC" in rendered
+    assert "Calibration" in rendered
+    assert "<table" in rendered
+    assert rendered.count("<svg") >= 2
 
 
 def test_default_summary_report_keeps_historical_r_backend(monkeypatch, capsys):
@@ -90,7 +161,8 @@ def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(
 
     assert result == output
     assert output.exists()
-    assert (tmp_path / "rtichoke-viz.js").exists()
+    viz_js_path = tmp_path / "rtichoke-viz.js"
+    assert viz_js_path.exists()
     assert (tmp_path / "rtichoke-viz.css").exists()
 
     html = output.read_text(encoding="utf-8")
@@ -107,11 +179,40 @@ def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(
     ]
     assert report["components"][1]["spec"]["schemaVersion"] == "2.0"
     assert report["components"][2]["spec"]["schemaVersion"] == "2.0"
-    assert 'import { renderReport } from "./rtichoke-viz.js";' in html
+    assert 'import { renderReport } from "./rtichoke-viz.js";' not in html
+    assert viz_js_path.read_text(encoding="utf-8") in html
     assert "append(renderReport(spec))" in html
-    assert "renderPerformanceTable" not in html
-    assert "renderRocV2" not in html
-    assert "renderCalibrationV2" not in html
+
+
+def test_browser_summary_report_executes_when_opened_directly(tmp_path):
+    probs, reals = _inputs()
+    output = create_summary_report(
+        probs,
+        reals,
+        renderer="browser",
+        output_file=tmp_path / "browser_report.html",
+    )
+    assert isinstance(output, Path)
+
+    browser = _dump_dom(output.resolve().as_uri())
+
+    _assert_report_rendered(browser)
+
+
+def test_browser_summary_report_executes_over_localhost(tmp_path):
+    probs, reals = _inputs()
+    output = create_summary_report(
+        probs,
+        reals,
+        renderer="browser",
+        output_file=tmp_path / "browser_report.html",
+    )
+    assert isinstance(output, Path)
+
+    with _serve(output.parent) as base_url:
+        browser = _dump_dom(f"{base_url}/{output.name}")
+
+    _assert_report_rendered(browser)
 
 
 def test_browser_summary_report_preserves_component_local_identity(tmp_path):
