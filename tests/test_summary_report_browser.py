@@ -1,8 +1,12 @@
 import json
 import shutil
 import subprocess
+from contextlib import contextmanager
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any, cast
+from threading import Thread
+from typing import Any, Iterator, cast
 
 import numpy as np
 import pytest
@@ -54,7 +58,7 @@ def _chrome_executable() -> str:
     pytest.skip("headless Chrome/Chromium is not available")
 
 
-def _dump_dom(path: Path) -> subprocess.CompletedProcess[str]:
+def _dump_dom(url: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [
             _chrome_executable(),
@@ -64,13 +68,45 @@ def _dump_dom(path: Path) -> subprocess.CompletedProcess[str]:
             "--enable-logging=stderr",
             "--log-level=0",
             "--dump-dom",
-            path.resolve().as_uri(),
+            url,
         ],
         check=False,
         capture_output=True,
         text=True,
         timeout=30,
     )
+
+
+def _rendered_report_html(dom: str) -> str:
+    marker = '<div id="rtichoke-report">'
+    start = dom.index(marker) + len(marker)
+    end = dom.index('<script id="rtichoke-report-spec"', start)
+    return dom[start:end]
+
+
+@contextmanager
+def _serve(directory: Path) -> Iterator[str]:
+    handler = partial(SimpleHTTPRequestHandler, directory=str(directory))
+    server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f"http://127.0.0.1:{server.server_port}"
+    finally:
+        server.shutdown()
+        thread.join()
+        server.server_close()
+
+
+def _assert_report_rendered(browser: subprocess.CompletedProcess[str]) -> None:
+    assert browser.returncode == 0, browser.stderr
+    rendered = _rendered_report_html(browser.stdout)
+    assert rendered.strip(), browser.stderr
+    assert "Performance" in rendered
+    assert "ROC" in rendered
+    assert "Calibration" in rendered
+    assert "<table" in rendered
+    assert rendered.count("<svg") >= 2
 
 
 def test_default_summary_report_keeps_historical_r_backend(monkeypatch, capsys):
@@ -159,13 +195,25 @@ def test_browser_summary_report_executes_when_opened_directly(tmp_path):
     )
     assert isinstance(output, Path)
 
-    browser = _dump_dom(output)
+    browser = _dump_dom(output.resolve().as_uri())
 
-    assert browser.returncode == 0, browser.stderr
-    assert 'id="rtichoke-report"></div>' not in browser.stdout
-    assert "Performance" in browser.stdout
-    assert "ROC" in browser.stdout
-    assert "Calibration" in browser.stdout
+    _assert_report_rendered(browser)
+
+
+def test_browser_summary_report_executes_over_localhost(tmp_path):
+    probs, reals = _inputs()
+    output = create_summary_report(
+        probs,
+        reals,
+        renderer="browser",
+        output_file=tmp_path / "browser_report.html",
+    )
+    assert isinstance(output, Path)
+
+    with _serve(output.parent) as base_url:
+        browser = _dump_dom(f"{base_url}/{output.name}")
+
+    _assert_report_rendered(browser)
 
 
 def test_browser_summary_report_preserves_component_local_identity(tmp_path):
