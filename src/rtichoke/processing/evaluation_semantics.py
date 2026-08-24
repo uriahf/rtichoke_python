@@ -58,3 +58,39 @@ def _build_evaluation_metadata(
         )
         for group in probs
     }
+
+
+def _build_calibration_evaluation_metadata(
+    probs: Mapping[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    times: Union[np.ndarray, Dict[str, np.ndarray]],
+) -> dict[str, _EvaluationMetadata]:
+    """Describe the semantic evaluations used by calibration production data.
+
+    Calibration has one existing input shape that carries more information than
+    the generic compatibility grouping: a single named model can provide one
+    concatenated prediction vector while keyed outcome/time arrays identify
+    multiple populations. Production calibration splits that vector by those
+    population keys, so the model identity is explicitly known for every
+    population and is retained here. Other input shapes keep the established
+    generic model-known/model-unknown semantics.
+    """
+    population_keys: list[str] | None = None
+    if isinstance(reals, dict):
+        population_keys = list(reals)
+    elif isinstance(times, dict):
+        population_keys = list(times)
+
+    if population_keys is not None and len(probs) == 1 and set(probs) != set(population_keys):
+        model = next(iter(probs))
+        return {
+            population: _EvaluationMetadata(
+                reference_group=population,
+                evaluation=population,
+                model=model,
+                population=population,
+            )
+            for population in population_keys
+        }
+
+    return _build_evaluation_metadata(probs, reals, times)
