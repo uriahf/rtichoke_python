@@ -18,14 +18,34 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: feature/browser-report-viz-0.5.0
-      - name: Download and inspect immutable release
+      - name: Download and verify current v0.5.0 release asset
         shell: bash
         run: |
           set -euo pipefail
           url='https://github.com/uriahf/rtichoke_viz/releases/download/v0.5.0/rtichoke-viz-0.5.0.tar.gz'
-          recorded='eafb33b50277605e5012a6289cd280b7e5f232ecccd462a94581113818678401'
+          expected='ab36ae71f9090b4de62da8f552ebe84ac35885ab04958667faaf070db2c98f65'
           curl -fL "$url" -o /tmp/rtichoke-viz-0.5.0.tar.gz
-          actual="$(sha256sum /tmp/rtichoke-viz-0.5.0.tar.gz | cut -d' ' -f1)"
-          echo "recorded_sha256=$recorded"
-          echo "actual_sha256=$actual"
-          test "$actual" = "$recorded"
+          echo "$expected  /tmp/rtichoke-viz-0.5.0.tar.gz" | sha256sum -c -
+          rm -rf /tmp/rtichoke-viz-0.5.0
+          mkdir -p /tmp/rtichoke-viz-0.5.0
+          tar -xzf /tmp/rtichoke-viz-0.5.0.tar.gz -C /tmp/rtichoke-viz-0.5.0
+          vendor='src/rtichoke/_vendor/rtichoke_viz'
+          rm -f "$vendor"/rtichoke-viz-*.tar.gz
+          cp /tmp/rtichoke-viz-0.5.0.tar.gz "$vendor/rtichoke-viz-0.5.0.tar.gz"
+          cp "$(find /tmp/rtichoke-viz-0.5.0 -name rtichoke-viz.js -print -quit)" "$vendor/rtichoke-viz.js"
+          cp "$(find /tmp/rtichoke-viz-0.5.0 -name rtichoke-viz.css -print -quit)" "$vendor/rtichoke-viz.css"
+          cp "$(find /tmp/rtichoke-viz-0.5.0 -name rtichoke-viz.schema.json -print -quit)" "$vendor/rtichoke-viz.schema.json"
+          cp "$(find /tmp/rtichoke-viz-0.5.0 -name rtichoke-viz-v2.schema.json -print -quit)" "$vendor/rtichoke-viz-v2.schema.json"
+          cp "$(find /tmp/rtichoke-viz-0.5.0 -name MANIFEST -print -quit)" "$vendor/MANIFEST"
+          grep -q 'renderReport' "$vendor/rtichoke-viz.js"
+          grep -q 'renderPerformanceTable' "$vendor/rtichoke-viz.js"
+      - name: Commit vendored artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/rtichoke/_vendor/rtichoke_viz
+          git diff --cached --quiet && exit 0
+          git commit -m 'chore: vendor rtichoke_viz v0.5.0'
+          git push origin HEAD:feature/browser-report-viz-0.5.0
