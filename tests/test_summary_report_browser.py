@@ -1,8 +1,11 @@
 import json
+import shutil
+import subprocess
 from pathlib import Path
 from typing import Any, cast
 
 import numpy as np
+import pytest
 
 from rtichoke.summary_report import summary_report as summary_report_module
 from rtichoke.summary_report.summary_report import create_summary_report
@@ -36,6 +39,33 @@ def _embedded_report(html: str) -> dict[str, Any]:
     start = html.index(">", start) + 1
     end = html.index("</script>", start)
     return cast(dict[str, Any], json.loads(html[start:end]))
+
+
+def _chrome_executable() -> str:
+    for candidate in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser"):
+        executable = shutil.which(candidate)
+        if executable is not None:
+            return executable
+    pytest.skip("headless Chrome/Chromium is not available")
+
+
+def _dump_dom(path: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [
+            _chrome_executable(),
+            "--headless=new",
+            "--no-sandbox",
+            "--disable-gpu",
+            "--enable-logging=stderr",
+            "--log-level=0",
+            "--dump-dom",
+            path.resolve().as_uri(),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
 
 
 def test_default_summary_report_keeps_historical_r_backend(monkeypatch, capsys):
@@ -112,6 +142,25 @@ def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(
     assert "renderPerformanceTable" not in html
     assert "renderRocV2" not in html
     assert "renderCalibrationV2" not in html
+
+
+def test_browser_summary_report_executes_when_opened_directly(tmp_path):
+    probs, reals = _inputs()
+    output = create_summary_report(
+        probs,
+        reals,
+        renderer="browser",
+        output_file=tmp_path / "browser_report.html",
+    )
+    assert isinstance(output, Path)
+
+    browser = _dump_dom(output)
+
+    assert browser.returncode == 0, browser.stderr
+    assert 'id="rtichoke-report"></div>' not in browser.stdout
+    assert "Performance" in browser.stdout
+    assert "ROC" in browser.stdout
+    assert "Calibration" in browser.stdout
 
 
 def test_browser_summary_report_preserves_component_local_identity(tmp_path):
