@@ -1,17 +1,64 @@
 """
-A module for Decision Curves using Plotly helpers
+A module for Decision Curves using Plotly helpers and canonical browser rendering.
 """
 
-from typing import Dict, List, Sequence, Union
+from typing import Any, Dict, List, Sequence, Union
+
+import numpy as np
+import polars as pl
 from plotly.graph_objs._figure import Figure
+
+from rtichoke._decision_curve_viz_spec_v2 import (
+    _decision_curve_v2_spec_from_performance_data,
+)
+from rtichoke._renderers import RtichokeBrowserChart, _validate_renderer
+from rtichoke.performance_data.performance_data import prepare_performance_data
 from rtichoke.processing.binary_color_values import _apply_color_values_binary
+from rtichoke.processing.evaluation_semantics import (
+    _EvaluationMetadata,
+    _build_evaluation_metadata,
+)
 from rtichoke.processing.plotly_helper_functions import _plot_rtichoke_curve_binary
 from rtichoke.processing.time_reference_lines import (
     _create_rtichoke_plotly_curve_times_reference_safe,
 )
-from rtichoke.performance_data.performance_data import prepare_performance_data
-import numpy as np
-import polars as pl
+
+
+def _decision_curve_browser_chart(
+    performance_data: pl.DataFrame,
+    evaluation_metadata: dict[str, _EvaluationMetadata],
+    *,
+    size: int,
+    min_p_threshold: float,
+    max_p_threshold: float,
+) -> RtichokeBrowserChart:
+    spec = _decision_curve_v2_spec_from_performance_data(
+        performance_data,
+        evaluation_metadata,
+        min_p_threshold=min_p_threshold,
+        max_p_threshold=max_p_threshold,
+    )
+    return RtichokeBrowserChart(spec=spec, size=size)
+
+
+def _performance_data_evaluation_metadata(
+    performance_data: pl.DataFrame,
+) -> dict[str, _EvaluationMetadata]:
+    """Treat pre-computed groups as populations when model identity is unknown."""
+    groups = list(
+        dict.fromkeys(
+            str(value) for value in performance_data["reference_group"].to_list()
+        )
+    )
+    return {
+        group: _EvaluationMetadata(
+            reference_group=group,
+            evaluation=group,
+            model=None,
+            population=group,
+        )
+        for group in groups
+    }
 
 
 def create_decision_curve(
@@ -45,44 +92,37 @@ def create_decision_curve(
         "#D1603D",
         "#585123",
     ],
-) -> Figure:
+    renderer: str = "plotly",
+) -> Any:
     """Creates a Decision Curve.
 
-    Decision Curve Analysis is a method for evaluating and comparing prediction
-    models that incorporates the clinical consequences of a decision. The curve
-    plots the net benefit of a model against the probability threshold used to
-    determine positive cases. This helps to assess the real-world utility of a
-    model.
-
-    Parameters
-    ----------
-    probs : Dict[str, np.ndarray]
-        A dictionary mapping model or dataset names to 1-D numpy arrays of
-        predicted probabilities.
-    reals : Union[np.ndarray, Dict[str, np.ndarray]]
-        The true binary labels (0 or 1).
-    decision_type : str, optional
-        Type of decision curve. ``"conventional"`` for a standard decision curve
-        or another value for the "interventions avoided" variant. Defaults to
-        ``"conventional"``.
-    min_p_threshold : float, optional
-        The minimum probability threshold to plot. Defaults to 0.
-    max_p_threshold : float, optional
-        The maximum probability threshold to plot. Defaults to 1.
-    by : float, optional
-        The step size for the probability thresholds. Defaults to 0.01.
-    stratified_by : Sequence[str], optional
-        Variables for stratification. Defaults to ``["probability_threshold"]``.
-    size : int, optional
-        The width and height of the plot in pixels. Defaults to 600.
-    color_values : List[str], optional
-        A list of hex color strings for the plot lines.
-
-    Returns
-    -------
-    Figure
-        A Plotly ``Figure`` object representing the Decision Curve.
+    ``renderer="plotly"`` preserves the historical default. For static
+    conventional Decision Curves, ``"browser"`` and ``"rtichoke_viz"`` return
+    a canonical :class:`RtichokeBrowserChart` built from the already-computed
+    production net-benefit values.
     """
+    selected_renderer = _validate_renderer(renderer)
+    if selected_renderer != "plotly":
+        if selected_renderer == "matplotlib" or decision_type != "conventional":
+            raise ValueError(
+                "Static conventional Decision Curves support 'plotly', 'browser', "
+                "and 'rtichoke_viz' renderers."
+            )
+        performance_data = prepare_performance_data(
+            probs=probs,
+            reals=reals,
+            stratified_by=stratified_by,
+            by=by,
+        )
+        evaluation_metadata = _build_evaluation_metadata(probs, reals, np.array([]))
+        return _decision_curve_browser_chart(
+            performance_data,
+            evaluation_metadata,
+            size=size,
+            min_p_threshold=min_p_threshold,
+            max_p_threshold=max_p_threshold,
+        )
+
     if decision_type == "conventional":
         curve = "decision"
     else:
@@ -113,34 +153,29 @@ def plot_decision_curve(
     max_p_threshold: float = 1,
     stratified_by: Sequence[str] = ["probability_threshold"],
     size: int = 600,
-) -> Figure:
+    renderer: str = "plotly",
+) -> Any:
     """Plots a Decision Curve from pre-computed performance data.
 
-    This function is useful for plotting a Decision Curve directly from a
-    DataFrame that already contains the necessary performance metrics.
-
-    Parameters
-    ----------
-    performance_data : pl.DataFrame
-        A Polars DataFrame with performance metrics, including net benefit and
-        probability thresholds.
-    decision_type : str, optional
-        Type of decision curve to plot. Defaults to ``"conventional"``.
-    min_p_threshold : float, optional
-        The minimum probability threshold to plot. Defaults to 0.
-    max_p_threshold : float, optional
-        The maximum probability threshold to plot. Defaults to 1.
-    stratified_by : Sequence[str], optional
-        The columns in `performance_data` used for stratification. Defaults to
-        ``["probability_threshold"]``.
-    size : int, optional
-        The width and height of the plot in pixels. Defaults to 600.
-
-    Returns
-    -------
-    Figure
-        A Plotly ``Figure`` object representing the Decision Curve.
+    For browser rendering, pre-computed ``reference_group`` values are treated
+    as distinct populations because separate model identity is not encoded in
+    this input shape.
     """
+    selected_renderer = _validate_renderer(renderer)
+    if selected_renderer != "plotly":
+        if selected_renderer == "matplotlib" or decision_type != "conventional":
+            raise ValueError(
+                "Static conventional Decision Curves support 'plotly', 'browser', "
+                "and 'rtichoke_viz' renderers."
+            )
+        return _decision_curve_browser_chart(
+            performance_data,
+            _performance_data_evaluation_metadata(performance_data),
+            size=size,
+            min_p_threshold=min_p_threshold,
+            max_p_threshold=max_p_threshold,
+        )
+
     if decision_type == "conventional":
         curve = "decision"
     else:
@@ -197,44 +232,7 @@ def create_decision_curve_times(
         "#585123",
     ],
 ) -> Figure:
-    """Creates a time-dependent Decision Curve.
-
-    Generates a Decision Curve for time-to-event models, which is evaluated at
-    specified time horizons and handles censored data and competing risks.
-
-    Parameters
-    ----------
-    probs : Dict[str, np.ndarray]
-        A dictionary of predicted probabilities.
-    reals : Union[np.ndarray, Dict[str, np.ndarray]]
-        The true event statuses.
-    times : Union[np.ndarray, Dict[str, np.ndarray]]
-        The event or censoring times.
-    fixed_time_horizons : list[float]
-        A list of time points for performance evaluation.
-    decision_type : str, optional
-        Type of decision curve to plot. Defaults to ``"conventional"``.
-    heuristics_sets : list[Dict], optional
-        Specifies how to handle censored data and competing events.
-    min_p_threshold : float, optional
-        The minimum probability threshold to plot. Defaults to 0.
-    max_p_threshold : float, optional
-        The maximum probability threshold to plot. Defaults to 1.
-    by : float, optional
-        The step size for the probability thresholds. Defaults to 0.01.
-    stratified_by : Sequence[str], optional
-        Variables for stratification. Defaults to ``["probability_threshold"]``.
-    size : int, optional
-        The width and height of the plot in pixels. Defaults to 600.
-    color_values : List[str], optional
-        A list of hex color strings for the plot lines.
-
-    Returns
-    -------
-    Figure
-        A Plotly ``Figure`` object for the time-dependent Decision Curve.
-    """
-
+    """Creates a time-dependent Decision Curve using the existing Plotly path."""
     if decision_type == "conventional":
         curve = "decision"
     else:
@@ -254,5 +252,4 @@ def create_decision_curve_times(
         min_p_threshold=min_p_threshold,
         max_p_threshold=max_p_threshold,
     )
-
     return fig

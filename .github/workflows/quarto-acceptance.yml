@@ -7,9 +7,13 @@ on:
       - "src/rtichoke/summary_report/**"
       - "src/rtichoke/_report_browser.py"
       - "src/rtichoke/_report_spec.py"
+      - "src/rtichoke/_renderers.py"
+      - "src/rtichoke/_decision_curve_viz_spec_v2.py"
+      - "src/rtichoke/utility/decision.py"
       - "src/rtichoke/_vendor/rtichoke_viz/**"
       - "tests/test_quarto_summary_report_browser.py"
       - "tests/test_summary_report_browser.py"
+      - "tests/test_decision_curve_browser_acceptance.py"
       - ".github/workflows/quarto-acceptance.yml"
   pull_request:
     branches: ["main"]
@@ -17,9 +21,13 @@ on:
       - "src/rtichoke/summary_report/**"
       - "src/rtichoke/_report_browser.py"
       - "src/rtichoke/_report_spec.py"
+      - "src/rtichoke/_renderers.py"
+      - "src/rtichoke/_decision_curve_viz_spec_v2.py"
+      - "src/rtichoke/utility/decision.py"
       - "src/rtichoke/_vendor/rtichoke_viz/**"
       - "tests/test_quarto_summary_report_browser.py"
       - "tests/test_summary_report_browser.py"
+      - "tests/test_decision_curve_browser_acceptance.py"
       - ".github/workflows/quarto-acceptance.yml"
   workflow_dispatch:
 
@@ -48,5 +56,8 @@ jobs:
       - name: Install Playwright Chromium for browser acceptance
         run: uv run --with playwright playwright install chromium
 
-      - name: Run Quarto browser report acceptance tests
-        run: uv run --with playwright pytest tests/test_quarto_summary_report_browser.py
+      - name: Run browser acceptance tests
+        run: >-
+          uv run --with playwright pytest
+          tests/test_quarto_summary_report_browser.py
+          tests/test_decision_curve_browser_acceptance.py
