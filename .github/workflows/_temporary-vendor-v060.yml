@@ -24,17 +24,20 @@ jobs:
           url="https://github.com/uriahf/rtichoke_viz/releases/download/v0.6.0/rtichoke-viz-0.6.0.tar.gz"
           expected="625613c7f692ff50b7757a27bb6caf84e311971bde92593141393dbd897af3a2"
           tmp="$(mktemp -d)"
-          curl -fsSL "$url" -o "$tmp/rtichoke-viz-0.6.0.tar.gz"
-          actual="$(sha256sum "$tmp/rtichoke-viz-0.6.0.tar.gz" | awk '{print $1}')"
+          archive="$tmp/rtichoke-viz-0.6.0.tar.gz"
+          curl -fsSL "$url" -o "$archive"
+          actual="$(sha256sum "$archive" | awk '{print $1}')"
           test "$actual" = "$expected"
-          tar -xzf "$tmp/rtichoke-viz-0.6.0.tar.gz" -C "$tmp"
+          tar -xzf "$archive" -C "$tmp"
+          payload_dir="$(dirname "$(find "$tmp" -type f -name rtichoke-viz.js -print -quit)")"
+          test -n "$payload_dir"
           vendor="src/rtichoke/_vendor/rtichoke_viz"
           rm -f "$vendor"/rtichoke-viz-*.tar.gz
-          cp "$tmp/rtichoke-viz-0.6.0.tar.gz" "$vendor/"
-          cp "$tmp/rtichoke-viz.js" "$vendor/"
-          cp "$tmp/rtichoke-viz.css" "$vendor/"
-          cp "$tmp/rtichoke-viz.schema.json" "$vendor/"
-          cp "$tmp/rtichoke-viz-v2.schema.json" "$vendor/"
+          cp "$archive" "$vendor/"
+          cp "$payload_dir/rtichoke-viz.js" "$vendor/"
+          cp "$payload_dir/rtichoke-viz.css" "$vendor/"
+          cp "$payload_dir/rtichoke-viz.schema.json" "$vendor/"
+          cp "$payload_dir/rtichoke-viz-v2.schema.json" "$vendor/"
           cat > "$vendor/VENDORED_FROM" <<'EOF'
           repository=https://github.com/uriahf/rtichoke_viz
           release=v0.6.0
@@ -42,8 +45,8 @@ jobs:
           archive=rtichoke-viz-0.6.0.tar.gz
           sha256=625613c7f692ff50b7757a27bb6caf84e311971bde92593141393dbd897af3a2
           EOF
-          grep -qx 'version=0.6.0' "$tmp/MANIFEST"
-          grep -qx 'commit=3abb3f07a598c3e22d5362a3f88e52bb6b52b083' "$tmp/MANIFEST"
+          grep -qx 'version=0.6.0' "$payload_dir/MANIFEST"
+          grep -qx 'commit=3abb3f07a598c3e22d5362a3f88e52bb6b52b083' "$payload_dir/MANIFEST"
           grep -q 'renderDecisionCurveV2' "$vendor/rtichoke-viz.js"
           if grep -q 'renderInterventionsAvoidedV2' "$vendor/rtichoke-viz.js"; then
             echo 'unexpected Interventions Avoided v2 export in v0.6.0' >&2
