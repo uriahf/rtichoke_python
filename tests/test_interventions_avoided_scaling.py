@@ -13,39 +13,30 @@ from rtichoke.processing.plotly_helper_functions import _create_reference_lines_
 PROBS = {"model": np.array([0.9, 0.8, 0.7, 0.6, 0.4, 0.3, 0.2, 0.1])}
 REALS = np.array([1, 0, 1, 0, 1, 0, 0, 1])
 THRESHOLDS = [0.25, 0.5, 0.75]
-EXPECTED_COUNTS = {
-    0.25: (1.0, 1.0),
-    0.5: (2.0, 2.0),
-    0.75: (3.0, 3.0),
-}
-# These values match the current R static Interventions Avoided definition.
-EXPECTED_IA = {0.25: -25.0, 0.5: 0.0, 0.75: 25.0}
-OLD_BUGGY_IA = {0.25: 12.125, 0.5: 24.75, 0.75: 37.375}
+EXPECTED_IA = [-25.0, 0.0, 25.0]
+OLD_BUGGY_IA = [12.125, 24.75, 37.375]
+EXPECTED_TN = [1.0, 2.0, 3.0]
+EXPECTED_FN = [1.0, 2.0, 3.0]
 
 
 def _performance_rows() -> pl.DataFrame:
-    performance_data = prepare_performance_data(probs=PROBS, reals=REALS, by=0.25)
-    return performance_data.filter(pl.col("chosen_cutoff").is_in(THRESHOLDS)).sort(
-        "chosen_cutoff"
-    )
+    data = prepare_performance_data(probs=PROBS, reals=REALS, by=0.25)
+    data = data.filter(pl.col("chosen_cutoff").is_in(THRESHOLDS))
+    return data.sort("chosen_cutoff")
 
 
 def test_static_interventions_avoided_matches_r_definition_per_100():
+    """Expected values characterize the current R static IA definition."""
     rows = _performance_rows()
 
-    for row in rows.iter_rows(named=True):
-        threshold = float(row["chosen_cutoff"])
-        tn, fn = EXPECTED_COUNTS[threshold]
-        assert float(row["true_negatives"]) == pytest.approx(tn)
-        assert float(row["false_negatives"]) == pytest.approx(fn)
-
-        expected = EXPECTED_IA[threshold]
-        actual = float(row["net_benefit_interventions_avoided"])
-        assert actual == pytest.approx(expected)
-        assert actual != pytest.approx(OLD_BUGGY_IA[threshold])
+    np.testing.assert_allclose(rows["true_negatives"].to_numpy(), EXPECTED_TN)
+    np.testing.assert_allclose(rows["false_negatives"].to_numpy(), EXPECTED_FN)
+    actual = rows["net_benefit_interventions_avoided"].to_numpy()
+    np.testing.assert_allclose(actual, EXPECTED_IA)
+    assert not np.allclose(actual, OLD_BUGGY_IA)
 
 
-def test_static_interventions_avoided_count_and_net_benefit_forms_are_equivalent():
+def test_static_interventions_avoided_count_and_nb_forms_are_equivalent():
     rows = _performance_rows()
     prevalence = float(REALS.mean())
 
@@ -56,22 +47,15 @@ def test_static_interventions_avoided_count_and_net_benefit_forms_are_equivalent
         n = float(row["n"])
         net_benefit = float(row["net_benefit"])
         net_benefit_all = prevalence - (1 - prevalence) * threshold / (1 - threshold)
-
         from_counts = 100 * (tn / n - fn / n * (1 - threshold) / threshold)
-        from_net_benefit = (
-            100
-            * (net_benefit - net_benefit_all)
-            * (1 - threshold)
-            / threshold
-        )
+        from_nb = 100 * (net_benefit - net_benefit_all) * (1 - threshold) / threshold
+        actual = float(row["net_benefit_interventions_avoided"])
 
-        assert float(row["net_benefit_interventions_avoided"]) == pytest.approx(
-            from_counts
-        )
-        assert from_counts == pytest.approx(from_net_benefit)
+        assert actual == pytest.approx(from_counts)
+        assert from_counts == pytest.approx(from_nb)
 
 
-def test_interventions_avoided_model_and_references_use_same_per_100_unit():
+def test_interventions_avoided_model_and_references_use_per_100_units():
     rows = _performance_rows()
     aj = pl.DataFrame({"reference_group": ["population"], "aj_estimate": [0.5]})
     refs = _create_reference_lines_data(
@@ -85,26 +69,18 @@ def test_interventions_avoided_model_and_references_use_same_per_100_unit():
     treat_all = refs.filter(pl.col("reference_group") == "treat_all")
     assert np.allclose(treat_all["y"].to_numpy(), 0.0)
 
-    treat_none = refs.filter(
-        (pl.col("reference_group") == "treat_none") & pl.col("x").is_in(THRESHOLDS)
-    ).sort("x")
-    expected_treat_none = np.array(
-        [
-            100 * (1 - 0.5 - 0.5 * (1 - threshold) / threshold)
-            for threshold in THRESHOLDS
-        ]
-    )
+    is_treat_none = pl.col("reference_group") == "treat_none"
+    is_test_threshold = pl.col("x").is_in(THRESHOLDS)
+    treat_none = refs.filter(is_treat_none & is_test_threshold).sort("x")
+    expected_treat_none = [-100.0, 0.0, 100.0 / 3.0]
     np.testing.assert_allclose(treat_none["y"].to_numpy(), expected_treat_none)
-
     np.testing.assert_allclose(
-        rows["net_benefit_interventions_avoided"].to_numpy(),
-        np.array([EXPECTED_IA[threshold] for threshold in THRESHOLDS]),
+        rows["net_benefit_interventions_avoided"].to_numpy(), EXPECTED_IA
     )
 
 
 def test_static_interventions_avoided_public_apis_are_unchanged():
-    performance_data = prepare_performance_data(probs=PROBS, reals=REALS, by=0.25)
-
+    data = prepare_performance_data(probs=PROBS, reals=REALS, by=0.25)
     created = create_decision_curve(
         probs=PROBS,
         reals=REALS,
@@ -114,7 +90,7 @@ def test_static_interventions_avoided_public_apis_are_unchanged():
         max_p_threshold=0.75,
     )
     plotted = plot_decision_curve(
-        performance_data,
+        data,
         decision_type="interventions avoided",
         min_p_threshold=0.25,
         max_p_threshold=0.75,
