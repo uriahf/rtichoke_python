@@ -68,7 +68,9 @@ def test_shared_population_has_two_evaluations_and_one_treat_all_path():
     assert len(treat_all) == 1
     assert treat_all[0]["scope"] == "population"
     assert treat_all[0]["population"] == "population-1"
-    assert treat_all[0]["points"][0] == {"x": 0.2, "y": 0.0625}
+    first_point = treat_all[0]["points"][0]
+    assert first_point["x"] == 0.2
+    assert np.isclose(first_point["y"], 0.0625)
 
 
 def test_distinct_equal_prevalence_populations_remain_distinct_reference_owners():
