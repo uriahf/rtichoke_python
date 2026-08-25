@@ -112,7 +112,7 @@ Decision-curve analysis for classification and time-to-event models.
 Creates a Decision Curve.
 
 [create_decision_curve_times()](create_decision_curve_times.md#rtichoke.create_decision_curve_times)  
-Creates a time-dependent Decision Curve.
+Creates a time-dependent Decision Curve using the existing Plotly path.
 
 [plot_decision_curve()](plot_decision_curve.md#rtichoke.plot_decision_curve)  
 Plots a Decision Curve from pre-computed performance data.

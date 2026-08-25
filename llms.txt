@@ -52,5 +52,5 @@
 > Decision-curve analysis for classification and time-to-event models.
 
 - [create_decision_curve](https://uriahf.github.io/rtichoke_python/reference/create_decision_curve.html): Creates a Decision Curve
-- [create_decision_curve_times](https://uriahf.github.io/rtichoke_python/reference/create_decision_curve_times.html): Creates a time-dependent Decision Curve
+- [create_decision_curve_times](https://uriahf.github.io/rtichoke_python/reference/create_decision_curve_times.html): Creates a time-dependent Decision Curve using the existing Plotly path
 - [plot_decision_curve](https://uriahf.github.io/rtichoke_python/reference/plot_decision_curve.html): Plots a Decision Curve from pre-computed performance data
