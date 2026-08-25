@@ -15,7 +15,7 @@ EXPECTED_COUNTS = {
     0.75: (3.0, 3.0),
 }
 # These values match the current R static Interventions Avoided definition.
-EXPECTED_IA = {-0.0 + 0.25: -25.0, 0.5: 0.0, 0.75: 25.0}
+EXPECTED_IA = {0.25: -25.0, 0.5: 0.0, 0.75: 25.0}
 OLD_BUGGY_IA = {0.25: 12.125, 0.5: 24.75, 0.75: 37.375}
 
 
@@ -86,7 +86,10 @@ def test_interventions_avoided_model_and_references_use_same_per_100_unit():
         & pl.col("x").is_in(THRESHOLDS)
     ).sort("x")
     expected_treat_none = np.array(
-        [100 * (1 - 0.5 - 0.5 * (1 - threshold) / threshold) for threshold in THRESHOLDS]
+        [
+            100 * (1 - 0.5 - 0.5 * (1 - threshold) / threshold)
+            for threshold in THRESHOLDS
+        ]
     )
     np.testing.assert_allclose(treat_none["y"].to_numpy(), expected_treat_none)
 
