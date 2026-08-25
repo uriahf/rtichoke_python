@@ -56,6 +56,7 @@ class RtichokeBrowserChart:
             "gains": "renderGainsV2",
             "lift": "renderLiftV2",
             "decision_curve": "renderDecisionCurveV2",
+            "interventions_avoided": "renderInterventionsAvoidedV2",
         }.get(str(self.spec.get("type")))
         if render_export is None:
             raise ValueError(
