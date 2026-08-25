@@ -1,0 +1,35 @@
+name: Temporary Ruff format
+
+on:
+  push:
+    branches:
+      - feat/static-decision-curve-browser
+    paths:
+      - .github/workflows/_temporary-format.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/static-decision-curve-browser
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync
+      - name: Format touched Python files
+        run: >-
+          uv run ruff format
+          src/rtichoke/_decision_curve_viz_spec_v2.py
+          tests/test_decision_curve_v2.py
+          tests/test_rtichoke_viz_vendor.py
+      - name: Commit formatting
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/rtichoke/_decision_curve_viz_spec_v2.py tests/test_decision_curve_v2.py tests/test_rtichoke_viz_vendor.py
+          git diff --cached --quiet && exit 0
+          git commit -m "Format Decision Curve browser changes"
+          git push origin HEAD:feat/static-decision-curve-browser
