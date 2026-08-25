@@ -2,7 +2,7 @@
 A module for Precision-Recall Curves using Plotly helpers
 """
 
-from typing import Dict, List, Sequence, Union
+from typing import Any, Dict, List, Sequence, Union
 from plotly.graph_objs._figure import Figure
 from rtichoke.processing.binary_color_values import _apply_color_values_binary
 from rtichoke.processing.plotly_helper_functions import (
@@ -14,6 +14,47 @@ from rtichoke.processing.time_reference_lines import (
 )
 import numpy as np
 import polars as pl
+
+from rtichoke._renderers import RtichokeBrowserChart, _validate_renderer
+from rtichoke._viz_spec_v2 import _precision_recall_v2_spec_from_performance_data
+from rtichoke.performance_data.performance_data import prepare_performance_data
+from rtichoke.processing.evaluation_semantics import (
+    _EvaluationMetadata,
+    _build_evaluation_metadata,
+)
+
+
+def _precision_recall_browser_chart(
+    performance_data: pl.DataFrame,
+    evaluation_metadata: dict[str, _EvaluationMetadata],
+    *,
+    size: int,
+) -> RtichokeBrowserChart:
+    spec = _precision_recall_v2_spec_from_performance_data(
+        performance_data,
+        evaluation_metadata,
+    )
+    return RtichokeBrowserChart(spec=spec, size=size)
+
+
+def _performance_data_evaluation_metadata(
+    performance_data: pl.DataFrame,
+) -> dict[str, _EvaluationMetadata]:
+    """Treat pre-computed groups as populations when model identity is unknown."""
+    groups = list(
+        dict.fromkeys(
+            str(value) for value in performance_data["reference_group"].to_list()
+        )
+    )
+    return {
+        group: _EvaluationMetadata(
+            reference_group=group,
+            evaluation=group,
+            model=None,
+            population=group,
+        )
+        for group in groups
+    }
 
 
 def create_precision_recall_curve(
@@ -44,7 +85,8 @@ def create_precision_recall_curve(
         "#D1603D",
         "#585123",
     ],
-) -> Figure:
+    renderer: str = "plotly",
+) -> Any:
     """Creates a Precision-Recall curve.
 
     This function generates a Precision-Recall curve, which is a common
@@ -67,13 +109,36 @@ def create_precision_recall_curve(
     size : int, optional
         The width and height of the plot in pixels. Defaults to 600.
     color_values : List[str], optional
-        A list of hex color strings for the plot lines.
+        A list of hex color strings for the Plotly lines.
+    renderer : {"plotly", "browser", "rtichoke_viz"}, optional
+        Rendering backend. ``"plotly"`` remains the default. ``"browser"`` and
+        its ``"rtichoke_viz"`` alias return a canonical offline browser chart.
 
     Returns
     -------
-    Figure
-        A Plotly ``Figure`` object representing the Precision-Recall curve.
+    Figure or RtichokeBrowserChart
+        A Plotly ``Figure`` or canonical offline browser chart.
     """
+    selected_renderer = _validate_renderer(renderer)
+    if selected_renderer != "plotly":
+        if selected_renderer == "matplotlib":
+            raise ValueError(
+                "Precision-Recall supports 'plotly', 'browser', and 'rtichoke_viz' "
+                "renderers."
+            )
+        performance_data = prepare_performance_data(
+            probs=probs,
+            reals=reals,
+            by=by,
+            stratified_by=stratified_by,
+        )
+        evaluation_metadata = _build_evaluation_metadata(probs, reals, np.array([]))
+        return _precision_recall_browser_chart(
+            performance_data,
+            evaluation_metadata,
+            size=size,
+        )
+
     fig = _create_rtichoke_plotly_curve_binary(
         probs,
         reals,
@@ -90,28 +155,48 @@ def plot_precision_recall_curve(
     performance_data: pl.DataFrame,
     stratified_by: Sequence[str] = ["probability_threshold"],
     size: int = 600,
-) -> Figure:
+    renderer: str = "plotly",
+) -> Any:
     """Plots a Precision-Recall curve from pre-computed performance data.
 
     This function is useful when you have already computed the performance
-    metrics and want to generate a Precision-Recall plot directly.
+    metrics and want to generate a Precision-Recall plot directly. Pre-computed
+    data does not encode separate model identity, so canonical browser rendering
+    treats each ``reference_group`` as a population with unknown model identity.
 
     Parameters
     ----------
     performance_data : pl.DataFrame
         A Polars DataFrame with the necessary performance metrics, including
-        precision (ppv) and recall (tpr), along with any stratification variables.
+        precision (ppv) and recall (sensitivity), along with the production
+        prevalence quantities ``real_positives`` and ``n``.
     stratified_by : Sequence[str], optional
         The columns in `performance_data` used for stratification. Defaults to
         ``["probability_threshold"]``.
     size : int, optional
         The width and height of the plot in pixels. Defaults to 600.
+    renderer : {"plotly", "browser", "rtichoke_viz"}, optional
+        Rendering backend. ``"plotly"`` remains the default.
 
     Returns
     -------
-    Figure
-        A Plotly ``Figure`` object representing the Precision-Recall curve.
+    Figure or RtichokeBrowserChart
+        A Plotly ``Figure`` or canonical offline browser chart.
     """
+    selected_renderer = _validate_renderer(renderer)
+    if selected_renderer != "plotly":
+        if selected_renderer == "matplotlib":
+            raise ValueError(
+                "Precision-Recall supports 'plotly', 'browser', and 'rtichoke_viz' "
+                "renderers."
+            )
+        evaluation_metadata = _performance_data_evaluation_metadata(performance_data)
+        return _precision_recall_browser_chart(
+            performance_data,
+            evaluation_metadata,
+            size=size,
+        )
+
     fig = _plot_rtichoke_curve_binary(
         performance_data,
         size=size,
