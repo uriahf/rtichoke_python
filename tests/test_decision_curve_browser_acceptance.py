@@ -6,9 +6,10 @@ from threading import Thread
 from typing import Iterator
 
 import numpy as np
+import polars as pl
 import pytest
 
-from rtichoke.utility.decision import create_decision_curve
+from rtichoke.utility.decision import create_decision_curve, plot_decision_curve
 
 
 @contextmanager
@@ -23,6 +24,15 @@ def _serve(directory: Path) -> Iterator[str]:
         server.shutdown()
         thread.join()
         server.server_close()
+
+
+def _browser_page(tmp_path: Path, filename: str):
+    try:
+        from playwright.sync_api import sync_playwright  # type: ignore[import-untyped]
+    except ImportError:
+        pytest.skip("playwright is not available")
+
+    return sync_playwright(), _serve(tmp_path), filename
 
 
 def test_static_decision_curve_renders_model_and_references_in_real_browser(tmp_path):
@@ -66,6 +76,68 @@ def test_static_decision_curve_renders_model_and_references_in_real_browser(tmp_
             assert "Model B" in content
             assert "Treat None" in content
             assert "Treat All" in content
+            assert page.locator("svg").count() >= 1
+            assert len(errors) == 0, f"Console errors found: {errors}"
+            browser.close()
+
+
+def test_static_interventions_avoided_renders_geometry_references_and_axes_in_real_browser(
+    tmp_path,
+):
+    try:
+        from playwright.sync_api import sync_playwright  # type: ignore[import-untyped]
+    except ImportError:
+        pytest.skip("playwright is not available")
+
+    performance_data = pl.DataFrame(
+        {
+            "reference_group": ["Population A", "Population A", "Population B", "Population B"],
+            "chosen_cutoff": [0.2, 0.5, 0.2, 0.5],
+            "net_benefit_interventions_avoided": [-25.0, 50.0, -100.0, 0.0],
+            "real_positives": [2, 2, 4, 4],
+            "n": [8, 8, 8, 8],
+        }
+    )
+    chart = plot_decision_curve(
+        performance_data,
+        decision_type="interventions avoided",
+        min_p_threshold=0.2,
+        max_p_threshold=0.5,
+        renderer="browser",
+    )
+    treat_none = [
+        reference
+        for reference in chart.spec["references"]
+        if reference["benchmark"] == "treat_none"
+    ]
+    assert [reference["population"] for reference in treat_none] == [
+        "Population A",
+        "Population B",
+    ]
+    chart.write_html(tmp_path / "interventions-avoided.html")
+
+    with _serve(tmp_path) as base_url:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            errors: list[str] = []
+            page.on(
+                "console",
+                lambda msg: errors.append(msg.text)
+                if msg.type in ["error", "warning"]
+                else None,
+            )
+            page.on("pageerror", lambda err: errors.append(str(err)))
+            page.goto(f"{base_url}/interventions-avoided.html")
+            page.wait_for_selector("svg")
+
+            content = page.content()
+            assert "Population A" in content
+            assert "Population B" in content
+            assert "Treat All" in content
+            assert "Treat None" in content
+            assert "Interventions Avoided (per 100)" in content
+            assert "Probability Threshold" in content
             assert page.locator("svg").count() >= 1
             assert len(errors) == 0, f"Console errors found: {errors}"
             browser.close()
