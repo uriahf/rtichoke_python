@@ -49,9 +49,7 @@ def test_shared_population_has_two_evaluations_and_one_treat_all_path():
         "evaluation-2",
     ]
     assert [item["id"] for item in spec["series"]] == ["series-1", "series-2"]
-    assert all(
-        series["id"] != series["evaluationId"] for series in spec["series"]
-    )
+    assert all(series["id"] != series["evaluationId"] for series in spec["series"])
     assert [row["netBenefit"] for row in spec["data"]] == [0.20, 0.12, 0.30, 0.18]
 
     treat_none = [r for r in spec["references"] if r["benchmark"] == "treat_none"]
@@ -102,9 +100,7 @@ def test_model_values_are_copied_not_recomputed():
             "n": [8],
         }
     )
-    metadata = {
-        "a": _EvaluationMetadata("a", "a", "model-a", "population-a")
-    }
+    metadata = {"a": _EvaluationMetadata("a", "a", "model-a", "population-a")}
 
     spec = _decision_curve_v2_spec_from_performance_data(data, metadata)
 

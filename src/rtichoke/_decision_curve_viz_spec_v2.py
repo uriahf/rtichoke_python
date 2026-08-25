@@ -37,15 +37,19 @@ def _decision_curve_v2_spec_from_performance_data(
             + ", ".join(sorted(missing))
         )
 
-    rows = performance_data.filter(
-        pl.col("chosen_cutoff").is_finite() & pl.col("net_benefit").is_finite()
-    ).select(
-        "reference_group",
-        "chosen_cutoff",
-        "net_benefit",
-        "real_positives",
-        "n",
-    ).to_dicts()
+    rows = (
+        performance_data.filter(
+            pl.col("chosen_cutoff").is_finite() & pl.col("net_benefit").is_finite()
+        )
+        .select(
+            "reference_group",
+            "chosen_cutoff",
+            "net_benefit",
+            "real_positives",
+            "n",
+        )
+        .to_dicts()
+    )
 
     row_groups = {str(row["reference_group"]) for row in rows}
     missing_metadata = row_groups.difference(evaluation_metadata)

@@ -29,9 +29,7 @@ def test_vendored_rtichoke_viz_v060_provenance_archive_and_schemas():
         }
         manifest = release.extractfile(f"{_RELEASE_DIR}/MANIFEST")
         assert manifest is not None
-        assert manifest.read().decode() == (
-            f"version=0.6.0\ncommit={_SOURCE_COMMIT}\n"
-        )
+        assert manifest.read().decode() == (f"version=0.6.0\ncommit={_SOURCE_COMMIT}\n")
         for filename in (
             "rtichoke-viz.css",
             "rtichoke-viz.js",
