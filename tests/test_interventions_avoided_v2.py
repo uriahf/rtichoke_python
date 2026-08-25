@@ -187,7 +187,9 @@ def test_browser_rejects_combined_or_unknown_decision_modes():
     reals = np.array([1, 1, 0, 0])
 
     try:
-        create_decision_curve(probs, reals, decision_type="combined", renderer="browser")
+        create_decision_curve(
+            probs, reals, decision_type="combined", renderer="browser"
+        )
     except ValueError as error:
         assert "decision_type='interventions avoided'" in str(error)
     else:

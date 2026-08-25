@@ -98,9 +98,7 @@ def _interventions_avoided_v2_spec_from_performance_data(
         {
             "seriesId": series_ids[str(row["reference_group"])],
             "threshold": float(row["chosen_cutoff"]),
-            "interventionsAvoided": float(
-                row["net_benefit_interventions_avoided"]
-            ),
+            "interventionsAvoided": float(row["net_benefit_interventions_avoided"]),
         }
         for row in rows
     ]
