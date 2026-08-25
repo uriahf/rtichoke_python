@@ -19,6 +19,14 @@ _REQUIRED_ROC_COLUMNS = {
     "sensitivity",
     "specificity",
 }
+_REQUIRED_PRECISION_RECALL_COLUMNS = {
+    "reference_group",
+    "chosen_cutoff",
+    "sensitivity",
+    "ppv",
+    "real_positives",
+    "n",
+}
 _REQUIRED_GAINS_COLUMNS = {
     "reference_group",
     "chosen_cutoff",
@@ -47,6 +55,33 @@ def _roc_v2_spec_from_performance_data(
         evaluation_metadata,
         chart_type="roc",
     )
+
+
+def _precision_recall_v2_spec_from_performance_data(
+    performance_data: pl.DataFrame,
+    evaluation_metadata: Mapping[str, _EvaluationMetadata],
+) -> dict[str, object]:
+    """Build canonical static Precision-Recall from production quantities."""
+    spec = _curve_v2_spec_from_performance_data(
+        performance_data,
+        evaluation_metadata,
+        chart_type="precision_recall",
+    )
+    prevalence = _gains_population_prevalence(performance_data, evaluation_metadata)
+    populations = list(
+        dict.fromkeys(metadata.population for metadata in evaluation_metadata.values())
+    )
+    spec["references"] = [
+        {
+            "type": "horizontal",
+            "scope": "population",
+            "population": population,
+            "value": prevalence[population],
+            "label": "Prevalence",
+        }
+        for population in populations
+    ]
+    return spec
 
 
 def _gains_v2_spec_from_performance_data(
@@ -512,6 +547,9 @@ def _curve_v2_spec_from_performance_data(
     if chart_type == "roc":
         required = _REQUIRED_ROC_COLUMNS
         selected = ["reference_group", "chosen_cutoff", "sensitivity", "specificity"]
+    elif chart_type == "precision_recall":
+        required = _REQUIRED_PRECISION_RECALL_COLUMNS
+        selected = ["reference_group", "chosen_cutoff", "sensitivity", "ppv"]
     elif chart_type == "gains":
         required = _REQUIRED_GAINS_COLUMNS
         selected = ["reference_group", "chosen_cutoff", "sensitivity", "ppcr"]
@@ -587,6 +625,9 @@ def _curve_v2_spec_from_performance_data(
         if chart_type == "roc":
             datum["sensitivity"] = row["sensitivity"]
             datum["specificity"] = row["specificity"]
+        elif chart_type == "precision_recall":
+            datum["sensitivity"] = row["sensitivity"]
+            datum["ppv"] = row["ppv"]
         elif chart_type == "gains":
             datum["sensitivity"] = row["sensitivity"]
             datum["ppcr"] = row["ppcr"]
@@ -607,6 +648,20 @@ def _curve_v2_spec_from_performance_data(
             "xAxis": {"label": "1 - Specificity", "domain": [0, 1]},
             "yAxis": {"label": "Sensitivity", "domain": [0, 1]},
             "references": [{"type": "identity", "scope": "global"}],
+        }
+
+    if chart_type == "precision_recall":
+        return {
+            "schemaVersion": "2.0",
+            "type": "precision_recall",
+            "evaluations": evaluations,
+            "series": series,
+            "data": data,
+            "x": "sensitivity",
+            "y": "ppv",
+            "xAxis": {"label": "Sensitivity", "domain": [0, 1]},
+            "yAxis": {"label": "Positive Predictive Value", "domain": [0, 1]},
+            "references": [],
         }
 
     if chart_type == "gains":
