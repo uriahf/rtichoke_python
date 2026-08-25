@@ -33,6 +33,7 @@ jobs:
           root=/tmp/rtichoke-viz/rtichoke-viz-0.7.0
           grep -Fx 'version=0.7.0' "$root/MANIFEST"
           grep -Fx 'commit=b3564d2824ec1791f791fda406c99b3d7865a68f' "$root/MANIFEST"
+          grep -F 'InterventionsAvoidedV2SpecSchema' "$root/rtichoke-viz.js"
           grep -F 'renderInterventionsAvoidedV2' "$root/rtichoke-viz.js"
           grep -F 'renderDecisionCurveV2' "$root/rtichoke-viz.js"
           vendor=src/rtichoke/_vendor/rtichoke_viz
@@ -49,13 +50,29 @@ jobs:
           archive=rtichoke-viz-0.7.0.tar.gz
           sha256=f09c30e231a8be39c2e89ba6ae39c90ed8cab67021213e17681a475066a9806e
           EOF
-      - name: Commit vendored release
+      - name: Wire Interventions Avoided browser export
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/rtichoke/_renderers.py")
+          text = path.read_text()
+          old = '            "decision_curve": "renderDecisionCurveV2",\n'
+          new = old + '            "interventions_avoided": "renderInterventionsAvoidedV2",\n'
+          if '"interventions_avoided": "renderInterventionsAvoidedV2"' not in text:
+              if old not in text:
+                  raise SystemExit("Decision Curve renderer mapping anchor not found")
+              text = text.replace(old, new, 1)
+              path.write_text(text)
+          PY
+      - name: Commit staged changes
         shell: bash
         run: |
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add src/rtichoke/_vendor/rtichoke_viz
+          git add src/rtichoke/_vendor/rtichoke_viz src/rtichoke/_renderers.py
           if git diff --cached --quiet; then
             exit 0
           fi
