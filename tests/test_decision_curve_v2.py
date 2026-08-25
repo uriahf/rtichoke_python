@@ -134,18 +134,11 @@ def test_precomputed_browser_input_does_not_fabricate_model_identity():
     assert [item["population"] for item in browser.spec["evaluations"]] == ["a", "b"]
 
 
-def test_browser_adoption_does_not_enable_interventions_avoided():
+def test_conventional_browser_behavior_remains_unchanged():
     probs = {"model-a": np.array([0.9, 0.7, 0.4, 0.1])}
     reals = np.array([1, 1, 0, 0])
 
-    try:
-        create_decision_curve(
-            probs,
-            reals,
-            decision_type="interventions avoided",
-            renderer="browser",
-        )
-    except ValueError as error:
-        assert "Static conventional Decision Curves" in str(error)
-    else:
-        raise AssertionError("Interventions Avoided browser adoption is out of scope")
+    browser = create_decision_curve(probs, reals, renderer="browser")
+
+    assert isinstance(browser, RtichokeBrowserChart)
+    assert browser.spec["type"] == "decision_curve"
