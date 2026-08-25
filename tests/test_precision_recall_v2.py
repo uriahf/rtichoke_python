@@ -133,7 +133,11 @@ def test_multiple_populations_keep_model_unknown_and_own_references():
         {"id": "evaluation-2", "population": "Population high"},
     ]
     assert [series["display"] for series in spec["series"]] == [
-        {"label": "Population low", "group": "Population low", "role": "population"},
+        {
+            "label": "Population low",
+            "group": "Population low",
+            "role": "population",
+        },
         {
             "label": "Population high",
             "group": "Population high",
@@ -188,7 +192,9 @@ def test_ordinal_ids_do_not_depend_on_labels():
     assert [series["id"] for series in second["series"]] == ["series-1", "series-2"]
 
 
-def test_public_browser_renderer_returns_existing_browser_chart_and_dispatch(tmp_path: Path):
+def test_public_browser_renderer_returns_existing_browser_chart_and_dispatch(
+    tmp_path: Path,
+):
     chart = create_precision_recall_curve(
         {"Model A": PROBS_A},
         REALS_EQUAL,
@@ -253,7 +259,11 @@ def test_default_and_explicit_plotly_behavior_are_unchanged():
     assert isinstance(default, go.Figure)
     assert pio.to_json(default) == pio.to_json(explicit)
 
-    performance_data = prepare_performance_data(probs=probs, reals=REALS_EQUAL, by=0.25)
+    performance_data = prepare_performance_data(
+        probs=probs,
+        reals=REALS_EQUAL,
+        by=0.25,
+    )
     default_plot = plot_precision_recall_curve(performance_data)
     explicit_plot = plot_precision_recall_curve(performance_data, renderer="plotly")
     assert pio.to_json(default_plot) == pio.to_json(explicit_plot)
@@ -265,7 +275,13 @@ def test_time_dependent_precision_recall_api_does_not_gain_renderer_selection():
 
 
 def test_vendored_v050_contains_static_precision_recall_contract_and_export():
-    vendor = Path(__file__).parents[1] / "src" / "rtichoke" / "_vendor" / "rtichoke_viz"
+    vendor = (
+        Path(__file__).parents[1]
+        / "src"
+        / "rtichoke"
+        / "_vendor"
+        / "rtichoke_viz"
+    )
     bundle = (vendor / "rtichoke-viz.js").read_text(encoding="utf-8")
     schema = (vendor / "rtichoke-viz-v2.schema.json").read_text(encoding="utf-8")
 
@@ -303,7 +319,9 @@ def _serve(directory: Path) -> Iterator[str]:
         server.server_close()
 
 
-def test_public_browser_chart_executes_to_svg_when_chrome_is_available(tmp_path: Path):
+def test_public_browser_chart_executes_to_svg_when_chrome_is_available(
+    tmp_path: Path,
+):
     chart = create_precision_recall_curve(
         {"Model A": PROBS_A},
         REALS_EQUAL,
