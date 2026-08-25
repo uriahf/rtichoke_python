@@ -22,4 +22,4 @@ create_decision_curve(
 ```
 
 
-`renderer="plotly"` preserves the historical default. For static conventional Decision Curves, `"browser"` and `"rtichoke_viz"` return a canonical `RtichokeBrowserChart` built from the already-computed production net-benefit values.
+`renderer="plotly"` preserves the historical default. For static conventional Decision Curves and static Interventions Avoided curves, `"browser"` and `"rtichoke_viz"` return a canonical `RtichokeBrowserChart` built from already-computed production values.
