@@ -86,8 +86,7 @@ def test_interventions_avoided_model_and_references_use_same_per_100_unit():
     assert np.allclose(treat_all["y"].to_numpy(), 0.0)
 
     treat_none = refs.filter(
-        (pl.col("reference_group") == "treat_none")
-        & pl.col("x").is_in(THRESHOLDS)
+        (pl.col("reference_group") == "treat_none") & pl.col("x").is_in(THRESHOLDS)
     ).sort("x")
     expected_treat_none = np.array(
         [
