@@ -503,15 +503,18 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 <div class="doc-usage-source">
 <p>Usage</p>
-<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/discrimination/precision_recall.py#L89-L120" target="_blank" rel="noopener">Source</a></p>
+<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/discrimination/precision_recall.py#L154-L205" target="_blank" rel="noopener">Source</a></p>
 </div>
 <div class="doc-signature doc-Kind.FUNCTION">
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">plot_precision_recall_curve</span>(</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">performance_data</span>, <span class="va">stratified_by</span><span class="op">=</span>[<span class="st">&quot;probability_threshold&quot;</span>], <span class="va">size</span><span class="op">=</span><span class="dv">600</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">performance_data</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">stratified_by</span><span class="op">=</span>[<span class="st">&quot;probability_threshold&quot;</span>],</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">size</span><span class="op">=</span><span class="dv">600</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="va">renderer</span><span class="op">=</span><span class="st">&quot;plotly&quot;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 </div>
 <div class="doc-text">
-<p>This function is useful when you have already computed the performance metrics and want to generate a Precision-Recall plot directly.</p>
+<p>This function is useful when you have already computed the performance metrics and want to generate a Precision-Recall plot directly. Pre-computed data does not encode separate model identity, so canonical browser rendering treats each <code>reference_group</code> as a population with unknown model identity.</p>
 </div>
 <section id="parameters" class="level2 doc-parameters">
 <h2 class="doc-parameters">Parameters</h2>
@@ -519,7 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <dl>
 <dt><code><span class="doc-parameter-name">performance_data</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">pl.DataFrame</span></code></dt>
 <dd>
-<p>A Polars DataFrame with the necessary performance metrics, including precision (ppv) and recall (tpr), along with any stratification variables.</p>
+<p>A Polars DataFrame with the necessary performance metrics, including precision (ppv) and recall (sensitivity), along with the production prevalence quantities <code>real_positives</code> and <code>n</code>.</p>
 </dd>
 <dt><code><span class="doc-parameter-name">stratified_by</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Sequence[str]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">[<span class="st">"probability_threshold"</span>]<br></span></code></dt>
 <dd>
@@ -527,7 +530,11 @@ document.addEventListener('DOMContentLoaded', () => {
 </dd>
 <dt><code><span class="doc-parameter-name">size</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">int</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="dv">600</span></span></code></dt>
 <dd>
-The width and height of the plot in pixels. Defaults to 600.
+<p>The width and height of the plot in pixels. Defaults to 600.</p>
+</dd>
+<dt><code><span class="doc-parameter-name">renderer</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">(plotly, browser, rtichoke_viz)</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="st">"plotly"</span></span></code></dt>
+<dd>
+Rendering backend. <code>"plotly"</code> remains the default.
 </dd>
 </dl>
 </div>
@@ -536,9 +543,9 @@ The width and height of the plot in pixels. Defaults to 600.
 <h2 class="doc-returns">Returns</h2>
 <div class="doc-definition-items">
 <dl>
-<dt><code> <span class="doc-parameter-annotation">Figure</span></code></dt>
+<dt><code> <span class="doc-parameter-annotation">Figure or RtichokeBrowserChart</span></code></dt>
 <dd>
-A Plotly <code>Figure</code> object representing the Precision-Recall curve.
+A Plotly <code>Figure</code> or canonical offline browser chart.
 </dd>
 </dl>
 </div>

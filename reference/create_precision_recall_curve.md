@@ -13,7 +13,8 @@ create_precision_recall_curve(
     by=0.01,
     stratified_by=["probability_threshold"],
     size=600,
-    color_values=["#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#07004D", "#E6AB02", "#FE5F55", "#54494B", "#006E90", "#BC96E6", "#52050A", "#1F271B", "#BE7C4D", "#63768D", "#08A045", "#320A28", "#82FF9E", "#2176FF", "#D1603D", "#585123"]
+    color_values=["#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#07004D", "#E6AB02", "#FE5F55", "#54494B", "#006E90", "#BC96E6", "#52050A", "#1F271B", "#BE7C4D", "#63768D", "#08A045", "#320A28", "#82FF9E", "#2176FF", "#D1603D", "#585123"],
+    renderer="plotly"
 )
 ```
 
@@ -63,11 +64,14 @@ The width and height of the plot in pixels. Defaults to 600.
 `    ``"#585123"``,`\
 `]`\
 </span>  
-A list of hex color strings for the plot lines.
+A list of hex color strings for the Plotly lines.
+
+`renderer: (plotly, browser, rtichoke_viz) = ``"plotly"`  
+Rendering backend. `"plotly"` remains the default. `"browser"` and its `"rtichoke_viz"` alias return a canonical offline browser chart.
 
 
 ## Returns
 
 
-`Figure`  
-A Plotly `Figure` object representing the Precision-Recall curve.
+`Figure or RtichokeBrowserChart`  
+A Plotly `Figure` or canonical offline browser chart.
