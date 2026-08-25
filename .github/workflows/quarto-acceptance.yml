@@ -1,0 +1,52 @@
+name: Quarto Summary Report Acceptance
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "src/rtichoke/summary_report/**"
+      - "src/rtichoke/_report_browser.py"
+      - "src/rtichoke/_report_spec.py"
+      - "src/rtichoke/_vendor/rtichoke_viz/**"
+      - "tests/test_quarto_summary_report_browser.py"
+      - "tests/test_summary_report_browser.py"
+      - ".github/workflows/quarto-acceptance.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "src/rtichoke/summary_report/**"
+      - "src/rtichoke/_report_browser.py"
+      - "src/rtichoke/_report_spec.py"
+      - "src/rtichoke/_vendor/rtichoke_viz/**"
+      - "tests/test_quarto_summary_report_browser.py"
+      - "tests/test_summary_report_browser.py"
+      - ".github/workflows/quarto-acceptance.yml"
+  workflow_dispatch:
+
+jobs:
+  quarto-acceptance:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv and set Python version
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Quarto CLI
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: "1.4.555"
+
+      - name: Install project dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Install Playwright Chromium for browser acceptance
+        run: uv run --with playwright playwright install chromium
+
+      - name: Run Quarto browser report acceptance tests
+        run: uv run --with playwright pytest tests/test_quarto_summary_report_browser.py
