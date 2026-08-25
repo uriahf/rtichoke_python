@@ -66,9 +66,17 @@ def test_one_model_spec_is_pure_pass_through_with_deterministic_ids():
         }
     ]
 
-    expected_rows = performance_data.select(
+    source_rows = performance_data.select(
         "chosen_cutoff", "sensitivity", "ppv"
     ).to_dicts()
+    assert any(np.isnan(row["ppv"]) for row in source_rows)
+    expected_rows = [
+        row
+        for row in source_rows
+        if np.isfinite(row["chosen_cutoff"])
+        and np.isfinite(row["sensitivity"])
+        and np.isfinite(row["ppv"])
+    ]
     assert spec["data"] == [
         {
             "seriesId": "series-1",
