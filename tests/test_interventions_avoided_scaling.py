@@ -2,7 +2,11 @@ import numpy as np
 import polars as pl
 import pytest
 
-from rtichoke import create_decision_curve, plot_decision_curve, prepare_performance_data
+from rtichoke import (
+    create_decision_curve,
+    plot_decision_curve,
+    prepare_performance_data,
+)
 from rtichoke.processing.plotly_helper_functions import _create_reference_lines_data
 
 
