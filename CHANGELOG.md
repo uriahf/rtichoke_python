@@ -2,6 +2,7 @@
 
 <!--next-version-placeholder-->
 
+- Added opt-in canonical browser rendering for static Interventions Avoided using the verified `rtichoke_viz v0.7.0` release while preserving Plotly as the default.
 - Fixed Interventions Avoided to apply the per-100 scaling to the full model expression, including the false-negative penalty term.
 
 ## v0.1.36 (21/08/2026)

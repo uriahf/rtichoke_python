@@ -11,6 +11,9 @@ from plotly.graph_objs._figure import Figure
 from rtichoke._decision_curve_viz_spec_v2 import (
     _decision_curve_v2_spec_from_performance_data,
 )
+from rtichoke._interventions_avoided_viz_spec_v2 import (
+    _interventions_avoided_v2_spec_from_performance_data,
+)
 from rtichoke._renderers import RtichokeBrowserChart, _validate_renderer
 from rtichoke.performance_data.performance_data import prepare_performance_data
 from rtichoke.processing.binary_color_values import _apply_color_values_binary
@@ -33,6 +36,23 @@ def _decision_curve_browser_chart(
     max_p_threshold: float,
 ) -> RtichokeBrowserChart:
     spec = _decision_curve_v2_spec_from_performance_data(
+        performance_data,
+        evaluation_metadata,
+        min_p_threshold=min_p_threshold,
+        max_p_threshold=max_p_threshold,
+    )
+    return RtichokeBrowserChart(spec=spec, size=size)
+
+
+def _interventions_avoided_browser_chart(
+    performance_data: pl.DataFrame,
+    evaluation_metadata: dict[str, _EvaluationMetadata],
+    *,
+    size: int,
+    min_p_threshold: float,
+    max_p_threshold: float,
+) -> RtichokeBrowserChart:
+    spec = _interventions_avoided_v2_spec_from_performance_data(
         performance_data,
         evaluation_metadata,
         min_p_threshold=min_p_threshold,
@@ -97,16 +117,20 @@ def create_decision_curve(
     """Creates a Decision Curve.
 
     ``renderer="plotly"`` preserves the historical default. For static
-    conventional Decision Curves, ``"browser"`` and ``"rtichoke_viz"`` return
-    a canonical :class:`RtichokeBrowserChart` built from the already-computed
-    production net-benefit values.
+    conventional Decision Curves and static Interventions Avoided curves,
+    ``"browser"`` and ``"rtichoke_viz"`` return a canonical
+    :class:`RtichokeBrowserChart` built from already-computed production values.
     """
     selected_renderer = _validate_renderer(renderer)
     if selected_renderer != "plotly":
-        if selected_renderer == "matplotlib" or decision_type != "conventional":
+        if selected_renderer == "matplotlib" or decision_type not in {
+            "conventional",
+            "interventions avoided",
+        }:
             raise ValueError(
-                "Static conventional Decision Curves support 'plotly', 'browser', "
-                "and 'rtichoke_viz' renderers."
+                "Static Decision Curves support 'plotly', 'browser', and "
+                "'rtichoke_viz' renderers for decision_type='conventional' or "
+                "decision_type='interventions avoided'."
             )
         performance_data = prepare_performance_data(
             probs=probs,
@@ -115,7 +139,15 @@ def create_decision_curve(
             by=by,
         )
         evaluation_metadata = _build_evaluation_metadata(probs, reals, np.array([]))
-        return _decision_curve_browser_chart(
+        if decision_type == "conventional":
+            return _decision_curve_browser_chart(
+                performance_data,
+                evaluation_metadata,
+                size=size,
+                min_p_threshold=min_p_threshold,
+                max_p_threshold=max_p_threshold,
+            )
+        return _interventions_avoided_browser_chart(
             performance_data,
             evaluation_metadata,
             size=size,
@@ -163,14 +195,27 @@ def plot_decision_curve(
     """
     selected_renderer = _validate_renderer(renderer)
     if selected_renderer != "plotly":
-        if selected_renderer == "matplotlib" or decision_type != "conventional":
+        if selected_renderer == "matplotlib" or decision_type not in {
+            "conventional",
+            "interventions avoided",
+        }:
             raise ValueError(
-                "Static conventional Decision Curves support 'plotly', 'browser', "
-                "and 'rtichoke_viz' renderers."
+                "Static Decision Curves support 'plotly', 'browser', and "
+                "'rtichoke_viz' renderers for decision_type='conventional' or "
+                "decision_type='interventions avoided'."
             )
-        return _decision_curve_browser_chart(
+        evaluation_metadata = _performance_data_evaluation_metadata(performance_data)
+        if decision_type == "conventional":
+            return _decision_curve_browser_chart(
+                performance_data,
+                evaluation_metadata,
+                size=size,
+                min_p_threshold=min_p_threshold,
+                max_p_threshold=max_p_threshold,
+            )
+        return _interventions_avoided_browser_chart(
             performance_data,
-            _performance_data_evaluation_metadata(performance_data),
+            evaluation_metadata,
             size=size,
             min_p_threshold=min_p_threshold,
             max_p_threshold=max_p_threshold,

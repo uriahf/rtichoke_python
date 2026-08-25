@@ -52,14 +52,14 @@ jobs:
           prefix = "rtichoke/_vendor/rtichoke_viz/"
           required = {
               f"{prefix}VENDORED_FROM",
-              f"{prefix}rtichoke-viz-0.6.0.tar.gz",
+              f"{prefix}rtichoke-viz-0.7.0.tar.gz",
               f"{prefix}rtichoke-viz.js",
               f"{prefix}rtichoke-viz.css",
               f"{prefix}rtichoke-viz.schema.json",
               f"{prefix}rtichoke-viz-v2.schema.json",
           }
           assert required <= names
-          assert f"{prefix}rtichoke-viz-0.5.0.tar.gz" not in names
+          assert f"{prefix}rtichoke-viz-0.6.0.tar.gz" not in names
           PY
 
       - name: Run tests
