@@ -1,0 +1,61 @@
+name: Temporary vendor rtichoke_viz v0.6.0
+
+on:
+  push:
+    branches:
+      - feat/static-decision-curve-browser
+    paths:
+      - .github/workflows/_temporary-vendor-v060.yml
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/static-decision-curve-browser
+      - name: Download and verify immutable release
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://github.com/uriahf/rtichoke_viz/releases/download/v0.6.0/rtichoke-viz-0.6.0.tar.gz"
+          expected="625613c7f692ff50b7757a27bb6caf84e311971bde92593141393dbd897af3a2"
+          tmp="$(mktemp -d)"
+          curl -fsSL "$url" -o "$tmp/rtichoke-viz-0.6.0.tar.gz"
+          actual="$(sha256sum "$tmp/rtichoke-viz-0.6.0.tar.gz" | awk '{print $1}')"
+          test "$actual" = "$expected"
+          tar -xzf "$tmp/rtichoke-viz-0.6.0.tar.gz" -C "$tmp"
+          vendor="src/rtichoke/_vendor/rtichoke_viz"
+          rm -f "$vendor"/rtichoke-viz-*.tar.gz
+          cp "$tmp/rtichoke-viz-0.6.0.tar.gz" "$vendor/"
+          cp "$tmp/rtichoke-viz.js" "$vendor/"
+          cp "$tmp/rtichoke-viz.css" "$vendor/"
+          cp "$tmp/rtichoke-viz.schema.json" "$vendor/"
+          cp "$tmp/rtichoke-viz-v2.schema.json" "$vendor/"
+          cat > "$vendor/VENDORED_FROM" <<'EOF'
+          repository=https://github.com/uriahf/rtichoke_viz
+          release=v0.6.0
+          source_commit=3abb3f07a598c3e22d5362a3f88e52bb6b52b083
+          archive=rtichoke-viz-0.6.0.tar.gz
+          sha256=625613c7f692ff50b7757a27bb6caf84e311971bde92593141393dbd897af3a2
+          EOF
+          grep -qx 'version=0.6.0' "$tmp/MANIFEST"
+          grep -qx 'commit=3abb3f07a598c3e22d5362a3f88e52bb6b52b083' "$tmp/MANIFEST"
+          grep -q 'renderDecisionCurveV2' "$vendor/rtichoke-viz.js"
+          if grep -q 'renderInterventionsAvoidedV2' "$vendor/rtichoke-viz.js"; then
+            echo 'unexpected Interventions Avoided v2 export in v0.6.0' >&2
+            exit 1
+          fi
+      - name: Commit vendored payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/rtichoke/_vendor/rtichoke_viz
+          git diff --cached --quiet && exit 0
+          git commit -m "Vendor immutable rtichoke_viz v0.6.0"
+          git push origin HEAD:feat/static-decision-curve-browser
