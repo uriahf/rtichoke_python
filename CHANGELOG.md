@@ -2,6 +2,8 @@
 
 <!--next-version-placeholder-->
 
+- Fixed Interventions Avoided to apply the per-100 scaling to the full model expression, including the false-negative penalty term.
+
 ## v0.1.36 (21/08/2026)
 
 - Fixed several binary and time-dependent curve consistency issues, including cutoff-grid endpoints, binary cutoff equality, time-dependent reference prevalence, gains perfect-reference behavior, custom colors, and plot sizing.
