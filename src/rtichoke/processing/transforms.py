@@ -684,10 +684,13 @@ def _turn_cumulative_aj_to_performance_data(
         .alias("net_benefit"),
         pl.when(pl.col("stratified_by") == "probability_threshold")
         .then(
-            100 * (pl.col("true_negatives") / pl.col("n"))
-            - (pl.col("false_negatives") / pl.col("n"))
-            * (1 - pl.col("chosen_cutoff"))
-            / pl.col("chosen_cutoff")
+            100
+            * (
+                (pl.col("true_negatives") / pl.col("n"))
+                - (pl.col("false_negatives") / pl.col("n"))
+                * (1 - pl.col("chosen_cutoff"))
+                / pl.col("chosen_cutoff")
+            )
         )
         .otherwise(None)
         .alias("net_benefit_interventions_avoided"),
