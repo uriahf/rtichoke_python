@@ -62,8 +62,13 @@ def _precision_recall_v2_spec_from_performance_data(
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
 ) -> dict[str, object]:
     """Build canonical static Precision-Recall from production quantities."""
+    finite_rows = performance_data.filter(
+        pl.col("chosen_cutoff").is_finite()
+        & pl.col("sensitivity").is_finite()
+        & pl.col("ppv").is_finite()
+    )
     spec = _curve_v2_spec_from_performance_data(
-        performance_data,
+        finite_rows,
         evaluation_metadata,
         chart_type="precision_recall",
     )
