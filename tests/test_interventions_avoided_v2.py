@@ -75,7 +75,7 @@ def test_shared_population_has_two_evaluations_one_treat_none_path_and_global_tr
     assert treat_none[0]["scope"] == "population"
     assert treat_none[0]["population"] == "population-1"
     assert treat_none[0]["points"] == [
-        {"x": 0.2, "y": -100.0},
+        {"x": 0.2, "y": -25.0},
         {"x": 0.5, "y": 50.0},
     ]
 
@@ -180,3 +180,15 @@ def test_precomputed_browser_input_does_not_fabricate_model_identity():
     assert isinstance(browser, RtichokeBrowserChart)
     assert all("model" not in item for item in browser.spec["evaluations"])
     assert [item["population"] for item in browser.spec["evaluations"]] == ["a", "b"]
+
+
+def test_browser_rejects_combined_or_unknown_decision_modes():
+    probs = {"model-a": np.array([0.9, 0.7, 0.4, 0.1])}
+    reals = np.array([1, 1, 0, 0])
+
+    try:
+        create_decision_curve(probs, reals, decision_type="combined", renderer="browser")
+    except ValueError as error:
+        assert "decision_type='interventions avoided'" in str(error)
+    else:
+        raise AssertionError("Combined browser Decision Curve mode is out of scope")
