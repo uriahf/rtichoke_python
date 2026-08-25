@@ -1,0 +1,63 @@
+name: Agent vendor rtichoke_viz v0.7.0
+
+on:
+  push:
+    branches:
+      - feat/static-interventions-avoided-browser
+    paths:
+      - .github/workflows/agent-vendor-v070.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/static-interventions-avoided-browser
+          fetch-depth: 0
+      - name: Download and verify immutable release
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://github.com/uriahf/rtichoke_viz/releases/download/v0.7.0/rtichoke-viz-0.7.0.tar.gz"
+          expected="f09c30e231a8be39c2e89ba6ae39c90ed8cab67021213e17681a475066a9806e"
+          curl -fL "$url" -o /tmp/rtichoke-viz-0.7.0.tar.gz
+          actual="$(sha256sum /tmp/rtichoke-viz-0.7.0.tar.gz | awk '{print $1}')"
+          test "$actual" = "$expected"
+          mkdir -p /tmp/rtichoke-viz
+          tar -xzf /tmp/rtichoke-viz-0.7.0.tar.gz -C /tmp/rtichoke-viz
+          root=/tmp/rtichoke-viz/rtichoke-viz-0.7.0
+          grep -Fx 'version=0.7.0' "$root/MANIFEST"
+          grep -Fx 'commit=b3564d2824ec1791f791fda406c99b3d7865a68f' "$root/MANIFEST"
+          grep -F 'renderInterventionsAvoidedV2' "$root/rtichoke-viz.js"
+          grep -F 'renderDecisionCurveV2' "$root/rtichoke-viz.js"
+          vendor=src/rtichoke/_vendor/rtichoke_viz
+          cp "$root/rtichoke-viz.js" "$vendor/rtichoke-viz.js"
+          cp "$root/rtichoke-viz.css" "$vendor/rtichoke-viz.css"
+          cp "$root/rtichoke-viz.schema.json" "$vendor/rtichoke-viz.schema.json"
+          cp "$root/rtichoke-viz-v2.schema.json" "$vendor/rtichoke-viz-v2.schema.json"
+          rm -f "$vendor/rtichoke-viz-0.6.0.tar.gz"
+          cp /tmp/rtichoke-viz-0.7.0.tar.gz "$vendor/rtichoke-viz-0.7.0.tar.gz"
+          cat > "$vendor/VENDORED_FROM" <<'EOF'
+          repository=https://github.com/uriahf/rtichoke_viz
+          release=v0.7.0
+          source_commit=b3564d2824ec1791f791fda406c99b3d7865a68f
+          archive=rtichoke-viz-0.7.0.tar.gz
+          sha256=f09c30e231a8be39c2e89ba6ae39c90ed8cab67021213e17681a475066a9806e
+          EOF
+      - name: Commit vendored release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/rtichoke/_vendor/rtichoke_viz
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Vendor rtichoke_viz v0.7.0"
+          git push origin HEAD:feat/static-interventions-avoided-browser
