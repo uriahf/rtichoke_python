@@ -55,6 +55,7 @@ class RtichokeBrowserChart:
             "precision_recall": "renderPrecisionRecallV2",
             "gains": "renderGainsV2",
             "lift": "renderLiftV2",
+            "decision_curve": "renderDecisionCurveV2",
         }.get(str(self.spec.get("type")))
         if render_export is None:
             raise ValueError(
