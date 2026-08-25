@@ -42,7 +42,9 @@ def _performance_data_evaluation_metadata(
 ) -> dict[str, _EvaluationMetadata]:
     """Treat pre-computed groups as populations when model identity is unknown."""
     groups = list(
-        dict.fromkeys(str(value) for value in performance_data["reference_group"].to_list())
+        dict.fromkeys(
+            str(value) for value in performance_data["reference_group"].to_list()
+        )
     )
     return {
         group: _EvaluationMetadata(
