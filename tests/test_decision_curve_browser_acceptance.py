@@ -26,15 +26,6 @@ def _serve(directory: Path) -> Iterator[str]:
         server.server_close()
 
 
-def _browser_page(tmp_path: Path, filename: str):
-    try:
-        from playwright.sync_api import sync_playwright  # type: ignore[import-untyped]
-    except ImportError:
-        pytest.skip("playwright is not available")
-
-    return sync_playwright(), _serve(tmp_path), filename
-
-
 def test_static_decision_curve_renders_model_and_references_in_real_browser(tmp_path):
     try:
         from playwright.sync_api import sync_playwright  # type: ignore[import-untyped]
@@ -82,7 +73,7 @@ def test_static_decision_curve_renders_model_and_references_in_real_browser(tmp_
 
 
 def test_static_interventions_avoided_renders_geometry_references_and_axes_in_real_browser(
-    tmp_path,
+    tmp_path: Path,
 ):
     try:
         from playwright.sync_api import sync_playwright  # type: ignore[import-untyped]
@@ -91,7 +82,12 @@ def test_static_interventions_avoided_renders_geometry_references_and_axes_in_re
 
     performance_data = pl.DataFrame(
         {
-            "reference_group": ["Population A", "Population A", "Population B", "Population B"],
+            "reference_group": [
+                "Population A",
+                "Population A",
+                "Population B",
+                "Population B",
+            ],
             "chosen_cutoff": [0.2, 0.5, 0.2, 0.5],
             "net_benefit_interventions_avoided": [-25.0, 50.0, -100.0, 0.0],
             "real_positives": [2, 2, 4, 4],
