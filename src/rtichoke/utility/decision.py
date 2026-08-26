@@ -12,6 +12,7 @@ from rtichoke._decision_curve_viz_spec_v2 import (
     _decision_curve_v2_spec_from_performance_data,
 )
 from rtichoke._interventions_avoided_viz_spec_v2 import (
+    _interventions_avoided_times_v2_spec_from_performance_data,
     _interventions_avoided_v2_spec_from_performance_data,
 )
 from rtichoke._renderers import RtichokeBrowserChart, _validate_renderer
@@ -284,16 +285,20 @@ def create_decision_curve_times(
     """Creates a time-dependent Decision Curve.
 
     ``renderer="plotly"`` preserves the historical default. For time-dependent
-    conventional Decision Curves, ``"browser"`` and ``"rtichoke_viz"`` return a
+    Decision Curves, ``"browser"`` and ``"rtichoke_viz"`` return a
     canonical :class:`RtichokeBrowserChart` built from already-computed production
     values.
     """
     selected_renderer = _validate_renderer(renderer)
     if selected_renderer != "plotly":
-        if selected_renderer == "matplotlib" or decision_type != "conventional":
+        if selected_renderer == "matplotlib" or decision_type not in {
+            "conventional",
+            "interventions avoided",
+        }:
             raise ValueError(
                 "Time-dependent Decision Curves support 'plotly', 'browser', and "
-                "'rtichoke_viz' renderers for decision_type='conventional'."
+                "'rtichoke_viz' renderers for decision_type='conventional' or "
+                "decision_type='interventions avoided'."
             )
         performance_data = prepare_performance_data_times(
             probs,
@@ -305,7 +310,12 @@ def create_decision_curve_times(
             stratified_by=stratified_by,
         )
         evaluation_metadata = _build_evaluation_metadata(probs, reals, times)
-        spec = _decision_curve_times_v2_spec_from_performance_data(
+        adapter = (
+            _decision_curve_times_v2_spec_from_performance_data
+            if decision_type == "conventional"
+            else _interventions_avoided_times_v2_spec_from_performance_data
+        )
+        spec = adapter(
             performance_data,
             evaluation_metadata,
             min_p_threshold=min_p_threshold,

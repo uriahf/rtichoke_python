@@ -94,15 +94,14 @@ def test_create_decision_curve_times_renderer_options():
     assert isinstance(alias_chart, RtichokeBrowserChart)
 
 
-def test_create_decision_curve_times_rejects_interventions_avoided_in_browser_mode():
+def test_create_decision_curve_times_rejects_matplotlib_consistently():
     probs = {"Model A": np.array([0.2, 0.5, 0.8])}
     reals = np.array([0, 1, 1])
     times = np.array([2.0, 5.0, 8.0])
 
     with pytest.raises(
         ValueError,
-        match="Time-dependent Decision Curves support 'plotly', 'browser', and "
-        "'rtichoke_viz' renderers for decision_type='conventional'.",
+        match="Time-dependent Decision Curves support",
     ):
         create_decision_curve_times(
             probs,
@@ -110,5 +109,5 @@ def test_create_decision_curve_times_rejects_interventions_avoided_in_browser_mo
             times,
             fixed_time_horizons=[5.0],
             decision_type="interventions avoided",
-            renderer="browser",
+            renderer="matplotlib",
         )
