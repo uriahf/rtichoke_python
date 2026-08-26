@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <link rel="stylesheet" href="../site.css">
   <link rel="alternate" type="text/markdown" href="create_decision_curve_times.md">
   <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/reference/create_decision_curve_times.html">
-  <meta name="description" content="Creates a time-dependent Decision Curve using the existing Plotly path.">
+  <meta name="description" content="Creates a time-dependent Decision Curve.">
   <script type="application/ld+json">
 [
   {
@@ -194,12 +194,12 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
   <meta property="og:type" content="website">
   <meta property="og:title" content="create_decision_curve_times() – rtichoke | rtichoke">
-  <meta property="og:description" content="Creates a time-dependent Decision Curve using the existing Plotly path.">
+  <meta property="og:description" content="Creates a time-dependent Decision Curve.">
   <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/reference/create_decision_curve_times.html">
   <meta property="og:site_name" content="rtichoke">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="create_decision_curve_times() – rtichoke | rtichoke">
-  <meta name="twitter:description" content="Creates a time-dependent Decision Curve using the existing Plotly path.">
+  <meta name="twitter:description" content="Creates a time-dependent Decision Curve.">
 </head>
 
 <body class="gd-ref-sidebar nav-sidebar floating nav-fixed doc-api-page quarto-light">
@@ -492,11 +492,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <div class="doc-subject">
-<p>Creates a time-dependent Decision Curve using the existing Plotly path.</p>
+<p>Creates a time-dependent Decision Curve.</p>
 </div>
 <div class="doc-usage-source">
 <p>Usage</p>
-<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/utility/decision.py#L240-L300" target="_blank" rel="noopener">Source</a></p>
+<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/utility/decision.py#L243-L335" target="_blank" rel="noopener">Source</a></p>
 </div>
 <div class="doc-signature doc-Kind.FUNCTION">
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">create_decision_curve_times</span>(</span>
@@ -511,8 +511,12 @@ document.addEventListener('DOMContentLoaded', () => {
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="va">by</span><span class="op">=</span><span class="fl">0.01</span>,</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="va">stratified_by</span><span class="op">=</span>[<span class="st">&quot;probability_threshold&quot;</span>],</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="va">size</span><span class="op">=</span><span class="dv">600</span>,</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="va">color_values</span><span class="op">=</span>[<span class="st">&quot;#1b9e77&quot;</span>, <span class="st">&quot;#d95f02&quot;</span>, <span class="st">&quot;#7570b3&quot;</span>, <span class="st">&quot;#e7298a&quot;</span>, <span class="st">&quot;#07004D&quot;</span>, <span class="st">&quot;#E6AB02&quot;</span>, <span class="st">&quot;#FE5F55&quot;</span>, <span class="st">&quot;#54494B&quot;</span>, <span class="st">&quot;#006E90&quot;</span>, <span class="st">&quot;#BC96E6&quot;</span>, <span class="st">&quot;#52050A&quot;</span>, <span class="st">&quot;#1F271B&quot;</span>, <span class="st">&quot;#BE7C4D&quot;</span>, <span class="st">&quot;#63768D&quot;</span>, <span class="st">&quot;#08A045&quot;</span>, <span class="st">&quot;#320A28&quot;</span>, <span class="st">&quot;#82FF9E&quot;</span>, <span class="st">&quot;#2176FF&quot;</span>, <span class="st">&quot;#D1603D&quot;</span>, <span class="st">&quot;#585123&quot;</span>]</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="va">color_values</span><span class="op">=</span>[<span class="st">&quot;#1b9e77&quot;</span>, <span class="st">&quot;#d95f02&quot;</span>, <span class="st">&quot;#7570b3&quot;</span>, <span class="st">&quot;#e7298a&quot;</span>, <span class="st">&quot;#07004D&quot;</span>, <span class="st">&quot;#E6AB02&quot;</span>, <span class="st">&quot;#FE5F55&quot;</span>, <span class="st">&quot;#54494B&quot;</span>, <span class="st">&quot;#006E90&quot;</span>, <span class="st">&quot;#BC96E6&quot;</span>, <span class="st">&quot;#52050A&quot;</span>, <span class="st">&quot;#1F271B&quot;</span>, <span class="st">&quot;#BE7C4D&quot;</span>, <span class="st">&quot;#63768D&quot;</span>, <span class="st">&quot;#08A045&quot;</span>, <span class="st">&quot;#320A28&quot;</span>, <span class="st">&quot;#82FF9E&quot;</span>, <span class="st">&quot;#2176FF&quot;</span>, <span class="st">&quot;#D1603D&quot;</span>, <span class="st">&quot;#585123&quot;</span>],</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="va">renderer</span><span class="op">=</span><span class="st">&quot;plotly&quot;</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div class="doc-text">
+<p><code>renderer="plotly"</code> preserves the historical default. For time-dependent conventional Decision Curves, <code>"browser"</code> and <code>"rtichoke_viz"</code> return a canonical <code>RtichokeBrowserChart</code> built from already-computed production values.</p>
 </div>
 
 
