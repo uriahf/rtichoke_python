@@ -6,9 +6,9 @@ from typing import Any, Dict, List, Sequence, Union
 
 import numpy as np
 import polars as pl
-from plotly.graph_objs._figure import Figure
 
 from rtichoke._decision_curve_viz_spec_v2 import (
+    _decision_curve_times_v2_spec_from_performance_data,
     _decision_curve_v2_spec_from_performance_data,
 )
 from rtichoke._interventions_avoided_viz_spec_v2 import (
@@ -16,6 +16,9 @@ from rtichoke._interventions_avoided_viz_spec_v2 import (
 )
 from rtichoke._renderers import RtichokeBrowserChart, _validate_renderer
 from rtichoke.performance_data.performance_data import prepare_performance_data
+from rtichoke.performance_data.performance_data_times import (
+    prepare_performance_data_times,
+)
 from rtichoke.processing.binary_color_values import _apply_color_values_binary
 from rtichoke.processing.evaluation_semantics import (
     _EvaluationMetadata,
@@ -276,8 +279,40 @@ def create_decision_curve_times(
         "#D1603D",
         "#585123",
     ],
-) -> Figure:
-    """Creates a time-dependent Decision Curve using the existing Plotly path."""
+    renderer: str = "plotly",
+) -> Any:
+    """Creates a time-dependent Decision Curve.
+
+    ``renderer="plotly"`` preserves the historical default. For time-dependent
+    conventional Decision Curves, ``"browser"`` and ``"rtichoke_viz"`` return a
+    canonical :class:`RtichokeBrowserChart` built from already-computed production
+    values.
+    """
+    selected_renderer = _validate_renderer(renderer)
+    if selected_renderer != "plotly":
+        if selected_renderer == "matplotlib" or decision_type != "conventional":
+            raise ValueError(
+                "Time-dependent Decision Curves support 'plotly', 'browser', and "
+                "'rtichoke_viz' renderers for decision_type='conventional'."
+            )
+        performance_data = prepare_performance_data_times(
+            probs,
+            reals,
+            times,
+            by=by,
+            fixed_time_horizons=fixed_time_horizons,
+            heuristics_sets=heuristics_sets,
+            stratified_by=stratified_by,
+        )
+        evaluation_metadata = _build_evaluation_metadata(probs, reals, times)
+        spec = _decision_curve_times_v2_spec_from_performance_data(
+            performance_data,
+            evaluation_metadata,
+            min_p_threshold=min_p_threshold,
+            max_p_threshold=max_p_threshold,
+        )
+        return RtichokeBrowserChart(spec=spec, size=size)
+
     if decision_type == "conventional":
         curve = "decision"
     else:

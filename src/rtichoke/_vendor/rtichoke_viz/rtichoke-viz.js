@@ -2966,17 +2966,28 @@ var TreatNoneReferenceSchema = Type.Object({
   scope: Type.Literal("global"),
   benchmark: Type.Literal("treat_none")
 });
-var TreatAllReferenceSchema = Type.Object({
+var TreatAllGeometry = {
   type: Type.Literal("path"),
   points: Type.Array(
     Type.Object({ x: Type.Number(), y: Type.Number() }),
     { minItems: 2 }
   ),
   label: Type.Optional(Type.String()),
-  scope: Type.Literal("population"),
-  population: Type.String(),
   benchmark: Type.Literal("treat_all")
-});
+};
+var TreatAllReferenceSchema = Type.Union([
+  Type.Object({
+    ...TreatAllGeometry,
+    scope: Type.Literal("population"),
+    population: Type.String()
+  }),
+  Type.Object({
+    ...TreatAllGeometry,
+    scope: Type.Literal("population_horizon"),
+    population: Type.String(),
+    horizon: Type.Number({ minimum: 0 })
+  })
+]);
 var DecisionCurveV2ReferenceSchema = Type.Union([
   TreatNoneReferenceSchema,
   TreatAllReferenceSchema
@@ -3270,29 +3281,56 @@ function assertV2ReferentialIntegrity(spec) {
     decisionCurve.evaluations.forEach((evaluation, index2) => {
       const expectedId = `evaluation-${index2 + 1}`;
       if (evaluation.id !== expectedId) throw new Error(`decision curve evaluation ids must be ordinal: expected ${expectedId}`);
+    });
+    const horizonCount = decisionCurve.series.filter((series) => series.horizon !== void 0).length;
+    if (horizonCount !== 0 && horizonCount !== decisionCurve.series.length) {
+      throw new Error("decision curve cannot mix static and horizon-qualified series");
+    }
+    const isTimeDependent = horizonCount > 0;
+    const horizons2 = [...new Set(decisionCurve.series.map((series) => series.horizon).filter((horizon) => horizon !== void 0))];
+    const seriesCoverage = /* @__PURE__ */ new Set();
+    decisionCurve.series.forEach((series, index2) => {
+      if (series.id !== `series-${index2 + 1}`) throw new Error(`decision curve series ids must be ordinal: expected series-${index2 + 1}`);
+      const evaluation = decisionCurve.evaluations.find((candidate) => candidate.id === series.evaluationId);
       const expectedDisplay = evaluation.model ?? evaluation.population;
       const expectedRole = evaluation.model === void 0 ? "population" : "model";
-      const series = decisionCurve.series[index2];
-      if (!series || series.id !== `series-${index2 + 1}` || series.evaluationId !== evaluation.id) {
-        throw new Error("decision curve series must map one-to-one in evaluation order");
-      }
       if (series.display.label !== expectedDisplay || series.display.group !== expectedDisplay || series.display.role !== expectedRole) {
         throw new Error("decision curve display must follow evaluation semantics");
       }
+      const coverageKey = `${series.evaluationId}\0${series.horizon ?? "static"}`;
+      if (seriesCoverage.has(coverageKey)) throw new Error(`duplicate decision curve evaluation-horizon series: ${series.evaluationId}`);
+      seriesCoverage.add(coverageKey);
     });
-    if (decisionCurve.series.length !== decisionCurve.evaluations.length) throw new Error("decision curve requires exactly one series per evaluation");
+    if (isTimeDependent) {
+      const complete = decisionCurve.evaluations.every(
+        (evaluation) => horizons2.every((horizon) => seriesCoverage.has(`${evaluation.id}\0${horizon}`))
+      );
+      if (!complete || decisionCurve.series.length !== decisionCurve.evaluations.length * horizons2.length) {
+        throw new Error("decision curve requires exactly one series per evaluation and horizon");
+      }
+    } else if (decisionCurve.series.length !== decisionCurve.evaluations.length || decisionCurve.evaluations.some((evaluation) => !seriesCoverage.has(`${evaluation.id}\0static`))) {
+      throw new Error("decision curve requires exactly one series per evaluation");
+    }
     const treatNone = references.filter((reference) => "benchmark" in reference && reference.benchmark === "treat_none");
     if (treatNone.length !== 1) throw new Error("decision curve requires exactly one Treat None reference");
     const treatAll = references.filter(
       (reference) => "benchmark" in reference && reference.benchmark === "treat_all"
     );
-    const treatAllPopulations = /* @__PURE__ */ new Set();
+    const treatAllOwners = /* @__PURE__ */ new Set();
     for (const reference of treatAll) {
-      if (treatAllPopulations.has(reference.population)) throw new Error(`duplicate Treat All population: ${reference.population}`);
-      treatAllPopulations.add(reference.population);
+      if (isTimeDependent && reference.scope !== "population_horizon") {
+        throw new Error("time-dependent decision curve Treat All must use population_horizon scope");
+      }
+      if (!isTimeDependent && reference.scope !== "population") {
+        throw new Error("static decision curve Treat All must use population scope");
+      }
+      const owner = reference.scope === "population_horizon" ? `${reference.population}\0${reference.horizon}` : reference.population;
+      if (treatAllOwners.has(owner)) throw new Error(`duplicate Treat All owner: ${reference.population}`);
+      treatAllOwners.add(owner);
     }
-    if (treatAllPopulations.size !== populations.size || [...populations].some((population) => !treatAllPopulations.has(population))) {
-      throw new Error("decision curve requires exactly one Treat All reference per population");
+    const expectedTreatAllOwners = isTimeDependent ? [...populations].flatMap((population) => horizons2.map((horizon) => `${population}\0${horizon}`)) : [...populations];
+    if (treatAllOwners.size !== expectedTreatAllOwners.length || expectedTreatAllOwners.some((owner) => !treatAllOwners.has(owner))) {
+      throw new Error(isTimeDependent ? "decision curve requires exactly one Treat All reference per population and horizon" : "decision curve requires exactly one Treat All reference per population");
     }
   }
   if (spec.type === "interventions_avoided") {
@@ -19416,9 +19454,9 @@ function selectHorizonSpec(spec, horizon) {
     )
   };
 }
-function renderHorizonLineChart(spec, options, x2, y2) {
+function renderWithHorizonSelection(spec, render) {
   const availableHorizons = horizons(spec);
-  if (availableHorizons.length <= 1) return renderLineChart(spec, options, x2, y2);
+  if (availableHorizons.length <= 1) return render(spec);
   const container = document.createElement("div");
   container.className = "rtichoke-horizon-chart";
   const control = document.createElement("label");
@@ -19434,17 +19472,21 @@ function renderHorizonLineChart(spec, options, x2, y2) {
   control.append(select);
   const chart = document.createElement("div");
   const draw = (horizon) => {
-    chart.replaceChildren(
-      renderLineChart(selectHorizonSpec(spec, horizon), options, x2, y2)
-    );
+    chart.replaceChildren(render(selectHorizonSpec(spec, horizon)));
   };
   select.addEventListener("change", () => draw(Number(select.value)));
   container.append(control, chart);
   draw(availableHorizons[0]);
   return container;
 }
+function renderHorizonLineChart(spec, options, x2, y2) {
+  return renderWithHorizonSelection(
+    spec,
+    (selected) => renderLineChart(selected, options, x2, y2)
+  );
+}
 function renderPrecisionRecallV2(spec, options = {}) {
-  return renderLineChart(spec, options, "sensitivity", "ppv");
+  return renderHorizonLineChart(spec, options, "sensitivity", "ppv");
 }
 function renderGainsV2(spec, options = {}) {
   return renderHorizonLineChart(spec, options, "ppcr", "sensitivity");
@@ -19456,6 +19498,9 @@ function renderLiftV2(spec, options = {}) {
 // src/render/decision-curve.ts
 function renderDecisionCurveV2(spec, options = {}) {
   assertV2ReferentialIntegrity(spec);
+  return renderWithHorizonSelection(spec, (selected) => renderDecisionCurveChart(selected, options));
+}
+function renderDecisionCurveChart(spec, options) {
   const groups2 = [...new Set(spec.series.map((series) => series.display.group))];
   const resolved = resolveV2RenderOptions(groups2, options);
   const { theme } = resolved;
