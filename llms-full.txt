@@ -679,7 +679,7 @@ create_decision_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.
 Creates a time-dependent Decision Curve.
 
 ``renderer="plotly"`` preserves the historical default. For time-dependent
-conventional Decision Curves, ``"browser"`` and ``"rtichoke_viz"`` return a
+Decision Curves, ``"browser"`` and ``"rtichoke_viz"`` return a
 canonical :class:`RtichokeBrowserChart` built from already-computed production
 values.
 

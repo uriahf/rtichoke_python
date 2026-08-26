@@ -25,4 +25,4 @@ create_decision_curve_times(
 ```
 
 
-`renderer="plotly"` preserves the historical default. For time-dependent conventional Decision Curves, `"browser"` and `"rtichoke_viz"` return a canonical `RtichokeBrowserChart` built from already-computed production values.
+`renderer="plotly"` preserves the historical default. For time-dependent Decision Curves, `"browser"` and `"rtichoke_viz"` return a canonical `RtichokeBrowserChart` built from already-computed production values.
