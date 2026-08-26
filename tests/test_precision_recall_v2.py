@@ -269,9 +269,10 @@ def test_default_and_explicit_plotly_behavior_are_unchanged():
     assert pio.to_json(default_plot) == pio.to_json(explicit_plot)
 
 
-def test_time_dependent_precision_recall_api_does_not_gain_renderer_selection():
+def test_time_dependent_precision_recall_api_has_renderer_selection():
     parameters = inspect.signature(create_precision_recall_curve_times).parameters
-    assert "renderer" not in parameters
+    assert "renderer" in parameters
+    assert parameters["renderer"].default == "plotly"
 
 
 def test_vendored_v050_contains_static_precision_recall_contract_and_export():

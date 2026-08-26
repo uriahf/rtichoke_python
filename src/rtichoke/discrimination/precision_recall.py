@@ -3,7 +3,6 @@ A module for Precision-Recall Curves using Plotly helpers
 """
 
 from typing import Any, Dict, List, Sequence, Union
-from plotly.graph_objs._figure import Figure
 from rtichoke.processing.binary_color_values import _apply_color_values_binary
 from rtichoke.processing.plotly_helper_functions import (
     _create_rtichoke_plotly_curve_binary,
@@ -16,8 +15,14 @@ import numpy as np
 import polars as pl
 
 from rtichoke._renderers import RtichokeBrowserChart, _validate_renderer
-from rtichoke._viz_spec_v2 import _precision_recall_v2_spec_from_performance_data
+from rtichoke._viz_spec_v2 import (
+    _precision_recall_times_v2_spec_from_performance_data,
+    _precision_recall_v2_spec_from_performance_data,
+)
 from rtichoke.performance_data.performance_data import prepare_performance_data
+from rtichoke.performance_data.performance_data_times import (
+    prepare_performance_data_times,
+)
 from rtichoke.processing.evaluation_semantics import (
     _EvaluationMetadata,
     _build_evaluation_metadata,
@@ -241,7 +246,8 @@ def create_precision_recall_curve_times(
         "#D1603D",
         "#585123",
     ],
-) -> Figure:
+    renderer: str = "plotly",
+) -> Any:
     """Creates a time-dependent Precision-Recall curve.
 
     Generates a Precision-Recall curve for time-to-event models, evaluating
@@ -268,12 +274,37 @@ def create_precision_recall_curve_times(
         The width and height of the plot in pixels. Defaults to 600.
     color_values : List[str], optional
         A list of hex color strings for the plot lines.
+    renderer : {"plotly", "browser", "rtichoke_viz"}, optional
+        Rendering backend. ``"plotly"`` remains the default. ``"browser"`` and
+        its ``"rtichoke_viz"`` alias return a canonical offline browser chart.
 
     Returns
     -------
-    Figure
-        A Plotly ``Figure`` object for the time-dependent Precision-Recall curve.
+    Figure or RtichokeBrowserChart
+        A Plotly ``Figure`` or canonical offline browser chart depending on ``renderer``.
     """
+    selected_renderer = _validate_renderer(renderer)
+    if selected_renderer != "plotly":
+        if selected_renderer == "matplotlib":
+            raise ValueError(
+                "Precision-Recall supports 'plotly', 'browser', and 'rtichoke_viz' "
+                "renderers."
+            )
+        performance_data = prepare_performance_data_times(
+            probs,
+            reals,
+            times,
+            fixed_time_horizons=fixed_time_horizons,
+            heuristics_sets=heuristics_sets,
+            by=by,
+            stratified_by=stratified_by,
+        )
+        evaluation_metadata = _build_evaluation_metadata(probs, reals, times)
+        spec = _precision_recall_times_v2_spec_from_performance_data(
+            performance_data,
+            evaluation_metadata,
+        )
+        return RtichokeBrowserChart(spec=spec, size=size)
 
     fig = _create_rtichoke_plotly_curve_times_reference_safe(
         probs,

@@ -89,6 +89,139 @@ def _precision_recall_v2_spec_from_performance_data(
     return spec
 
 
+def _precision_recall_times_v2_spec_from_performance_data(
+    performance_data: pl.DataFrame,
+    evaluation_metadata: Mapping[str, _EvaluationMetadata],
+) -> dict[str, object]:
+    """Build canonical time-dependent precision-recall from calculated production data."""
+    required = _REQUIRED_PRECISION_RECALL_COLUMNS | {
+        "fixed_time_horizon",
+        "censoring_heuristic",
+        "competing_heuristic",
+    }
+    missing = required.difference(performance_data.columns)
+    if missing:
+        raise ValueError(
+            "Time-dependent precision-recall performance data is missing columns: "
+            + ", ".join(sorted(missing))
+        )
+
+    finite_rows = performance_data.filter(
+        pl.col("chosen_cutoff").is_finite()
+        & pl.col("sensitivity").is_finite()
+        & pl.col("ppv").is_finite()
+    )
+
+    rows = finite_rows.select(
+        "reference_group",
+        "fixed_time_horizon",
+        "censoring_heuristic",
+        "competing_heuristic",
+        "chosen_cutoff",
+        "sensitivity",
+        "ppv",
+    ).to_dicts()
+    row_groups = {str(row["reference_group"]) for row in rows}
+    missing_metadata = row_groups.difference(evaluation_metadata)
+    if missing_metadata:
+        raise ValueError(
+            "Time-dependent precision-recall rows are missing evaluation metadata: "
+            + ", ".join(sorted(missing_metadata))
+        )
+
+    ordered_groups = [group for group in evaluation_metadata if group in row_groups]
+    evaluation_ids = {
+        group: f"evaluation-{index}"
+        for index, group in enumerate(ordered_groups, start=1)
+    }
+    evaluations = []
+    for group in ordered_groups:
+        metadata = evaluation_metadata[group]
+        evaluation: dict[str, object] = {
+            "id": evaluation_ids[group],
+            "population": metadata.population,
+        }
+        if metadata.model is not None:
+            evaluation["model"] = metadata.model
+        evaluations.append(evaluation)
+
+    series_keys = list(
+        dict.fromkeys(
+            (
+                str(row["reference_group"]),
+                float(row["fixed_time_horizon"]),
+                str(row["censoring_heuristic"]),
+                str(row["competing_heuristic"]),
+            )
+            for row in rows
+        )
+    )
+    series_ids = {
+        key: f"series-{index}" for index, key in enumerate(series_keys, start=1)
+    }
+    series = []
+    for key in series_keys:
+        group, horizon, _, _ = key
+        metadata = evaluation_metadata[group]
+        display_value = metadata.model or metadata.population
+        series.append(
+            {
+                "id": series_ids[key],
+                "evaluationId": evaluation_ids[group],
+                "horizon": horizon,
+                "display": {
+                    "label": display_value,
+                    "group": display_value,
+                    "role": "model" if metadata.model is not None else "population",
+                },
+            }
+        )
+
+    data = []
+    for row in rows:
+        key = (
+            str(row["reference_group"]),
+            float(row["fixed_time_horizon"]),
+            str(row["censoring_heuristic"]),
+            str(row["competing_heuristic"]),
+        )
+        data.append(
+            {
+                "seriesId": series_ids[key],
+                "cutoff": row["chosen_cutoff"],
+                "sensitivity": row["sensitivity"],
+                "ppv": row["ppv"],
+            }
+        )
+
+    risks = _gains_population_horizon_risk(performance_data, evaluation_metadata)
+    references = []
+    for (population, horizon), risk in risks.items():
+        references.append(
+            {
+                "type": "horizontal",
+                "scope": "population_horizon",
+                "population": population,
+                "horizon": horizon,
+                "value": risk,
+                "label": "Prevalence",
+            }
+        )
+
+    return {
+        "schemaVersion": "2.0",
+        "type": "precision_recall",
+        "evaluations": evaluations,
+        "series": series,
+        "data": data,
+        "x": "sensitivity",
+        "y": "ppv",
+        "xAxis": {"label": "Sensitivity", "domain": [0, 1]},
+        "yAxis": {"label": "Positive Predictive Value", "domain": [0, 1]},
+        "references": references,
+    }
+
+
 def _gains_v2_spec_from_performance_data(
     performance_data: pl.DataFrame,
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
