@@ -93,13 +93,10 @@ def _compute_auroc_proc_compatible(
 
     scores = probs_arr if med_controls <= med_cases else -probs_arr
 
-    try:
-        score_val = float(roc_auc_score(reals_arr, scores))
-        if math.isnan(score_val) or not math.isfinite(score_val):
-            return None
-        return score_val
-    except Exception:
+    score_val = float(roc_auc_score(reals_arr, scores))
+    if math.isnan(score_val) or not math.isfinite(score_val):
         return None
+    return score_val
 
 
 def _prevalence_summary_metrics_spec(
@@ -110,17 +107,23 @@ def _prevalence_summary_metrics_spec(
     populations_list: list[_PopulationSpec] = []
     metrics_list: list[dict[str, Any]] = []
 
-    seen_populations: dict[str, str] = {}
+    seen_populations: dict[tuple[str, str], str] = {}
     pop_counter = 1
 
-    for metadata in evaluation_metadata.values():
+    for group, metadata in evaluation_metadata.items():
         pop_name = metadata.population
-        if pop_name not in seen_populations:
+        label = "Population" if pop_name == _SHARED_POPULATION else pop_name
+        # Keep distinct populations with identical display labels distinct by keying on (group, pop_name) or pop_name
+        pop_key = (
+            (group, pop_name)
+            if pop_name != _SHARED_POPULATION
+            and list(evaluation_metadata.values())[0].model is None
+            else (pop_name, pop_name)
+        )
+        if pop_key not in seen_populations:
             pop_id = f"population-{pop_counter}"
             pop_counter += 1
-            seen_populations[pop_name] = pop_id
-
-            label = "Population" if pop_name == _SHARED_POPULATION else pop_name
+            seen_populations[pop_key] = pop_id
             populations_list.append({"id": pop_id, "label": label})
 
     # Compute population prevalence from performance data
@@ -138,18 +141,21 @@ def _prevalence_summary_metrics_spec(
         if prev_val is not None and math.isfinite(float(prev_val)):
             group_prevalence[group] = float(prev_val)
 
-    pop_estimates: dict[str, set[float]] = {}
+    pop_estimates: dict[tuple[str, str], set[float]] = {}
     for group, metadata in evaluation_metadata.items():
         if group in group_prevalence:
-            pop_estimates.setdefault(metadata.population, set()).add(
-                group_prevalence[group]
+            pop_name = metadata.population
+            pop_key = (
+                (group, pop_name)
+                if pop_name != _SHARED_POPULATION and metadata.model is None
+                else (pop_name, pop_name)
             )
+            pop_estimates.setdefault(pop_key, set()).add(group_prevalence[group])
 
     for pop_spec in populations_list:
         pop_id = pop_spec["id"]
-        # Find corresponding population name
-        pop_name = next(name for name, pid in seen_populations.items() if pid == pop_id)
-        estimates = pop_estimates.get(pop_name, set())
+        pop_key = next(key for key, pid in seen_populations.items() if pid == pop_id)
+        estimates = pop_estimates.get(pop_key, set())
         estimate: float | None = next(iter(estimates)) if len(estimates) == 1 else None
 
         metric_item: _PrevalenceMetric = {

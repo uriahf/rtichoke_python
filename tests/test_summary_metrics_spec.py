@@ -8,7 +8,10 @@ from rtichoke._summary_metrics_spec import (
     _prevalence_summary_metrics_spec,
 )
 from rtichoke.performance_data.performance_data import prepare_performance_data
-from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
+from rtichoke.processing.evaluation_semantics import (
+    _EvaluationMetadata,
+    _build_evaluation_metadata,
+)
 
 
 def test_auroc_proc_compatible_direction():
@@ -72,3 +75,49 @@ def test_summary_metrics_spec_structure():
     assert auroc_spec["metrics"][0]["owner"]["type"] == "evaluation"
     assert auroc_spec["metrics"][0]["owner"]["evaluationId"] == "evaluation-1"
     assert auroc_spec["metrics"][0]["estimate"] == pytest.approx(1.0)
+
+
+def test_prevalence_summary_metrics_spec_distinct_populations_same_label():
+    probs = {
+        "Cohort 1": np.array([0.1, 0.2, 0.8, 0.9]),
+        "Cohort 2": np.array([0.2, 0.3, 0.7, 0.8]),
+    }
+    reals = {
+        "Cohort 1": np.array([0, 0, 1, 1]),
+        "Cohort 2": np.array([0, 1, 1, 1]),
+    }
+    perf_data = prepare_performance_data(probs, reals)
+    metadata = _build_evaluation_metadata(probs, reals, np.array([]))
+
+    prev_spec = _prevalence_summary_metrics_spec(perf_data, metadata)
+    assert len(prev_spec["populations"]) == 2
+    assert prev_spec["populations"][0]["id"] == "population-1"
+    assert prev_spec["populations"][1]["id"] == "population-2"
+    assert prev_spec["populations"][0]["label"] == "Cohort 1"
+    assert prev_spec["populations"][1]["label"] == "Cohort 2"
+
+    # Distinct evaluation populations sharing identical display string ("Shared Label")
+    metadata_shared_label = {
+        "group-1": _EvaluationMetadata(
+            reference_group="group-1",
+            evaluation="group-1",
+            model=None,
+            population="Shared Label",
+        ),
+        "group-2": _EvaluationMetadata(
+            reference_group="group-2",
+            evaluation="group-2",
+            model=None,
+            population="Shared Label",
+        ),
+    }
+
+    # Distinct populations remain distinct even if their display labels are identical
+    prev_spec_shared = _prevalence_summary_metrics_spec(
+        perf_data, metadata_shared_label
+    )
+    assert len(prev_spec_shared["populations"]) == 2
+    assert prev_spec_shared["populations"][0]["id"] == "population-1"
+    assert prev_spec_shared["populations"][1]["id"] == "population-2"
+    assert prev_spec_shared["populations"][0]["label"] == "Shared Label"
+    assert prev_spec_shared["populations"][1]["label"] == "Shared Label"
