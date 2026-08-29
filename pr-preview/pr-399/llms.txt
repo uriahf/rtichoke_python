@@ -1,0 +1,56 @@
+# rtichoke
+
+> interactive visualizations for performance of predictive models
+
+## Docs
+
+### API Reference
+
+#### Performance Data
+> Prepare classification and time-to-event data for visualization.
+
+- [prepare_performance_data](https://uriahf.github.io/rtichoke_python/reference/prepare_performance_data.html): Prepare performance data for binary classification models
+- [prepare_binned_classification_data](https://uriahf.github.io/rtichoke_python/reference/prepare_binned_classification_data.html): Prepare probability-binned classification data for binary outcomes
+- [prepare_performance_data_times](https://uriahf.github.io/rtichoke_python/reference/prepare_performance_data_times.html): Prepare performance data for models with time-to-event outcomes
+- [prepare_binned_classification_data_times](https://uriahf.github.io/rtichoke_python/reference/prepare_binned_classification_data_times.html): Prepare binned, time-dependent classification data
+
+#### Performance Tables
+> Summarize model performance across thresholds and time horizons.
+
+- [create_performance_table](https://uriahf.github.io/rtichoke_python/reference/create_performance_table.html): Create an R-style rtichoke performance table
+- [create_performance_table_times](https://uriahf.github.io/rtichoke_python/reference/create_performance_table_times.html): Create a time-dependent rtichoke performance table
+- [render_performance_table](https://uriahf.github.io/rtichoke_python/reference/render_performance_table.html): Render prepared performance data with a selected table backend
+
+#### Discrimination
+> ROC, precision-recall, gains, and lift visualizations.
+
+- [create_roc_curve](https://uriahf.github.io/rtichoke_python/reference/create_roc_curve.html): Creates a Receiver Operating Characteristic (ROC) curve
+- [create_roc_curve_times](https://uriahf.github.io/rtichoke_python/reference/create_roc_curve_times.html): Creates a time-dependent Receiver Operating Characteristic (ROC) curve
+- [plot_roc_curve](https://uriahf.github.io/rtichoke_python/reference/plot_roc_curve.html): Plots an ROC curve from pre-computed performance data
+- [create_precision_recall_curve](https://uriahf.github.io/rtichoke_python/reference/create_precision_recall_curve.html): Creates a Precision-Recall curve
+- [create_precision_recall_curve_times](https://uriahf.github.io/rtichoke_python/reference/create_precision_recall_curve_times.html): Creates a time-dependent Precision-Recall curve
+- [plot_precision_recall_curve](https://uriahf.github.io/rtichoke_python/reference/plot_precision_recall_curve.html): Plots a Precision-Recall curve from pre-computed performance data
+- [create_gains_curve](https://uriahf.github.io/rtichoke_python/reference/create_gains_curve.html): Creates a Gains curve
+- [create_gains_curve_times](https://uriahf.github.io/rtichoke_python/reference/create_gains_curve_times.html): Creates a time-dependent Gains curve
+- [plot_gains_curve](https://uriahf.github.io/rtichoke_python/reference/plot_gains_curve.html): Plots a Gains curve from pre-computed performance data
+- [create_lift_curve](https://uriahf.github.io/rtichoke_python/reference/create_lift_curve.html): Creates a Lift curve
+- [create_lift_curve_times](https://uriahf.github.io/rtichoke_python/reference/create_lift_curve_times.html): Creates a time-dependent Lift curve
+- [plot_lift_curve](https://uriahf.github.io/rtichoke_python/reference/plot_lift_curve.html): Plots a Lift curve from pre-computed performance data
+
+#### Calibration
+> Calibration visualizations for classification and time-to-event models. See Curve API Compatibility for time-dependent heuristic and horizon differences.
+
+- [create_calibration_curve](https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve.html): Create an interactive calibration plot with a square main panel
+- [create_calibration_curve_times](https://uriahf.github.io/rtichoke_python/reference/create_calibration_curve_times.html): Create an interactive time-dependent calibration plot with a square main panel
+
+#### Summary Reports
+> Create historical R-backed reports or explicitly opt into canonical browser ReportSpec rendering.
+
+- [create_summary_report](https://uriahf.github.io/rtichoke_python/reference/create_summary_report.html): Create an rtichoke model-performance summary report
+
+#### Utility
+> Decision-curve analysis for classification and time-to-event models.
+
+- [create_decision_curve](https://uriahf.github.io/rtichoke_python/reference/create_decision_curve.html): Creates a Decision Curve
+- [create_decision_curve_times](https://uriahf.github.io/rtichoke_python/reference/create_decision_curve_times.html): Creates a time-dependent Decision Curve
+- [plot_decision_curve](https://uriahf.github.io/rtichoke_python/reference/plot_decision_curve.html): Plots a Decision Curve from pre-computed performance data
