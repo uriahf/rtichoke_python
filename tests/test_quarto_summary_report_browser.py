@@ -137,7 +137,7 @@ format: html
                 assert "ROC" in frame.content()
                 assert "Calibration" in frame.content()
 
-                tbl_text = frame.locator("table").inner_text()
+                tbl_text = frame.locator("table").first.inner_text()
                 assert "Model" in tbl_text or "True Positives" in tbl_text
                 assert frame.locator("svg").count() >= 2
                 assert len(errors) == 0, f"Console errors found: {errors}"
@@ -230,7 +230,7 @@ format: html
                     assert "ROC" in frame.content()
                     assert "Calibration" in frame.content()
 
-                    tbl_text = frame.locator("table").inner_text()
+                    tbl_text = frame.locator("table").first.inner_text()
                     assert "Model" in tbl_text or "True Positives" in tbl_text
                     assert frame.locator("svg").count() >= 2
 
