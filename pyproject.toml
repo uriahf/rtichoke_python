@@ -11,6 +11,7 @@ dependencies = [
     "polars>=1.31.0",
     "reactable>=0.1.5",
     "great-tables>=0.18.0",
+    "scikit-learn>=1.6.1",
 ]
 name = "rtichoke"
 version = "0.1.36"
@@ -59,7 +60,6 @@ dev = [
     "pre-commit>=4.2.0",
     "dcurves>=1.1.5",
     "ty>=0.0.1a12",
-    "scikit-learn>=1.6.1",
 ]
 docs = [
     "great-docs==0.15.0",

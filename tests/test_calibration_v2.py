@@ -9,7 +9,7 @@ from rtichoke._performance_table_spec import (
     _performance_table_spec_from_performance_data,
 )
 from rtichoke._report_browser import RtichokeBrowserReport
-from rtichoke._report_spec import _report_spec_from_components
+from rtichoke._report_spec import _build_report_spec_v11
 from rtichoke._viz_browser import _calibration_spec_from_curve_list
 from rtichoke._viz_spec_v2 import _roc_v2_spec_from_performance_data
 from rtichoke.calibration.calibration import (
@@ -244,11 +244,13 @@ def test_calibration_v2_complete_spec_embeds_unchanged_in_report():
     calibration = _calibration_v2_spec_from_curve_list(
         _create_calibration_curve_list(probs, reals), _metadata(probs, reals)
     )
-    report = _report_spec_from_components([{"spec": calibration}])
+    report = _build_report_spec_v11(
+        [{"id": "sec-1", "components": [{"id": "calibration", "spec": calibration}]}]
+    )
 
-    assert report["components"][0]["id"] == "calibration"
-    assert report["components"][0]["spec"] is calibration
-    assert report["components"][0]["spec"] == calibration
+    assert report["sections"][0]["items"][0]["id"] == "calibration"
+    assert report["sections"][0]["items"][0]["spec"] is calibration
+    assert report["sections"][0]["items"][0]["spec"] == calibration
 
 
 def test_real_performance_table_roc_calibration_report_uses_shared_renderer(tmp_path):
@@ -261,11 +263,16 @@ def test_real_performance_table_roc_calibration_report_uses_shared_renderer(tmp_
     calibration = _calibration_v2_spec_from_curve_list(
         _create_calibration_curve_list(probs, reals), metadata
     )
-    report = _report_spec_from_components(
+    report = _build_report_spec_v11(
         [
-            {"title": "Performance", "spec": table},
-            {"title": "ROC", "spec": roc},
-            {"title": "Calibration", "spec": calibration},
+            {
+                "id": "sec-1",
+                "components": [
+                    {"id": "performance-table", "title": "Performance", "spec": table},
+                    {"id": "roc", "title": "ROC", "spec": roc},
+                    {"id": "calibration", "title": "Calibration", "spec": calibration},
+                ],
+            }
         ]
     )
 
@@ -275,16 +282,16 @@ def test_real_performance_table_roc_calibration_report_uses_shared_renderer(tmp_
     html = output.read_text(encoding="utf-8")
     viz_js = (tmp_path / "rtichoke-viz.js").read_text(encoding="utf-8")
 
-    assert [component["id"] for component in report["components"]] == [
+    assert [item["id"] for item in report["sections"][0]["items"]] == [
         "performance-table",
         "roc",
         "calibration",
     ]
-    assert report["components"][2]["spec"] is calibration
+    assert report["sections"][0]["items"][2]["spec"] is calibration
     assert _embedded_report(html) == report
     assert 'import { renderReport } from "./rtichoke-viz.js";' not in html
     assert viz_js in html
-    assert "append(renderReport(spec))" in html
+    assert 'sectionGroupPresentation: "tabs"' in html
 
 
 def test_duplicate_evaluation_ids_remain_component_local_in_real_report():
@@ -301,17 +308,26 @@ def test_duplicate_evaluation_ids_remain_component_local_in_real_report():
             _create_calibration_curve_list(probs, reals), metadata
         ),
     )
-    report = _report_spec_from_components(
-        [{"spec": table}, {"spec": roc}, {"spec": calibration}]
+    report = _build_report_spec_v11(
+        [
+            {
+                "id": "sec-1",
+                "components": [
+                    {"id": "performance-table", "spec": table},
+                    {"id": "roc", "spec": roc},
+                    {"id": "calibration", "spec": calibration},
+                ],
+            }
+        ]
     )
 
     assert table["evaluations"][0]["id"] == "evaluation-1"
     assert roc["evaluations"][0]["id"] == "evaluation-1"
     assert calibration["evaluations"][0]["id"] == "evaluation-1"
     assert "evaluations" not in report
-    assert report["components"][0]["spec"] is table
-    assert report["components"][1]["spec"] is roc
-    assert report["components"][2]["spec"] is calibration
+    assert report["sections"][0]["items"][0]["spec"] is table
+    assert report["sections"][0]["items"][1]["spec"] is roc
+    assert report["sections"][0]["items"][2]["spec"] is calibration
 
 
 def test_existing_v1_calibration_adapter_and_public_plotly_behavior_are_unchanged():
