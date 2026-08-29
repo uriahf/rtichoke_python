@@ -9,27 +9,12 @@ from typing import Any, Dict, Literal, Union, cast
 import numpy as np
 
 from rtichoke._calibration_viz_spec_v2 import _calibration_v2_spec_from_curve_list
-from rtichoke._decision_curve_viz_spec_v2 import (
-    _decision_curve_v2_spec_from_performance_data,
-)
-from rtichoke._interventions_avoided_viz_spec_v2 import (
-    _interventions_avoided_v2_spec_from_performance_data,
-)
 from rtichoke._performance_table_spec import (
     _performance_table_spec_from_performance_data,
 )
 from rtichoke._report_browser import RtichokeBrowserReport
-from rtichoke._report_spec import _build_report_spec_v11
-from rtichoke._summary_metrics_spec import (
-    _auroc_summary_metrics_spec,
-    _prevalence_summary_metrics_spec,
-)
-from rtichoke._viz_spec_v2 import (
-    _gains_v2_spec_from_performance_data,
-    _lift_v2_spec_from_performance_data,
-    _precision_recall_v2_spec_from_performance_data,
-    _roc_v2_spec_from_performance_data,
-)
+from rtichoke._report_spec import _report_spec_from_components
+from rtichoke._viz_spec_v2 import _roc_v2_spec_from_performance_data
 from rtichoke.calibration.calibration import _create_calibration_curve_list
 from rtichoke.performance_data.performance_data import prepare_performance_data
 from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
@@ -56,6 +41,12 @@ def create_summary_report(
     is an explicit opt-in path that uses Python's existing production
     calculations, canonical standalone component builders, canonical ReportSpec
     assembly, and the vendored ``rtichoke_viz`` ``renderReport()`` composer.
+
+    The first browser report contains a canonical PerformanceTable, ROC-v2, and
+    calibration-v2 component, in that order. The browser renderer writes an HTML
+    file plus the vendored ``rtichoke-viz.js`` and ``rtichoke-viz.css`` assets
+    beside it, and returns the written HTML path. The historical R path retains
+    its existing return behavior (``None``).
 
     Parameters
     ----------
@@ -98,183 +89,25 @@ def _create_browser_summary_report(
     *,
     output_file: str | Path,
 ) -> Path:
-    """Build the canonical static ReportSpec v1.1 browser summary report."""
+    """Build the first public canonical browser report from production outputs."""
+    performance_data = prepare_performance_data(probs, reals)
     metadata = _build_evaluation_metadata(probs, reals, np.array([]))
-
-    # Stratified by probability threshold
-    perf_data_thresh = prepare_performance_data(
-        probs, reals, stratified_by=("probability_threshold",), by=0.01
-    )
-    # Stratified by PPCR
-    perf_data_ppcr = prepare_performance_data(
-        probs, reals, stratified_by=("ppcr",), by=0.01
-    )
-
     calibration_curve_list = _create_calibration_curve_list(probs, reals)
 
-    # Specs
-    prev_spec = _prevalence_summary_metrics_spec(perf_data_thresh, metadata)
-    auroc_spec = _auroc_summary_metrics_spec(probs, reals, metadata)
+    performance_table = _performance_table_spec_from_performance_data(
+        performance_data, metadata
+    )
+    roc = _roc_v2_spec_from_performance_data(performance_data, metadata)
+    calibration = _calibration_v2_spec_from_curve_list(calibration_curve_list, metadata)
 
-    calib_smooth_spec = _calibration_v2_spec_from_curve_list(
-        calibration_curve_list, metadata, calibration_type="smooth"
+    report = _report_spec_from_components(
+        [
+            {"title": "Performance", "spec": performance_table},
+            {"title": "ROC", "spec": roc},
+            {"title": "Calibration", "spec": calibration},
+        ],
+        title="rtichoke summary report",
     )
-    calib_discrete_spec = _calibration_v2_spec_from_curve_list(
-        calibration_curve_list, metadata, calibration_type="discrete"
-    )
-
-    roc_thresh_spec = _roc_v2_spec_from_performance_data(perf_data_thresh, metadata)
-    pr_thresh_spec = _precision_recall_v2_spec_from_performance_data(
-        perf_data_thresh, metadata
-    )
-    gains_thresh_spec = _gains_v2_spec_from_performance_data(perf_data_thresh, metadata)
-    lift_thresh_spec = _lift_v2_spec_from_performance_data(perf_data_thresh, metadata)
-
-    roc_ppcr_spec = _roc_v2_spec_from_performance_data(perf_data_ppcr, metadata)
-    pr_ppcr_spec = _precision_recall_v2_spec_from_performance_data(
-        perf_data_ppcr, metadata
-    )
-    gains_ppcr_spec = _gains_v2_spec_from_performance_data(perf_data_ppcr, metadata)
-    lift_ppcr_spec = _lift_v2_spec_from_performance_data(perf_data_ppcr, metadata)
-
-    decision_curve_spec = _decision_curve_v2_spec_from_performance_data(
-        perf_data_thresh, metadata
-    )
-    interventions_avoided_spec = _interventions_avoided_v2_spec_from_performance_data(
-        perf_data_thresh, metadata
-    )
-
-    table_thresh_spec = _performance_table_spec_from_performance_data(
-        perf_data_thresh, metadata
-    )
-    table_ppcr_spec = _performance_table_spec_from_performance_data(
-        perf_data_ppcr, metadata
-    )
-
-    sections = [
-        {
-            "id": "prevalence",
-            "title": "Prevalence",
-            "components": [
-                {
-                    "id": "prevalence-summary",
-                    "title": "Prevalence summary",
-                    "spec": prev_spec,
-                }
-            ],
-        },
-        {
-            "id": "calibration",
-            "title": "Calibration",
-            "components": [
-                {
-                    "id": "calibration-smooth",
-                    "title": "Smooth",
-                    "spec": calib_smooth_spec,
-                },
-                {
-                    "id": "calibration",
-                    "title": "Discrete",
-                    "spec": calib_discrete_spec,
-                },
-            ],
-        },
-        {
-            "id": "discrimination",
-            "title": "Discrimination",
-            "components": [
-                {
-                    "id": "auroc",
-                    "title": "AUROC",
-                    "spec": auroc_spec,
-                }
-            ],
-            "groups": [
-                {
-                    "id": "discrimination-probability-threshold",
-                    "title": "By Probability Threshold",
-                    "components": [
-                        {"id": "roc", "title": "ROC", "spec": roc_thresh_spec},
-                        {
-                            "id": "precision-recall",
-                            "title": "Precision-Recall",
-                            "spec": pr_thresh_spec,
-                        },
-                        {
-                            "id": "gains",
-                            "title": "Gains",
-                            "spec": gains_thresh_spec,
-                        },
-                        {"id": "lift", "title": "Lift", "spec": lift_thresh_spec},
-                    ],
-                },
-                {
-                    "id": "discrimination-ppcr",
-                    "title": "By PPCR",
-                    "components": [
-                        {"id": "roc-2", "title": "ROC", "spec": roc_ppcr_spec},
-                        {
-                            "id": "precision-recall-2",
-                            "title": "Precision-Recall",
-                            "spec": pr_ppcr_spec,
-                        },
-                        {
-                            "id": "gains-2",
-                            "title": "Gains",
-                            "spec": gains_ppcr_spec,
-                        },
-                        {"id": "lift-2", "title": "Lift", "spec": lift_ppcr_spec},
-                    ],
-                },
-            ],
-        },
-        {
-            "id": "utility",
-            "title": "Utility",
-            "components": [
-                {
-                    "id": "decision-curve",
-                    "title": "Decision Curve",
-                    "spec": decision_curve_spec,
-                },
-                {
-                    "id": "interventions-avoided",
-                    "title": "Interventions Avoided",
-                    "spec": interventions_avoided_spec,
-                },
-            ],
-        },
-        {
-            "id": "performance-table",
-            "title": "Performance Table",
-            "groups": [
-                {
-                    "id": "performance-table-probability-threshold",
-                    "title": "By Probability Threshold",
-                    "components": [
-                        {
-                            "id": "performance-table",
-                            "title": "Performance Table",
-                            "spec": table_thresh_spec,
-                        }
-                    ],
-                },
-                {
-                    "id": "performance-table-ppcr",
-                    "title": "By PPCR",
-                    "components": [
-                        {
-                            "id": "performance-table-2",
-                            "title": "Performance Table",
-                            "spec": table_ppcr_spec,
-                        }
-                    ],
-                },
-            ],
-        },
-    ]
-
-    report = _build_report_spec_v11(sections, title="rtichoke summary report")
     return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(output_file)
 
 

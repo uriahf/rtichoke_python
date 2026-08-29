@@ -2583,7 +2583,6 @@ dependencies = [
     { name = "polars" },
     { name = "polarstate" },
     { name = "reactable" },
-    { name = "scikit-learn" },
     { name = "smoothstate" },
 ]
 
@@ -2603,6 +2602,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "ruff" },
+    { name = "scikit-learn" },
     { name = "ty" },
     { name = "uv" },
 ]
@@ -2618,7 +2618,6 @@ requires-dist = [
     { name = "polars", specifier = ">=1.31.0" },
     { name = "polarstate", specifier = "==0.1.8" },
     { name = "reactable", specifier = ">=0.1.5" },
-    { name = "scikit-learn", specifier = ">=1.6.1" },
     { name = "smoothstate", specifier = ">=0.1.1" },
 ]
 provides-extras = ["matplotlib"]
@@ -2634,6 +2633,7 @@ dev = [
     { name = "pytest", specifier = ">=7.3.0,<8.0.0" },
     { name = "pytest-cov", specifier = ">=4.0.0,<5.0.0" },
     { name = "ruff", specifier = ">=0.11.0" },
+    { name = "scikit-learn", specifier = ">=1.6.1" },
     { name = "ty", specifier = ">=0.0.1a12" },
     { name = "uv", specifier = ">=0.6.11" },
 ]

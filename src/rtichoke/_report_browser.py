@@ -41,10 +41,7 @@ class RtichokeBrowserReport:
     const spec = JSON.parse(
       document.querySelector("#rtichoke-report-spec").textContent
     );
-        document.querySelector("#rtichoke-report").append(renderReport(spec, {{
-      sectionGroupPresentation: "tabs",
-      groupPresentation: "stacked"
-        }}));
+    document.querySelector("#rtichoke-report").append(renderReport(spec));
   </script>
 </body>
 </html>
