@@ -151,6 +151,10 @@ def _calibration_v2_spec_from_curve_list(
             }
         )
 
+    y_axis: dict[str, object] = {"label": "Observed probability"}
+    if calibration_type == "discrete":
+        y_axis["domain"] = [0, 1]
+
     return {
         "schemaVersion": "2.0",
         "type": "calibration",
@@ -161,7 +165,7 @@ def _calibration_v2_spec_from_curve_list(
         "x": "predicted",
         "y": "observed",
         "xAxis": {"label": "Predicted probability", "domain": [0, 1]},
-        "yAxis": {"label": "Observed probability", "domain": [0, 1]},
+        "yAxis": y_axis,
         "references": [{"type": "identity", "scope": "global"}],
     }
 

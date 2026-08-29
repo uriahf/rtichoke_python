@@ -1053,7 +1053,7 @@ function Literal(value, options) {
 }
 
 // node_modules/@sinclair/typebox/build/esm/type/boolean/boolean.mjs
-function Boolean(options) {
+function Boolean2(options) {
   return CreateType({ [Kind]: "Boolean", type: "boolean" }, options);
 }
 
@@ -1075,7 +1075,7 @@ function String2(options) {
 // node_modules/@sinclair/typebox/build/esm/type/template-literal/syntax.mjs
 function* FromUnion(syntax) {
   const trim = syntax.trim().replace(/"|'/g, "");
-  return trim === "boolean" ? yield Boolean() : trim === "number" ? yield Number2() : trim === "bigint" ? yield BigInt2() : trim === "string" ? yield String2() : yield (() => {
+  return trim === "boolean" ? yield Boolean2() : trim === "number" ? yield Number2() : trim === "bigint" ? yield BigInt2() : trim === "string" ? yield String2() : yield (() => {
     const literals = trim.split("|").map((literal) => Literal(literal.trim()));
     return literals.length === 0 ? Never() : literals.length === 1 ? literals[0] : UnionEvaluated(literals);
   })();
@@ -2691,7 +2691,7 @@ __export(type_exports3, {
   AsyncIterator: () => AsyncIterator,
   Awaited: () => Awaited,
   BigInt: () => BigInt2,
-  Boolean: () => Boolean,
+  Boolean: () => Boolean2,
   Capitalize: () => Capitalize,
   Composite: () => Composite,
   Const: () => Const,
@@ -2917,14 +2917,26 @@ var BaseChartV2SpecSchema = Type.Object({
 });
 
 // src/spec/v2/calibration.ts
-var CalibrationV2DatumSchema = Type.Object({
+var DiscreteCalibrationV2DatumSchema = Type.Object({
   seriesId: Type.String(),
   predicted: Type.Number({ minimum: 0, maximum: 1 }),
   observed: Type.Number({ minimum: 0, maximum: 1 }),
-  method: Type.Union([Type.Literal("discrete"), Type.Literal("smooth")]),
+  method: Type.Literal("discrete"),
   events: Type.Optional(Type.Number({ minimum: 0 })),
   total: Type.Optional(Type.Number({ minimum: 0 }))
 });
+var SmoothCalibrationV2DatumSchema = Type.Object({
+  seriesId: Type.String(),
+  predicted: Type.Number({ minimum: 0, maximum: 1 }),
+  observed: Type.Number(),
+  method: Type.Literal("smooth"),
+  events: Type.Optional(Type.Number({ minimum: 0 })),
+  total: Type.Optional(Type.Number({ minimum: 0 }))
+});
+var CalibrationV2DatumSchema = Type.Union([
+  DiscreteCalibrationV2DatumSchema,
+  SmoothCalibrationV2DatumSchema
+]);
 var CalibrationV2DistributionDatumSchema = Type.Object({
   seriesId: Type.String(),
   midpoint: Type.Number({ minimum: 0, maximum: 1 }),
@@ -3210,27 +3222,130 @@ var PerformanceTableSpecSchema = Type.Object({
   rows: Type.Array(PerformanceTableRowSchema)
 });
 
+// src/spec/v2/summary-metrics.ts
+var PopulationSummaryOwnerSpecSchema = Type.Object({
+  id: Type.String(),
+  label: Type.String()
+});
+var AUROCSummaryMetricSchema = Type.Object({
+  metric: Type.Literal("auroc"),
+  owner: Type.Object({
+    type: Type.Literal("evaluation"),
+    evaluationId: Type.String()
+  }),
+  estimate: Type.Union([Type.Number(), Type.Null()])
+});
+var PrevalenceSummaryMetricSchema = Type.Object({
+  metric: Type.Literal("prevalence"),
+  owner: Type.Object({
+    type: Type.Literal("population"),
+    populationId: Type.String()
+  }),
+  estimate: Type.Union([Type.Number(), Type.Null()])
+});
+var SummaryMetricSchema = Type.Union([
+  AUROCSummaryMetricSchema,
+  PrevalenceSummaryMetricSchema
+]);
+var SummaryMetricsSpecSchema = Type.Object(
+  {
+    schemaVersion: Type.Literal("1.0"),
+    type: Type.Literal("summary_metrics"),
+    title: Type.Optional(Type.String()),
+    evaluations: Type.Array(EvaluationSpecSchema),
+    populations: Type.Array(PopulationSummaryOwnerSpecSchema),
+    metrics: Type.Array(SummaryMetricSchema)
+  },
+  {
+    $id: "https://rtichoke.dev/schema/viz/summary-metrics.json",
+    title: "rtichoke summary metrics specification"
+  }
+);
+
 // src/spec/report.ts
+var StandaloneCanonicalSpecSchema = Type.Union([
+  RtichokeChartSpecV2Schema,
+  PerformanceTableSpecSchema,
+  SummaryMetricsSpecSchema
+]);
 var ReportComponentSchema = Type.Object({
   id: Type.String(),
   title: Type.Optional(Type.String()),
-  spec: Type.Union([RtichokeChartSpecV2Schema, PerformanceTableSpecSchema])
+  spec: StandaloneCanonicalSpecSchema
 });
-var ReportSpecSchema = Type.Object({
+var ReportSpecV1_0Schema = Type.Object({
   schemaVersion: Type.Literal("1.0"),
   type: Type.Literal("report"),
   title: Type.Optional(Type.String()),
   components: Type.Array(ReportComponentSchema, { minItems: 1 })
 });
+var ReportComponentV1_1Schema = Type.Object({
+  type: Type.Literal("component"),
+  id: Type.String(),
+  title: Type.Optional(Type.String()),
+  spec: StandaloneCanonicalSpecSchema
+});
+var ReportGroupSchema = Type.Object({
+  type: Type.Literal("group"),
+  id: Type.String(),
+  title: Type.String(),
+  components: Type.Array(ReportComponentV1_1Schema, { minItems: 1 })
+});
+var ReportSectionSchema = Type.Object({
+  id: Type.String(),
+  title: Type.String(),
+  items: Type.Array(
+    Type.Union([ReportComponentV1_1Schema, ReportGroupSchema]),
+    { minItems: 1 }
+  )
+});
+var ReportSpecV1_1Schema = Type.Object({
+  schemaVersion: Type.Literal("1.1"),
+  type: Type.Literal("report"),
+  title: Type.Optional(Type.String()),
+  sections: Type.Array(ReportSectionSchema, { minItems: 1 })
+});
+var ReportSpecSchema = Type.Union(
+  [ReportSpecV1_0Schema, ReportSpecV1_1Schema],
+  {
+    $id: "https://rtichoke.dev/schema/viz/report.json",
+    title: "rtichoke report specification"
+  }
+);
 
 // src/spec/validate-report.ts
 function assertReportReferentialIntegrity(spec) {
   const componentIds = /* @__PURE__ */ new Set();
-  for (const component of spec.components) {
+  const assertUniqueComponent = (component) => {
     if (componentIds.has(component.id)) {
       throw new Error(`duplicate component id: ${component.id}`);
     }
     componentIds.add(component.id);
+  };
+  if (spec.schemaVersion === "1.0") {
+    for (const component of spec.components) assertUniqueComponent(component);
+    return;
+  }
+  const sectionIds = /* @__PURE__ */ new Set();
+  const groupIds = /* @__PURE__ */ new Set();
+  for (const section of spec.sections) {
+    if (sectionIds.has(section.id)) {
+      throw new Error(`duplicate section id: ${section.id}`);
+    }
+    sectionIds.add(section.id);
+    for (const item of section.items) {
+      if (item.type === "component") {
+        assertUniqueComponent(item);
+        continue;
+      }
+      if (groupIds.has(item.id)) {
+        throw new Error(`duplicate group id: ${item.id}`);
+      }
+      groupIds.add(item.id);
+      for (const component of item.components) {
+        assertUniqueComponent(component);
+      }
+    }
   }
 }
 
@@ -3258,6 +3373,53 @@ function assertPerformanceTableReferentialIntegrity(spec) {
       if (!metricIds.has(value.metricId)) {
         throw new Error(`unknown metric id: ${value.metricId}`);
       }
+    }
+  }
+}
+
+// src/spec/v2/validate-summary-metrics.ts
+function assertSummaryMetricsReferentialIntegrity(spec) {
+  const evaluationIds = /* @__PURE__ */ new Set();
+  for (const evaluation of spec.evaluations) {
+    if (evaluationIds.has(evaluation.id)) {
+      throw new Error(`duplicate evaluation id: ${evaluation.id}`);
+    }
+    evaluationIds.add(evaluation.id);
+  }
+  const populationIds = /* @__PURE__ */ new Set();
+  for (const population of spec.populations) {
+    if (populationIds.has(population.id)) {
+      throw new Error(`duplicate population id: ${population.id}`);
+    }
+    populationIds.add(population.id);
+  }
+  const seenMetrics = /* @__PURE__ */ new Set();
+  for (const item of spec.metrics) {
+    if (item.estimate !== null && !Number.isFinite(item.estimate)) {
+      throw new Error(`non-finite metric estimate: ${item.estimate}`);
+    }
+    if (item.metric === "auroc") {
+      if (!evaluationIds.has(item.owner.evaluationId)) {
+        throw new Error(`unknown evaluation id: ${item.owner.evaluationId}`);
+      }
+      const key = `auroc:${item.owner.evaluationId}`;
+      if (seenMetrics.has(key)) {
+        throw new Error(
+          `duplicate metric ownership: auroc for evaluation ${item.owner.evaluationId}`
+        );
+      }
+      seenMetrics.add(key);
+    } else if (item.metric === "prevalence") {
+      if (!populationIds.has(item.owner.populationId)) {
+        throw new Error(`unknown population id: ${item.owner.populationId}`);
+      }
+      const key = `prevalence:${item.owner.populationId}`;
+      if (seenMetrics.has(key)) {
+        throw new Error(
+          `duplicate metric ownership: prevalence for population ${item.owner.populationId}`
+        );
+      }
+      seenMetrics.add(key);
     }
   }
 }
@@ -3541,6 +3703,9 @@ function rocV2SpecFromRtichokePython(rows, context) {
 }
 function calibrationV2SpecFromRtichokeRows(rows, method, context, distributionRows) {
   const byGroup = identities(rows.map((row) => row.reference_group), context);
+  const observedValues = rows.map((row) => row.y).filter(Number.isFinite);
+  const minY = Math.min(0, ...observedValues);
+  const maxY = Math.max(1, ...observedValues);
   return {
     schemaVersion: "2.0",
     type: "calibration",
@@ -3569,7 +3734,7 @@ function calibrationV2SpecFromRtichokeRows(rows, method, context, distributionRo
     x: "predicted",
     y: "observed",
     xAxis: { label: "Predicted probability", domain: [0, 1] },
-    yAxis: { label: "Observed probability", domain: [0, 1] },
+    yAxis: { label: "Observed probability", domain: [minY, maxY] },
     references: [{ type: "identity", scope: "global", label: "Perfectly Calibrated" }]
   };
 }
@@ -19364,6 +19529,11 @@ function renderCalibrationV2(spec, options = {}) {
     );
   const hasDistribution = (spec.distribution?.length ?? 0) > 0;
   const mainHeight = hasDistribution ? Math.round(theme.height * 0.8) : theme.height;
+  const observedValues = data.map((datum2) => datum2.observed).filter(Number.isFinite);
+  const yDomain = spec.yAxis.domain ?? [
+    Math.min(0, ...observedValues),
+    Math.max(1, ...observedValues)
+  ];
   const calibration = themedPlot(
     {
       ...basePlotOptions(resolved, spec),
@@ -19374,7 +19544,7 @@ function renderCalibrationV2(spec, options = {}) {
         axis: null,
         label: null
       } : axisOptions2(theme, spec.xAxis.label, spec.xAxis.domain),
-      y: axisOptions2(theme, spec.yAxis.label, spec.yAxis.domain),
+      y: axisOptions2(theme, spec.yAxis.label, yDomain),
       marks: finishMarks(marks2, theme)
     },
     theme
@@ -19713,6 +19883,89 @@ function renderPerformanceTable(spec, document2 = globalThis.document) {
       td.dataset.metricId = metric.id;
       tr.append(td);
     }
+    body.append(tr);
+  }
+  table.append(body);
+  root2.append(table);
+  return root2;
+}
+
+// src/render/summary-metrics.ts
+var MISSING2 = "\u2014";
+function cell2(document2, text2, className) {
+  const element = document2.createElement("td");
+  element.textContent = text2;
+  if (className) element.className = className;
+  return element;
+}
+function header2(document2, text2) {
+  const element = document2.createElement("th");
+  element.scope = "col";
+  element.textContent = text2;
+  return element;
+}
+function formatEstimate(value) {
+  if (value === null) return MISSING2;
+  return value.toFixed(2);
+}
+function renderSummaryMetrics(spec, document2 = globalThis.document) {
+  assertSummaryMetricsReferentialIntegrity(spec);
+  const root2 = document2.createElement("div");
+  root2.className = "rtichoke-summary-metrics";
+  if (spec.title) {
+    const title = document2.createElement("div");
+    title.className = "rtichoke-summary-metrics__title";
+    title.textContent = spec.title;
+    root2.append(title);
+  }
+  const table = document2.createElement("table");
+  table.className = "rtichoke-summary-metrics__table";
+  const head = document2.createElement("thead");
+  const headRow = document2.createElement("tr");
+  for (const label of ["Owner", "Metric", "Estimate"]) {
+    headRow.append(header2(document2, label));
+  }
+  head.append(headRow);
+  table.append(head);
+  const evaluations = new Map(
+    spec.evaluations.map((evaluation) => [evaluation.id, evaluation])
+  );
+  const populations = new Map(
+    spec.populations.map((population) => [population.id, population])
+  );
+  const body = document2.createElement("tbody");
+  for (const item of spec.metrics) {
+    const tr = document2.createElement("tr");
+    let ownerLabel = "";
+    let metricLabel = "";
+    if (item.metric === "auroc") {
+      const evaluation = evaluations.get(item.owner.evaluationId);
+      ownerLabel = evaluation.label ?? evaluation.model ?? evaluation.population ?? evaluation.id;
+      metricLabel = "AUROC";
+      tr.dataset.metric = "auroc";
+      tr.dataset.evaluationId = item.owner.evaluationId;
+    } else if (item.metric === "prevalence") {
+      const population = populations.get(item.owner.populationId);
+      ownerLabel = population.label;
+      metricLabel = "Prevalence";
+      tr.dataset.metric = "prevalence";
+      tr.dataset.populationId = item.owner.populationId;
+    }
+    tr.append(
+      cell2(document2, ownerLabel, "rtichoke-summary-metrics__owner"),
+      cell2(document2, metricLabel, "rtichoke-summary-metrics__metric")
+    );
+    const estimateCell = cell2(
+      document2,
+      formatEstimate(item.estimate),
+      "rtichoke-summary-metrics__estimate"
+    );
+    if (item.estimate === null) {
+      estimateCell.dataset.unavailable = "true";
+    } else {
+      estimateCell.dataset.estimate = String(item.estimate);
+    }
+    tr.append(estimateCell);
     body.append(tr);
   }
   table.append(body);
@@ -23055,8 +23308,80 @@ __export(value_exports2, {
 });
 
 // src/render/report.ts
-function renderReport(spec) {
-  if (!value_exports2.Check(ReportSpecSchema, spec)) throw new Error("Invalid ReportSpec");
+function renderStandaloneComponentContent(spec) {
+  switch (spec.type) {
+    case "summary_metrics":
+      return renderSummaryMetrics(spec);
+    case "performance_table":
+      return renderPerformanceTable(spec);
+    case "roc":
+      return renderRocV2(spec);
+    case "calibration":
+      return renderCalibrationV2(spec);
+    case "precision_recall":
+      return renderPrecisionRecallV2(spec);
+    case "gains":
+      return renderGainsV2(spec);
+    case "lift":
+      return renderLiftV2(spec);
+    case "decision_curve":
+      return renderDecisionCurveV2(spec);
+    case "interventions_avoided":
+      return renderInterventionsAvoidedV2(spec);
+  }
+}
+function generateUniqueDomId(rawId, used) {
+  let base = rawId.toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "id";
+  if (!/^[a-z]/i.test(base)) {
+    base = `id-${base}`;
+  }
+  let candidate = base;
+  let counter = 1;
+  while (used.has(candidate)) {
+    candidate = `${base}-${counter}`;
+    counter++;
+  }
+  used.add(candidate);
+  return candidate;
+}
+function wireTabInteraction(tabs, panels) {
+  const activateTab = (index2, setFocus = true) => {
+    tabs.forEach((tab, tabIndex) => {
+      const isSelected = tabIndex === index2;
+      tab.setAttribute("aria-selected", isSelected ? "true" : "false");
+      tab.tabIndex = isSelected ? 0 : -1;
+      panels[tabIndex].hidden = !isSelected;
+    });
+    if (setFocus) {
+      tabs[index2].focus();
+    }
+  };
+  tabs.forEach((tab, index2) => {
+    tab.addEventListener("click", () => {
+      activateTab(index2, false);
+    });
+    tab.addEventListener("keydown", (event) => {
+      let targetIndex = null;
+      if (event.key === "ArrowRight") {
+        targetIndex = (index2 + 1) % tabs.length;
+      } else if (event.key === "ArrowLeft") {
+        targetIndex = (index2 - 1 + tabs.length) % tabs.length;
+      } else if (event.key === "Home") {
+        targetIndex = 0;
+      } else if (event.key === "End") {
+        targetIndex = tabs.length - 1;
+      }
+      if (targetIndex !== null) {
+        event.preventDefault();
+        activateTab(targetIndex, true);
+      }
+    });
+  });
+}
+function renderReportV1_0(spec) {
+  if (!value_exports2.Check(ReportSpecV1_0Schema, spec)) {
+    throw new Error("Invalid ReportSpec");
+  }
   assertReportReferentialIntegrity(spec);
   const root2 = document.createElement("div");
   root2.className = "rtichoke-report";
@@ -23078,36 +23403,285 @@ function renderReport(spec) {
     }
     const content = document.createElement("div");
     content.className = "rtichoke-report__component-content";
-    switch (component.spec.type) {
-      case "performance_table":
-        content.append(renderPerformanceTable(component.spec));
-        break;
-      case "roc":
-        content.append(renderRocV2(component.spec));
-        break;
-      case "calibration":
-        content.append(renderCalibrationV2(component.spec));
-        break;
-      case "precision_recall":
-        content.append(renderPrecisionRecallV2(component.spec));
-        break;
-      case "gains":
-        content.append(renderGainsV2(component.spec));
-        break;
-      case "lift":
-        content.append(renderLiftV2(component.spec));
-        break;
-      case "decision_curve":
-        content.append(renderDecisionCurveV2(component.spec));
-        break;
-      case "interventions_avoided":
-        content.append(renderInterventionsAvoidedV2(component.spec));
-        break;
-    }
+    content.append(renderStandaloneComponentContent(component.spec));
     container.append(content);
     root2.append(container);
   }
   return root2;
+}
+function renderReportV1_1(spec, options) {
+  if (!value_exports2.Check(ReportSpecV1_1Schema, spec)) {
+    throw new Error("Invalid ReportSpec");
+  }
+  assertReportReferentialIntegrity(spec);
+  const hasTitle = Boolean(spec.title);
+  const usedDomIds = /* @__PURE__ */ new Set();
+  const root2 = document.createElement("article");
+  root2.className = "rtichoke-report";
+  if (spec.title) {
+    const header3 = document.createElement("header");
+    header3.className = "rtichoke-report__header";
+    const title = document.createElement("h1");
+    title.className = "rtichoke-report__title";
+    title.textContent = spec.title;
+    header3.append(title);
+    root2.append(header3);
+  }
+  const navSections = [];
+  let totalNavigableTargets = 0;
+  for (const section of spec.sections) {
+    const secDomId = generateUniqueDomId(section.id, usedDomIds);
+    totalNavigableTargets++;
+    const navGroups = [];
+    for (const item of section.items) {
+      if (item.type === "group") {
+        const grpDomId = generateUniqueDomId(item.id, usedDomIds);
+        totalNavigableTargets++;
+        navGroups.push({
+          rawId: item.id,
+          title: item.title,
+          domId: grpDomId
+        });
+      }
+    }
+    navSections.push({
+      rawId: section.id,
+      title: section.title,
+      domId: secDomId,
+      groups: navGroups
+    });
+  }
+  if (totalNavigableTargets > 1) {
+    const nav = document.createElement("nav");
+    nav.className = "rtichoke-report__nav";
+    nav.setAttribute("aria-label", "Report sections");
+    const navList = document.createElement("ul");
+    navList.className = "rtichoke-report__nav-list";
+    for (const sec of navSections) {
+      const navItem = document.createElement("li");
+      navItem.className = "rtichoke-report__nav-item";
+      const navLink = document.createElement("a");
+      navLink.className = "rtichoke-report__nav-link";
+      navLink.href = `#${sec.domId}`;
+      navLink.textContent = sec.title;
+      navItem.append(navLink);
+      if (sec.groups.length > 0) {
+        const subList = document.createElement("ul");
+        subList.className = "rtichoke-report__nav-sublist";
+        for (const grp of sec.groups) {
+          const subItem = document.createElement("li");
+          subItem.className = "rtichoke-report__nav-subitem";
+          const subLink = document.createElement("a");
+          subLink.className = "rtichoke-report__nav-link";
+          subLink.href = `#${grp.domId}`;
+          subLink.textContent = grp.title;
+          subItem.append(subLink);
+          subList.append(subItem);
+        }
+        navItem.append(subList);
+      }
+      navList.append(navItem);
+    }
+    nav.append(navList);
+    root2.append(nav);
+  }
+  const sectionHeadingTag = hasTitle ? "h2" : "h1";
+  const groupHeadingTag = hasTitle ? "h3" : "h2";
+  const directCompHeadingTag = hasTitle ? "h3" : "h2";
+  const groupCompHeadingTag = hasTitle ? "h4" : "h3";
+  const renderComponent = (comp, headingTag) => {
+    const container = document.createElement("section");
+    container.className = "rtichoke-report__component";
+    container.dataset.componentId = comp.id;
+    if (comp.title) {
+      const compHeadingDomId = generateUniqueDomId(
+        `heading-${comp.id}`,
+        usedDomIds
+      );
+      const titleEl = document.createElement(headingTag);
+      titleEl.className = "rtichoke-report__component-title";
+      titleEl.id = compHeadingDomId;
+      titleEl.textContent = comp.title;
+      container.setAttribute("aria-labelledby", compHeadingDomId);
+      container.append(titleEl);
+    }
+    const content = document.createElement("div");
+    content.className = "rtichoke-report__component-content";
+    content.append(renderStandaloneComponentContent(comp.spec));
+    container.append(content);
+    return container;
+  };
+  const renderGroup = (item, grpNav, sectionPanelTabId) => {
+    const grpSection = document.createElement("section");
+    grpSection.className = "rtichoke-report__group";
+    grpSection.id = grpNav.domId;
+    grpSection.dataset.groupId = item.id;
+    const grpHeadingDomId = generateUniqueDomId(
+      `heading-${item.id}`,
+      usedDomIds
+    );
+    const grpHeading = document.createElement(groupHeadingTag);
+    grpHeading.className = "rtichoke-report__group-title";
+    if (sectionPanelTabId) {
+      grpHeading.classList.add("rtichoke-report__group-title--tab-panel");
+    }
+    grpHeading.id = grpHeadingDomId;
+    grpHeading.textContent = item.title;
+    grpSection.setAttribute(
+      "aria-labelledby",
+      sectionPanelTabId ?? grpHeadingDomId
+    );
+    grpSection.append(grpHeading);
+    if (options.groupPresentation === "tabs") {
+      const tablist = document.createElement("div");
+      tablist.className = "rtichoke-report__tablist";
+      tablist.setAttribute("role", "tablist");
+      tablist.setAttribute("aria-labelledby", grpHeadingDomId);
+      const tabs = [];
+      const panels = [];
+      item.components.forEach((comp, compIdx) => {
+        const tabDomId = generateUniqueDomId(
+          `tab-${item.id}-${comp.id}`,
+          usedDomIds
+        );
+        const panelDomId = generateUniqueDomId(
+          `panel-${item.id}-${comp.id}`,
+          usedDomIds
+        );
+        const tab = document.createElement("button");
+        tab.className = "rtichoke-report__tab";
+        tab.type = "button";
+        tab.id = tabDomId;
+        tab.setAttribute("role", "tab");
+        tab.setAttribute("aria-controls", panelDomId);
+        tab.setAttribute("aria-selected", compIdx === 0 ? "true" : "false");
+        tab.tabIndex = compIdx === 0 ? 0 : -1;
+        tab.textContent = comp.title || comp.id;
+        const panel = document.createElement("section");
+        panel.className = "rtichoke-report__component rtichoke-report__tabpanel";
+        panel.id = panelDomId;
+        panel.setAttribute("role", "tabpanel");
+        panel.setAttribute("aria-labelledby", tabDomId);
+        panel.tabIndex = 0;
+        panel.dataset.componentId = comp.id;
+        panel.hidden = compIdx !== 0;
+        const content = document.createElement("div");
+        content.className = "rtichoke-report__component-content";
+        content.append(renderStandaloneComponentContent(comp.spec));
+        panel.append(content);
+        tabs.push(tab);
+        panels.push(panel);
+        tablist.append(tab);
+      });
+      wireTabInteraction(tabs, panels);
+      grpSection.append(tablist, ...panels);
+    } else {
+      for (const comp of item.components) {
+        grpSection.append(renderComponent(comp, groupCompHeadingTag));
+      }
+    }
+    return grpSection;
+  };
+  for (let i = 0; i < spec.sections.length; i++) {
+    const sectionSpec = spec.sections[i];
+    const secNav = navSections[i];
+    const secSection = document.createElement("section");
+    secSection.className = "rtichoke-report__section";
+    secSection.id = secNav.domId;
+    secSection.dataset.sectionId = sectionSpec.id;
+    const secHeadingDomId = generateUniqueDomId(
+      `heading-${sectionSpec.id}`,
+      usedDomIds
+    );
+    const secHeading = document.createElement(sectionHeadingTag);
+    secHeading.className = "rtichoke-report__section-title";
+    secHeading.id = secHeadingDomId;
+    secHeading.textContent = sectionSpec.title;
+    secSection.setAttribute("aria-labelledby", secHeadingDomId);
+    secSection.append(secHeading);
+    const groups2 = sectionSpec.items.filter(
+      (item) => item.type === "group"
+    );
+    const useSectionGroupTabs = options.sectionGroupPresentation === "tabs" && groups2.length > 1;
+    let groupIndex2 = 0;
+    let renderedSectionGroupTabs = false;
+    for (const item of sectionSpec.items) {
+      if (item.type === "component") {
+        secSection.append(renderComponent(item, directCompHeadingTag));
+      } else if (item.type === "group") {
+        if (useSectionGroupTabs) {
+          if (renderedSectionGroupTabs) {
+            continue;
+          }
+          renderedSectionGroupTabs = true;
+          const tablist = document.createElement("div");
+          tablist.className = "rtichoke-report__tablist rtichoke-report__section-group-tablist";
+          tablist.setAttribute("role", "tablist");
+          tablist.setAttribute("aria-labelledby", secHeadingDomId);
+          const tabs = [];
+          const panels = [];
+          groups2.forEach((group2, tabIndex) => {
+            const groupNav = secNav.groups[tabIndex];
+            const tabDomId = generateUniqueDomId(
+              `section-group-tab-${sectionSpec.id}-${group2.id}`,
+              usedDomIds
+            );
+            const tab = document.createElement("button");
+            tab.className = "rtichoke-report__tab";
+            tab.type = "button";
+            tab.id = tabDomId;
+            tab.setAttribute("role", "tab");
+            tab.setAttribute("aria-controls", groupNav.domId);
+            tab.setAttribute("aria-selected", tabIndex === 0 ? "true" : "false");
+            tab.tabIndex = tabIndex === 0 ? 0 : -1;
+            tab.textContent = group2.title;
+            const panel = renderGroup(group2, groupNav, tabDomId);
+            panel.classList.add("rtichoke-report__tabpanel");
+            panel.setAttribute("role", "tabpanel");
+            panel.setAttribute("aria-labelledby", tabDomId);
+            panel.tabIndex = 0;
+            panel.hidden = tabIndex !== 0;
+            tabs.push(tab);
+            panels.push(panel);
+            tablist.append(tab);
+          });
+          wireTabInteraction(tabs, panels);
+          secSection.append(tablist, ...panels);
+        } else {
+          secSection.append(renderGroup(item, secNav.groups[groupIndex2++]));
+        }
+      }
+    }
+    root2.append(secSection);
+  }
+  return root2;
+}
+function renderReport(spec, options) {
+  if (!spec || typeof spec !== "object") {
+    throw new Error("Invalid ReportSpec");
+  }
+  const groupPresentation = options?.groupPresentation ?? "stacked";
+  const sectionGroupPresentation = options?.sectionGroupPresentation ?? "stacked";
+  if (options !== void 0 && (typeof options !== "object" || options === null || options.groupPresentation !== void 0 && options.groupPresentation !== "stacked" && options.groupPresentation !== "tabs")) {
+    throw new Error(
+      "Invalid render options: groupPresentation must be 'stacked' or 'tabs'"
+    );
+  }
+  if (options !== void 0 && options.sectionGroupPresentation !== void 0 && options.sectionGroupPresentation !== "stacked" && options.sectionGroupPresentation !== "tabs") {
+    throw new Error(
+      "Invalid render options: sectionGroupPresentation must be 'stacked' or 'tabs'"
+    );
+  }
+  if (spec.schemaVersion === "1.0") {
+    return renderReportV1_0(spec);
+  }
+  if (spec.schemaVersion === "1.1") {
+    return renderReportV1_1(spec, {
+      groupPresentation,
+      sectionGroupPresentation
+    });
+  }
+  throw new Error("Invalid ReportSpec");
 }
 
 // src/render/roc.ts
@@ -23176,13 +23750,16 @@ function renderRoc(spec) {
   });
 }
 export {
+  AUROCSummaryMetricSchema,
   CalibrationSpecSchema,
+  CalibrationV2DatumSchema,
   CalibrationV2SpecSchema,
   DecisionCurveV2DatumSchema,
   DecisionCurveV2EvaluationSchema,
   DecisionCurveV2ReferenceSchema,
   DecisionCurveV2SeriesSchema,
   DecisionCurveV2SpecSchema,
+  DiscreteCalibrationV2DatumSchema,
   DisplayGroupingSpecSchema,
   DisplayRoleSchema,
   EvaluationSpecSchema,
@@ -23202,21 +23779,33 @@ export {
   PerformanceMetricValueSchema,
   PerformanceTableRowSchema,
   PerformanceTableSpecSchema,
+  PopulationSummaryOwnerSpecSchema,
   PrecisionRecallV2SpecSchema,
+  PrevalenceSummaryMetricSchema,
   RTICHOKE_BROWSER_THEME,
   RTICHOKE_COLORS2 as RTICHOKE_COLORS,
   ReferenceLineV2SpecSchema,
   ReportComponentSchema,
+  ReportComponentV1_1Schema,
+  ReportGroupSchema,
+  ReportSectionSchema,
   ReportSpecSchema,
+  ReportSpecV1_0Schema,
+  ReportSpecV1_1Schema,
   RocSpecSchema,
   RocV2SpecSchema,
   RtichokeChartSpecSchema,
   RtichokeChartSpecV2Schema,
   SeriesSpecSchema,
+  SmoothCalibrationV2DatumSchema,
+  StandaloneCanonicalSpecSchema,
+  SummaryMetricSchema,
+  SummaryMetricsSpecSchema,
   TreatAllReferenceSchema,
   TreatNoneReferenceSchema,
   assertPerformanceTableReferentialIntegrity,
   assertReportReferentialIntegrity,
+  assertSummaryMetricsReferentialIntegrity,
   assertV2ReferentialIntegrity,
   calibrationSpecFromRtichokeRows,
   calibrationV2SpecFromRtichokeRows,
@@ -23231,6 +23820,7 @@ export {
   renderReport,
   renderRoc,
   renderRocV2,
+  renderSummaryMetrics,
   resolveV2RenderOptions,
   rocSpecFromRtichokePython,
   rocSpecFromRtichokeR,

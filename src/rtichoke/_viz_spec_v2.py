@@ -262,8 +262,13 @@ def _lift_v2_spec_from_performance_data(
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
 ) -> dict[str, object]:
     """Build a canonical lift-v2 spec from production performance quantities."""
+    finite_rows = performance_data.filter(
+        pl.col("chosen_cutoff").is_finite()
+        & pl.col("ppcr").is_finite()
+        & pl.col("lift").is_finite()
+    )
     spec = _curve_v2_spec_from_performance_data(
-        performance_data,
+        finite_rows,
         evaluation_metadata,
         chart_type="lift",
     )
