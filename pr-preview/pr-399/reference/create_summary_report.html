@@ -503,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 <div class="doc-usage-source">
 <p>Usage</p>
-<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/summary_report/summary_report.py#L44-L92" target="_blank" rel="noopener">Source</a></p>
+<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/summary_report/summary_report.py#L29-L83" target="_blank" rel="noopener">Source</a></p>
 </div>
 <div class="doc-signature doc-Kind.FUNCTION">
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">create_summary_report</span>(</span>
@@ -517,6 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 <div class="doc-text">
 <p>The default <code>renderer="r"</code> preserves the historical public behavior and delegates to the R rtichoke backend at <code>url_api</code>. <code>renderer="browser"</code> is an explicit opt-in path that uses Python’s existing production calculations, canonical standalone component builders, canonical ReportSpec assembly, and the vendored <code>rtichoke_viz</code> <code>renderReport()</code> composer.</p>
+<p>The first browser report contains a canonical PerformanceTable, ROC-v2, and calibration-v2 component, in that order. The browser renderer writes an HTML file plus the vendored <code>rtichoke-viz.js</code> and <code>rtichoke-viz.css</code> assets beside it, and returns the written HTML path. The historical R path retains its existing return behavior (<code>None</code>).</p>
 </div>
 <section id="parameters" class="level2 doc-parameters">
 <h2 class="doc-parameters">Parameters</h2>
