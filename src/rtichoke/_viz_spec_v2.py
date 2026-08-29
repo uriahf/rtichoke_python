@@ -262,8 +262,13 @@ def _lift_v2_spec_from_performance_data(
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
 ) -> dict[str, object]:
     """Build a canonical lift-v2 spec from production performance quantities."""
+    finite_rows = performance_data.filter(
+        pl.col("chosen_cutoff").is_finite()
+        & pl.col("ppcr").is_finite()
+        & pl.col("lift").is_finite()
+    )
     spec = _curve_v2_spec_from_performance_data(
-        performance_data,
+        finite_rows,
         evaluation_metadata,
         chart_type="lift",
     )
@@ -664,8 +669,10 @@ def _lift_y_axis_upper_bound(
     perfect_heights: list[float],
 ) -> float:
     """Return the finite numeric Lift bound implied by existing plot quantities."""
-    observed_lift = performance_data["lift"].max()
-    assert isinstance(observed_lift, (int, float))
+    finite_lifts = performance_data["lift"].filter(performance_data["lift"].is_finite())
+    observed_lift = finite_lifts.max() if len(finite_lifts) > 0 else 1.0
+    if observed_lift is None:
+        observed_lift = 1.0
     return max(1.0, float(observed_lift), *perfect_heights)
 
 

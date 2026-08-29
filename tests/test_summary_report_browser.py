@@ -102,9 +102,11 @@ def _assert_report_rendered(browser: subprocess.CompletedProcess[str]) -> None:
     assert browser.returncode == 0, browser.stderr
     assert "INFO:CONSOLE" not in browser.stderr, browser.stderr
     rendered = _rendered_report_html(browser.stdout)
-    assert "Performance" in rendered, browser.stderr
-    assert "ROC" in rendered
+    assert "Prevalence" in rendered, browser.stderr
     assert "Calibration" in rendered
+    assert "Discrimination" in rendered
+    assert "Utility" in rendered
+    assert "Performance Table" in rendered
     assert "<table" in rendered
     assert rendered.count("<svg") >= 2
 
@@ -167,21 +169,19 @@ def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(
 
     html = output.read_text(encoding="utf-8")
     report = _embedded_report(html)
-    assert [component["id"] for component in report["components"]] == [
+    assert report["schemaVersion"] == "1.1"
+    assert report["type"] == "report"
+    section_ids = [section["id"] for section in report["sections"]]
+    assert section_ids == [
+        "prevalence",
+        "calibration",
+        "discrimination",
+        "utility",
         "performance-table",
-        "roc",
-        "calibration",
     ]
-    assert [component["spec"]["type"] for component in report["components"]] == [
-        "performance_table",
-        "roc",
-        "calibration",
-    ]
-    assert report["components"][1]["spec"]["schemaVersion"] == "2.0"
-    assert report["components"][2]["spec"]["schemaVersion"] == "2.0"
     assert 'import { renderReport } from "./rtichoke-viz.js";' not in html
     assert viz_js_path.read_text(encoding="utf-8") in html
-    assert "append(renderReport(spec))" in html
+    assert 'sectionGroupPresentation: "tabs"' in html
 
 
 def test_browser_summary_report_executes_when_opened_directly(tmp_path):
@@ -239,19 +239,18 @@ def test_browser_summary_report_preserves_component_local_identity(tmp_path):
     assert "populations" not in report
     assert "horizon" not in report
 
-    table, roc, calibration = [component["spec"] for component in report["components"]]
-    assert table["evaluations"][0]["id"] == "evaluation-1"
-    assert roc["evaluations"][0]["id"] == "evaluation-1"
-    assert calibration["evaluations"][0]["id"] == "evaluation-1"
-    assert [item["population"] for item in calibration["evaluations"]] == [
-        "Population A",
-        "Population B",
-    ]
-    assert all("model" not in item for item in calibration["evaluations"])
-    assert [item["display"]["role"] for item in calibration["series"]] == [
-        "population",
-        "population",
-    ]
+    prev_spec = report["sections"][0]["items"][0]["spec"]
+    calib_smooth_spec = report["sections"][1]["items"][0]["spec"]
+    calib_discrete_spec = report["sections"][1]["items"][1]["spec"]
+
+    assert prev_spec["schemaVersion"] == "1.0"
+    assert prev_spec["type"] == "summary_metrics"
+    assert len(prev_spec["populations"]) == 2
+    assert (
+        "evaluations" not in calib_smooth_spec["yAxis"]
+    )  # check omit yAxis.domain on smooth
+    assert calib_smooth_spec["yAxis"].get("domain") is None
+    assert calib_discrete_spec["yAxis"]["domain"] == [0, 1]
 
 
 def test_browser_summary_report_rejects_unknown_renderer():

@@ -8,7 +8,7 @@ from rtichoke._performance_table_spec import (
     _performance_table_times_spec_from_performance_data,
 )
 from rtichoke._report_browser import RtichokeBrowserReport
-from rtichoke._report_spec import _report_spec_from_components
+from rtichoke._report_spec import _build_report_spec_v11
 from rtichoke._viz_spec_v2 import (
     _gains_v2_spec_from_performance_data,
     _roc_v2_spec_from_performance_data,
@@ -36,11 +36,16 @@ def test_browser_report_uses_real_producers_and_only_shared_render_report(tmp_pa
     table = _performance_table_spec_from_performance_data(performance_data, metadata)
     roc = _roc_v2_spec_from_performance_data(performance_data, metadata)
     gains = _gains_v2_spec_from_performance_data(performance_data, metadata)
-    report = _report_spec_from_components(
+    report = _build_report_spec_v11(
         [
-            {"title": "Performance", "spec": table},
-            {"title": "ROC", "spec": roc},
-            {"title": "Gains", "spec": gains},
+            {
+                "id": "sec-1",
+                "components": [
+                    {"id": "performance-table", "title": "Performance", "spec": table},
+                    {"id": "roc", "title": "ROC", "spec": roc},
+                    {"id": "gains", "title": "Gains", "spec": gains},
+                ],
+            }
         ],
         title="Canonical report",
     )
@@ -53,9 +58,10 @@ def test_browser_report_uses_real_producers_and_only_shared_render_report(tmp_pa
 
     assert 'import { renderReport } from "./rtichoke-viz.js";' not in html
     assert viz_js in html
-    assert "append(renderReport(spec))" in html
+    assert 'sectionGroupPresentation: "tabs"' in html
+    assert 'groupPresentation: "stacked"' in html
     assert _embedded_report(html) == report
-    assert [component["id"] for component in report["components"]] == [
+    assert [item["id"] for item in report["sections"][0]["items"]] == [
         "performance-table",
         "roc",
         "gains",
@@ -93,12 +99,21 @@ def test_browser_report_preserves_component_local_evaluation_ids_and_time_contex
         static_data,
         _build_evaluation_metadata(probs, reals, np.array([])),
     )
-    report = _report_spec_from_components(
-        [{"spec": time_table}, {"spec": roc}, {"spec": roc}]
+    report = _build_report_spec_v11(
+        [
+            {
+                "id": "sec-1",
+                "components": [
+                    {"id": "performance-table", "spec": time_table},
+                    {"id": "roc", "spec": roc},
+                    {"id": "roc-2", "spec": roc},
+                ],
+            }
+        ]
     )
 
     assert "horizon" not in report
-    assert [component["id"] for component in report["components"]] == [
+    assert [item["id"] for item in report["sections"][0]["items"]] == [
         "performance-table",
         "roc",
         "roc-2",
