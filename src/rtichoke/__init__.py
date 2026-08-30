@@ -59,6 +59,7 @@ from rtichoke.performance_table import (
 
 from rtichoke.summary_report.summary_report import (
     create_summary_report as create_summary_report,
+    create_summary_report_times as create_summary_report_times,
 )
 
 __all__ = [
@@ -87,4 +88,5 @@ __all__ = [
     "create_performance_table_times",
     "render_performance_table",
     "create_summary_report",
+    "create_summary_report_times",
 ]

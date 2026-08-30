@@ -10,13 +10,16 @@ import numpy as np
 
 from rtichoke._calibration_viz_spec_v2 import _calibration_v2_spec_from_curve_list
 from rtichoke._decision_curve_viz_spec_v2 import (
+    _decision_curve_times_v2_spec_from_performance_data,
     _decision_curve_v2_spec_from_performance_data,
 )
 from rtichoke._interventions_avoided_viz_spec_v2 import (
+    _interventions_avoided_times_v2_spec_from_performance_data,
     _interventions_avoided_v2_spec_from_performance_data,
 )
 from rtichoke._performance_table_spec import (
     _performance_table_spec_from_performance_data,
+    _performance_table_times_spec_from_performance_data,
 )
 from rtichoke._report_browser import RtichokeBrowserReport
 from rtichoke._report_spec import _build_report_spec_v11
@@ -25,13 +28,22 @@ from rtichoke._summary_metrics_spec import (
     _prevalence_summary_metrics_spec,
 )
 from rtichoke._viz_spec_v2 import (
+    _gains_times_v2_spec_from_performance_data,
     _gains_v2_spec_from_performance_data,
+    _lift_times_v2_spec_from_performance_data,
     _lift_v2_spec_from_performance_data,
+    _precision_recall_times_v2_spec_from_performance_data,
     _precision_recall_v2_spec_from_performance_data,
     _roc_v2_spec_from_performance_data,
 )
-from rtichoke.calibration.calibration import _create_calibration_curve_list
+from rtichoke.calibration.calibration import (
+    _create_calibration_curve_list,
+    _create_calibration_curve_list_times,
+)
 from rtichoke.performance_data.performance_data import prepare_performance_data
+from rtichoke.performance_data.performance_data_times import (
+    prepare_performance_data_times,
+)
 from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 from rtichoke.processing.send_post_request_to_r_rtichoke import (
     send_requests_to_rtichoke_r,
@@ -39,6 +51,237 @@ from rtichoke.processing.send_post_request_to_r_rtichoke import (
 from rtichoke.processing.transforms import _create_list_data_to_adjust
 
 SummaryReportRenderer = Literal["r", "browser"]
+
+_DEFAULT_TIME_HEURISTICS = [
+    {
+        "censoring_heuristic": "adjusted",
+        "competing_heuristic": "adjusted_as_negative",
+    }
+]
+
+
+def create_summary_report_times(
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    times: Union[np.ndarray, Dict[str, np.ndarray]],
+    fixed_time_horizons: list[float],
+    heuristics_sets: list[dict] | None = None,
+    by: float = 0.01,
+    *,
+    output_file: str | Path = "summary_report_times.html",
+) -> Path:
+    """Create a canonical browser time-dependent model-performance summary report.
+
+    Parameters
+    ----------
+    probs : Dict[str, np.ndarray]
+        A dictionary mapping model or population names to predicted probabilities.
+    reals : Union[np.ndarray, Dict[str, np.ndarray]]
+        The true outcome labels (0, 1, 2).
+    times : Union[np.ndarray, Dict[str, np.ndarray]]
+        Follow-up times.
+    fixed_time_horizons : list[float]
+        Fixed time horizons for evaluation.
+    heuristics_sets : list[dict], optional
+        List of heuristic configurations for censoring and competing events.
+        Defaults to ``[{"censoring_heuristic": "adjusted", "competing_heuristic": "adjusted_as_negative"}]``.
+    by : float, optional
+        Step size for probability thresholds / PPCR. Defaults to 0.01.
+    output_file : str or pathlib.Path, optional
+        HTML destination file path. Defaults to ``"summary_report_times.html"``.
+
+    Returns
+    -------
+    pathlib.Path
+        The generated HTML file path.
+    """
+    if heuristics_sets is None:
+        heuristics_sets = [dict(_DEFAULT_TIME_HEURISTICS[0])]
+
+    metadata = _build_evaluation_metadata(probs, reals, times)
+
+    perf_data_thresh = prepare_performance_data_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=fixed_time_horizons,
+        heuristics_sets=heuristics_sets,
+        stratified_by=("probability_threshold",),
+        by=by,
+    )
+    perf_data_ppcr = prepare_performance_data_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=fixed_time_horizons,
+        heuristics_sets=heuristics_sets,
+        stratified_by=("ppcr",),
+        by=by,
+    )
+
+    calibration_curve_list_smooth = _create_calibration_curve_list_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=fixed_time_horizons,
+        heuristics_sets=heuristics_sets,
+        calibration_type="smooth",
+    )
+    calibration_curve_list_discrete = _create_calibration_curve_list_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=fixed_time_horizons,
+        heuristics_sets=heuristics_sets,
+        calibration_type="discrete",
+    )
+
+    calib_smooth_spec = _calibration_v2_spec_from_curve_list(
+        calibration_curve_list_smooth, metadata, calibration_type="smooth"
+    )
+    calib_discrete_spec = _calibration_v2_spec_from_curve_list(
+        calibration_curve_list_discrete, metadata, calibration_type="discrete"
+    )
+
+    pr_thresh_spec = _precision_recall_times_v2_spec_from_performance_data(
+        perf_data_thresh, metadata
+    )
+    gains_thresh_spec = _gains_times_v2_spec_from_performance_data(
+        perf_data_thresh, metadata
+    )
+    lift_thresh_spec = _lift_times_v2_spec_from_performance_data(
+        perf_data_thresh, metadata
+    )
+
+    pr_ppcr_spec = _precision_recall_times_v2_spec_from_performance_data(
+        perf_data_ppcr, metadata
+    )
+    gains_ppcr_spec = _gains_times_v2_spec_from_performance_data(
+        perf_data_ppcr, metadata
+    )
+    lift_ppcr_spec = _lift_times_v2_spec_from_performance_data(perf_data_ppcr, metadata)
+
+    decision_curve_spec = _decision_curve_times_v2_spec_from_performance_data(
+        perf_data_thresh, metadata
+    )
+    interventions_avoided_spec = (
+        _interventions_avoided_times_v2_spec_from_performance_data(
+            perf_data_thresh, metadata
+        )
+    )
+
+    table_thresh_spec = _performance_table_times_spec_from_performance_data(
+        perf_data_thresh, metadata
+    )
+    table_ppcr_spec = _performance_table_times_spec_from_performance_data(
+        perf_data_ppcr, metadata
+    )
+
+    sections = [
+        {
+            "id": "calibration",
+            "title": "Calibration",
+            "components": [
+                {
+                    "id": "calibration-smooth",
+                    "title": "Smooth",
+                    "spec": calib_smooth_spec,
+                },
+                {
+                    "id": "calibration",
+                    "title": "Discrete",
+                    "spec": calib_discrete_spec,
+                },
+            ],
+        },
+        {
+            "id": "discrimination",
+            "title": "Discrimination",
+            "groups": [
+                {
+                    "id": "discrimination-probability-threshold",
+                    "title": "By Probability Threshold",
+                    "components": [
+                        {
+                            "id": "precision-recall",
+                            "title": "Precision-Recall",
+                            "spec": pr_thresh_spec,
+                        },
+                        {
+                            "id": "gains",
+                            "title": "Gains",
+                            "spec": gains_thresh_spec,
+                        },
+                        {"id": "lift", "title": "Lift", "spec": lift_thresh_spec},
+                    ],
+                },
+                {
+                    "id": "discrimination-ppcr",
+                    "title": "By Predicted Positives Condition Rate (PPCR)",
+                    "components": [
+                        {
+                            "id": "precision-recall-2",
+                            "title": "Precision-Recall",
+                            "spec": pr_ppcr_spec,
+                        },
+                        {
+                            "id": "gains-2",
+                            "title": "Gains",
+                            "spec": gains_ppcr_spec,
+                        },
+                        {"id": "lift-2", "title": "Lift", "spec": lift_ppcr_spec},
+                    ],
+                },
+            ],
+        },
+        {
+            "id": "utility",
+            "title": "Utility",
+            "components": [
+                {
+                    "id": "decision-curve",
+                    "title": "Decision Curve",
+                    "spec": decision_curve_spec,
+                },
+                {
+                    "id": "interventions-avoided",
+                    "title": "Interventions Avoided",
+                    "spec": interventions_avoided_spec,
+                },
+            ],
+        },
+        {
+            "id": "performance-table",
+            "title": "Performance Table",
+            "groups": [
+                {
+                    "id": "performance-table-probability-threshold",
+                    "title": "By Probability Threshold",
+                    "components": [
+                        {
+                            "id": "performance-table",
+                            "title": "Performance Table",
+                            "spec": table_thresh_spec,
+                        }
+                    ],
+                },
+                {
+                    "id": "performance-table-ppcr",
+                    "title": "By Predicted Positives Condition Rate (PPCR)",
+                    "components": [
+                        {
+                            "id": "performance-table-2",
+                            "title": "Performance Table",
+                            "spec": table_ppcr_spec,
+                        }
+                    ],
+                },
+            ],
+        },
+    ]
+
+    report = _build_report_spec_v11(sections, title="rtichoke summary report")
+    return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(output_file)
 
 
 def create_summary_report(
