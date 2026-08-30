@@ -324,7 +324,12 @@ def _gains_times_v2_spec_from_performance_data(
             + ", ".join(sorted(missing))
         )
 
-    rows = performance_data.select(
+    finite_performance_data = performance_data.filter(
+        pl.col("chosen_cutoff").is_finite()
+        & pl.col("ppcr").is_finite()
+        & pl.col("lift").is_finite()
+    )
+    rows = finite_performance_data.select(
         "reference_group",
         "fixed_time_horizon",
         "censoring_heuristic",
@@ -455,7 +460,12 @@ def _lift_times_v2_spec_from_performance_data(
             + ", ".join(sorted(missing))
         )
 
-    rows = performance_data.select(
+    finite_performance_data = performance_data.filter(
+        pl.col("chosen_cutoff").is_finite()
+        & pl.col("ppcr").is_finite()
+        & pl.col("lift").is_finite()
+    )
+    rows = finite_performance_data.select(
         "reference_group",
         "fixed_time_horizon",
         "censoring_heuristic",

@@ -8,6 +8,19 @@ from pathlib import Path
 from typing import Any
 
 
+def _sanitize_nan_values(obj: Any) -> Any:
+    """Recursively replace NaN and Inf float values with None for valid JSON serialization."""
+    if isinstance(obj, dict):
+        return {k: _sanitize_nan_values(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_sanitize_nan_values(v) for v in obj]
+    if isinstance(obj, float) and not (
+        obj == obj and obj != float("inf") and obj != float("-inf")
+    ):
+        return None
+    return obj
+
+
 class RtichokeBrowserReport:
     """A complete canonical ReportSpec rendered by shared ``rtichoke_viz``."""
 
@@ -23,7 +36,10 @@ class RtichokeBrowserReport:
         for asset in ("rtichoke-viz.js", "rtichoke-viz.css"):
             (output.parent / asset).write_bytes(vendor.joinpath(asset).read_bytes())
 
-        spec_json = json.dumps(self.spec, separators=(",", ":")).replace("</", "<\\/")
+        sanitized_spec = _sanitize_nan_values(self.spec)
+        spec_json = json.dumps(sanitized_spec, separators=(",", ":")).replace(
+            "</", "<\\/"
+        )
         viz_js = vendor.joinpath("rtichoke-viz.js").read_text(encoding="utf-8")
         html = f"""<!doctype html>
 <html lang="en">
