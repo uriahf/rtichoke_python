@@ -362,3 +362,67 @@ def test_summary_report_times_executes_over_localhost(tmp_path):
         browser = _dump_dom(f"{base_url}/{output.name}")
 
     _assert_report_rendered(browser)
+
+
+def test_summary_report_times_html_contains_no_literal_nan_or_infinity(tmp_path):
+    probs, reals, times, horizons = _inputs()
+    output = create_summary_report_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=horizons,
+        output_file=tmp_path / "no_nan.html",
+    )
+    html_text = output.read_text(encoding="utf-8")
+
+    # Embedded JSON script block must not contain unquoted NaN or Infinity tokens
+    start = html_text.index(
+        '<script id="rtichoke-report-spec" type="application/json">'
+    )
+    end = html_text.index("</script>", start)
+    json_block = html_text[start:end]
+
+    assert ":NaN" not in json_block
+    assert ":Infinity" not in json_block
+    assert ":-Infinity" not in json_block
+
+
+def test_time_lift_excludes_only_non_finite_values_retains_boundary_points(tmp_path):
+    probs, reals, times, horizons = _inputs()
+    heuristics_sets = [
+        {
+            "censoring_heuristic": "adjusted",
+            "competing_heuristic": "adjusted_as_negative",
+        }
+    ]
+    metadata = _build_evaluation_metadata(probs, reals, times)
+
+    perf_thresh = prepare_performance_data_times(
+        probs,
+        reals,
+        times,
+        fixed_time_horizons=horizons,
+        heuristics_sets=heuristics_sets,
+        stratified_by=("probability_threshold",),
+        by=0.01,
+    )
+
+    lift_spec = _lift_times_v2_spec_from_performance_data(perf_thresh, metadata)
+
+    # 1. Non-finite values (lift is null or non-existent in data points)
+    data_points = lift_spec["data"]
+    for pt in data_points:
+        assert pt["lift"] is not None
+        assert np.isfinite(pt["lift"])
+
+    # 2. Valid finite boundary points are retained (e.g. cutoff = 0.0 / low cutoffs)
+    cutoffs = [pt["cutoff"] for pt in data_points]
+    assert 0.0 in cutoffs or min(cutoffs) <= 0.05
+
+    # 3. Reference geometry remains present and intact
+    refs = lift_spec["references"]
+    ref_types = [r["type"] for r in refs]
+    assert "horizontal" in ref_types
+    assert "path" in ref_types
+    horizontal_ref = next(r for r in refs if r["type"] == "horizontal")
+    assert horizontal_ref["value"] == 1.0
