@@ -38,12 +38,14 @@ def _decision_curve_browser_chart(
     size: int,
     min_p_threshold: float,
     max_p_threshold: float,
+    operating_point_dimension: str = "probability_threshold",
 ) -> RtichokeBrowserChart:
     spec = _decision_curve_v2_spec_from_performance_data(
         performance_data,
         evaluation_metadata,
         min_p_threshold=min_p_threshold,
         max_p_threshold=max_p_threshold,
+        operating_point_dimension=operating_point_dimension,
     )
     return RtichokeBrowserChart(spec=spec, size=size)
 
@@ -55,12 +57,14 @@ def _interventions_avoided_browser_chart(
     size: int,
     min_p_threshold: float,
     max_p_threshold: float,
+    operating_point_dimension: str = "probability_threshold",
 ) -> RtichokeBrowserChart:
     spec = _interventions_avoided_v2_spec_from_performance_data(
         performance_data,
         evaluation_metadata,
         min_p_threshold=min_p_threshold,
         max_p_threshold=max_p_threshold,
+        operating_point_dimension=operating_point_dimension,
     )
     return RtichokeBrowserChart(spec=spec, size=size)
 
@@ -320,6 +324,7 @@ def create_decision_curve_times(
             evaluation_metadata,
             min_p_threshold=min_p_threshold,
             max_p_threshold=max_p_threshold,
+            operating_point_dimension="probability_threshold",
         )
         return RtichokeBrowserChart(spec=spec, size=size)
 

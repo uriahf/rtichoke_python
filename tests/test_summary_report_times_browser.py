@@ -277,7 +277,7 @@ def test_summary_report_times_preserves_standalone_canonical_producers(tmp_path)
         perf_thresh, metadata
     )
     expected_gains_ppcr = _gains_times_v2_spec_from_performance_data(
-        perf_ppcr, metadata
+        perf_ppcr, metadata, operating_point_dimension="ppcr"
     )
     expected_lift_thresh = _lift_times_v2_spec_from_performance_data(
         perf_thresh, metadata

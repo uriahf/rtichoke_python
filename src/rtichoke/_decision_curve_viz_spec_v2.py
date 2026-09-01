@@ -34,6 +34,7 @@ def _decision_curve_v2_spec_from_performance_data(
     *,
     min_p_threshold: float = 0.0,
     max_p_threshold: float = 1.0,
+    operating_point_dimension: str | None = "probability_threshold",
 ) -> dict[str, object]:
     """Build canonical static Decision Curve v2 from production quantities."""
     missing = _REQUIRED_COLUMNS.difference(performance_data.columns)
@@ -163,7 +164,7 @@ def _decision_curve_v2_spec_from_performance_data(
             }
         )
 
-    return {
+    spec = {
         "schemaVersion": "2.0",
         "type": "decision_curve",
         "evaluations": evaluations,
@@ -178,6 +179,13 @@ def _decision_curve_v2_spec_from_performance_data(
         "yAxis": {"label": "Net benefit"},
         "references": references,
     }
+    if operating_point_dimension is not None:
+        if operating_point_dimension not in {"probability_threshold", "ppcr"}:
+            raise ValueError(
+                f"Invalid operating_point_dimension: {operating_point_dimension!r}."
+            )
+        spec["operatingPoint"] = {"dimension": operating_point_dimension}
+    return spec
 
 
 def _decision_curve_times_v2_spec_from_performance_data(
@@ -186,6 +194,7 @@ def _decision_curve_times_v2_spec_from_performance_data(
     *,
     min_p_threshold: float = 0.0,
     max_p_threshold: float = 1.0,
+    operating_point_dimension: str | None = "probability_threshold",
 ) -> dict[str, object]:
     """Build canonical time-dependent Decision Curve v2 from production quantities."""
     missing = _REQUIRED_TIMES_COLUMNS.difference(performance_data.columns)
@@ -372,7 +381,7 @@ def _decision_curve_times_v2_spec_from_performance_data(
             }
         )
 
-    return {
+    spec = {
         "schemaVersion": "2.0",
         "type": "decision_curve",
         "evaluations": evaluations,
@@ -387,3 +396,10 @@ def _decision_curve_times_v2_spec_from_performance_data(
         "yAxis": {"label": "Net benefit"},
         "references": references,
     }
+    if operating_point_dimension is not None:
+        if operating_point_dimension not in {"probability_threshold", "ppcr"}:
+            raise ValueError(
+                f"Invalid operating_point_dimension: {operating_point_dimension!r}."
+            )
+        spec["operatingPoint"] = {"dimension": operating_point_dimension}
+    return spec
