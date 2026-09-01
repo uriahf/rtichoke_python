@@ -2,7 +2,7 @@
 A module for ROC Curves
 """
 
-from typing import Dict, List, Union, Sequence
+from typing import Any, Dict, List, Union, Sequence
 from plotly.graph_objs._figure import Figure
 from rtichoke.processing.binary_color_values import _apply_color_values_binary
 from rtichoke.processing.plotly_helper_functions import (
@@ -12,6 +12,13 @@ from rtichoke.processing.plotly_helper_functions import (
 from rtichoke.processing.time_reference_lines import (
     _create_rtichoke_plotly_curve_times_reference_safe,
 )
+from rtichoke._renderers import RtichokeBrowserChart, _validate_renderer
+from rtichoke._viz_spec_v2 import _roc_times_v2_spec_from_performance_data
+from rtichoke.discrimination.precision_recall import _derive_op_dim_from_stratified_by
+from rtichoke.performance_data.performance_data_times import (
+    prepare_performance_data_times,
+)
+from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 import numpy as np
 import polars as pl
 
@@ -164,7 +171,8 @@ def create_roc_curve_times(
         "#D1603D",
         "#585123",
     ],
-) -> Figure:
+    renderer: str = "plotly",
+) -> Any:
     """Creates a time-dependent Receiver Operating Characteristic (ROC) curve.
 
     This function generates an ROC curve for time-to-event models. It evaluates
@@ -191,12 +199,38 @@ def create_roc_curve_times(
         The width and height of the plot in pixels. Defaults to 600.
     color_values : List[str], optional
         A list of hex color strings for the plot lines.
+    renderer : {"plotly", "browser", "rtichoke_viz"}, optional
+        Rendering backend. ``"plotly"`` remains the default. ``"browser"`` and
+        its ``"rtichoke_viz"`` alias return a canonical offline browser chart.
 
     Returns
     -------
-    Figure
-        A Plotly ``Figure`` object representing the time-dependent ROC curve.
+    Figure or RtichokeBrowserChart
+        A Plotly ``Figure`` or canonical offline browser chart depending on ``renderer``.
     """
+    selected_renderer = _validate_renderer(renderer)
+    if selected_renderer != "plotly":
+        if selected_renderer == "matplotlib":
+            raise ValueError(
+                "ROC supports 'plotly', 'browser', and 'rtichoke_viz' renderers."
+            )
+        performance_data = prepare_performance_data_times(
+            probs,
+            reals,
+            times,
+            fixed_time_horizons=fixed_time_horizons,
+            heuristics_sets=heuristics_sets,
+            by=by,
+            stratified_by=stratified_by,
+        )
+        evaluation_metadata = _build_evaluation_metadata(probs, reals, times)
+        op_dim = _derive_op_dim_from_stratified_by(stratified_by)
+        spec = _roc_times_v2_spec_from_performance_data(
+            performance_data,
+            evaluation_metadata,
+            operating_point_dimension=op_dim,
+        )
+        return RtichokeBrowserChart(spec=spec, size=size)
 
     fig = _create_rtichoke_plotly_curve_times_reference_safe(
         probs,

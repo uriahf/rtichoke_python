@@ -174,8 +174,14 @@ def test_summary_report_times_spec_structure_and_ordering(tmp_path):
 
     assert g1["id"] == "discrimination-probability-threshold"
     assert g1["title"] == "By Probability Threshold"
-    assert [c["id"] for c in g1["components"]] == ["precision-recall", "gains", "lift"]
+    assert [c["id"] for c in g1["components"]] == [
+        "roc",
+        "precision-recall",
+        "gains",
+        "lift",
+    ]
     assert [c["title"] for c in g1["components"]] == [
+        "ROC",
         "Precision-Recall",
         "Gains",
         "Lift",
@@ -184,11 +190,13 @@ def test_summary_report_times_spec_structure_and_ordering(tmp_path):
     assert g2["id"] == "discrimination-ppcr"
     assert g2["title"] == "By Predicted Positives Condition Rate (PPCR)"
     assert [c["id"] for c in g2["components"]] == [
+        "roc-2",
         "precision-recall-2",
         "gains-2",
         "lift-2",
     ]
     assert [c["title"] for c in g2["components"]] == [
+        "ROC",
         "Precision-Recall",
         "Gains",
         "Lift",
@@ -293,12 +301,17 @@ def test_summary_report_times_preserves_standalone_canonical_producers(tmp_path)
     )
 
     report_calib_smooth = report["sections"][0]["items"][0]["spec"]
-    report_pr_thresh = report["sections"][1]["items"][0]["components"][0]["spec"]
-    report_gains_ppcr = report["sections"][1]["items"][1]["components"][1]["spec"]
-    report_lift_thresh = report["sections"][1]["items"][0]["components"][2]["spec"]
+    report_roc_thresh = report["sections"][1]["items"][0]["components"][0]["spec"]
+    report_pr_thresh = report["sections"][1]["items"][0]["components"][1]["spec"]
+    report_roc_ppcr = report["sections"][1]["items"][1]["components"][0]["spec"]
+    report_gains_ppcr = report["sections"][1]["items"][1]["components"][2]["spec"]
+    report_lift_thresh = report["sections"][1]["items"][0]["components"][3]["spec"]
     report_dc = report["sections"][2]["items"][0]["spec"]
     report_ia = report["sections"][2]["items"][1]["spec"]
     report_table_thresh = report["sections"][3]["items"][0]["components"][0]["spec"]
+
+    assert report_roc_thresh["operatingPoint"]["dimension"] == "probability_threshold"
+    assert report_roc_ppcr["operatingPoint"]["dimension"] == "ppcr"
 
     assert report_calib_smooth == expected_calib_smooth
     assert report_pr_thresh == expected_pr_thresh

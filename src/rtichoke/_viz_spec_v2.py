@@ -19,6 +19,13 @@ _REQUIRED_ROC_COLUMNS = {
     "sensitivity",
     "specificity",
 }
+_REQUIRED_ROC_TIMES_COLUMNS = {
+    "reference_group",
+    "chosen_cutoff",
+    "sensitivity",
+    "specificity",
+    "false_positive_rate",
+}
 _REQUIRED_PRECISION_RECALL_COLUMNS = {
     "reference_group",
     "chosen_cutoff",
@@ -70,6 +77,137 @@ def _roc_v2_spec_from_performance_data(
         chart_type="roc",
         operating_point_dimension=operating_point_dimension,
     )
+
+
+def _roc_times_v2_spec_from_performance_data(
+    performance_data: pl.DataFrame,
+    evaluation_metadata: Mapping[str, _EvaluationMetadata],
+    *,
+    operating_point_dimension: str | None = "probability_threshold",
+) -> dict[str, object]:
+    """Build canonical time-dependent ROC from calculated production data."""
+    required = _REQUIRED_ROC_TIMES_COLUMNS | {
+        "fixed_time_horizon",
+        "censoring_heuristic",
+        "competing_heuristic",
+    }
+    missing = required.difference(performance_data.columns)
+    if missing:
+        raise ValueError(
+            "Time-dependent ROC performance data is missing columns: "
+            + ", ".join(sorted(missing))
+        )
+
+    finite_rows = performance_data.filter(
+        pl.col("chosen_cutoff").is_finite()
+        & pl.col("sensitivity").is_finite()
+        & pl.col("specificity").is_finite()
+        & pl.col("false_positive_rate").is_finite()
+    )
+
+    selected_cols = [
+        "reference_group",
+        "fixed_time_horizon",
+        "censoring_heuristic",
+        "competing_heuristic",
+        "chosen_cutoff",
+        "sensitivity",
+        "specificity",
+        "false_positive_rate",
+    ]
+    if "ppcr" in finite_rows.columns:
+        selected_cols.append("ppcr")
+
+    rows = finite_rows.select(*selected_cols).to_dicts()
+    row_groups = {str(row["reference_group"]) for row in rows}
+    missing_metadata = row_groups.difference(evaluation_metadata)
+    if missing_metadata:
+        raise ValueError(
+            "Time-dependent ROC rows are missing evaluation metadata: "
+            + ", ".join(sorted(missing_metadata))
+        )
+
+    ordered_groups = [group for group in evaluation_metadata if group in row_groups]
+    evaluation_ids = {
+        group: f"evaluation-{index}"
+        for index, group in enumerate(ordered_groups, start=1)
+    }
+    evaluations = []
+    for group in ordered_groups:
+        metadata = evaluation_metadata[group]
+        evaluation: dict[str, object] = {
+            "id": evaluation_ids[group],
+            "population": metadata.population,
+        }
+        if metadata.model is not None:
+            evaluation["model"] = metadata.model
+        evaluations.append(evaluation)
+
+    series_keys = list(
+        dict.fromkeys(
+            (
+                str(row["reference_group"]),
+                float(row["fixed_time_horizon"]),
+                str(row["censoring_heuristic"]),
+                str(row["competing_heuristic"]),
+            )
+            for row in rows
+        )
+    )
+    series_ids = {
+        key: f"series-{index}" for index, key in enumerate(series_keys, start=1)
+    }
+    series = []
+    for key in series_keys:
+        group, horizon, _, _ = key
+        metadata = evaluation_metadata[group]
+        display_value = metadata.model or metadata.population
+        series.append(
+            {
+                "id": series_ids[key],
+                "evaluationId": evaluation_ids[group],
+                "horizon": horizon,
+                "display": {
+                    "label": display_value,
+                    "group": display_value,
+                    "role": "model" if metadata.model is not None else "population",
+                },
+            }
+        )
+
+    data = []
+    for row in rows:
+        key = (
+            str(row["reference_group"]),
+            float(row["fixed_time_horizon"]),
+            str(row["censoring_heuristic"]),
+            str(row["competing_heuristic"]),
+        )
+        datum = {
+            "seriesId": series_ids[key],
+            "cutoff": row["chosen_cutoff"],
+            "sensitivity": row["sensitivity"],
+            "specificity": row["specificity"],
+            "false_positive_rate": row["false_positive_rate"],
+        }
+        if "ppcr" in row:
+            datum["ppcr"] = row["ppcr"]
+        data.append(datum)
+
+    spec = {
+        "schemaVersion": "2.0",
+        "type": "roc",
+        "evaluations": evaluations,
+        "series": series,
+        "data": data,
+        "x": "false_positive_rate",
+        "y": "sensitivity",
+        "xAxis": {"label": "False Positive Rate", "domain": [0, 1]},
+        "yAxis": {"label": "Sensitivity", "domain": [0, 1]},
+        "references": [{"type": "identity", "scope": "global"}],
+    }
+    _add_operating_point_to_spec(spec, operating_point_dimension)
+    return spec
 
 
 def _precision_recall_v2_spec_from_performance_data(

@@ -34,6 +34,7 @@ from rtichoke._viz_spec_v2 import (
     _lift_v2_spec_from_performance_data,
     _precision_recall_times_v2_spec_from_performance_data,
     _precision_recall_v2_spec_from_performance_data,
+    _roc_times_v2_spec_from_performance_data,
     _roc_v2_spec_from_performance_data,
 )
 from rtichoke.calibration.calibration import (
@@ -143,6 +144,9 @@ def create_summary_report_times(
         calibration_curve_list_discrete, metadata, calibration_type="discrete"
     )
 
+    roc_thresh_spec = _roc_times_v2_spec_from_performance_data(
+        perf_data_thresh, metadata, operating_point_dimension="probability_threshold"
+    )
     pr_thresh_spec = _precision_recall_times_v2_spec_from_performance_data(
         perf_data_thresh, metadata, operating_point_dimension="probability_threshold"
     )
@@ -153,6 +157,9 @@ def create_summary_report_times(
         perf_data_thresh, metadata, operating_point_dimension="probability_threshold"
     )
 
+    roc_ppcr_spec = _roc_times_v2_spec_from_performance_data(
+        perf_data_ppcr, metadata, operating_point_dimension="ppcr"
+    )
     pr_ppcr_spec = _precision_recall_times_v2_spec_from_performance_data(
         perf_data_ppcr, metadata, operating_point_dimension="ppcr"
     )
@@ -206,6 +213,7 @@ def create_summary_report_times(
                     "id": "discrimination-probability-threshold",
                     "title": "By Probability Threshold",
                     "components": [
+                        {"id": "roc", "title": "ROC", "spec": roc_thresh_spec},
                         {
                             "id": "precision-recall",
                             "title": "Precision-Recall",
@@ -223,6 +231,7 @@ def create_summary_report_times(
                     "id": "discrimination-ppcr",
                     "title": "By Predicted Positives Condition Rate (PPCR)",
                     "components": [
+                        {"id": "roc-2", "title": "ROC", "spec": roc_ppcr_spec},
                         {
                             "id": "precision-recall-2",
                             "title": "Precision-Recall",
