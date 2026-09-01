@@ -29,15 +29,23 @@ from rtichoke.processing.evaluation_semantics import (
 )
 
 
+def _derive_op_dim_from_stratified_by(stratified_by: Sequence[str]) -> str:
+    if "ppcr" in stratified_by:
+        return "ppcr"
+    return "probability_threshold"
+
+
 def _precision_recall_browser_chart(
     performance_data: pl.DataFrame,
     evaluation_metadata: dict[str, _EvaluationMetadata],
     *,
     size: int,
+    operating_point_dimension: str = "probability_threshold",
 ) -> RtichokeBrowserChart:
     spec = _precision_recall_v2_spec_from_performance_data(
         performance_data,
         evaluation_metadata,
+        operating_point_dimension=operating_point_dimension,
     )
     return RtichokeBrowserChart(spec=spec, size=size)
 
@@ -138,10 +146,12 @@ def create_precision_recall_curve(
             stratified_by=stratified_by,
         )
         evaluation_metadata = _build_evaluation_metadata(probs, reals, np.array([]))
+        op_dim = _derive_op_dim_from_stratified_by(stratified_by)
         return _precision_recall_browser_chart(
             performance_data,
             evaluation_metadata,
             size=size,
+            operating_point_dimension=op_dim,
         )
 
     fig = _create_rtichoke_plotly_curve_binary(
@@ -196,10 +206,12 @@ def plot_precision_recall_curve(
                 "renderers."
             )
         evaluation_metadata = _performance_data_evaluation_metadata(performance_data)
+        op_dim = _derive_op_dim_from_stratified_by(stratified_by)
         return _precision_recall_browser_chart(
             performance_data,
             evaluation_metadata,
             size=size,
+            operating_point_dimension=op_dim,
         )
 
     fig = _plot_rtichoke_curve_binary(
@@ -300,9 +312,11 @@ def create_precision_recall_curve_times(
             stratified_by=stratified_by,
         )
         evaluation_metadata = _build_evaluation_metadata(probs, reals, times)
+        op_dim = _derive_op_dim_from_stratified_by(stratified_by)
         spec = _precision_recall_times_v2_spec_from_performance_data(
             performance_data,
             evaluation_metadata,
+            operating_point_dimension=op_dim,
         )
         return RtichokeBrowserChart(spec=spec, size=size)
 

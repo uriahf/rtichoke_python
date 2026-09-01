@@ -144,29 +144,33 @@ def create_summary_report_times(
     )
 
     pr_thresh_spec = _precision_recall_times_v2_spec_from_performance_data(
-        perf_data_thresh, metadata
+        perf_data_thresh, metadata, operating_point_dimension="probability_threshold"
     )
     gains_thresh_spec = _gains_times_v2_spec_from_performance_data(
-        perf_data_thresh, metadata
+        perf_data_thresh, metadata, operating_point_dimension="probability_threshold"
     )
     lift_thresh_spec = _lift_times_v2_spec_from_performance_data(
-        perf_data_thresh, metadata
+        perf_data_thresh, metadata, operating_point_dimension="probability_threshold"
     )
 
     pr_ppcr_spec = _precision_recall_times_v2_spec_from_performance_data(
-        perf_data_ppcr, metadata
+        perf_data_ppcr, metadata, operating_point_dimension="ppcr"
     )
     gains_ppcr_spec = _gains_times_v2_spec_from_performance_data(
-        perf_data_ppcr, metadata
+        perf_data_ppcr, metadata, operating_point_dimension="ppcr"
     )
-    lift_ppcr_spec = _lift_times_v2_spec_from_performance_data(perf_data_ppcr, metadata)
+    lift_ppcr_spec = _lift_times_v2_spec_from_performance_data(
+        perf_data_ppcr, metadata, operating_point_dimension="ppcr"
+    )
 
     decision_curve_spec = _decision_curve_times_v2_spec_from_performance_data(
-        perf_data_thresh, metadata
+        perf_data_thresh, metadata, operating_point_dimension="probability_threshold"
     )
     interventions_avoided_spec = (
         _interventions_avoided_times_v2_spec_from_performance_data(
-            perf_data_thresh, metadata
+            perf_data_thresh,
+            metadata,
+            operating_point_dimension="probability_threshold",
         )
     )
 
@@ -366,25 +370,37 @@ def _create_browser_summary_report(
         calibration_curve_list, metadata, calibration_type="discrete"
     )
 
-    roc_thresh_spec = _roc_v2_spec_from_performance_data(perf_data_thresh, metadata)
+    roc_thresh_spec = _roc_v2_spec_from_performance_data(
+        perf_data_thresh, metadata, operating_point_dimension="probability_threshold"
+    )
     pr_thresh_spec = _precision_recall_v2_spec_from_performance_data(
-        perf_data_thresh, metadata
+        perf_data_thresh, metadata, operating_point_dimension="probability_threshold"
     )
-    gains_thresh_spec = _gains_v2_spec_from_performance_data(perf_data_thresh, metadata)
-    lift_thresh_spec = _lift_v2_spec_from_performance_data(perf_data_thresh, metadata)
+    gains_thresh_spec = _gains_v2_spec_from_performance_data(
+        perf_data_thresh, metadata, operating_point_dimension="probability_threshold"
+    )
+    lift_thresh_spec = _lift_v2_spec_from_performance_data(
+        perf_data_thresh, metadata, operating_point_dimension="probability_threshold"
+    )
 
-    roc_ppcr_spec = _roc_v2_spec_from_performance_data(perf_data_ppcr, metadata)
-    pr_ppcr_spec = _precision_recall_v2_spec_from_performance_data(
-        perf_data_ppcr, metadata
+    roc_ppcr_spec = _roc_v2_spec_from_performance_data(
+        perf_data_ppcr, metadata, operating_point_dimension="ppcr"
     )
-    gains_ppcr_spec = _gains_v2_spec_from_performance_data(perf_data_ppcr, metadata)
-    lift_ppcr_spec = _lift_v2_spec_from_performance_data(perf_data_ppcr, metadata)
+    pr_ppcr_spec = _precision_recall_v2_spec_from_performance_data(
+        perf_data_ppcr, metadata, operating_point_dimension="ppcr"
+    )
+    gains_ppcr_spec = _gains_v2_spec_from_performance_data(
+        perf_data_ppcr, metadata, operating_point_dimension="ppcr"
+    )
+    lift_ppcr_spec = _lift_v2_spec_from_performance_data(
+        perf_data_ppcr, metadata, operating_point_dimension="ppcr"
+    )
 
     decision_curve_spec = _decision_curve_v2_spec_from_performance_data(
-        perf_data_thresh, metadata
+        perf_data_thresh, metadata, operating_point_dimension="probability_threshold"
     )
     interventions_avoided_spec = _interventions_avoided_v2_spec_from_performance_data(
-        perf_data_thresh, metadata
+        perf_data_thresh, metadata, operating_point_dimension="probability_threshold"
     )
 
     table_thresh_spec = _performance_table_spec_from_performance_data(

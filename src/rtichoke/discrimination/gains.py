@@ -21,6 +21,9 @@ from rtichoke._viz_spec_v2 import (
     _gains_times_v2_spec_from_performance_data,
     _gains_v2_spec_from_performance_data,
 )
+from rtichoke.discrimination.precision_recall import (
+    _derive_op_dim_from_stratified_by,
+)
 from rtichoke.performance_data.performance_data import prepare_performance_data
 from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 
@@ -142,8 +145,11 @@ def create_gains_curve(
             by=by,
         )
         evaluation_metadata = _build_evaluation_metadata(probs, reals, np.array([]))
+        op_dim = _derive_op_dim_from_stratified_by(stratified_by)
         spec = _gains_v2_spec_from_performance_data(
-            performance_data, evaluation_metadata
+            performance_data,
+            evaluation_metadata,
+            operating_point_dimension=op_dim,
         )
         return _render_gains_v2(
             spec,
@@ -287,8 +293,11 @@ def create_gains_curve_times(
             stratified_by=stratified_by,
         )
         evaluation_metadata = _build_evaluation_metadata(probs, reals, times)
+        op_dim = _derive_op_dim_from_stratified_by(stratified_by)
         spec = _gains_times_v2_spec_from_performance_data(
-            performance_data, evaluation_metadata
+            performance_data,
+            evaluation_metadata,
+            operating_point_dimension=op_dim,
         )
         return _render_gains_v2(
             spec,

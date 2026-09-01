@@ -45,21 +45,38 @@ _REQUIRED_LIFT_COLUMNS = {
 }
 
 
+def _add_operating_point_to_spec(
+    spec: dict[str, object], operating_point_dimension: str | None
+) -> None:
+    if operating_point_dimension is not None:
+        if operating_point_dimension not in {"probability_threshold", "ppcr"}:
+            raise ValueError(
+                f"Invalid operating_point_dimension: {operating_point_dimension!r}. "
+                "Must be 'probability_threshold' or 'ppcr'."
+            )
+        spec["operatingPoint"] = {"dimension": operating_point_dimension}
+
+
 def _roc_v2_spec_from_performance_data(
     performance_data: pl.DataFrame,
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
+    *,
+    operating_point_dimension: str | None = "probability_threshold",
 ) -> dict[str, object]:
     """Build a canonical ROC-v2 spec without recalculating statistics."""
     return _curve_v2_spec_from_performance_data(
         performance_data,
         evaluation_metadata,
         chart_type="roc",
+        operating_point_dimension=operating_point_dimension,
     )
 
 
 def _precision_recall_v2_spec_from_performance_data(
     performance_data: pl.DataFrame,
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
+    *,
+    operating_point_dimension: str | None = "probability_threshold",
 ) -> dict[str, object]:
     """Build canonical static Precision-Recall from production quantities."""
     finite_rows = performance_data.filter(
@@ -71,6 +88,7 @@ def _precision_recall_v2_spec_from_performance_data(
         finite_rows,
         evaluation_metadata,
         chart_type="precision_recall",
+        operating_point_dimension=operating_point_dimension,
     )
     prevalence = _gains_population_prevalence(performance_data, evaluation_metadata)
     populations = list(
@@ -92,6 +110,8 @@ def _precision_recall_v2_spec_from_performance_data(
 def _precision_recall_times_v2_spec_from_performance_data(
     performance_data: pl.DataFrame,
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
+    *,
+    operating_point_dimension: str | None = "probability_threshold",
 ) -> dict[str, object]:
     """Build canonical time-dependent precision-recall from calculated production data."""
     required = _REQUIRED_PRECISION_RECALL_COLUMNS | {
@@ -112,7 +132,7 @@ def _precision_recall_times_v2_spec_from_performance_data(
         & pl.col("ppv").is_finite()
     )
 
-    rows = finite_rows.select(
+    selected_cols = [
         "reference_group",
         "fixed_time_horizon",
         "censoring_heuristic",
@@ -120,7 +140,11 @@ def _precision_recall_times_v2_spec_from_performance_data(
         "chosen_cutoff",
         "sensitivity",
         "ppv",
-    ).to_dicts()
+    ]
+    if "ppcr" in finite_rows.columns:
+        selected_cols.append("ppcr")
+
+    rows = finite_rows.select(*selected_cols).to_dicts()
     row_groups = {str(row["reference_group"]) for row in rows}
     missing_metadata = row_groups.difference(evaluation_metadata)
     if missing_metadata:
@@ -185,14 +209,15 @@ def _precision_recall_times_v2_spec_from_performance_data(
             str(row["censoring_heuristic"]),
             str(row["competing_heuristic"]),
         )
-        data.append(
-            {
-                "seriesId": series_ids[key],
-                "cutoff": row["chosen_cutoff"],
-                "sensitivity": row["sensitivity"],
-                "ppv": row["ppv"],
-            }
-        )
+        datum = {
+            "seriesId": series_ids[key],
+            "cutoff": row["chosen_cutoff"],
+            "sensitivity": row["sensitivity"],
+            "ppv": row["ppv"],
+        }
+        if "ppcr" in row:
+            datum["ppcr"] = row["ppcr"]
+        data.append(datum)
 
     risks = _gains_population_horizon_risk(performance_data, evaluation_metadata)
     references = []
@@ -208,7 +233,7 @@ def _precision_recall_times_v2_spec_from_performance_data(
             }
         )
 
-    return {
+    spec = {
         "schemaVersion": "2.0",
         "type": "precision_recall",
         "evaluations": evaluations,
@@ -220,17 +245,22 @@ def _precision_recall_times_v2_spec_from_performance_data(
         "yAxis": {"label": "Positive Predictive Value", "domain": [0, 1]},
         "references": references,
     }
+    _add_operating_point_to_spec(spec, operating_point_dimension)
+    return spec
 
 
 def _gains_v2_spec_from_performance_data(
     performance_data: pl.DataFrame,
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
+    *,
+    operating_point_dimension: str | None = "probability_threshold",
 ) -> dict[str, object]:
     """Build a canonical gains-v2 spec from production performance quantities."""
     spec = _curve_v2_spec_from_performance_data(
         performance_data,
         evaluation_metadata,
         chart_type="gains",
+        operating_point_dimension=operating_point_dimension,
     )
     prevalence = _gains_population_prevalence(performance_data, evaluation_metadata)
 
@@ -260,6 +290,8 @@ def _gains_v2_spec_from_performance_data(
 def _lift_v2_spec_from_performance_data(
     performance_data: pl.DataFrame,
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
+    *,
+    operating_point_dimension: str | None = "probability_threshold",
 ) -> dict[str, object]:
     """Build a canonical lift-v2 spec from production performance quantities."""
     finite_rows = performance_data.filter(
@@ -271,6 +303,7 @@ def _lift_v2_spec_from_performance_data(
         finite_rows,
         evaluation_metadata,
         chart_type="lift",
+        operating_point_dimension=operating_point_dimension,
     )
     prevalence = _gains_population_prevalence(performance_data, evaluation_metadata)
 
@@ -310,6 +343,8 @@ def _lift_v2_spec_from_performance_data(
 def _gains_times_v2_spec_from_performance_data(
     performance_data: pl.DataFrame,
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
+    *,
+    operating_point_dimension: str | None = "probability_threshold",
 ) -> dict[str, object]:
     """Build canonical time-dependent gains from calculated production data."""
     required = _REQUIRED_GAINS_COLUMNS | {
@@ -429,7 +464,7 @@ def _gains_times_v2_spec_from_performance_data(
             }
         )
 
-    return {
+    spec = {
         "schemaVersion": "2.0",
         "type": "gains",
         "evaluations": evaluations,
@@ -441,11 +476,15 @@ def _gains_times_v2_spec_from_performance_data(
         "yAxis": {"label": "Sensitivity", "domain": [0, 1]},
         "references": references,
     }
+    _add_operating_point_to_spec(spec, operating_point_dimension)
+    return spec
 
 
 def _lift_times_v2_spec_from_performance_data(
     performance_data: pl.DataFrame,
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
+    *,
+    operating_point_dimension: str | None = "probability_threshold",
 ) -> dict[str, object]:
     """Build canonical time-dependent lift from calculated production data."""
     required = _REQUIRED_LIFT_COLUMNS | {
@@ -571,7 +610,7 @@ def _lift_times_v2_spec_from_performance_data(
                 }
             )
 
-    return {
+    spec = {
         "schemaVersion": "2.0",
         "type": "lift",
         "evaluations": evaluations,
@@ -586,6 +625,8 @@ def _lift_times_v2_spec_from_performance_data(
         },
         "references": references,
     }
+    _add_operating_point_to_spec(spec, operating_point_dimension)
+    return spec
 
 
 def _gains_population_horizon_risk(
@@ -693,6 +734,7 @@ def _curve_v2_spec_from_performance_data(
     evaluation_metadata: Mapping[str, _EvaluationMetadata],
     *,
     chart_type: str,
+    operating_point_dimension: str | None = "probability_threshold",
 ) -> dict[str, object]:
     """Build common canonical curve semantics without recalculating statistics.
 
@@ -722,6 +764,9 @@ def _curve_v2_spec_from_performance_data(
         raise ValueError(
             f"{chart_type.upper()} performance data is missing columns: {missing_columns}"
         )
+
+    if "ppcr" in performance_data.columns and "ppcr" not in selected:
+        selected.append("ppcr")
 
     rows = performance_data.select(*selected).to_dicts()
     row_groups = {str(row["reference_group"]) for row in rows}
@@ -779,6 +824,8 @@ def _curve_v2_spec_from_performance_data(
             "seriesId": series_ids[str(row["reference_group"])],
             "cutoff": row["chosen_cutoff"],
         }
+        if "ppcr" in row:
+            datum["ppcr"] = row["ppcr"]
         if chart_type == "roc":
             datum["sensitivity"] = row["sensitivity"]
             datum["specificity"] = row["specificity"]
@@ -787,14 +834,12 @@ def _curve_v2_spec_from_performance_data(
             datum["ppv"] = row["ppv"]
         elif chart_type == "gains":
             datum["sensitivity"] = row["sensitivity"]
-            datum["ppcr"] = row["ppcr"]
         elif chart_type == "lift":
-            datum["ppcr"] = row["ppcr"]
             datum["lift"] = row["lift"]
         data.append(datum)
 
     if chart_type == "roc":
-        return {
+        spec = {
             "schemaVersion": "2.0",
             "type": "roc",
             "evaluations": evaluations,
@@ -806,9 +851,8 @@ def _curve_v2_spec_from_performance_data(
             "yAxis": {"label": "Sensitivity", "domain": [0, 1]},
             "references": [{"type": "identity", "scope": "global"}],
         }
-
-    if chart_type == "precision_recall":
-        return {
+    elif chart_type == "precision_recall":
+        spec = {
             "schemaVersion": "2.0",
             "type": "precision_recall",
             "evaluations": evaluations,
@@ -820,9 +864,8 @@ def _curve_v2_spec_from_performance_data(
             "yAxis": {"label": "Positive Predictive Value", "domain": [0, 1]},
             "references": [],
         }
-
-    if chart_type == "gains":
-        return {
+    elif chart_type == "gains":
+        spec = {
             "schemaVersion": "2.0",
             "type": "gains",
             "evaluations": evaluations,
@@ -834,19 +877,22 @@ def _curve_v2_spec_from_performance_data(
             "yAxis": {"label": "Sensitivity", "domain": [0, 1]},
             "references": [],
         }
+    else:
+        spec = {
+            "schemaVersion": "2.0",
+            "type": "lift",
+            "evaluations": evaluations,
+            "series": series,
+            "data": data,
+            "x": "ppcr",
+            "y": "lift",
+            "xAxis": {"label": "Predicted Positives (Rate)", "domain": [0, 1]},
+            "yAxis": {
+                "label": "Lift",
+                "domain": [0, _lift_y_axis_upper_bound(performance_data, [])],
+            },
+            "references": [],
+        }
 
-    return {
-        "schemaVersion": "2.0",
-        "type": "lift",
-        "evaluations": evaluations,
-        "series": series,
-        "data": data,
-        "x": "ppcr",
-        "y": "lift",
-        "xAxis": {"label": "Predicted Positives (Rate)", "domain": [0, 1]},
-        "yAxis": {
-            "label": "Lift",
-            "domain": [0, _lift_y_axis_upper_bound(performance_data, [])],
-        },
-        "references": [],
-    }
+    _add_operating_point_to_spec(spec, operating_point_dimension)
+    return spec

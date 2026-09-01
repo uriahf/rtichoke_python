@@ -34,6 +34,7 @@ def _interventions_avoided_v2_spec_from_performance_data(
     *,
     min_p_threshold: float = 0.0,
     max_p_threshold: float = 1.0,
+    operating_point_dimension: str | None = "probability_threshold",
 ) -> dict[str, object]:
     """Build canonical static Interventions Avoided from production quantities."""
     missing = _REQUIRED_COLUMNS.difference(performance_data.columns)
@@ -168,7 +169,7 @@ def _interventions_avoided_v2_spec_from_performance_data(
             }
         )
 
-    return {
+    spec = {
         "schemaVersion": "2.0",
         "type": "interventions_avoided",
         "evaluations": evaluations,
@@ -183,6 +184,13 @@ def _interventions_avoided_v2_spec_from_performance_data(
         "yAxis": {"label": "Interventions Avoided (per 100)"},
         "references": references,
     }
+    if operating_point_dimension is not None:
+        if operating_point_dimension not in {"probability_threshold", "ppcr"}:
+            raise ValueError(
+                f"Invalid operating_point_dimension: {operating_point_dimension!r}."
+            )
+        spec["operatingPoint"] = {"dimension": operating_point_dimension}
+    return spec
 
 
 def _interventions_avoided_times_v2_spec_from_performance_data(
@@ -191,6 +199,7 @@ def _interventions_avoided_times_v2_spec_from_performance_data(
     *,
     min_p_threshold: float = 0.0,
     max_p_threshold: float = 1.0,
+    operating_point_dimension: str | None = "probability_threshold",
 ) -> dict[str, object]:
     """Build canonical time-dependent Interventions Avoided v2.
 
@@ -363,7 +372,7 @@ def _interventions_avoided_times_v2_spec_from_performance_data(
                 }
             )
 
-    return {
+    spec = {
         "schemaVersion": "2.0",
         "type": "interventions_avoided",
         "evaluations": evaluations,
@@ -378,3 +387,10 @@ def _interventions_avoided_times_v2_spec_from_performance_data(
         "yAxis": {"label": "Interventions Avoided (per 100)"},
         "references": references,
     }
+    if operating_point_dimension is not None:
+        if operating_point_dimension not in {"probability_threshold", "ppcr"}:
+            raise ValueError(
+                f"Invalid operating_point_dimension: {operating_point_dimension!r}."
+            )
+        spec["operatingPoint"] = {"dimension": operating_point_dimension}
+    return spec
