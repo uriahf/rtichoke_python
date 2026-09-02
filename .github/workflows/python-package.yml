@@ -52,7 +52,7 @@ jobs:
           prefix = "rtichoke/_vendor/rtichoke_viz/"
           required = {
               f"{prefix}VENDORED_FROM",
-              f"{prefix}rtichoke-viz-0.18.0.tar.gz",
+              f"{prefix}rtichoke-viz-0.19.0.tar.gz",
               f"{prefix}rtichoke-viz.js",
               f"{prefix}rtichoke-viz.css",
               f"{prefix}rtichoke-viz.schema.json",

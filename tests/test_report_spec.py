@@ -54,20 +54,24 @@ def _curve_spec(
     }
 
 
-def _summary_metrics_spec(metric_type: str) -> dict[str, Any]:
+def _summary_metrics_spec(
+    metric_type: str, schema_version: str = "1.0"
+) -> dict[str, Any]:
+    metric_item: dict[str, Any] = {
+        "metric": metric_type,
+        "owner": {"type": "population", "populationId": "population-1"},
+        "estimate": 0.25,
+    }
+    if metric_type == "event_risk":
+        metric_item["horizon"] = 5.0
+
     return {
-        "schemaVersion": "1.0",
+        "schemaVersion": schema_version,
         "type": "summary_metrics",
         "title": "Summary",
         "evaluations": [],
         "populations": [{"id": "population-1", "label": "Population"}],
-        "metrics": [
-            {
-                "metric": metric_type,
-                "owner": {"type": "population", "populationId": "population-1"},
-                "estimate": 0.25,
-            }
-        ],
+        "metrics": [metric_item],
     }
 
 
@@ -111,9 +115,27 @@ def test_build_report_spec_v11_structure() -> None:
     assert report["sections"][1]["items"][0]["components"][0]["id"] == "roc"
 
 
+def test_summary_metrics_schema_versions_accepted() -> None:
+    v10_spec = _summary_metrics_spec("prevalence", "1.0")
+    v11_spec = _summary_metrics_spec("event_risk", "1.1")
+
+    sections = [
+        {
+            "id": "event-risk",
+            "components": [{"id": "event-risk", "spec": v11_spec}],
+        },
+        {
+            "id": "prevalence",
+            "components": [{"id": "prevalence-summary", "spec": v10_spec}],
+        },
+    ]
+    report = _build_report_spec_v11(sections)
+    assert report["schemaVersion"] == "1.1"
+
+
 def test_type_aware_schema_version_validation() -> None:
     bad_v1_spec = _summary_metrics_spec("prevalence")
-    bad_v1_spec["schemaVersion"] = "2.0"  # Invalid: summary_metrics must be 1.0
+    bad_v1_spec["schemaVersion"] = "2.0"  # Invalid: summary_metrics must be 1.0 or 1.1
 
     sections = [
         {

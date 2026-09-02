@@ -50,6 +50,13 @@ class _PrevalenceMetric(TypedDict):
     estimate: float | None
 
 
+class _EventRiskMetric(TypedDict):
+    metric: str
+    owner: _PopulationOwner
+    horizon: float
+    estimate: float | None
+
+
 class _AurocMetric(TypedDict):
     metric: str
     owner: _EvaluationOwner
@@ -172,6 +179,94 @@ def _prevalence_summary_metrics_spec(
         "schemaVersion": "1.0",
         "type": "summary_metrics",
         "title": "Prevalence summary",
+        "evaluations": [],
+        "populations": populations_list,
+        "metrics": metrics_list,
+    }
+
+
+def _event_risk_summary_metrics_spec(
+    performance_data: pl.DataFrame,
+    evaluation_metadata: Mapping[str, _EvaluationMetadata],
+    fixed_time_horizons: list[float],
+) -> _SummaryMetricsSpec:
+    """Build canonical population-owned Event Risk SummaryMetricsSpec v1.1."""
+    populations_list: list[_PopulationSpec] = []
+    metrics_list: list[dict[str, Any]] = []
+
+    seen_populations: dict[tuple[str, str], str] = {}
+    pop_counter = 1
+
+    for group, metadata in evaluation_metadata.items():
+        pop_name = metadata.population
+        label = "Population" if pop_name == _SHARED_POPULATION else pop_name
+        pop_key = (
+            (group, pop_name)
+            if pop_name != _SHARED_POPULATION
+            and list(evaluation_metadata.values())[0].model is None
+            else (pop_name, pop_name)
+        )
+        if pop_key not in seen_populations:
+            pop_id = f"population-{pop_counter}"
+            pop_counter += 1
+            seen_populations[pop_key] = pop_id
+            populations_list.append({"id": pop_id, "label": label})
+
+    pop_horizon_estimates: dict[tuple[tuple[str, str], float], set[float]] = {}
+    cutoff_zero_rows = (
+        performance_data.filter(pl.col("chosen_cutoff") == 0)
+        .select(
+            "reference_group",
+            "fixed_time_horizon",
+            (pl.col("real_positives") / pl.col("n")).alias("event_risk"),
+        )
+        .to_dicts()
+    )
+    for row in cutoff_zero_rows:
+        group = str(row["reference_group"])
+        if group not in evaluation_metadata:
+            continue
+        metadata = evaluation_metadata[group]
+        pop_name = metadata.population
+        pop_key = (
+            (group, pop_name)
+            if pop_name != _SHARED_POPULATION and metadata.model is None
+            else (pop_name, pop_name)
+        )
+        horizon = float(row["fixed_time_horizon"])
+        risk_val = row["event_risk"]
+        if risk_val is not None and math.isfinite(float(risk_val)):
+            pop_horizon_estimates.setdefault((pop_key, horizon), set()).add(
+                float(risk_val)
+            )
+
+    for horizon in fixed_time_horizons:
+        norm_horizon = float(horizon)
+        for pop_spec in populations_list:
+            pop_id = pop_spec["id"]
+            pop_key = next(
+                key for key, pid in seen_populations.items() if pid == pop_id
+            )
+            estimates = pop_horizon_estimates.get((pop_key, norm_horizon), set())
+            estimate: float | None = (
+                next(iter(estimates)) if len(estimates) == 1 else None
+            )
+
+            metric_item: _EventRiskMetric = {
+                "metric": "event_risk",
+                "owner": {
+                    "type": "population",
+                    "populationId": pop_id,
+                },
+                "horizon": norm_horizon,
+                "estimate": estimate,
+            }
+            metrics_list.append(cast(dict[str, Any], metric_item))
+
+    return {
+        "schemaVersion": "1.1",
+        "type": "summary_metrics",
+        "title": "Event Risk",
         "evaluations": [],
         "populations": populations_list,
         "metrics": metrics_list,

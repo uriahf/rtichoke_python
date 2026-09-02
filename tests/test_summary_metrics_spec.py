@@ -5,9 +5,13 @@ from sklearn.metrics import roc_auc_score
 from rtichoke._summary_metrics_spec import (
     _auroc_summary_metrics_spec,
     _compute_auroc_proc_compatible,
+    _event_risk_summary_metrics_spec,
     _prevalence_summary_metrics_spec,
 )
 from rtichoke.performance_data.performance_data import prepare_performance_data
+from rtichoke.performance_data.performance_data_times import (
+    prepare_performance_data_times,
+)
 from rtichoke.processing.evaluation_semantics import (
     _EvaluationMetadata,
     _build_evaluation_metadata,
@@ -121,3 +125,89 @@ def test_prevalence_summary_metrics_spec_distinct_populations_same_label():
     assert prev_spec_shared["populations"][1]["id"] == "population-2"
     assert prev_spec_shared["populations"][0]["label"] == "Shared Label"
     assert prev_spec_shared["populations"][1]["label"] == "Shared Label"
+
+
+def test_event_risk_summary_metrics_spec_multiple_models_shared_population():
+    probs = {
+        "Model 1": np.array([0.1, 0.3, 0.5, 0.7, 0.9]),
+        "Model 2": np.array([0.2, 0.4, 0.6, 0.8, 0.95]),
+    }
+    reals = np.array([0, 1, 0, 1, 1])
+    times = np.array([1.0, 3.0, 5.0, 7.0, 9.0])
+    horizons = [6.0, 2.0]
+
+    perf_data = prepare_performance_data_times(
+        probs, reals, times, fixed_time_horizons=horizons
+    )
+    metadata = _build_evaluation_metadata(probs, reals, times)
+
+    spec = _event_risk_summary_metrics_spec(perf_data, metadata, horizons)
+    assert spec["schemaVersion"] == "1.1"
+    assert spec["type"] == "summary_metrics"
+    assert spec["title"] == "Event Risk"
+    assert spec["evaluations"] == []
+    assert len(spec["populations"]) == 1
+    assert spec["populations"][0]["id"] == "population-1"
+    assert spec["populations"][0]["label"] == "Population"
+
+    # Exactly 2 metrics for 1 population x 2 horizons (no duplicates from 2 models)
+    assert len(spec["metrics"]) == 2
+    assert spec["metrics"][0]["owner"] == {
+        "type": "population",
+        "populationId": "population-1",
+    }
+    assert spec["metrics"][0]["horizon"] == 6.0
+    assert spec["metrics"][1]["owner"] == {
+        "type": "population",
+        "populationId": "population-1",
+    }
+    assert spec["metrics"][1]["horizon"] == 2.0
+
+    # Values match cutoff-0 real_positives / n from performance data
+    for metric in spec["metrics"]:
+        h = metric["horizon"]
+        cutoff_0_row = perf_data.filter(
+            (perf_data["fixed_time_horizon"] == h) & (perf_data["chosen_cutoff"] == 0)
+        ).to_dicts()[0]
+        expected_risk = float(cutoff_0_row["real_positives"]) / float(cutoff_0_row["n"])
+        assert metric["estimate"] == pytest.approx(expected_risk)
+
+
+def test_event_risk_summary_metrics_spec_distinct_populations():
+    probs = {
+        "Cohort A": np.array([0.1, 0.3, 0.5]),
+        "Cohort B": np.array([0.2, 0.4, 0.6]),
+    }
+    reals = {
+        "Cohort A": np.array([0, 1, 0]),
+        "Cohort B": np.array([1, 0, 1]),
+    }
+    times = {
+        "Cohort A": np.array([2.0, 4.0, 6.0]),
+        "Cohort B": np.array([1.0, 3.0, 5.0]),
+    }
+    horizons = [3.0, 5.0]
+
+    perf_data = prepare_performance_data_times(
+        probs, reals, times, fixed_time_horizons=horizons
+    )
+    metadata = _build_evaluation_metadata(probs, reals, times)
+
+    spec = _event_risk_summary_metrics_spec(perf_data, metadata, horizons)
+    assert len(spec["populations"]) == 2
+    assert spec["populations"][0]["id"] == "population-1"
+    assert spec["populations"][0]["label"] == "Cohort A"
+    assert spec["populations"][1]["id"] == "population-2"
+    assert spec["populations"][1]["label"] == "Cohort B"
+
+    # 2 populations x 2 horizons = 4 metrics in requested horizon order
+    assert len(spec["metrics"]) == 4
+    m0, m1, m2, m3 = spec["metrics"]
+    assert m0["horizon"] == 3.0
+    assert m0["owner"]["populationId"] == "population-1"
+    assert m1["horizon"] == 3.0
+    assert m1["owner"]["populationId"] == "population-2"
+    assert m2["horizon"] == 5.0
+    assert m2["owner"]["populationId"] == "population-1"
+    assert m3["horizon"] == 5.0
+    assert m3["owner"]["populationId"] == "population-2"

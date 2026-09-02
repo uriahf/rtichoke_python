@@ -25,6 +25,7 @@ from rtichoke._report_browser import RtichokeBrowserReport
 from rtichoke._report_spec import _build_report_spec_v11
 from rtichoke._summary_metrics_spec import (
     _auroc_summary_metrics_spec,
+    _event_risk_summary_metrics_spec,
     _prevalence_summary_metrics_spec,
 )
 from rtichoke._viz_spec_v2 import (
@@ -188,7 +189,22 @@ def create_summary_report_times(
         perf_data_ppcr, metadata
     )
 
+    event_risk_spec = _event_risk_summary_metrics_spec(
+        perf_data_thresh, metadata, fixed_time_horizons
+    )
+
     sections = [
+        {
+            "id": "event-risk",
+            "title": "Event Risk",
+            "components": [
+                {
+                    "id": "event-risk",
+                    "title": "Event Risk",
+                    "spec": event_risk_spec,
+                }
+            ],
+        },
         {
             "id": "calibration",
             "title": "Calibration",
