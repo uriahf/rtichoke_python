@@ -32,7 +32,7 @@ _ALL_SUPPORTED_TYPES = _V10_SCHEMA_TYPES | _V20_SCHEMA_TYPES
 def _validate_spec_schema_version(spec: Mapping[str, object]) -> None:
     """Validate that spec schemaVersion strictly matches type requirements.
 
-    summary_metrics -> "1.0"
+    summary_metrics -> "1.0" or "1.1"
     all v2 component types -> "2.0"
     """
     spec_type = spec.get("type")
@@ -46,9 +46,9 @@ def _validate_spec_schema_version(spec: Mapping[str, object]) -> None:
         raise ValueError("Report component spec is missing a string schemaVersion")
 
     if spec_type in _V10_SCHEMA_TYPES:
-        if schema_version != "1.0":
+        if schema_version not in {"1.0", "1.1"}:
             raise ValueError(
-                f"Component type {spec_type!r} requires schemaVersion '1.0', got {schema_version!r}"
+                f"Component type {spec_type!r} requires schemaVersion '1.0' or '1.1', got {schema_version!r}"
             )
     elif spec_type in _V20_SCHEMA_TYPES:
         if schema_version != "2.0":

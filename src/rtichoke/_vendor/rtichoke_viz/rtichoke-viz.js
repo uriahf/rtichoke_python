@@ -3269,19 +3269,43 @@ var PrevalenceSummaryMetricSchema = Type.Object({
   }),
   estimate: Type.Union([Type.Number(), Type.Null()])
 });
-var SummaryMetricSchema = Type.Union([
+var EventRiskSummaryMetricSchema = Type.Object({
+  metric: Type.Literal("event_risk"),
+  owner: Type.Object({
+    type: Type.Literal("population"),
+    populationId: Type.String()
+  }),
+  horizon: Type.Number({ minimum: 0 }),
+  estimate: Type.Union([Type.Number(), Type.Null()])
+});
+var SummaryMetricV1_0Schema = Type.Union([
   AUROCSummaryMetricSchema,
   PrevalenceSummaryMetricSchema
 ]);
-var SummaryMetricsSpecSchema = Type.Object(
-  {
-    schemaVersion: Type.Literal("1.0"),
-    type: Type.Literal("summary_metrics"),
-    title: Type.Optional(Type.String()),
-    evaluations: Type.Array(EvaluationSpecSchema),
-    populations: Type.Array(PopulationSummaryOwnerSpecSchema),
-    metrics: Type.Array(SummaryMetricSchema)
-  },
+var SummaryMetricV1_1Schema = Type.Union([
+  AUROCSummaryMetricSchema,
+  PrevalenceSummaryMetricSchema,
+  EventRiskSummaryMetricSchema
+]);
+var SummaryMetricSchema = SummaryMetricV1_1Schema;
+var SummaryMetricsSpecV1_0Schema = Type.Object({
+  schemaVersion: Type.Literal("1.0"),
+  type: Type.Literal("summary_metrics"),
+  title: Type.Optional(Type.String()),
+  evaluations: Type.Array(EvaluationSpecSchema),
+  populations: Type.Array(PopulationSummaryOwnerSpecSchema),
+  metrics: Type.Array(SummaryMetricV1_0Schema)
+});
+var SummaryMetricsSpecV1_1Schema = Type.Object({
+  schemaVersion: Type.Literal("1.1"),
+  type: Type.Literal("summary_metrics"),
+  title: Type.Optional(Type.String()),
+  evaluations: Type.Array(EvaluationSpecSchema),
+  populations: Type.Array(PopulationSummaryOwnerSpecSchema),
+  metrics: Type.Array(SummaryMetricV1_1Schema)
+});
+var SummaryMetricsSpecSchema = Type.Union(
+  [SummaryMetricsSpecV1_0Schema, SummaryMetricsSpecV1_1Schema],
   {
     $id: "https://rtichoke.dev/schema/viz/summary-metrics.json",
     title: "rtichoke summary metrics specification"
@@ -3424,7 +3448,15 @@ function assertSummaryMetricsReferentialIntegrity(spec) {
     if (item.estimate !== null && !Number.isFinite(item.estimate)) {
       throw new Error(`non-finite metric estimate: ${item.estimate}`);
     }
+    if ("horizon" in item && item.horizon !== void 0) {
+      if (!Number.isFinite(item.horizon) || item.horizon < 0) {
+        throw new Error(`invalid horizon: ${item.horizon}`);
+      }
+    }
     if (item.metric === "auroc") {
+      if ("horizon" in item && item.horizon !== void 0) {
+        throw new Error("auroc metric cannot specify horizon");
+      }
       if (!evaluationIds.has(item.owner.evaluationId)) {
         throw new Error(`unknown evaluation id: ${item.owner.evaluationId}`);
       }
@@ -3436,6 +3468,9 @@ function assertSummaryMetricsReferentialIntegrity(spec) {
       }
       seenMetrics.add(key);
     } else if (item.metric === "prevalence") {
+      if ("horizon" in item && item.horizon !== void 0) {
+        throw new Error("prevalence metric cannot specify horizon");
+      }
       if (!populationIds.has(item.owner.populationId)) {
         throw new Error(`unknown population id: ${item.owner.populationId}`);
       }
@@ -3443,6 +3478,25 @@ function assertSummaryMetricsReferentialIntegrity(spec) {
       if (seenMetrics.has(key)) {
         throw new Error(
           `duplicate metric ownership: prevalence for population ${item.owner.populationId}`
+        );
+      }
+      seenMetrics.add(key);
+    } else if (item.metric === "event_risk") {
+      if (spec.schemaVersion !== "1.1") {
+        throw new Error(
+          `event_risk metric requires schemaVersion 1.1, got ${spec.schemaVersion}`
+        );
+      }
+      if (!("horizon" in item) || item.horizon === void 0) {
+        throw new Error("event_risk metric requires horizon");
+      }
+      if (!populationIds.has(item.owner.populationId)) {
+        throw new Error(`unknown population id: ${item.owner.populationId}`);
+      }
+      const key = `event_risk:${item.owner.populationId}:${item.horizon}`;
+      if (seenMetrics.has(key)) {
+        throw new Error(
+          `duplicate metric ownership: event_risk for population ${item.owner.populationId} at horizon ${item.horizon}`
         );
       }
       seenMetrics.add(key);
@@ -20340,6 +20394,37 @@ function renderSummaryMetrics(spec, document2 = globalThis.document) {
     title.textContent = spec.title;
     root2.append(title);
   }
+  const distinctHorizons = [];
+  for (const item of spec.metrics) {
+    if ("horizon" in item && item.horizon !== void 0) {
+      if (!distinctHorizons.includes(item.horizon)) {
+        distinctHorizons.push(item.horizon);
+      }
+    }
+  }
+  let selectedHorizon = distinctHorizons.length > 0 ? distinctHorizons[0] : void 0;
+  const rowsWithHorizon = [];
+  if (distinctHorizons.length > 1) {
+    const control = document2.createElement("label");
+    control.className = "rtichoke-horizon-control";
+    control.textContent = "Fixed Time Horizon: ";
+    const select = document2.createElement("select");
+    select.className = "rtichoke-horizon-select";
+    select.setAttribute("aria-label", "Fixed Time Horizon");
+    for (const horizon of distinctHorizons) {
+      const option = document2.createElement("option");
+      option.value = String(horizon);
+      option.textContent = String(horizon);
+      select.append(option);
+    }
+    select.value = String(selectedHorizon);
+    select.addEventListener("change", () => {
+      selectedHorizon = Number(select.value);
+      updateRowVisibility();
+    });
+    control.append(select);
+    root2.append(control);
+  }
   const table = document2.createElement("table");
   table.className = "rtichoke-summary-metrics__table";
   const head = document2.createElement("thead");
@@ -20360,6 +20445,7 @@ function renderSummaryMetrics(spec, document2 = globalThis.document) {
     const tr = document2.createElement("tr");
     let ownerLabel = "";
     let metricLabel = "";
+    let horizon = void 0;
     if (item.metric === "auroc") {
       const evaluation = evaluations.get(item.owner.evaluationId);
       ownerLabel = evaluation.label ?? evaluation.model ?? evaluation.population ?? evaluation.id;
@@ -20372,6 +20458,14 @@ function renderSummaryMetrics(spec, document2 = globalThis.document) {
       metricLabel = "Prevalence";
       tr.dataset.metric = "prevalence";
       tr.dataset.populationId = item.owner.populationId;
+    } else if (item.metric === "event_risk") {
+      const population = populations.get(item.owner.populationId);
+      ownerLabel = population.label;
+      metricLabel = "Event Risk";
+      horizon = item.horizon;
+      tr.dataset.metric = "event_risk";
+      tr.dataset.populationId = item.owner.populationId;
+      tr.dataset.horizon = String(item.horizon);
     }
     tr.append(
       cell2(document2, ownerLabel, "rtichoke-summary-metrics__owner"),
@@ -20388,10 +20482,21 @@ function renderSummaryMetrics(spec, document2 = globalThis.document) {
       estimateCell.dataset.estimate = String(item.estimate);
     }
     tr.append(estimateCell);
+    rowsWithHorizon.push({ element: tr, horizon });
     body.append(tr);
   }
   table.append(body);
   root2.append(table);
+  function updateRowVisibility() {
+    for (const { element, horizon } of rowsWithHorizon) {
+      if (horizon === void 0 || horizon === selectedHorizon) {
+        element.style.display = "";
+      } else {
+        element.style.display = "none";
+      }
+    }
+  }
+  updateRowVisibility();
   return root2;
 }
 

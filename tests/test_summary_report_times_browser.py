@@ -144,6 +144,7 @@ def test_summary_report_times_spec_structure_and_ordering(tmp_path):
     sections = report["sections"]
     section_ids = [s["id"] for s in sections]
     assert section_ids == [
+        "event-risk",
         "calibration",
         "discrimination",
         "utility",
@@ -152,23 +153,31 @@ def test_summary_report_times_spec_structure_and_ordering(tmp_path):
 
     # Section titles
     assert [s["title"] for s in sections] == [
+        "Event Risk",
         "Calibration",
         "Discrimination",
         "Utility",
         "Performance Table",
     ]
 
+    # Event Risk section checks
+    event_risk_sec = sections[0]
+    assert [c["id"] for c in event_risk_sec["items"]] == ["event-risk"]
+    assert event_risk_sec["items"][0]["spec"]["schemaVersion"] == "1.1"
+    assert event_risk_sec["items"][0]["spec"]["type"] == "summary_metrics"
+    assert event_risk_sec["items"][0]["spec"]["metrics"][0]["metric"] == "event_risk"
+
     # Explicit omissions check
     assert "prevalence" not in section_ids
     assert "auroc" not in json.dumps(report)
 
     # Calibration section components
-    calib = sections[0]
+    calib = sections[1]
     assert [c["id"] for c in calib["items"]] == ["calibration-smooth", "calibration"]
     assert [c["title"] for c in calib["items"]] == ["Smooth", "Discrete"]
 
     # Discrimination section groups and components
-    disc = sections[1]
+    disc = sections[2]
     assert len(disc["items"]) == 2
     g1, g2 = disc["items"]
 
@@ -203,7 +212,7 @@ def test_summary_report_times_spec_structure_and_ordering(tmp_path):
     ]
 
     # Utility section components
-    util = sections[2]
+    util = sections[3]
     assert [c["id"] for c in util["items"]] == [
         "decision-curve",
         "interventions-avoided",
@@ -214,7 +223,7 @@ def test_summary_report_times_spec_structure_and_ordering(tmp_path):
     ]
 
     # Performance Table section groups and components
-    table_sec = sections[3]
+    table_sec = sections[4]
     assert len(table_sec["items"]) == 2
     tg1, tg2 = table_sec["items"]
 
@@ -300,15 +309,17 @@ def test_summary_report_times_preserves_standalone_canonical_producers(tmp_path)
         perf_thresh, metadata
     )
 
-    report_calib_smooth = report["sections"][0]["items"][0]["spec"]
-    report_roc_thresh = report["sections"][1]["items"][0]["components"][0]["spec"]
-    report_pr_thresh = report["sections"][1]["items"][0]["components"][1]["spec"]
-    report_roc_ppcr = report["sections"][1]["items"][1]["components"][0]["spec"]
-    report_gains_ppcr = report["sections"][1]["items"][1]["components"][2]["spec"]
-    report_lift_thresh = report["sections"][1]["items"][0]["components"][3]["spec"]
-    report_dc = report["sections"][2]["items"][0]["spec"]
-    report_ia = report["sections"][2]["items"][1]["spec"]
-    report_table_thresh = report["sections"][3]["items"][0]["components"][0]["spec"]
+    report_event_risk = report["sections"][0]["items"][0]["spec"]
+    assert report_event_risk["schemaVersion"] == "1.1"
+    report_calib_smooth = report["sections"][1]["items"][0]["spec"]
+    report_roc_thresh = report["sections"][2]["items"][0]["components"][0]["spec"]
+    report_pr_thresh = report["sections"][2]["items"][0]["components"][1]["spec"]
+    report_roc_ppcr = report["sections"][2]["items"][1]["components"][0]["spec"]
+    report_gains_ppcr = report["sections"][2]["items"][1]["components"][2]["spec"]
+    report_lift_thresh = report["sections"][2]["items"][0]["components"][3]["spec"]
+    report_dc = report["sections"][3]["items"][0]["spec"]
+    report_ia = report["sections"][3]["items"][1]["spec"]
+    report_table_thresh = report["sections"][4]["items"][0]["components"][0]["spec"]
 
     assert report_roc_thresh["operatingPoint"]["dimension"] == "probability_threshold"
     assert report_roc_ppcr["operatingPoint"]["dimension"] == "ppcr"
@@ -337,7 +348,7 @@ def test_summary_report_times_multiple_horizons_ordering_and_context(tmp_path):
     )
 
     report = _embedded_report(output.read_text(encoding="utf-8"))
-    pr_spec = report["sections"][1]["items"][0]["components"][0]["spec"]
+    pr_spec = report["sections"][2]["items"][0]["components"][0]["spec"]
 
     # Verify horizon identities in series preserve fixed_time_horizons order
     series_horizons = [s["horizon"] for s in pr_spec["series"]]
