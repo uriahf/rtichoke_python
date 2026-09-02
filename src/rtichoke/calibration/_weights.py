@@ -56,9 +56,9 @@ def _prepare_calibration_bins(
             "outcome_weight": weights,
         }
     ).with_columns(
-        (
-            (pl.col("prob").rank("ordinal") - 1) * n_bins // pl.len() + 1
-        ).alias("decile")
+        ((pl.col("prob").rank("ordinal") - 1) * n_bins // pl.len() + 1).alias(
+            "decile"
+        )
     )
 
     bins = (
