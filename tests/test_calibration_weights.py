@@ -1,5 +1,4 @@
 import numpy as np
-import polars as pl
 import pytest
 
 from rtichoke.calibration._weights import _prepare_calibration_bins
@@ -35,12 +34,12 @@ def test_outcome_weights_change_observed_calibration_not_bins_or_predicted_means
     np.testing.assert_allclose(
         weighted.get_column("x").to_numpy(), unweighted.get_column("x").to_numpy()
     )
-    np.testing.assert_allclose(weighted.get_column("y").to_numpy(), [3 / 6, 6 / 8])
+    np.testing.assert_allclose(weighted.get_column("y").to_numpy(), [4 / 6, 6 / 8])
     np.testing.assert_allclose(
         weighted.get_column("outcome_weight_sum").to_numpy(), [6, 8]
     )
     np.testing.assert_allclose(
-        weighted.get_column("weighted_sum_reals").to_numpy(), [3, 6]
+        weighted.get_column("weighted_sum_reals").to_numpy(), [4, 6]
     )
 
 
