@@ -32,7 +32,8 @@ def test_outcome_weights_change_observed_calibration_not_bins_or_predicted_means
         "decile"
     ).to_list()
     np.testing.assert_allclose(
-        weighted.get_column("x").to_numpy(), unweighted.get_column("x").to_numpy()
+        weighted.get_column("x").to_numpy(),
+        unweighted.get_column("x").to_numpy(),
     )
     np.testing.assert_allclose(weighted.get_column("y").to_numpy(), [4 / 6, 6 / 8])
     np.testing.assert_allclose(
