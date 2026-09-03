@@ -262,3 +262,38 @@ def test_browser_summary_report_rejects_unknown_renderer():
         assert str(exc) == "renderer must be either 'r' or 'browser'"
     else:
         raise AssertionError("unknown renderer should fail")
+
+
+def test_static_performance_table_confusion_matrix_disclosure(tmp_path):
+    try:
+        from playwright.sync_api import sync_playwright  # type: ignore[import-untyped]
+    except ImportError:
+        pytest.skip("playwright is not available")
+
+    probs, reals = _inputs()
+    output = tmp_path / "report_disclosure.html"
+    create_summary_report(probs, reals, renderer="browser", output_file=output)
+
+    with _serve(tmp_path) as base_url, sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        errors: list[str] = []
+        page.on("pageerror", lambda err: errors.append(str(err)))
+
+        page.goto(f"{base_url}/{output.name}")
+        page.wait_for_selector(".rtichoke-performance-table__table")
+
+        toggle_btn = page.locator(
+            "button[aria-label='Show confusion matrix detail']"
+        ).first
+        toggle_btn.wait_for()
+        toggle_btn.click()
+
+        title_el = page.locator(".rtichoke-performance-table__confusion-title").first
+        title_el.wait_for()
+        assert title_el.inner_text() == "Confusion Matrix"
+        assert (
+            page.locator(".rtichoke-performance-table__confusion-caption").count() == 0
+        )
+        assert len(errors) == 0
+        browser.close()

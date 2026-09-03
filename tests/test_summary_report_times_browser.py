@@ -450,3 +450,93 @@ def test_time_lift_excludes_only_non_finite_values_retains_boundary_points(tmp_p
     assert "path" in ref_types
     horizontal_ref = next(r for r in refs if r["type"] == "horizontal")
     assert horizontal_ref["value"] == 1.0
+
+
+def test_time_performance_table_estimated_confusion_matrix_disclosure(tmp_path):
+    try:
+        from playwright.sync_api import sync_playwright  # type: ignore[import-untyped]
+    except ImportError:
+        pytest.skip("playwright is not available")
+
+    probs, reals, times, horizons = _inputs()
+    output = tmp_path / "time_report_disclosure.html"
+    create_summary_report_times(
+        probs, reals, times, fixed_time_horizons=horizons, output_file=output
+    )
+
+    with _serve(tmp_path) as base_url, sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        errors: list[str] = []
+        page.on("pageerror", lambda err: errors.append(str(err)))
+
+        page.goto(f"{base_url}/{output.name}")
+        page.wait_for_selector(".rtichoke-performance-table__table")
+
+        toggle_btn = page.locator(
+            "button[aria-label='Show confusion matrix detail']"
+        ).first
+        toggle_btn.wait_for()
+        toggle_btn.click()
+
+        title_el = page.locator(".rtichoke-performance-table__confusion-title").first
+        title_el.wait_for()
+        assert title_el.inner_text() == "Estimated Confusion Matrix"
+
+        caption_el = page.locator(
+            ".rtichoke-performance-table__confusion-caption"
+        ).first
+        assert "Estimated classification quantities" in caption_el.inner_text()
+        assert len(errors) == 0
+        browser.close()
+
+
+def test_performance_table_missing_confusion_values_suppresses_disclosure(tmp_path):
+    try:
+        from playwright.sync_api import sync_playwright  # type: ignore[import-untyped]
+    except ImportError:
+        pytest.skip("playwright is not available")
+
+    probs, reals, times, horizons = _inputs()
+    output = tmp_path / "incomplete_table_report.html"
+    create_summary_report_times(
+        probs, reals, times, fixed_time_horizons=horizons, output_file=output
+    )
+
+    # Modify the embedded spec to remove true_positives from all data rows in performance-table section
+    html = output.read_text(encoding="utf-8")
+    report = _embedded_report(html)
+    perf_section = next(s for s in report["sections"] if s["id"] == "performance-table")
+    for group in perf_section["items"]:
+        for comp in group.get("components", [group]):
+            for row in comp["spec"]["rows"]:
+                row["values"] = [
+                    v for v in row["values"] if v["metricId"] != "true_positives"
+                ]
+
+    # Re-embed modified spec into HTML
+    start_tag = '<script id="rtichoke-report-spec" type="application/json">'
+    end_tag = "</script>"
+    start_idx = html.index(start_tag) + len(start_tag)
+    end_idx = html.index(end_tag, start_idx)
+
+    modified_html = html[:start_idx] + json.dumps(report) + html[end_idx:]
+    modified_file = tmp_path / "modified_report.html"
+    modified_file.write_text(modified_html, encoding="utf-8")
+
+    with _serve(tmp_path) as base_url, sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        errors: list[str] = []
+        page.on("pageerror", lambda err: errors.append(str(err)))
+
+        page.goto(f"{base_url}/{modified_file.name}")
+        page.wait_for_selector(".rtichoke-performance-table__table")
+
+        # Disclosure button should not be rendered for rows missing true_positives
+        assert (
+            page.locator("button[aria-label='Show confusion matrix detail']").count()
+            == 0
+        )
+        assert len(errors) == 0
+        browser.close()
