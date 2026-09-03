@@ -140,7 +140,11 @@ format: html
                 tbl_text = frame.locator(
                     ".rtichoke-performance-table__table"
                 ).first.inner_text()
-                assert "Model" in tbl_text or "True Positives" in tbl_text
+                assert (
+                    "Model" in tbl_text
+                    or "Probability Threshold" in tbl_text
+                    or "True Positives" in tbl_text
+                )
                 assert frame.locator("svg").count() >= 2
                 assert len(errors) == 0, f"Console errors found: {errors}"
                 browser.close()
@@ -235,7 +239,11 @@ format: html
                     tbl_text = frame.locator(
                         ".rtichoke-performance-table__table"
                     ).first.inner_text()
-                    assert "Model" in tbl_text or "True Positives" in tbl_text
+                    assert (
+                        "Model" in tbl_text
+                        or "Probability Threshold" in tbl_text
+                        or "True Positives" in tbl_text
+                    )
                     assert frame.locator("svg").count() >= 2
 
                 assert len(errors) == 0, f"Console errors found: {errors}"
