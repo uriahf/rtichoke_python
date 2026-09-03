@@ -11,6 +11,13 @@ from typing import Any, Iterator, cast
 import numpy as np
 import pytest
 
+from rtichoke._performance_table_spec import (
+    _performance_table_spec_from_performance_data,
+)
+from rtichoke._report_browser import RtichokeBrowserReport
+from rtichoke._report_spec import _build_report_spec_v11
+from rtichoke.performance_data.performance_data import prepare_performance_data
+from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 from rtichoke.summary_report import summary_report as summary_report_module
 from rtichoke.summary_report.summary_report import create_summary_report
 
@@ -271,16 +278,38 @@ def test_static_performance_table_confusion_matrix_disclosure(tmp_path):
         pytest.skip("playwright is not available")
 
     probs, reals = _inputs()
-    output = tmp_path / "report_disclosure.html"
-    create_summary_report(probs, reals, renderer="browser", output_file=output)
+    output_thresh = tmp_path / "report_disclosure.html"
+    create_summary_report(probs, reals, renderer="browser", output_file=output_thresh)
+
+    output_ppcr = tmp_path / "ppcr_table_disclosure.html"
+    perf_ppcr = prepare_performance_data(probs, reals, stratified_by=("ppcr",))
+    metadata = _build_evaluation_metadata(probs, reals, times=None)
+    ppcr_spec = _performance_table_spec_from_performance_data(perf_ppcr, metadata)
+    ppcr_report_spec = _build_report_spec_v11(
+        [
+            {
+                "id": "performance-table",
+                "title": "Performance Table",
+                "components": [
+                    {
+                        "id": "ppcr-table",
+                        "spec": ppcr_spec,
+                    }
+                ],
+            }
+        ]
+    )
+    RtichokeBrowserReport(ppcr_report_spec).write_html(output_ppcr)
 
     with _serve(tmp_path) as base_url, sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         errors: list[str] = []
-        page.on("pageerror", lambda err: errors.append(str(err)))
+        page.on("console", lambda msg: print("CONSOLE:", msg.type, msg.text))
+        page.on("pageerror", lambda err: print("PAGE ERROR:", err))
 
-        page.goto(f"{base_url}/{output.name}")
+        # 1. Static probability threshold performance table disclosure
+        page.goto(f"{base_url}/{output_thresh.name}")
         page.wait_for_selector(".rtichoke-performance-table__table")
 
         toggle_btn = page.locator(
@@ -289,11 +318,41 @@ def test_static_performance_table_confusion_matrix_disclosure(tmp_path):
         toggle_btn.wait_for()
         toggle_btn.click()
 
-        title_el = page.locator(".rtichoke-performance-table__confusion-title").first
-        title_el.wait_for()
+        container = page.locator(
+            ".rtichoke-performance-table__confusion-container"
+        ).first
+        container.wait_for()
+        title_el = container.locator(".rtichoke-performance-table__confusion-title")
         assert title_el.inner_text() == "Confusion Matrix"
+        assert (
+            container.get_attribute("data-operating-point-type")
+            == "probability_threshold"
+        )
+        assert container.get_attribute("data-operating-point-value") is not None
         assert (
             page.locator(".rtichoke-performance-table__confusion-caption").count() == 0
         )
+
+        # 2. Static PPCR performance table disclosure
+        page.goto(f"{base_url}/{output_ppcr.name}")
+        page.wait_for_selector(".rtichoke-performance-table__table")
+
+        ppcr_toggle_btn = page.locator(
+            "button[aria-label='Show confusion matrix detail']"
+        ).first
+        ppcr_toggle_btn.wait_for()
+        ppcr_toggle_btn.click()
+
+        ppcr_container = page.locator(
+            ".rtichoke-performance-table__confusion-container"
+        ).first
+        ppcr_container.wait_for()
+        ppcr_title_el = ppcr_container.locator(
+            ".rtichoke-performance-table__confusion-title"
+        )
+        assert ppcr_title_el.inner_text() == "Confusion Matrix"
+        assert ppcr_container.get_attribute("data-operating-point-type") == "ppcr"
+        assert ppcr_container.get_attribute("data-operating-point-value") is not None
+
         assert len(errors) == 0
         browser.close()

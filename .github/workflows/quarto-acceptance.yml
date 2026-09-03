@@ -13,6 +13,7 @@ on:
       - "src/rtichoke/_vendor/rtichoke_viz/**"
       - "tests/test_quarto_summary_report_browser.py"
       - "tests/test_summary_report_browser.py"
+      - "tests/test_summary_report_times_browser.py"
       - "tests/test_decision_curve_browser_acceptance.py"
       - ".github/workflows/quarto-acceptance.yml"
   pull_request:
@@ -27,6 +28,7 @@ on:
       - "src/rtichoke/_vendor/rtichoke_viz/**"
       - "tests/test_quarto_summary_report_browser.py"
       - "tests/test_summary_report_browser.py"
+      - "tests/test_summary_report_times_browser.py"
       - "tests/test_decision_curve_browser_acceptance.py"
       - ".github/workflows/quarto-acceptance.yml"
   workflow_dispatch:
@@ -61,3 +63,5 @@ jobs:
           uv run --with playwright pytest
           tests/test_quarto_summary_report_browser.py
           tests/test_decision_curve_browser_acceptance.py
+          tests/test_summary_report_browser.py
+          tests/test_summary_report_times_browser.py

@@ -479,14 +479,23 @@ def test_time_performance_table_estimated_confusion_matrix_disclosure(tmp_path):
         toggle_btn.wait_for()
         toggle_btn.click()
 
-        title_el = page.locator(".rtichoke-performance-table__confusion-title").first
-        title_el.wait_for()
-        assert title_el.inner_text() == "Estimated Confusion Matrix"
-
-        caption_el = page.locator(
-            ".rtichoke-performance-table__confusion-caption"
+        container = page.locator(
+            ".rtichoke-performance-table__confusion-container"
         ).first
-        assert "Estimated classification quantities" in caption_el.inner_text()
+        container.wait_for()
+        title_el = container.locator(".rtichoke-performance-table__confusion-title")
+        assert title_el.inner_text() == "Estimated Confusion Matrix"
+        assert (
+            container.get_attribute("data-operating-point-type")
+            == "probability_threshold"
+        )
+        assert container.get_attribute("data-operating-point-value") is not None
+
+        caption_el = container.locator(".rtichoke-performance-table__confusion-caption")
+        assert (
+            "Estimated classification quantities at the displayed time horizon."
+            in caption_el.inner_text()
+        )
         assert len(errors) == 0
         browser.close()
 
