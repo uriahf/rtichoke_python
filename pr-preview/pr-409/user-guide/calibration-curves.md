@@ -17,7 +17,7 @@ fig = rk.create_calibration_curve(
 )
 ```
 
-`calibration_type` can be set to `"discrete"` (deciles) or `"smooth"` (lowess curve).
+`calibration_type` can be set to `"discrete"` (binned calibration, 10 bins by default) or `"smooth"` (lowess curve).
 
 
 # Time-Dependent Calibration ([create_calibration_curve_times](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times))
@@ -76,7 +76,18 @@ When `calibration_type="smooth"`, [create_calibration_curve_times](../reference/
 
 # Discrete (Binned) Calibration
 
-For binned decile plots at time horizons, pass `calibration_type="discrete"`:
+For binned calibration plots, pass `calibration_type="discrete"`. The number of bins defaults to 10 (`n_bins=10`), but can be customized using the `n_bins` parameter (e.g., `n_bins=8`):
+
+``` python
+fig = rk.create_calibration_curve(
+    probs={"Model A": probs_a},
+    reals=reals_binary,
+    calibration_type="discrete",
+    n_bins=8,
+)
+```
+
+Similarly, for time-dependent binned calibration:
 
 ``` python
 fig = rk.create_calibration_curve_times(
@@ -86,5 +97,6 @@ fig = rk.create_calibration_curve_times(
     fixed_time_horizons=[5.0],
     heuristics_sets=heuristics_sets,
     calibration_type="discrete",
+    n_bins=8,
 )
 ```

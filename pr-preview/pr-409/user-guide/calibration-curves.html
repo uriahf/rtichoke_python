@@ -404,7 +404,7 @@ window.Quarto = {
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_binary,</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    calibration_type<span class="op">=</span><span class="st">"smooth"</span>,</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
-<p><code>calibration_type</code> can be set to <code>"discrete"</code> (deciles) or <code>"smooth"</code> (lowess curve).</p>
+<p><code>calibration_type</code> can be set to <code>"discrete"</code> (binned calibration, 10 bins by default) or <code>"smooth"</code> (lowess curve).</p>
 </section>
 <section id="time-dependent-calibration-create_calibration_curve_times" class="level1">
 <h1>Time-Dependent Calibration (<a href="../reference/create_calibration_curve_times.html#rtichoke.create_calibration_curve_times" class="gdls-link gdls-code">create_calibration_curve_times</a>)</h1>
@@ -457,15 +457,23 @@ window.Quarto = {
 </section>
 <section id="discrete-binned-calibration" class="level1">
 <h1>Discrete (Binned) Calibration</h1>
-<p>For binned decile plots at time horizons, pass <code>calibration_type="discrete"</code>:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_calibration_curve_times(</span>
+<p>For binned calibration plots, pass <code>calibration_type="discrete"</code>. The number of bins defaults to 10 (<code>n_bins=10</code>), but can be customized using the <code>n_bins</code> parameter (e.g., <code>n_bins=8</code>):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_calibration_curve(</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>{<span class="st">"Model A"</span>: probs_a},</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_time_to_event,</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    times<span class="op">=</span>times,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    fixed_time_horizons<span class="op">=</span>[<span class="fl">5.0</span>],</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    heuristics_sets<span class="op">=</span>heuristics_sets,</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    calibration_type<span class="op">=</span><span class="st">"discrete"</span>,</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_binary,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    calibration_type<span class="op">=</span><span class="st">"discrete"</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    n_bins<span class="op">=</span><span class="dv">8</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>Similarly, for time-dependent binned calibration:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> rk.create_calibration_curve_times(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    probs<span class="op">=</span>{<span class="st">"Model A"</span>: probs_a},</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    reals<span class="op">=</span>reals_time_to_event,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    times<span class="op">=</span>times,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    fixed_time_horizons<span class="op">=</span>[<span class="fl">5.0</span>],</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    heuristics_sets<span class="op">=</span>heuristics_sets,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    calibration_type<span class="op">=</span><span class="st">"discrete"</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    n_bins<span class="op">=</span><span class="dv">8</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 
 
 </section>

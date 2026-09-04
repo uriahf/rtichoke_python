@@ -611,13 +611,86 @@ Figure
 Calibration visualizations for classification and time-to-event models. See Curve API Compatibility for time-dependent heuristic and horizon differences.
 
 
-create_calibration_curve(*args, **kwargs)
+create_calibration_curve(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], calibration_type: str = 'discrete', size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'], *, n_bins: int = 10) -> plotly.graph_objs._figure.Figure
 
-Create an interactive calibration plot with a square main panel.
+Creates a Calibration Curve.
 
-create_calibration_curve_times(*args, **kwargs)
+This function generates a calibration curve, which evaluates how well
+the predicted probabilities from one or more models align with the
+observed binary outcomes. It can plot either discrete binned calibration
+(10 bins by default) or a smoothed calibration curve.
 
-Create an interactive time-dependent calibration plot with a square main panel.
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary mapping model or dataset names to 1-D numpy arrays of
+    predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    The true binary labels (0 or 1). Can be a single array or a dictionary
+    mapping names to label arrays.
+calibration_type : str, optional
+    The type of calibration curve to plot. Options are ``"discrete"`` (binned)
+    or ``"smooth"`` (smoothed lowess). Defaults to ``"discrete"``.
+size : int, optional
+    The width and height of the plot in pixels. Defaults to 600.
+color_values : List[str], optional
+    A list of hex color strings for the plot lines/markers.
+n_bins : int, optional
+    Number of bins for discrete calibration curves. Defaults to 10.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the calibration curve.
+
+create_calibration_curve_times(probs: Dict[str, numpy.ndarray], reals: Union[numpy.ndarray, Dict[str, numpy.ndarray]], times: Union[numpy.ndarray, Dict[str, numpy.ndarray]], fixed_time_horizons: List[float], heuristics_sets: List[Dict[str, str]], calibration_type: str = 'discrete', smooth_method: str = 'local_aj', bandwidth: Optional[float] = None, size: int = 600, color_values: List[str] = ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#07004D', '#E6AB02', '#FE5F55', '#54494B', '#006E90', '#BC96E6', '#52050A', '#1F271B', '#BE7C4D', '#63768D', '#08A045', '#320A28', '#82FF9E', '#2176FF', '#D1603D', '#585123'], *, n_bins: int = 10) -> plotly.graph_objs._figure.Figure
+
+Create a time-dependent calibration curve across fixed horizons.
+
+This function generates time-dependent calibration curves evaluating predicted
+probabilities against observed outcomes over specified prediction horizons.
+
+Parameters
+----------
+probs : Dict[str, np.ndarray]
+    A dictionary mapping model or dataset names to 1-D numpy arrays of
+    predicted probabilities.
+reals : Union[np.ndarray, Dict[str, np.ndarray]]
+    True outcome indicators (0 for censored, 1 for event of interest, 2 for
+    competing risk).
+times : Union[np.ndarray, Dict[str, np.ndarray]]
+    Follow-up times corresponding to `reals`.
+fixed_time_horizons : List[float]
+    List of prediction horizons (times) at which to evaluate calibration.
+heuristics_sets : List[Dict[str, str]]
+    List of heuristic dictionaries defining censoring and competing risk
+    adjustments.
+calibration_type : str, optional
+    Type of calibration plot, either ``"discrete"`` (binned) or ``"smooth"``.
+    Defaults to ``"discrete"``.
+smooth_method : str, optional
+    Smoothing method when `calibration_type="smooth"`. Supported options are
+    ``"local_aj"`` (Gerds' local Aalen-Johansen/KM neighborhood estimation),
+    ``"secondary_cox"`` (Austin, Harrell & McLernon secondary Cox regression with 3-knot restricted cubic splines on complementary log-log predictions),
+    or ``"pseudo_values"`` (jackknife pseudo-values lowess). Defaults to ``"local_aj"``.
+bandwidth : Union[float, None], optional
+    Bandwidth fraction for ``"local_aj"`` neighborhood smoothing. Defaults to None.
+size : int, optional
+    Width and height of the Plotly figure in pixels. Defaults to 600.
+color_values : List[str], optional
+    List of hex color strings for traces.
+n_bins : int, optional
+    Number of bins for discrete calibration curves. Defaults to 10.
+
+Returns
+-------
+Figure
+    A Plotly ``Figure`` object representing the time-dependent calibration curve.
+
+Raises
+------
+ValueError
+    If a heuristic set requests `competing_heuristic='adjusted_as_censored'`.
 
 
 ## Summary Reports
@@ -1274,7 +1347,7 @@ fig = rk.create_calibration_curve(
 )
 ```
 
-`calibration_type` can be set to `"discrete"` (deciles) or `"smooth"` (lowess curve).
+`calibration_type` can be set to `"discrete"` (binned calibration, 10 bins by default) or `"smooth"` (lowess curve).
 
 ## Time-Dependent Calibration (`create_calibration_curve_times`)
 
@@ -1327,7 +1400,18 @@ When `calibration_type="smooth"`, `create_calibration_curve_times` supports thre
 
 ## Discrete (Binned) Calibration
 
-For binned decile plots at time horizons, pass `calibration_type="discrete"`:
+For binned calibration plots, pass `calibration_type="discrete"`. The number of bins defaults to 10 (`n_bins=10`), but can be customized using the `n_bins` parameter (e.g., `n_bins=8`):
+
+```python
+fig = rk.create_calibration_curve(
+    probs={"Model A": probs_a},
+    reals=reals_binary,
+    calibration_type="discrete",
+    n_bins=8,
+)
+```
+
+Similarly, for time-dependent binned calibration:
 
 ```python
 fig = rk.create_calibration_curve_times(
@@ -1337,6 +1421,7 @@ fig = rk.create_calibration_curve_times(
     fixed_time_horizons=[5.0],
     heuristics_sets=heuristics_sets,
     calibration_type="discrete",
+    n_bins=8,
 )
 ```
 

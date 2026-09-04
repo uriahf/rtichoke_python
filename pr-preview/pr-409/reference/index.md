@@ -86,10 +86,10 @@ Calibration visualizations for classification and time-to-event models. See Curv
 
 
 [create_calibration_curve()](create_calibration_curve.md#rtichoke.create_calibration_curve)  
-Create an interactive calibration plot with a square main panel.
+Creates a Calibration Curve.
 
 [create_calibration_curve_times()](create_calibration_curve_times.md#rtichoke.create_calibration_curve_times)  
-Create an interactive time-dependent calibration plot with a square main panel.
+Create a time-dependent calibration curve across fixed horizons.
 
 
 ## Summary Reports
