@@ -35,7 +35,12 @@ def test_n_bins_validation_invalid_values():
                 reals,
                 times=np.array([1, 2, 3, 4]),
                 fixed_time_horizons=[2.0],
-                heuristics_sets=[{"censoring_heuristic": "adjusted", "competing_heuristic": "adjusted_as_negative"}],
+                heuristics_sets=[
+                    {
+                        "censoring_heuristic": "adjusted",
+                        "competing_heuristic": "adjusted_as_negative",
+                    }
+                ],
                 n_bins=val,
             )
 
@@ -109,7 +114,7 @@ def test_r_parity_all_predictions_identical():
 
 def test_r_parity_partial_ties_stable_ordinal_order():
     p = np.array([0.1, 0.1, 0.2, 0.3, 0.4, 0.5])
-    y = np.array([0,   1,   0,   1,   0,   1])
+    y = np.array([0, 1, 0, 1, 0, 1])
     # N=6, B=3 -> q=2, rem=0 -> 3 bins of size 2
     bins_dat = _make_calibration_bins_dat_binary({"m1": p}, y, n_bins=3)
     assert bins_dat.height == 3
@@ -141,7 +146,9 @@ def test_multiple_models_and_populations_preserve_identities():
     p2 = np.linspace(0.2, 0.8, 20)
     y = np.tile([0, 1], 10)
 
-    cl_multi = _create_calibration_curve_list({"Model A": p1, "Model B": p2}, y, n_bins=5)
+    cl_multi = _create_calibration_curve_list(
+        {"Model A": p1, "Model B": p2}, y, n_bins=5
+    )
     df_bins = cl_multi["calibration_bins_dat"]
     assert set(df_bins["reference_group"].unique().to_list()) == {"Model A", "Model B"}
     assert set(df_bins["model"].unique().to_list()) == {"Model A", "Model B"}
@@ -159,7 +166,9 @@ def test_non_adjusted_time_inherits_static_bin_contract():
         reals,
         times,
         fixed_time_horizons=[2.0],
-        heuristics_sets=[{"censoring_heuristic": "excluded", "competing_heuristic": "excluded"}],
+        heuristics_sets=[
+            {"censoring_heuristic": "excluded", "competing_heuristic": "excluded"}
+        ],
         n_bins=10,
     )
     df_bins = cl_time["calibration_bins_dat"]
@@ -191,8 +200,12 @@ def test_smooth_static_n_bins_no_effect():
     y = np.tile([0, 1], 25)
     probs = {"m1": p}
 
-    cl_smooth_10 = _create_calibration_curve_list(probs, y, calibration_type="smooth", n_bins=10)
-    cl_smooth_5 = _create_calibration_curve_list(probs, y, calibration_type="smooth", n_bins=5)
+    cl_smooth_10 = _create_calibration_curve_list(
+        probs, y, calibration_type="smooth", n_bins=10
+    )
+    cl_smooth_5 = _create_calibration_curve_list(
+        probs, y, calibration_type="smooth", n_bins=5
+    )
 
     assert cl_smooth_10["smooth_dat"].equals(cl_smooth_5["smooth_dat"])
     assert cl_smooth_10["axes_ranges"] == cl_smooth_5["axes_ranges"]
@@ -208,7 +221,12 @@ def test_smooth_time_n_bins_no_effect():
         reals,
         times,
         fixed_time_horizons=[2.0],
-        heuristics_sets=[{"censoring_heuristic": "adjusted", "competing_heuristic": "adjusted_as_negative"}],
+        heuristics_sets=[
+            {
+                "censoring_heuristic": "adjusted",
+                "competing_heuristic": "adjusted_as_negative",
+            }
+        ],
         calibration_type="smooth",
         n_bins=10,
     )
@@ -217,7 +235,12 @@ def test_smooth_time_n_bins_no_effect():
         reals,
         times,
         fixed_time_horizons=[2.0],
-        heuristics_sets=[{"censoring_heuristic": "adjusted", "competing_heuristic": "adjusted_as_negative"}],
+        heuristics_sets=[
+            {
+                "censoring_heuristic": "adjusted",
+                "competing_heuristic": "adjusted_as_negative",
+            }
+        ],
         calibration_type="smooth",
         n_bins=5,
     )

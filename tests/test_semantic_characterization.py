@@ -197,7 +197,9 @@ def test_calibration_keeps_grouping_and_one_global_identity_line():
         reals=REALS_EQUAL,
     )
     assert multi_model["performance_type"] == ["multiple models"]
-    assert set(multi_model["calibration_bins_dat"]["reference_group"].unique().to_list()) == {
+    assert set(
+        multi_model["calibration_bins_dat"]["reference_group"].unique().to_list()
+    ) == {
         "Model A",
         "Model B",
     }

@@ -85,7 +85,7 @@ def test_calibration_v2_discrete_values_pass_through_without_recalculation():
     )
 
     production_rows = (
-            curve_list["calibration_bins_dat"]
+        curve_list["calibration_bins_dat"]
         .select("reference_group", "x", "y", "n_reals", "n")
         .to_dicts()
     )

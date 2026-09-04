@@ -658,10 +658,14 @@ def _make_calibration_bins_dat_binary(
         p_vals = sub_df["prob"].to_numpy()
 
         if N == 0:
-            sub_df_with_bin = sub_df.with_columns(pl.lit(1, dtype=pl.Int64).alias("bin"))
+            sub_df_with_bin = sub_df.with_columns(
+                pl.lit(1, dtype=pl.Int64).alias("bin")
+            )
         elif len(np.unique(p_vals)) == 1:
             # All predictions identical -> one aggregate calibration bin = 1
-            sub_df_with_bin = sub_df.with_columns(pl.lit(1, dtype=pl.Int64).alias("bin"))
+            sub_df_with_bin = sub_df.with_columns(
+                pl.lit(1, dtype=pl.Int64).alias("bin")
+            )
         elif n_bins > N:
             # B > N -> occupied bin labels are 1..N, one observation each in stable order
             ord_ranks = sub_df["prob"].rank("ordinal").to_numpy().astype(int)
@@ -1002,7 +1006,9 @@ def _create_histogram_for_calibration(probs: Dict[str, np.ndarray]) -> pl.DataFr
     return histogram_for_calibration
 
 
-def _define_limits_for_calibration_plot(calibration_bins_dat: pl.DataFrame) -> List[float]:
+def _define_limits_for_calibration_plot(
+    calibration_bins_dat: pl.DataFrame,
+) -> List[float]:
     if calibration_bins_dat.height == 1:
         lower_bound, upper_bound = 0.0, 1.0
     else:
@@ -1410,7 +1416,9 @@ def _create_calibration_curve_list_times(
                             "Supported options are 'local_aj', 'secondary_cox', and 'pseudo_values'."
                         )
                 else:
-                    smooth_data = calibration_bins_data.select("x", "y", "reference_group")
+                    smooth_data = calibration_bins_data.select(
+                        "x", "y", "reference_group"
+                    )
                 hist_data = _create_histogram_for_calibration(probs_adj)
 
                 all_calibration_bins.append(
