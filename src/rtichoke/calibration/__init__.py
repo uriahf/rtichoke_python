@@ -2,6 +2,7 @@
 Subpackage for Calibration
 """
 
+import functools
 import numpy as np
 
 from . import calibration as _calibration
@@ -38,6 +39,7 @@ def _validate_outcome_values(reals, allowed_values):
             raise ValueError("Time-dependent outcomes must contain only 0, 1, and 2.")
 
 
+@functools.wraps(_original_create_calibration_curve)
 def create_calibration_curve(*args, **kwargs):
     """Create an interactive calibration plot with a square main panel."""
     probs = _argument(args, kwargs, "probs", 0)
@@ -50,6 +52,7 @@ def create_calibration_curve(*args, **kwargs):
     )
 
 
+@functools.wraps(_original_create_calibration_curve_times)
 def create_calibration_curve_times(*args, **kwargs):
     """Create an interactive time-dependent calibration plot with a square main panel."""
     probs = _argument(args, kwargs, "probs", 0)

@@ -725,7 +725,6 @@ def _check_performance_type_by_probs_and_reals(
 def _create_calibration_curve_list(
     probs: Dict[str, np.ndarray],
     reals: Union[np.ndarray, Dict[str, np.ndarray]],
-    calibration_type: str = "discrete",
     size: int = 600,
     color_values: List[str] = [
         "#1b9e77",
@@ -750,6 +749,7 @@ def _create_calibration_curve_list(
         "#585123",
     ],
     *,
+    calibration_type: str = "discrete",
     n_bins: int = 10,
 ) -> Dict[str, Any]:
     n_bins = _validate_n_bins(n_bins)
@@ -1206,7 +1206,9 @@ def _make_adjusted_calibration_bins_data(
             * n_bins
             // pl.len().over("reference_group")
             + 1
-        ).alias("bin")
+        )
+        .cast(pl.Int64)
+        .alias("bin")
     )
     rows = []
     for key, group_df in grouped.group_by(["reference_group", "bin"]):
@@ -1217,7 +1219,7 @@ def _make_adjusted_calibration_bins_data(
             {
                 "reference_group": reference_group,
                 "model": reference_group,
-                "bin": bin_val,
+                "bin": int(bin_val),
                 "n": n,
                 "x": cast(float, group_df["prob"].mean()),
                 "y": estimate,

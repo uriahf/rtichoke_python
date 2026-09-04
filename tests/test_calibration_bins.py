@@ -1,10 +1,12 @@
 """Tests for calibration bins (n_bins) cross-language parity, validation, and contracts."""
 
+import inspect
 import numpy as np
 import polars as pl
 import pytest
 from plotly.graph_objs._figure import Figure
 
+import rtichoke
 from rtichoke import (
     create_calibration_curve,
     create_calibration_curve_times,
@@ -18,6 +20,27 @@ from rtichoke.calibration.calibration import (
 from rtichoke._calibration_viz_spec_v2 import _calibration_v2_spec_from_curve_list
 from rtichoke._viz_browser import _calibration_spec_from_curve_list
 from rtichoke.processing.evaluation_semantics import _EvaluationMetadata
+
+
+def test_top_level_export_signatures_expose_n_bins():
+    sig = inspect.signature(rtichoke.create_calibration_curve)
+    assert "n_bins" in sig.parameters
+    param = sig.parameters["n_bins"]
+    assert param.kind == inspect.Parameter.KEYWORD_ONLY
+    assert param.default == 10
+
+    sig_times = inspect.signature(rtichoke.create_calibration_curve_times)
+    assert "n_bins" in sig_times.parameters
+    param_times = sig_times.parameters["n_bins"]
+    assert param_times.kind == inspect.Parameter.KEYWORD_ONLY
+    assert param_times.default == 10
+
+
+def test_create_calibration_curve_list_positional_compatibility():
+    p = np.linspace(0.1, 0.9, 10)
+    y = np.tile([0, 1], 5)
+    cl = _create_calibration_curve_list({"m1": p}, y, 800)
+    assert cl["size"] == [(800, 800)]
 
 
 def test_n_bins_validation_invalid_values():
@@ -176,23 +199,67 @@ def test_non_adjusted_time_inherits_static_bin_contract():
     assert df_bins["n"].to_list() == [2, 2, 1, 1, 1, 1, 1, 1, 1, 1]
 
 
-def test_adjusted_time_calibration_preserved_semantics():
-    # Adjusted time calibration retains rank("average") + floor formula
+def test_adjusted_time_calibration_preserved_semantics_and_ties():
+    # Test fixture with partially tied predictions:
+    # 3 identical predictions at 0.2, 3 identical at 0.5, 4 distinct at 0.6, 0.7, 0.8, 0.9
+    p_tied = [0.2, 0.2, 0.2, 0.5, 0.5, 0.5, 0.6, 0.7, 0.8, 0.9]
+    y_vals = [0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
+    times = [1.0] * 10
     df = pl.DataFrame(
         {
             "reference_group": ["m1"] * 10,
-            "prob": [0.1, 0.1, 0.1, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.9],
-            "real": [0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-            "time": [1.0] * 10,
+            "prob": p_tied,
+            "real": y_vals,
+            "time": times,
         }
     )
+
+    # Compute with n_bins=10
     res_10 = _make_adjusted_calibration_bins_data(df, horizon=2.0, n_bins=10)
     assert "bin" in res_10.columns
     assert "decile" not in res_10.columns
+    assert res_10["bin"].dtype in (pl.Int64, pl.Int32)
 
+    # All tied observations (first 3 at 0.2) must belong to the exact same bin
+    grouped_10 = df.with_columns(
+        (
+            (pl.col("prob").rank("average").over("reference_group") - 1)
+            * 10
+            // pl.len().over("reference_group")
+            + 1
+        )
+        .cast(pl.Int64)
+        .alias("bin")
+    )
+    first_3_bins = grouped_10["bin"][:3].to_list()
+    assert len(set(first_3_bins)) == 1, (
+        "Tied predictions 0.2 must share the exact same bin"
+    )
+
+    mid_3_bins = grouped_10["bin"][3:6].to_list()
+    assert len(set(mid_3_bins)) == 1, (
+        "Tied predictions 0.5 must share the exact same bin"
+    )
+
+    # Compute with n_bins=5
     res_5 = _make_adjusted_calibration_bins_data(df, horizon=2.0, n_bins=5)
     assert "bin" in res_5.columns
-    assert res_5.height <= 5
+    assert res_5["bin"].dtype in (pl.Int64, pl.Int32)
+
+    grouped_5 = df.with_columns(
+        (
+            (pl.col("prob").rank("average").over("reference_group") - 1)
+            * 5
+            // pl.len().over("reference_group")
+            + 1
+        )
+        .cast(pl.Int64)
+        .alias("bin")
+    )
+    first_3_bins_5 = grouped_5["bin"][:3].to_list()
+    assert len(set(first_3_bins_5)) == 1, (
+        "Tied predictions 0.2 must share the exact same bin under n_bins=5"
+    )
 
 
 def test_smooth_static_n_bins_no_effect():
