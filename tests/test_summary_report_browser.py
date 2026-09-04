@@ -17,6 +17,8 @@ from rtichoke._performance_table_spec import (
 from rtichoke._report_browser import RtichokeBrowserReport
 from rtichoke._report_spec import _build_report_spec_v11
 from rtichoke.performance_data.performance_data import prepare_performance_data
+from importlib.resources import files
+
 from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 from rtichoke.summary_report import summary_report as summary_report_module
 from rtichoke.summary_report.summary_report import create_summary_report
@@ -170,9 +172,9 @@ def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(
 
     assert result == output
     assert output.exists()
-    viz_js_path = tmp_path / "rtichoke-viz.js"
-    assert viz_js_path.exists()
-    assert (tmp_path / "rtichoke-viz.css").exists()
+    assert [f.name for f in sorted(tmp_path.iterdir())] == ["canonical-summary.html"]
+    assert not (tmp_path / "rtichoke-viz.js").exists()
+    assert not (tmp_path / "rtichoke-viz.css").exists()
 
     html = output.read_text(encoding="utf-8")
     report = _embedded_report(html)
@@ -187,7 +189,13 @@ def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(
         "performance-table",
     ]
     assert 'import { renderReport } from "./rtichoke-viz.js";' not in html
-    assert viz_js_path.read_text(encoding="utf-8") in html
+    vendor = files("rtichoke").joinpath("_vendor", "rtichoke_viz")
+    viz_js = vendor.joinpath("rtichoke-viz.js").read_text(encoding="utf-8")
+    viz_css = vendor.joinpath("rtichoke-viz.css").read_text(encoding="utf-8")
+    assert viz_js in html
+    assert viz_css in html
+    assert '<link rel="stylesheet" href="./rtichoke-viz.css">' not in html
+    assert '<style>' in html
     assert 'sectionGroupPresentation: "tabs"' in html
 
 

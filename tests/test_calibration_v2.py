@@ -17,6 +17,8 @@ from rtichoke.calibration.calibration import (
     create_calibration_curve,
 )
 from rtichoke.performance_data.performance_data import prepare_performance_data
+from importlib.resources import files
+
 from rtichoke.processing.evaluation_semantics import (
     _SHARED_POPULATION,
     _build_evaluation_metadata,
@@ -280,7 +282,9 @@ def test_real_performance_table_roc_calibration_report_uses_shared_renderer(tmp_
         tmp_path / "report.html"
     )
     html = output.read_text(encoding="utf-8")
-    viz_js = (tmp_path / "rtichoke-viz.js").read_text(encoding="utf-8")
+    vendor = files("rtichoke").joinpath("_vendor", "rtichoke_viz")
+    viz_js = vendor.joinpath("rtichoke-viz.js").read_text(encoding="utf-8")
+    viz_css = vendor.joinpath("rtichoke-viz.css").read_text(encoding="utf-8")
 
     assert [item["id"] for item in report["sections"][0]["items"]] == [
         "performance-table",
@@ -291,6 +295,11 @@ def test_real_performance_table_roc_calibration_report_uses_shared_renderer(tmp_
     assert _embedded_report(html) == report
     assert 'import { renderReport } from "./rtichoke-viz.js";' not in html
     assert viz_js in html
+    assert viz_css in html
+    assert '<link rel="stylesheet" href="./rtichoke-viz.css">' not in html
+    assert [f.name for f in sorted(tmp_path.iterdir())] == ["report.html"]
+    assert not (tmp_path / "rtichoke-viz.js").exists()
+    assert not (tmp_path / "rtichoke-viz.css").exists()
     assert 'sectionGroupPresentation: "tabs"' in html
 
 
