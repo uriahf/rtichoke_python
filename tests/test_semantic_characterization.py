@@ -197,7 +197,7 @@ def test_calibration_keeps_grouping_and_one_global_identity_line():
         reals=REALS_EQUAL,
     )
     assert multi_model["performance_type"] == ["multiple models"]
-    assert set(multi_model["deciles_dat"]["reference_group"].unique().to_list()) == {
+    assert set(multi_model["calibration_bins_dat"]["reference_group"].unique().to_list()) == {
         "Model A",
         "Model B",
     }
@@ -209,7 +209,7 @@ def test_calibration_keeps_grouping_and_one_global_identity_line():
     )
     assert multi_population["performance_type"] == ["multiple populations"]
     assert set(
-        multi_population["deciles_dat"]["reference_group"].unique().to_list()
+        multi_population["calibration_bins_dat"]["reference_group"].unique().to_list()
     ) == {"Population low", "Population high"}
     assert multi_population["reference_data"].height == 101
 

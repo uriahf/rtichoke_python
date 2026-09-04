@@ -67,7 +67,7 @@ def _calibration_spec_from_curve_list(
     calibration_curve_list: dict[str, Any],
 ) -> dict[str, object]:
     """Map existing discrete calibration output to the canonical spec."""
-    rows = calibration_curve_list["deciles_dat"].select(
+    rows = calibration_curve_list["calibration_bins_dat"].select(
         "reference_group", "x", "y", "n_reals", "n"
     )
     distribution_rows = calibration_curve_list["histogram_for_calibration"].select(

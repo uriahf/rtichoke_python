@@ -4,7 +4,6 @@ A module for Calibration Curves
 
 from typing import Any, Dict, List, Union, cast
 
-# import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from plotly.graph_objs._figure import Figure
@@ -14,7 +13,16 @@ from polarstate import predict_aj_estimates, prepare_event_table
 from smoothstate import smooth_state_lowess
 from ._secondary_cox import calculate_secondary_cox_smooth
 
-# from rtichoke.helpers.send_post_request_to_r_rtichoke import send_requests_to_rtichoke_r
+
+def _validate_n_bins(n_bins: Any) -> int:
+    """Validates that n_bins is a positive integer >= 1."""
+    if isinstance(n_bins, bool):
+        raise ValueError("n_bins must be a positive integer >= 1.")
+    if isinstance(n_bins, (int, np.integer)):
+        if n_bins < 1:
+            raise ValueError("n_bins must be a positive integer >= 1.")
+        return int(n_bins)
+    raise ValueError("n_bins must be a positive integer >= 1.")
 
 
 def create_calibration_curve(
@@ -44,13 +52,15 @@ def create_calibration_curve(
         "#D1603D",
         "#585123",
     ],
+    *,
+    n_bins: int = 10,
 ) -> Figure:
     """Creates a Calibration Curve.
 
     This function generates a calibration curve, which evaluates how well
     the predicted probabilities from one or more models align with the
     observed binary outcomes. It can plot either discrete binned calibration
-    (deciles) or a smoothed calibration curve.
+    (10 bins by default) or a smoothed calibration curve.
 
     Parameters
     ----------
@@ -67,14 +77,22 @@ def create_calibration_curve(
         The width and height of the plot in pixels. Defaults to 600.
     color_values : List[str], optional
         A list of hex color strings for the plot lines/markers.
+    n_bins : int, optional
+        Number of bins for discrete calibration curves. Defaults to 10.
 
     Returns
     -------
     Figure
         A Plotly ``Figure`` object representing the calibration curve.
     """
+    n_bins = _validate_n_bins(n_bins)
     calibration_curve_list = _create_calibration_curve_list(
-        probs, reals, size=size, color_values=color_values
+        probs,
+        reals,
+        calibration_type=calibration_type,
+        size=size,
+        color_values=color_values,
+        n_bins=n_bins,
     )
 
     calibration_curve = _create_plotly_curve_from_calibration_curve_list(
@@ -116,6 +134,8 @@ def create_calibration_curve_times(
         "#D1603D",
         "#585123",
     ],
+    *,
+    n_bins: int = 10,
 ) -> Figure:
     """Create a time-dependent calibration curve across fixed horizons.
 
@@ -151,6 +171,8 @@ def create_calibration_curve_times(
         Width and height of the Plotly figure in pixels. Defaults to 600.
     color_values : List[str], optional
         List of hex color strings for traces.
+    n_bins : int, optional
+        Number of bins for discrete calibration curves. Defaults to 10.
 
     Returns
     -------
@@ -162,6 +184,7 @@ def create_calibration_curve_times(
     ValueError
         If a heuristic set requests `competing_heuristic='adjusted_as_censored'`.
     """
+    n_bins = _validate_n_bins(n_bins)
 
     unsupported_competing_as_censored = any(
         heuristics.get("competing_heuristic") == "adjusted_as_censored"
@@ -186,6 +209,7 @@ def create_calibration_curve_times(
         bandwidth=bandwidth,
         size=size,
         color_values=color_values,
+        n_bins=n_bins,
     )
 
     fig = _create_plotly_curve_from_calibration_curve_list_times(
@@ -233,7 +257,7 @@ def _create_plotly_curve_from_calibration_curve_list_times(
 
             # Calibration curve (discrete or smooth)
             if calibration_type == "discrete":
-                data_subset = calibration_curve_list["deciles_dat"].filter(
+                data_subset = calibration_curve_list["calibration_bins_dat"].filter(
                     (pl.col("reference_group") == group)
                     & (pl.col("fixed_time_horizon") == horizon)
                 )
@@ -344,15 +368,7 @@ def _create_plotly_curve_from_calibration_curve_list_times(
 def _create_plotly_curve_from_calibration_curve_list(
     calibration_curve_list: Dict[str, Any], calibration_type: str = "discrete"
 ) -> Figure:
-    """Create plotly curve from calibration curve list
-
-    Args:
-        calibration_curve_list (Dict[str, Any]): _description_
-        calibration_type (str, optional): _description_. Defaults to "discrete".
-
-    Returns:
-        Figure: _description_
-    """
+    """Create plotly curve from calibration curve list"""
     calibration_curve = make_subplots(
         rows=2, cols=1, shared_xaxes=True, x_title="Predicted", row_heights=[0.8, 0.2]
     )
@@ -404,15 +420,15 @@ def _create_plotly_curve_from_calibration_curve_list(
             if k != "reference_line"
         ]
         for reference_group in reference_groups:
-            dec_sub = calibration_curve_list["deciles_dat"].filter(
+            bin_sub = calibration_curve_list["calibration_bins_dat"].filter(
                 pl.col("reference_group") == reference_group
             )
 
             calibration_curve.add_trace(
                 go.Scatter(
-                    x=dec_sub.get_column("x").to_list(),
-                    y=dec_sub.get_column("y").to_list(),
-                    hovertext=dec_sub.get_column("text").to_list(),
+                    x=bin_sub.get_column("x").to_list(),
+                    y=bin_sub.get_column("y").to_list(),
+                    hovertext=bin_sub.get_column("text").to_list(),
                     name=reference_group,
                     legendgroup=reference_group,
                     hoverinfo="text",
@@ -541,11 +557,13 @@ def _create_plotly_curve_from_calibration_curve_list(
     return calibration_curve
 
 
-def _make_deciles_dat_binary(
+def _make_calibration_bins_dat_binary(
     probs: Dict[str, np.ndarray],
     reals: Union[np.ndarray, Dict[str, np.ndarray]],
     n_bins: int = 10,
 ) -> pl.DataFrame:
+    n_bins = _validate_n_bins(n_bins)
+
     if isinstance(reals, dict):
         frames: list[pl.DataFrame] = []
 
@@ -630,21 +648,52 @@ def _make_deciles_dat_binary(
 
         df = pl.concat(frames, how="vertical")
 
-    df = df.with_columns(
-        [
-            pl.col("prob").cast(pl.Float64),
-            pl.col("real").cast(pl.Float64),
-            (
-                (pl.col("prob").rank("ordinal").over(["reference_group", "model"]) - 1)
-                * n_bins
-                // pl.len().over(["reference_group", "model"])
-                + 1
-            ).alias("decile"),
-        ]
-    )
+    # Apply dplyr::ntile() bucket allocation per (reference_group, model)
+    group_cols = ["reference_group", "model"]
+    partitioned_frames = []
 
-    deciles_data = (
-        df.group_by(["reference_group", "model", "decile"])
+    for key, sub_df in df.group_by(group_cols, maintain_order=True):
+        reference_group, model = key
+        N = sub_df.height
+        p_vals = sub_df["prob"].to_numpy()
+
+        if N == 0:
+            sub_df_with_bin = sub_df.with_columns(pl.lit(1, dtype=pl.Int64).alias("bin"))
+        elif len(np.unique(p_vals)) == 1:
+            # All predictions identical -> one aggregate calibration bin = 1
+            sub_df_with_bin = sub_df.with_columns(pl.lit(1, dtype=pl.Int64).alias("bin"))
+        elif n_bins > N:
+            # B > N -> occupied bin labels are 1..N, one observation each in stable order
+            ord_ranks = sub_df["prob"].rank("ordinal").to_numpy().astype(int)
+            sub_df_with_bin = sub_df.with_columns(
+                pl.Series("bin", ord_ranks, dtype=pl.Int64)
+            )
+        else:
+            # B <= N -> dplyr::ntile() semantics:
+            # stable ordinal rank 1..N
+            ord_ranks = sub_df["prob"].rank("ordinal").to_numpy().astype(int)
+            q = N // n_bins
+            rem = N % n_bins
+            # first rem bins have size q + 1, remaining B - rem bins have size q
+            # build lookup array bin_for_rank mapping rank (1-indexed) -> bin (1-indexed)
+            bin_for_rank = np.empty(N + 1, dtype=int)
+            curr_rank = 1
+            for b in range(1, n_bins + 1):
+                bin_size = q + 1 if b <= rem else q
+                bin_for_rank[curr_rank : curr_rank + bin_size] = b
+                curr_rank += bin_size
+
+            assigned_bins = bin_for_rank[ord_ranks]
+            sub_df_with_bin = sub_df.with_columns(
+                pl.Series("bin", assigned_bins, dtype=pl.Int64)
+            )
+
+        partitioned_frames.append(sub_df_with_bin)
+
+    df = pl.concat(partitioned_frames)
+
+    calibration_bins_data = (
+        df.group_by(["reference_group", "model", "bin"])
         .agg(
             [
                 pl.len().alias("n"),
@@ -653,10 +702,10 @@ def _make_deciles_dat_binary(
                 pl.sum("real").alias("n_reals"),
             ]
         )
-        .sort(["reference_group", "model", "decile"])
+        .sort(["reference_group", "model", "bin"])
     )
 
-    return deciles_data
+    return calibration_bins_data
 
 
 def _check_performance_type_by_probs_and_reals(
@@ -672,6 +721,7 @@ def _check_performance_type_by_probs_and_reals(
 def _create_calibration_curve_list(
     probs: Dict[str, np.ndarray],
     reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    calibration_type: str = "discrete",
     size: int = 600,
     color_values: List[str] = [
         "#1b9e77",
@@ -695,13 +745,19 @@ def _create_calibration_curve_list(
         "#D1603D",
         "#585123",
     ],
+    *,
+    n_bins: int = 10,
 ) -> Dict[str, Any]:
-    deciles_data = _make_deciles_dat_binary(probs, reals)
+    n_bins = _validate_n_bins(n_bins)
+    effective_n_bins = n_bins if calibration_type == "discrete" else 10
+    calibration_bins_data = _make_calibration_bins_dat_binary(
+        probs, reals, n_bins=effective_n_bins
+    )
     performance_type = _check_performance_type_by_probs_and_reals(probs, reals)
     smooth_dat = _calculate_smooth_curve(probs, reals, performance_type)
 
-    deciles_data, smooth_dat = _add_hover_text_to_calibration_data(
-        deciles_data, smooth_dat, performance_type
+    calibration_bins_data, smooth_dat = _add_hover_text_to_calibration_data(
+        calibration_bins_data, smooth_dat, performance_type
     )
 
     reference_data = _create_reference_data_for_calibration_curve()
@@ -714,17 +770,14 @@ def _create_calibration_curve_list(
 
     histogram_for_calibration = _create_histogram_for_calibration(probs)
 
-    limits = _define_limits_for_calibration_plot(deciles_data)
+    limits = _define_limits_for_calibration_plot(calibration_bins_data)
     axes_ranges = {"xaxis": limits, "yaxis": limits}
 
-    smooth_dat = _calculate_smooth_curve(probs, reals, performance_type)
-
     calibration_curve_list = {
-        "deciles_dat": deciles_data,
+        "calibration_bins_dat": calibration_bins_data,
         "smooth_dat": smooth_dat,
         "reference_data": reference_data,
         "histogram_for_calibration": histogram_for_calibration,
-        # "histogram_opacity": [0.4],
         "axes_ranges": axes_ranges,
         "colors_dictionary": colors_dictionary,
         "performance_type": [performance_type],
@@ -776,8 +829,6 @@ def _calculate_smooth_curve(
 
     if isinstance(reals, dict):
         for model_name, prob_array in probs.items():
-            # This logic assumes that for multiple populations, one model's probs are evaluated against multiple real outcomes.
-            # This might need adjustment based on the exact structure for multiple models and populations.
             if len(probs) == 1 and len(reals) > 1:  # One model, multiple populations
                 for pop_name, real_array in reals.items():
                     frame = process_single_array(prob_array, real_array, pop_name)
@@ -845,13 +896,13 @@ def _calculate_smooth_curve(
 
 
 def _add_hover_text_to_calibration_data(
-    deciles_dat: pl.DataFrame,
+    calibration_bins_dat: pl.DataFrame,
     smooth_dat: pl.DataFrame,
     performance_type: str,
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
-    """Adds hover text to the deciles and smooth dataframes."""
+    """Adds hover text to the calibration bins and smooth dataframes."""
     if performance_type != "one model":
-        deciles_dat = deciles_dat.with_columns(
+        calibration_bins_dat = calibration_bins_dat.with_columns(
             pl.concat_str(
                 [
                     pl.lit("<b>"),
@@ -881,7 +932,7 @@ def _add_hover_text_to_calibration_data(
             ).alias("text")
         )
     else:
-        deciles_dat = deciles_dat.with_columns(
+        calibration_bins_dat = calibration_bins_dat.with_columns(
             pl.concat_str(
                 [
                     pl.lit("Predicted: "),
@@ -906,7 +957,7 @@ def _add_hover_text_to_calibration_data(
                 ]
             ).alias("text")
         )
-    return deciles_dat, smooth_dat
+    return calibration_bins_dat, smooth_dat
 
 
 def _create_colors_dictionary_for_calibration(
@@ -951,23 +1002,23 @@ def _create_histogram_for_calibration(probs: Dict[str, np.ndarray]) -> pl.DataFr
     return histogram_for_calibration
 
 
-def _define_limits_for_calibration_plot(deciles_dat: pl.DataFrame) -> List[float]:
-    if deciles_dat.height == 1:
+def _define_limits_for_calibration_plot(calibration_bins_dat: pl.DataFrame) -> List[float]:
+    if calibration_bins_dat.height == 1:
         lower_bound, upper_bound = 0.0, 1.0
     else:
         lower_bound = float(
             max(
                 0,
                 min(
-                    cast(float, deciles_dat["x"].min()),
-                    cast(float, deciles_dat["y"].min()),
+                    cast(float, calibration_bins_dat["x"].min()),
+                    cast(float, calibration_bins_dat["y"].min()),
                 ),
             )
         )
         upper_bound = float(
             max(
-                cast(float, deciles_dat["x"].max()),
-                cast(float, deciles_dat["y"].max()),
+                cast(float, calibration_bins_dat["x"].max()),
+                cast(float, calibration_bins_dat["y"].max()),
             )
         )
 
@@ -1138,35 +1189,36 @@ def _aj_risk_at_horizon(df: pl.DataFrame, horizon: float) -> float:
     return float(estimate["state_occupancy_probability_1"][0])
 
 
-def _make_adjusted_deciles_data(
+def _make_adjusted_calibration_bins_data(
     df: pl.DataFrame, horizon: float, n_bins: int = 10
 ) -> pl.DataFrame:
     """Create calibration groups using within-group Aalen-Johansen risks."""
+    n_bins = _validate_n_bins(n_bins)
     grouped = df.with_columns(
         (
             (pl.col("prob").rank("average").over("reference_group") - 1)
             * n_bins
             // pl.len().over("reference_group")
             + 1
-        ).alias("decile")
+        ).alias("bin")
     )
     rows = []
-    for key, group_df in grouped.group_by(["reference_group", "decile"]):
-        reference_group, decile = key
+    for key, group_df in grouped.group_by(["reference_group", "bin"]):
+        reference_group, bin_val = key
         estimate = _aj_risk_at_horizon(group_df, horizon)
         n = group_df.height
         rows.append(
             {
                 "reference_group": reference_group,
                 "model": reference_group,
-                "decile": decile,
+                "bin": bin_val,
                 "n": n,
                 "x": cast(float, group_df["prob"].mean()),
                 "y": estimate,
                 "n_reals": estimate * n,
             }
         )
-    return pl.DataFrame(rows).sort(["reference_group", "decile"])
+    return pl.DataFrame(rows).sort(["reference_group", "bin"])
 
 
 def _calculate_local_aj_smooth(
@@ -1291,14 +1343,19 @@ def _create_calibration_curve_list_times(
         "#D1603D",
         "#585123",
     ],
+    *,
+    n_bins: int = 10,
 ) -> Dict[str, Any]:
     """
     Creates the data structures needed for a time-dependent calibration curve plot.
     """
+    n_bins = _validate_n_bins(n_bins)
+    effective_n_bins = n_bins if calibration_type == "discrete" else 10
+
     # Part 1: Prepare initial dataframe from inputs
     initial_df = _build_initial_df_for_times(probs, reals, times)
     # Part 2: Iterate and generate calibration data for each horizon/heuristic
-    all_deciles = []
+    all_calibration_bins = []
     all_smooth = []
     all_histograms = []
 
@@ -1319,7 +1376,9 @@ def _create_calibration_curve_list_times(
                 if df_adj.height == 0:
                     continue
 
-                deciles_data = _make_adjusted_deciles_data(df_adj, horizon)
+                calibration_bins_data = _make_adjusted_calibration_bins_data(
+                    df_adj, horizon, n_bins=effective_n_bins
+                )
                 probs_adj = {
                     key[0]: group_df["prob"].to_numpy()
                     for key, group_df in df_adj.group_by(
@@ -1351,11 +1410,11 @@ def _create_calibration_curve_list_times(
                             "Supported options are 'local_aj', 'secondary_cox', and 'pseudo_values'."
                         )
                 else:
-                    smooth_data = deciles_data.select("x", "y", "reference_group")
+                    smooth_data = calibration_bins_data.select("x", "y", "reference_group")
                 hist_data = _create_histogram_for_calibration(probs_adj)
 
-                all_deciles.append(
-                    deciles_data.with_columns(
+                all_calibration_bins.append(
+                    calibration_bins_data.with_columns(
                         pl.lit(horizon).alias("fixed_time_horizon")
                     )
                 )
@@ -1389,10 +1448,14 @@ def _create_calibration_curve_list_times(
             if not isinstance(reals, dict) and len(probs) == 1:
                 reals_adj = next(iter(reals_adj.values()))
 
-            # Deciles
-            deciles_data = _make_deciles_dat_binary(probs_adj, reals_adj)
-            all_deciles.append(
-                deciles_data.with_columns(pl.lit(horizon).alias("fixed_time_horizon"))
+            # Calibration bins
+            calibration_bins_data = _make_calibration_bins_dat_binary(
+                probs_adj, reals_adj, n_bins=effective_n_bins
+            )
+            all_calibration_bins.append(
+                calibration_bins_data.with_columns(
+                    pl.lit(horizon).alias("fixed_time_horizon")
+                )
             )
 
             # Smooth curve
@@ -1418,7 +1481,7 @@ def _create_calibration_curve_list_times(
                         "Supported options are 'local_aj', 'secondary_cox', and 'pseudo_values'."
                     )
             else:
-                smooth_data = deciles_data.select("x", "y", "reference_group")
+                smooth_data = calibration_bins_data.select("x", "y", "reference_group")
             all_smooth.append(
                 smooth_data.with_columns(pl.lit(horizon).alias("fixed_time_horizon"))
             )
@@ -1430,17 +1493,17 @@ def _create_calibration_curve_list_times(
             )
 
     # Part 3: Combine results and create final dictionary
-    if not all_deciles:
+    if not all_calibration_bins:
         raise ValueError(
             "No data remaining after applying heuristics and time horizons."
         )
-    deciles_dat_final = pl.concat(all_deciles)
+    calibration_bins_dat_final = pl.concat(all_calibration_bins)
     smooth_dat_final = pl.concat(all_smooth)
     histogram_final = pl.concat(all_histograms)
 
     # Add hover text
-    deciles_dat_final, smooth_dat_final = _add_hover_text_to_calibration_data(
-        deciles_dat_final, smooth_dat_final, performance_type
+    calibration_bins_dat_final, smooth_dat_final = _add_hover_text_to_calibration_data(
+        calibration_bins_dat_final, smooth_dat_final, performance_type
     )
 
     reference_data = _create_reference_data_for_calibration_curve()
@@ -1448,11 +1511,11 @@ def _create_calibration_curve_list_times(
     colors_dictionary = _create_colors_dictionary_for_calibration(
         reference_groups, color_values, performance_type
     )
-    limits = _define_limits_for_calibration_plot(deciles_dat_final)
+    limits = _define_limits_for_calibration_plot(calibration_bins_dat_final)
     axes_ranges = {"xaxis": limits, "yaxis": limits}
 
     calibration_curve_list = {
-        "deciles_dat": deciles_dat_final,
+        "calibration_bins_dat": calibration_bins_dat_final,
         "smooth_dat": smooth_dat_final,
         "reference_data": reference_data,
         "histogram_for_calibration": histogram_final,

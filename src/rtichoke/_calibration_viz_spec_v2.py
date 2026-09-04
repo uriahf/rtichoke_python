@@ -35,7 +35,7 @@ def _calibration_v2_spec_from_curve_list(
             f"Unsupported calibration type {calibration_type!r}; expected {supported}."
         )
 
-    point_key = "deciles_dat" if calibration_type == "discrete" else "smooth_dat"
+    point_key = "calibration_bins_dat" if calibration_type == "discrete" else "smooth_dat"
     point_frame = _require_frame(calibration_curve_list, point_key)
     distribution_frame = _require_frame(
         calibration_curve_list, "histogram_for_calibration"
