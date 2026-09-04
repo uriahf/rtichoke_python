@@ -195,7 +195,7 @@ def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(
     assert viz_js in html
     assert viz_css in html
     assert '<link rel="stylesheet" href="./rtichoke-viz.css">' not in html
-    assert '<style>' in html
+    assert "<style>" in html
     assert 'sectionGroupPresentation: "tabs"' in html
 
 
