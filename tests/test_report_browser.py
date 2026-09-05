@@ -1,4 +1,5 @@
 import json
+from importlib.resources import files
 from typing import Any, cast
 
 import numpy as np
@@ -54,10 +55,14 @@ def test_browser_report_uses_real_producers_and_only_shared_render_report(tmp_pa
         tmp_path / "report.html"
     )
     html = output.read_text(encoding="utf-8")
-    viz_js = (tmp_path / "rtichoke-viz.js").read_text(encoding="utf-8")
+    vendor = files("rtichoke").joinpath("_vendor", "rtichoke_viz")
+    viz_js = vendor.joinpath("rtichoke-viz.js").read_text(encoding="utf-8")
+    viz_css = vendor.joinpath("rtichoke-viz.css").read_text(encoding="utf-8")
 
     assert 'import { renderReport } from "./rtichoke-viz.js";' not in html
     assert viz_js in html
+    assert viz_css in html
+    assert '<link rel="stylesheet" href="./rtichoke-viz.css">' not in html
     assert 'sectionGroupPresentation: "tabs"' in html
     assert 'groupPresentation: "stacked"' in html
     assert _embedded_report(html) == report
@@ -66,8 +71,9 @@ def test_browser_report_uses_real_producers_and_only_shared_render_report(tmp_pa
         "roc",
         "gains",
     ]
-    assert (tmp_path / "rtichoke-viz.js").exists()
-    assert (tmp_path / "rtichoke-viz.css").exists()
+    assert [f.name for f in sorted(tmp_path.iterdir())] == ["report.html"]
+    assert not (tmp_path / "rtichoke-viz.js").exists()
+    assert not (tmp_path / "rtichoke-viz.css").exists()
 
 
 def test_browser_report_preserves_component_local_evaluation_ids_and_time_context(
@@ -126,3 +132,26 @@ def test_browser_report_preserves_component_local_evaluation_ids_and_time_contex
         tmp_path / "time-report.html"
     )
     assert _embedded_report(output.read_text(encoding="utf-8")) == report
+
+
+def test_browser_report_does_not_delete_or_overwrite_preexisting_assets(tmp_path):
+    existing_js = tmp_path / "rtichoke-viz.js"
+    existing_css = tmp_path / "rtichoke-viz.css"
+    existing_js.write_text("// custom preexisting js", encoding="utf-8")
+    existing_css.write_text("/* custom preexisting css */", encoding="utf-8")
+
+    probs = {"Model A": np.array([0.05, 0.2, 0.7, 0.95])}
+    reals = np.array([0, 0, 1, 1])
+    performance_data = prepare_performance_data(probs, reals, by=0.25)
+    metadata = _build_evaluation_metadata(probs, reals, np.array([]))
+    table = _performance_table_spec_from_performance_data(performance_data, metadata)
+    report = _build_report_spec_v11(
+        [{"id": "sec-1", "components": [{"id": "performance-table", "spec": table}]}]
+    )
+
+    RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(
+        tmp_path / "report.html"
+    )
+
+    assert existing_js.read_text(encoding="utf-8") == "// custom preexisting js"
+    assert existing_css.read_text(encoding="utf-8") == "/* custom preexisting css */"

@@ -33,20 +33,21 @@ class RtichokeBrowserReport:
         output.parent.mkdir(parents=True, exist_ok=True)
 
         vendor = files("rtichoke").joinpath("_vendor", "rtichoke_viz")
-        for asset in ("rtichoke-viz.js", "rtichoke-viz.css"):
-            (output.parent / asset).write_bytes(vendor.joinpath(asset).read_bytes())
 
         sanitized_spec = _sanitize_nan_values(self.spec)
         spec_json = json.dumps(sanitized_spec, separators=(",", ":")).replace(
             "</", "<\\/"
         )
         viz_js = vendor.joinpath("rtichoke-viz.js").read_text(encoding="utf-8")
+        viz_css = vendor.joinpath("rtichoke-viz.css").read_text(encoding="utf-8")
         html = f"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="./rtichoke-viz.css">
+  <style>
+{viz_css}
+  </style>
   <title>rtichoke report</title>
 </head>
 <body>
