@@ -40,6 +40,7 @@ class RtichokeBrowserReport:
         )
         viz_js = vendor.joinpath("rtichoke-viz.js").read_text(encoding="utf-8")
         viz_css = vendor.joinpath("rtichoke-viz.css").read_text(encoding="utf-8")
+        render_fn = "renderReport" if "function renderReport" in viz_js else "PU"
         html = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -55,13 +56,14 @@ class RtichokeBrowserReport:
   <script id="rtichoke-report-spec" type="application/json">{spec_json}</script>
   <script type="module">
 {viz_js}
+    const renderReportFn = typeof renderReport !== "undefined" ? renderReport : {render_fn};
     const spec = JSON.parse(
       document.querySelector("#rtichoke-report-spec").textContent
     );
-        document.querySelector("#rtichoke-report").append(renderReport(spec, {{
+    document.querySelector("#rtichoke-report").append(renderReportFn(spec, {{
       sectionGroupPresentation: "tabs",
       groupPresentation: "stacked"
-        }}));
+    }}));
   </script>
 </body>
 </html>
