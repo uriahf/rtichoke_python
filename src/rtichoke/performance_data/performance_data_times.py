@@ -19,6 +19,7 @@ from rtichoke.processing.transforms import (
 )
 
 import numpy as np
+from polarstate import predict_aj_estimates, prepare_event_table
 
 
 _PERFORMANCE_DATA_TIMES_COLUMNS = [
@@ -122,6 +123,14 @@ def prepare_performance_data_times(
 
     cumulative_aj_data = _calculate_cumulative_aj_data(final_adjusted_data)
     performance_data = _turn_cumulative_aj_to_performance_data(cumulative_aj_data)
+    performance_data = _recalculate_interventions_avoided_times(
+        performance_data,
+        probs=probs,
+        reals=reals,
+        times=times,
+        fixed_time_horizons=fixed_time_horizons,
+        heuristics_sets=heuristics_sets,
+    )
 
     group_order = {group: index for index, group in enumerate(probs)}
     horizon_order = {
@@ -162,6 +171,134 @@ def prepare_performance_data_times(
         )
         .select(_PERFORMANCE_DATA_TIMES_COLUMNS)
     )
+
+
+def _compute_population_event_risk_times(
+    reals: np.ndarray,
+    times: np.ndarray,
+    horizon: float,
+    censoring_heuristic: str,
+    competing_heuristic: str,
+) -> float:
+    """Compute the genuine pooled full-population KM/AJ event risk estimate."""
+    df = pl.DataFrame(
+        {
+            "reals": np.asarray(reals),
+            "times": np.asarray(times, dtype=float),
+            "fixed_time_horizon": float(horizon),
+        }
+    )
+
+    if censoring_heuristic == "excluded":
+        df = df.filter(
+            (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
+        )
+
+    if competing_heuristic == "excluded":
+        df = df.filter(
+            (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") != 2)
+        )
+    elif competing_heuristic == "adjusted_as_censored":
+        df = df.with_columns(
+            pl.when(pl.col("reals") == 2)
+            .then(0)
+            .otherwise(pl.col("reals"))
+            .alias("reals")
+        )
+    elif competing_heuristic == "adjusted_as_composite":
+        df = df.with_columns(
+            pl.when(pl.col("reals") == 2)
+            .then(1)
+            .otherwise(pl.col("reals"))
+            .alias("reals")
+        )
+
+    event_table = prepare_event_table(df)
+    estimate = predict_aj_estimates(
+        event_table, pl.Series([float(horizon)]), full_event_table=False
+    )
+    return float(estimate["state_occupancy_probability_1"][0])
+
+
+def _recalculate_interventions_avoided_times(
+    performance_data: pl.DataFrame,
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    times: Union[np.ndarray, Dict[str, np.ndarray]],
+    fixed_time_horizons: list[float],
+    heuristics_sets: list[Dict],
+) -> pl.DataFrame:
+    """Recalculate time-dependent interventions avoided using model and treat-all net benefit.
+
+    IA = 100 * (NB_model - NB_all) / [threshold / (1 - threshold)]
+
+    Population event risk is computed from the full population dataset for each group,
+    horizon, censoring heuristic, and competing heuristic, independent of prediction values.
+    Interventions avoided is calculated for probability_threshold rows where 0 < chosen_cutoff < 1.
+    For chosen_cutoff == 0 or 1, and for PPCR rows, interventions avoided is set to null.
+    """
+    rows = []
+    for group in probs:
+        reals_group = reals[group] if isinstance(reals, dict) else reals
+        times_group = times[group] if isinstance(times, dict) else times
+        for horizon in fixed_time_horizons:
+            for heuristics in heuristics_sets:
+                censoring = heuristics["censoring_heuristic"]
+                competing = heuristics["competing_heuristic"]
+                risk = _compute_population_event_risk_times(
+                    reals_group, times_group, horizon, censoring, competing
+                )
+                rows.append(
+                    {
+                        "reference_group": group,
+                        "fixed_time_horizon": float(horizon),
+                        "censoring_heuristic": censoring,
+                        "competing_heuristic": competing,
+                        "_event_risk": risk,
+                    }
+                )
+
+    event_risk_df = pl.DataFrame(rows)
+    for col in ["reference_group", "censoring_heuristic", "competing_heuristic"]:
+        if col in performance_data.columns and col in event_risk_df.columns:
+            event_risk_df = event_risk_df.with_columns(
+                pl.col(col).cast(performance_data.schema[col])
+            )
+
+    performance_data = performance_data.join(
+        event_risk_df,
+        on=[
+            "reference_group",
+            "fixed_time_horizon",
+            "censoring_heuristic",
+            "competing_heuristic",
+        ],
+        how="left",
+    )
+
+    threshold_odds = pl.col("chosen_cutoff") / (1 - pl.col("chosen_cutoff"))
+    net_benefit_all = (
+        pl.col("_event_risk") - (1 - pl.col("_event_risk")) * threshold_odds
+    )
+
+    ia_expr = (
+        pl.when(
+            (pl.col("stratified_by") == "probability_threshold")
+            & (pl.col("chosen_cutoff") > 0)
+            & (pl.col("chosen_cutoff") < 1)
+        )
+        .then(
+            100
+            * (pl.col("net_benefit") - net_benefit_all)
+            * (1 - pl.col("chosen_cutoff"))
+            / pl.col("chosen_cutoff")
+        )
+        .otherwise(None)
+    )
+
+    return performance_data.with_columns(
+        ia_expr.alias("net_benefit_interventions_avoided")
+    ).drop("_event_risk")
 
 
 def prepare_binned_classification_data_times(
