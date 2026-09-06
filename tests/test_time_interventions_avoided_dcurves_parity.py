@@ -2,7 +2,6 @@
 
 import numpy as np
 import polars as pl
-import pytest
 from numpy.testing import assert_allclose
 
 from rtichoke._interventions_avoided_viz_spec_v2 import (
@@ -214,7 +213,9 @@ def test_algebraic_invariant_across_grid() -> None:
         assert_allclose(ia_actual, expected_ia, rtol=0, atol=1e-10)
 
 
-def test_model_equals_treat_none_interventions_avoided_when_nb_equals_treat_none() -> None:
+def test_model_equals_treat_none_interventions_avoided_when_nb_equals_treat_none() -> (
+    None
+):
     """Whenever model net benefit equals Treat None net benefit (i.e. 0), model
 
     interventions avoided must equal Treat None interventions avoided reference
@@ -284,12 +285,11 @@ def test_boundary_cutoffs_0_and_1_are_null() -> None:
     assert row_1["net_benefit_interventions_avoided"].item() is None
 
     from typing import cast, Any
+
     metadata = {"model": _EvaluationMetadata("model", "model", "model", "pop")}
     spec = cast(
         dict[str, Any],
-        _interventions_avoided_times_v2_spec_from_performance_data(
-            perf, metadata
-        ),
+        _interventions_avoided_times_v2_spec_from_performance_data(perf, metadata),
     )
     data_thresholds = [datum["threshold"] for datum in spec["data"]]
     assert 0.0 not in data_thresholds
