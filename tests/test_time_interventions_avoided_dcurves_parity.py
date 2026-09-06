@@ -1,5 +1,7 @@
 """Tests for time-dependent interventions avoided parity with dcurves, fixtures A-D, algebraic invariants, boundary semantics, and multi-identity isolation."""
 
+from typing import Any, cast
+
 import numpy as np
 import polars as pl
 from numpy.testing import assert_allclose
@@ -8,6 +10,7 @@ from rtichoke._interventions_avoided_viz_spec_v2 import (
     _interventions_avoided_times_v2_spec_from_performance_data,
 )
 from rtichoke.performance_data.performance_data_times import (
+    _compute_population_event_risk_times,
     prepare_performance_data_times,
 )
 from rtichoke.processing.evaluation_semantics import _EvaluationMetadata
@@ -77,6 +80,36 @@ def test_fixture_b_right_censoring() -> None:
     ia_val = row_05["net_benefit_interventions_avoided"].item()
     assert_allclose(ia_val, 20.0, rtol=0, atol=1e-10)
     assert not np.isclose(ia_val, 16.6666666667)
+
+
+def test_fixture_b_exact_zero_prediction() -> None:
+    """Subject with prob 0.0 is censored at time 6 (exact 0 prediction).
+
+    Even when predictions contain exact 0.0 values, the true pooled population KM
+    event risk remains 0.4, and the dcurves-compatible IA remains 20.0.
+    """
+    probs = {"model": np.array([0.9, 0.8, 0.7, 0.6, 0.0, 0.3, 0.2, 0.1])}
+    reals = np.array([1, 0, 1, 0, 0, 1, 0, 0])
+    times = np.array([2.0, 12.0, 4.0, 15.0, 6.0, 9.0, 13.0, 14.0])
+
+    perf = prepare_performance_data_times(
+        probs=probs,
+        reals=reals,
+        times=times,
+        fixed_time_horizons=[10.0],
+        by=0.5,
+    )
+
+    row_05 = perf.filter(
+        (pl.col("reference_group") == "model")
+        & (pl.col("stratified_by") == "probability_threshold")
+        & (pl.col("chosen_cutoff") == 0.5)
+    )
+
+    assert row_05.height == 1
+    ia_val = row_05["net_benefit_interventions_avoided"].item()
+    assert_allclose(ia_val, 20.0, rtol=0, atol=1e-10)
+    assert not np.isclose(ia_val, 25.0)
 
 
 # =============================================================================
@@ -164,7 +197,66 @@ def test_fixture_d_competing_risks_plus_censoring() -> None:
 
 
 # =============================================================================
-# Algebraic invariant & identity tests
+# Prediction Invariance & Shared Population Tests
+# =============================================================================
+def test_population_event_risk_prediction_invariance() -> None:
+    """Population event risk must be invariant to predicted probabilities."""
+    reals = np.array([1, 0, 1, 0, 0, 1, 0, 0])
+    times = np.array([2.0, 12.0, 4.0, 15.0, 6.0, 9.0, 13.0, 14.0])
+
+    risk_orig = _compute_population_event_risk_times(
+        reals, times, 10.0, "adjusted", "adjusted_as_negative"
+    )
+    risk_zeros = _compute_population_event_risk_times(
+        reals, times, 10.0, "adjusted", "adjusted_as_negative"
+    )
+
+    assert_allclose(risk_orig, 0.4, rtol=0, atol=1e-10)
+    assert_allclose(risk_zeros, 0.4, rtol=0, atol=1e-10)
+
+
+def test_shared_population_multiple_models() -> None:
+    """Two models sharing the same reals/times population receive the exact same
+
+    population event risk, even if Model 1 has exact 0 predictions.
+    """
+    probs_m1 = np.array([0.9, 0.8, 0.7, 0.6, 0.0, 0.3, 0.2, 0.1])
+    probs_m2 = np.array([0.95, 0.85, 0.75, 0.65, 0.45, 0.35, 0.25, 0.15])
+    reals = np.array([1, 0, 1, 0, 0, 1, 0, 0])
+    times = np.array([2.0, 12.0, 4.0, 15.0, 6.0, 9.0, 13.0, 14.0])
+
+    perf = prepare_performance_data_times(
+        probs={"m1": probs_m1, "m2": probs_m2},
+        reals=reals,
+        times=times,
+        fixed_time_horizons=[10.0],
+        by=0.5,
+    )
+
+    m1_05 = perf.filter(
+        (pl.col("reference_group") == "m1")
+        & (pl.col("stratified_by") == "probability_threshold")
+        & (pl.col("chosen_cutoff") == 0.5)
+    )
+    m2_05 = perf.filter(
+        (pl.col("reference_group") == "m2")
+        & (pl.col("stratified_by") == "probability_threshold")
+        & (pl.col("chosen_cutoff") == 0.5)
+    )
+
+    # Both models share population event risk = 0.4.
+    # At cutoff 0.5, m1 and m2 classify subjects with prob > 0.5 identically (first 4 subjects).
+    # Therefore NB_m1 == NB_m2 == 0, and IA_m1 == IA_m2 == 20.0.
+    assert_allclose(
+        m1_05["net_benefit_interventions_avoided"].item(), 20.0, rtol=0, atol=1e-10
+    )
+    assert_allclose(
+        m2_05["net_benefit_interventions_avoided"].item(), 20.0, rtol=0, atol=1e-10
+    )
+
+
+# =============================================================================
+# Algebraic Invariant & Identity Tests
 # =============================================================================
 def test_algebraic_invariant_across_grid() -> None:
     """For every finite threshold strictly between 0 and 1, assert:
@@ -184,15 +276,8 @@ def test_algebraic_invariant_across_grid() -> None:
         by=0.05,
     )
 
-    event_risk = (
-        perf.filter(
-            (pl.col("chosen_cutoff") == 0)
-            & (pl.col("stratified_by") == "probability_threshold")
-        )["real_positives"].item()
-        / perf.filter(
-            (pl.col("chosen_cutoff") == 0)
-            & (pl.col("stratified_by") == "probability_threshold")
-        )["n"].item()
+    event_risk = _compute_population_event_risk_times(
+        reals, times, 10.0, "adjusted", "adjusted_as_negative"
     )
 
     thresh_rows = perf.filter(
@@ -253,7 +338,7 @@ def test_model_equals_treat_none_interventions_avoided_when_nb_equals_treat_none
 
 
 # =============================================================================
-# Boundary semantics test
+# Boundary Semantics Test
 # =============================================================================
 def test_boundary_cutoffs_0_and_1_are_null() -> None:
     """At thresholds 0 and 1, net_benefit_interventions_avoided must be null,
@@ -284,8 +369,6 @@ def test_boundary_cutoffs_0_and_1_are_null() -> None:
     assert row_0["net_benefit_interventions_avoided"].item() is None
     assert row_1["net_benefit_interventions_avoided"].item() is None
 
-    from typing import cast, Any
-
     metadata = {"model": _EvaluationMetadata("model", "model", "model", "pop")}
     spec = cast(
         dict[str, Any],
@@ -297,15 +380,12 @@ def test_boundary_cutoffs_0_and_1_are_null() -> None:
 
 
 # =============================================================================
-# Multi-identity isolation tests
+# Multi-Identity Distinct Populations Tests
 # =============================================================================
-def test_multi_identity_isolation() -> None:
-    """Population event risk must be matched correctly across:
+def test_multi_identity_distinct_populations() -> None:
+    """Population event risk must be matched correctly across multiple distinct
 
-    - multiple models sharing one outcome population
-    - multiple populations with different event risks
-    - multiple horizons
-    - multiple heuristic sets
+    populations, horizons, and heuristic sets.
     """
     probs_m1 = np.array([0.9, 0.8, 0.7, 0.6, 0.4, 0.3, 0.2, 0.1])
     probs_m2 = np.array([0.1, 0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9])
@@ -336,7 +416,6 @@ def test_multi_identity_isolation() -> None:
         by=0.5,
     )
 
-    # Check that cutoff 0.5 IA for each group uses its own cutoff-zero event risk
     groups = perf.select(
         "reference_group",
         "fixed_time_horizon",
@@ -344,7 +423,7 @@ def test_multi_identity_isolation() -> None:
         "competing_heuristic",
     ).unique()
 
-    assert groups.height == 8  # 2 models * 2 horizons * 2 heuristic sets
+    assert groups.height == 8  # 2 populations * 2 horizons * 2 heuristic sets
 
     for g in groups.iter_rows(named=True):
         group_df = perf.filter(
@@ -355,10 +434,20 @@ def test_multi_identity_isolation() -> None:
             & (pl.col("stratified_by") == "probability_threshold")
         )
 
-        c0 = group_df.filter(pl.col("chosen_cutoff") == 0.0)
         c05 = group_df.filter(pl.col("chosen_cutoff") == 0.5)
 
-        event_risk = c0["real_positives"].item() / c0["n"].item()
+        ref_group = g["reference_group"]
+        reals_g = reals_p1 if ref_group == "m1" else reals_p2
+        times_g = times_p1 if ref_group == "m1" else times_p2
+
+        event_risk = _compute_population_event_risk_times(
+            reals_g,
+            times_g,
+            g["fixed_time_horizon"],
+            g["censoring_heuristic"],
+            g["competing_heuristic"],
+        )
+
         nb_model = c05["net_benefit"].item()
         cutoff = 0.5
         threshold_odds = cutoff / (1.0 - cutoff)
