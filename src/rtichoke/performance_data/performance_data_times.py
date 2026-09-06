@@ -122,6 +122,7 @@ def prepare_performance_data_times(
 
     cumulative_aj_data = _calculate_cumulative_aj_data(final_adjusted_data)
     performance_data = _turn_cumulative_aj_to_performance_data(cumulative_aj_data)
+    performance_data = _recalculate_interventions_avoided_times(performance_data)
 
     group_order = {group: index for index, group in enumerate(probs)}
     horizon_order = {
@@ -162,6 +163,68 @@ def prepare_performance_data_times(
         )
         .select(_PERFORMANCE_DATA_TIMES_COLUMNS)
     )
+
+
+def _recalculate_interventions_avoided_times(
+    performance_data: pl.DataFrame,
+) -> pl.DataFrame:
+    """Recalculate time-dependent interventions avoided using model and treat-all net benefit.
+
+    IA = 100 * (NB_model - NB_all) / [threshold / (1 - threshold)]
+
+    Population event risk is extracted at chosen_cutoff == 0 where stratified_by == "probability_threshold".
+    Interventions avoided is calculated for probability_threshold rows where 0 < chosen_cutoff < 1.
+    For chosen_cutoff == 0 or 1, and for PPCR rows, interventions avoided is set to null.
+    """
+    event_risk_df = (
+        performance_data.filter(
+            (pl.col("chosen_cutoff") == 0)
+            & (pl.col("stratified_by") == "probability_threshold")
+        )
+        .select(
+            "reference_group",
+            "fixed_time_horizon",
+            "censoring_heuristic",
+            "competing_heuristic",
+            (pl.col("real_positives") / pl.col("n")).alias("_event_risk"),
+        )
+        .unique()
+    )
+
+    performance_data = performance_data.join(
+        event_risk_df,
+        on=[
+            "reference_group",
+            "fixed_time_horizon",
+            "censoring_heuristic",
+            "competing_heuristic",
+        ],
+        how="left",
+    )
+
+    threshold_odds = pl.col("chosen_cutoff") / (1 - pl.col("chosen_cutoff"))
+    net_benefit_all = (
+        pl.col("_event_risk") - (1 - pl.col("_event_risk")) * threshold_odds
+    )
+
+    ia_expr = (
+        pl.when(
+            (pl.col("stratified_by") == "probability_threshold")
+            & (pl.col("chosen_cutoff") > 0)
+            & (pl.col("chosen_cutoff") < 1)
+        )
+        .then(
+            100
+            * (pl.col("net_benefit") - net_benefit_all)
+            * (1 - pl.col("chosen_cutoff"))
+            / pl.col("chosen_cutoff")
+        )
+        .otherwise(None)
+    )
+
+    return performance_data.with_columns(
+        ia_expr.alias("net_benefit_interventions_avoided")
+    ).drop("_event_risk")
 
 
 def prepare_binned_classification_data_times(
