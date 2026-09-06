@@ -3,9 +3,35 @@
 from __future__ import annotations
 
 import json
+import re
 from importlib.resources import files
 from pathlib import Path
 from typing import Any
+
+
+def _resolve_render_report_symbol(viz_js: str) -> str:
+    """Resolve the local callable identifier exported as 'renderReport' from an ESM bundle."""
+    export_pattern = re.compile(r"export\s*\{([^}]+)\}", re.DOTALL)
+    for match in export_pattern.finditer(viz_js):
+        clause = match.group(1)
+        for item in clause.split(","):
+            parts = item.strip().split()
+            if not parts:
+                continue
+            if len(parts) == 3 and parts[1] == "as" and parts[2] == "renderReport":
+                return parts[0]
+            if len(parts) == 1 and parts[0] == "renderReport":
+                return "renderReport"
+
+    if re.search(
+        r"export\s+(?:async\s+)?function\s+renderReport\b|export\s+(?:const|let|var)\s+renderReport\b",
+        viz_js,
+    ):
+        return "renderReport"
+
+    raise ValueError(
+        "Could not resolve 'renderReport' export in provided JavaScript bundle."
+    )
 
 
 def _sanitize_nan_values(obj: Any) -> Any:
@@ -40,6 +66,7 @@ class RtichokeBrowserReport:
         )
         viz_js = vendor.joinpath("rtichoke-viz.js").read_text(encoding="utf-8")
         viz_css = vendor.joinpath("rtichoke-viz.css").read_text(encoding="utf-8")
+        render_fn = _resolve_render_report_symbol(viz_js)
         html = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -58,10 +85,10 @@ class RtichokeBrowserReport:
     const spec = JSON.parse(
       document.querySelector("#rtichoke-report-spec").textContent
     );
-        document.querySelector("#rtichoke-report").append(renderReport(spec, {{
+    document.querySelector("#rtichoke-report").append({render_fn}(spec, {{
       sectionGroupPresentation: "tabs",
       groupPresentation: "stacked"
-        }}));
+    }}));
   </script>
 </body>
 </html>

@@ -3,12 +3,16 @@ from importlib.resources import files
 from typing import Any, cast
 
 import numpy as np
+import pytest
 
 from rtichoke._performance_table_spec import (
     _performance_table_spec_from_performance_data,
     _performance_table_times_spec_from_performance_data,
 )
-from rtichoke._report_browser import RtichokeBrowserReport
+from rtichoke._report_browser import (
+    RtichokeBrowserReport,
+    _resolve_render_report_symbol,
+)
 from rtichoke._report_spec import _build_report_spec_v11
 from rtichoke._viz_spec_v2 import (
     _gains_v2_spec_from_performance_data,
@@ -155,3 +159,26 @@ def test_browser_report_does_not_delete_or_overwrite_preexisting_assets(tmp_path
 
     assert existing_js.read_text(encoding="utf-8") == "// custom preexisting js"
     assert existing_css.read_text(encoding="utf-8") == "/* custom preexisting css */"
+
+
+def test_resolve_render_report_symbol_export_clauses():
+    # Unminified / shorthand export
+    shorthand_js = "export { foo, renderReport, bar };"
+    assert _resolve_render_report_symbol(shorthand_js) == "renderReport"
+
+    # Direct function export
+    fn_export_js = "export function renderReport(spec, options) { return null; }"
+    assert _resolve_render_report_symbol(fn_export_js) == "renderReport"
+
+    # Minified / aliased export with arbitrary identifier
+    aliased_js = "export { foo, abc as renderReport, bar };"
+    assert _resolve_render_report_symbol(aliased_js) == "abc"
+
+    # Compact minified export syntax
+    compact_aliased_js = "export{x1,y2 as renderReport,z3};"
+    assert _resolve_render_report_symbol(compact_aliased_js) == "y2"
+
+    # Missing renderReport export raises a clear error
+    missing_js = "export { foo, bar };"
+    with pytest.raises(ValueError, match="Could not resolve 'renderReport' export"):
+        _resolve_render_report_symbol(missing_js)
