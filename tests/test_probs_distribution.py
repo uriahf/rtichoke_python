@@ -138,7 +138,28 @@ def test_structure_and_schemas():
     assert ops.schema["realized_ppcr"] == pl.Float64
 
 
-def test_nullable_model_semantics():
+def test_nullable_model_single_keyed_population():
+    probs = {"validation_population": np.array([0.2, 0.8])}
+    reals = {"validation_population": np.array([0, 1])}
+
+    res = _prepare_probs_distribution_data(probs, reals, by=0.5)
+
+    bins = res["bins"]
+    ops = res["operating_points"]
+
+    assert bins.schema["model"] == pl.String
+    assert ops.schema["model"] == pl.String
+
+    assert (bins["evaluation"] == "validation_population").all()
+    assert (bins["population"] == "validation_population").all()
+    assert bins["model"].is_null().all()
+
+    assert (ops["evaluation"] == "validation_population").all()
+    assert (ops["population"] == "validation_population").all()
+    assert ops["model"].is_null().all()
+
+
+def test_nullable_model_multiple_keyed_populations():
     probs = {"pop1": np.array([0.2, 0.8]), "pop2": np.array([0.3, 0.7])}
     reals = {"pop1": np.array([0, 1]), "pop2": np.array([1, 0])}
 
@@ -322,6 +343,28 @@ def test_totals_match():
 
     assert bins["n_positive"].sum() == 2
     assert bins["n_negative"].sum() == 3
+
+
+def test_large_observation_vector_performance_regression():
+    rng = np.random.default_rng(42)
+    n_obs = 10_000
+    p_vec = rng.uniform(0.0, 1.0, size=n_obs)
+    p_vec[0] = 0.0
+    p_vec[1] = 1.0
+    r_vec = rng.integers(0, 2, size=n_obs)
+
+    probs = {"m1": p_vec}
+    reals = r_vec
+
+    res = _prepare_probs_distribution_data(probs, reals, by=0.01)
+    bins = res["bins"]
+    ops = res["operating_points"]
+
+    assert len(ops) == 101
+    assert bins["n_positive"].sum() == int((r_vec == 1).sum())
+    assert bins["n_negative"].sum() == int((r_vec == 0).sum())
+
+    assert_reconstruction_invariant(probs, reals, by=0.01)
 
 
 def test_invalid_inputs():

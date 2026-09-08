@@ -8,12 +8,107 @@ from rtichoke.performance_data.performance_data import (
     _validate_and_align_binary_inputs,
     prepare_performance_data,
 )
-from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
+from rtichoke.processing.evaluation_semantics import (
+    _EvaluationMetadata,
+    _build_evaluation_metadata,
+)
 
 
 class _PredictionDistributionData(TypedDict):
     bins: pl.DataFrame
     operating_points: pl.DataFrame
+
+
+def _aggregate_bins_for_evaluation(
+    probabilities: np.ndarray,
+    outcomes: np.ndarray,
+    interval_boundaries: np.ndarray,
+    evaluation_metadata: _EvaluationMetadata,
+) -> pl.DataFrame:
+    """Aggregate observation counts into complete interval grid for one evaluation."""
+    # Build complete interval grid
+    # Interval 0 is [0.0, 0.0]
+    # Intervals 1..k are (interval_boundaries[i-1], interval_boundaries[i]]
+    grid_rows = [
+        {
+            "interval_id": 0,
+            "evaluation": evaluation_metadata.evaluation,
+            "model": evaluation_metadata.model,
+            "population": evaluation_metadata.population,
+            "lower": 0.0,
+            "upper": 0.0,
+            "include_lower": True,
+            "include_upper": True,
+        }
+    ]
+
+    for i in range(1, len(interval_boundaries)):
+        grid_rows.append(
+            {
+                "interval_id": i,
+                "evaluation": evaluation_metadata.evaluation,
+                "model": evaluation_metadata.model,
+                "population": evaluation_metadata.population,
+                "lower": float(interval_boundaries[i - 1]),
+                "upper": float(interval_boundaries[i]),
+                "include_lower": False,
+                "include_upper": True,
+            }
+        )
+
+    grid_schema = {
+        "interval_id": pl.Int64,
+        "evaluation": pl.String,
+        "model": pl.String,
+        "population": pl.String,
+        "lower": pl.Float64,
+        "upper": pl.Float64,
+        "include_lower": pl.Boolean,
+        "include_upper": pl.Boolean,
+    }
+
+    complete_grid = pl.DataFrame(grid_rows, schema=grid_schema)
+
+    if len(probabilities) == 0:
+        return complete_grid.with_columns(
+            pl.lit(0, dtype=pl.UInt32).alias("n_positive"),
+            pl.lit(0, dtype=pl.UInt32).alias("n_negative"),
+        ).drop("interval_id")
+
+    # Determine interval_id for each observation:
+    # prob == 0 -> interval_id = 0
+    # prob > 0 -> interval_id via np.digitize(prob, interval_boundaries, right=True)
+    zero_score_mask = probabilities == 0.0
+    interval_ids = np.zeros(len(probabilities), dtype=int)
+
+    if np.any(~zero_score_mask):
+        interval_ids[~zero_score_mask] = np.digitize(
+            probabilities[~zero_score_mask], interval_boundaries, right=True
+        )
+
+    obs_df = pl.DataFrame(
+        {
+            "interval_id": interval_ids,
+            "is_pos": (outcomes == 1).astype(int),
+            "is_neg": (outcomes == 0).astype(int),
+        }
+    )
+
+    counts_df = obs_df.group_by("interval_id").agg(
+        pl.col("is_pos").sum().cast(pl.UInt32).alias("n_positive"),
+        pl.col("is_neg").sum().cast(pl.UInt32).alias("n_negative"),
+    )
+
+    aggregated_bins = (
+        complete_grid.join(counts_df, on="interval_id", how="left")
+        .with_columns(
+            pl.col("n_positive").fill_null(0),
+            pl.col("n_negative").fill_null(0),
+        )
+        .drop("interval_id")
+    )
+
+    return aggregated_bins
 
 
 def _prepare_probs_distribution_data(
@@ -47,45 +142,36 @@ def _prepare_probs_distribution_data(
             "'probability_threshold' or 'ppcr'."
         )
 
-    strat_type = stratified_by[0]
-    if strat_type not in ("probability_threshold", "ppcr"):
+    stratification_type = stratified_by[0]
+    if stratification_type not in ("probability_threshold", "ppcr"):
         raise ValueError(
-            f"Unsupported stratification key {strat_type!r}. "
+            f"Unsupported stratification key {stratification_type!r}. "
             "Must be 'probability_threshold' or 'ppcr'."
         )
 
     aligned_reals = _validate_and_align_binary_inputs(probs=probs, reals=reals)
 
-    # Derive evaluation metadata
+    # Derive evaluation metadata from original reals to preserve single keyed-population semantics
     dummy_times = np.array([])
-    eval_metadata_map = _build_evaluation_metadata(probs, aligned_reals, dummy_times)
+    evaluation_metadata_by_group = _build_evaluation_metadata(probs, reals, dummy_times)
 
-    evaluations = list(eval_metadata_map.keys())
-    if len(evaluations) != len(set(evaluations)):
+    evaluation_ids = [
+        metadata.evaluation for metadata in evaluation_metadata_by_group.values()
+    ]
+    if len(evaluation_ids) != len(set(evaluation_ids)):
         raise ValueError("Duplicate evaluation identifiers detected.")
 
+    evaluation_keys = list(evaluation_metadata_by_group.keys())
+
     # Call authoritative production performance data
-    perf_df = prepare_performance_data(
+    performance_data = prepare_performance_data(
         probs=probs,
         reals=aligned_reals,
         stratified_by=stratified_by,
         by=by,
     )
 
-    # Dtypes for output DataFrames
-    bins_schema = {
-        "evaluation": pl.String,
-        "model": pl.String,
-        "population": pl.String,
-        "lower": pl.Float64,
-        "upper": pl.Float64,
-        "include_lower": pl.Boolean,
-        "include_upper": pl.Boolean,
-        "n_positive": pl.UInt32,
-        "n_negative": pl.UInt32,
-    }
-
-    op_schema = {
+    operating_point_schema = {
         "evaluation": pl.String,
         "model": pl.String,
         "population": pl.String,
@@ -95,122 +181,65 @@ def _prepare_probs_distribution_data(
         "realized_ppcr": pl.Float64,
     }
 
-    bins_rows = []
-    op_rows = []
+    eval_bins_frames = []
+    operating_point_rows = []
 
-    for eval_key in evaluations:
-        meta = eval_metadata_map[eval_key]
+    for evaluation_key in evaluation_keys:
+        evaluation_metadata = evaluation_metadata_by_group[evaluation_key]
 
-        eval_perf = perf_df.filter(pl.col("reference_group") == eval_key)
+        evaluation_performance_data = performance_data.filter(
+            pl.col("reference_group") == evaluation_key
+        )
 
-        p_vec = np.asarray(probs[eval_key], dtype=float)
+        probabilities = np.asarray(probs[evaluation_key], dtype=float)
         if isinstance(aligned_reals, dict):
-            r_vec = np.asarray(aligned_reals[eval_key], dtype=int)
+            outcomes = np.asarray(aligned_reals[evaluation_key], dtype=int)
         else:
-            r_vec = np.asarray(aligned_reals, dtype=int)
+            outcomes = np.asarray(aligned_reals, dtype=int)
 
         # Build operating points rows
-        for row in eval_perf.iter_rows(named=True):
-            requested_val = float(
-                row["ppcr"] if strat_type == "ppcr" else row["chosen_cutoff"]
+        for row in evaluation_performance_data.iter_rows(named=True):
+            requested_value = float(
+                row["ppcr"] if stratification_type == "ppcr" else row["chosen_cutoff"]
             )
             effective_cutoff = float(row["chosen_cutoff"])
-            n_obs = int(row["n"])
-            pred_pos = int(row["predicted_positives"])
-            realized_ppcr = float(pred_pos / n_obs) if n_obs > 0 else 0.0
+            n_observations = int(row["n"])
+            predicted_positives = int(row["predicted_positives"])
+            realized_ppcr = (
+                float(predicted_positives / n_observations)
+                if n_observations > 0
+                else 0.0
+            )
 
-            op_rows.append(
+            operating_point_rows.append(
                 {
-                    "evaluation": meta.evaluation,
-                    "model": meta.model,
-                    "population": meta.population,
-                    "type": strat_type,
-                    "value": requested_val,
+                    "evaluation": evaluation_metadata.evaluation,
+                    "model": evaluation_metadata.model,
+                    "population": evaluation_metadata.population,
+                    "type": stratification_type,
+                    "value": requested_value,
                     "cutoff": effective_cutoff,
                     "realized_ppcr": realized_ppcr,
                 }
             )
 
         # Build interval boundaries from effective cutoffs
-        cutoffs = eval_perf["chosen_cutoff"].to_numpy().astype(float)
-        unique_bounds = np.unique(np.concatenate(([0.0, 1.0], cutoffs)))
-        unique_bounds.sort()
+        cutoffs = evaluation_performance_data["chosen_cutoff"].to_numpy().astype(float)
+        interval_boundaries = np.unique(np.concatenate(([0.0, 1.0], cutoffs)))
+        interval_boundaries.sort()
 
-        # Build interval specs: [0, 0] then (bounds[i], bounds[i+1]]
-        intervals = [(0.0, 0.0, True, True)]
-        if len(unique_bounds) > 1:
-            for i in range(len(unique_bounds) - 1):
-                intervals.append(
-                    (float(unique_bounds[i]), float(unique_bounds[i + 1]), False, True)
-                )
-
-        # Vectorized assignment of observations to intervals
-        is_zero = p_vec == 0.0
-        pos_zero = int(np.sum(r_vec[is_zero] == 1))
-        neg_zero = int(np.sum(r_vec[is_zero] == 0))
-
-        bins_rows.append(
-            {
-                "evaluation": meta.evaluation,
-                "model": meta.model,
-                "population": meta.population,
-                "lower": 0.0,
-                "upper": 0.0,
-                "include_lower": True,
-                "include_upper": True,
-                "n_positive": pos_zero,
-                "n_negative": neg_zero,
-            }
+        eval_bins = _aggregate_bins_for_evaluation(
+            probabilities=probabilities,
+            outcomes=outcomes,
+            interval_boundaries=interval_boundaries,
+            evaluation_metadata=evaluation_metadata,
         )
+        eval_bins_frames.append(eval_bins)
 
-        non_zero_mask = p_vec > 0.0
-        p_nonzero = p_vec[non_zero_mask]
-        r_nonzero = r_vec[non_zero_mask]
-
-        if len(p_nonzero) > 0 and len(unique_bounds) > 1:
-            # Bucket index for p_nonzero into (unique_bounds[i], unique_bounds[i+1]]
-            # np.digitize(p, bounds, right=True) maps p in (bounds[i-1], bounds[i]] to i
-            b_indices = np.digitize(p_nonzero, unique_bounds, right=True)
-
-            # Accumulate counts per interval index i (1 <= i < len(unique_bounds))
-            for i in range(1, len(unique_bounds)):
-                in_bin = b_indices == i
-                pos_count = int(np.sum(r_nonzero[in_bin] == 1))
-                neg_count = int(np.sum(r_nonzero[in_bin] == 0))
-
-                bins_rows.append(
-                    {
-                        "evaluation": meta.evaluation,
-                        "model": meta.model,
-                        "population": meta.population,
-                        "lower": float(unique_bounds[i - 1]),
-                        "upper": float(unique_bounds[i]),
-                        "include_lower": False,
-                        "include_upper": True,
-                        "n_positive": pos_count,
-                        "n_negative": neg_count,
-                    }
-                )
-        else:
-            for i in range(1, len(unique_bounds)):
-                bins_rows.append(
-                    {
-                        "evaluation": meta.evaluation,
-                        "model": meta.model,
-                        "population": meta.population,
-                        "lower": float(unique_bounds[i - 1]),
-                        "upper": float(unique_bounds[i]),
-                        "include_lower": False,
-                        "include_upper": True,
-                        "n_positive": 0,
-                        "n_negative": 0,
-                    }
-                )
-
-    bins_df = pl.DataFrame(bins_rows, schema=bins_schema)
-    op_df = pl.DataFrame(op_rows, schema=op_schema)
+    bins = pl.concat(eval_bins_frames, how="vertical")
+    operating_points = pl.DataFrame(operating_point_rows, schema=operating_point_schema)
 
     return _PredictionDistributionData(
-        bins=bins_df,
-        operating_points=op_df,
+        bins=bins,
+        operating_points=operating_points,
     )
