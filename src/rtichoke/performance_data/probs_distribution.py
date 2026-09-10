@@ -30,8 +30,6 @@ def _aggregate_rank_bins_for_evaluation(
     """Aggregate observed positive and negative mass into probability-quantile rank bins."""
     by = float(by)
     q = int(round(1 / by))
-    quant_bounds = np.linspace(0.0, 1.0, q + 1)
-
     grid_rows = []
     for i in range(q):
         grid_rows.append(
@@ -40,8 +38,8 @@ def _aggregate_rank_bins_for_evaluation(
                 "evaluation": evaluation_metadata.evaluation,
                 "model": evaluation_metadata.model,
                 "population": evaluation_metadata.population,
-                "rank_lower": float(quant_bounds[i]),
-                "rank_upper": float(quant_bounds[i + 1]),
+                "rank_lower": float(round(i * by, 10)),
+                "rank_upper": float(round((i + 1) * by, 10)),
             }
         )
 

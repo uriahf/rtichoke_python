@@ -455,14 +455,60 @@ def test_rank_bins_ties_never_split():
     assert rb["n_negative"].sum() == 2
 
 
-def test_rank_bins_small_n_less_than_q():
-    probs = {"m1": np.array([0.2, 0.8])}
-    reals = np.array([0, 1])
+def test_primary_golden_fixture():
+    probs = {"m1": np.array([0.00, 0.15, 0.30, 0.50, 0.50, 0.50, 0.65, 0.80, 1.00])}
+    reals = np.array([0, 1, 0, 1, 0, 1, 1, 0, 1])
 
-    res = _prepare_probs_distribution_data(probs, reals, by=0.2)
+    res = _prepare_probs_distribution_data(probs, reals, by=0.20)
     rb = res["rank_bins"]
 
-    # Grid retained (q = 5)
-    assert len(rb) == 5
-    assert rb["n_positive"].sum() == 1
-    assert rb["n_negative"].sum() == 1
+    expected_df = pl.DataFrame(
+        {
+            "evaluation": ["m1"] * 5,
+            "model": ["m1"] * 5,
+            "population": ["__shared_population__"] * 5,
+            "rank_lower": [0.00, 0.20, 0.40, 0.60, 0.80],
+            "rank_upper": [0.20, 0.40, 0.60, 0.80, 1.00],
+            "n_positive": [1, 2, 0, 1, 1],
+            "n_negative": [1, 2, 0, 0, 1],
+        }
+    )
+
+    assert rb.equals(expected_df)
+
+
+def test_secondary_golden_fixture_n_less_than_q():
+    probs = {"m1": np.array([0.10, 0.50, 0.90])}
+    reals = np.array([0, 1, 1])
+
+    res = _prepare_probs_distribution_data(probs, reals, by=0.20)
+    rb = res["rank_bins"]
+
+    expected_df = pl.DataFrame(
+        {
+            "evaluation": ["m1"] * 5,
+            "model": ["m1"] * 5,
+            "population": ["__shared_population__"] * 5,
+            "rank_lower": [0.00, 0.20, 0.40, 0.60, 0.80],
+            "rank_upper": [0.20, 0.40, 0.60, 0.80, 1.00],
+            "n_positive": [0, 0, 1, 0, 1],
+            "n_negative": [1, 0, 0, 0, 0],
+        }
+    )
+
+    assert rb.equals(expected_df)
+
+
+def test_primary_golden_fixture_order_invariance():
+    probs_orig = np.array([0.00, 0.15, 0.30, 0.50, 0.50, 0.50, 0.65, 0.80, 1.00])
+    reals_orig = np.array([0, 1, 0, 1, 0, 1, 1, 0, 1])
+
+    # Permuted order including within the tied 0.50 group
+    perm_idx = np.array([4, 0, 5, 2, 3, 8, 1, 7, 6])
+    probs_perm = probs_orig[perm_idx]
+    reals_perm = reals_orig[perm_idx]
+
+    res_orig = _prepare_probs_distribution_data({"m1": probs_orig}, reals_orig, by=0.20)
+    res_perm = _prepare_probs_distribution_data({"m1": probs_perm}, reals_perm, by=0.20)
+
+    assert res_orig["rank_bins"].equals(res_perm["rank_bins"])
