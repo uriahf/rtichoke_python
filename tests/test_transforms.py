@@ -2,7 +2,6 @@
 
 import numpy as np
 import polars as pl
-import pytest
 
 from rtichoke.processing.transforms import (
     _compute_probability_quantile_bin_indices,
