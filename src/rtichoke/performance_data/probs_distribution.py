@@ -12,11 +12,81 @@ from rtichoke.processing.evaluation_semantics import (
     _EvaluationMetadata,
     _build_evaluation_metadata,
 )
+from rtichoke.processing.transforms import _compute_probability_quantile_bin_indices
 
 
 class _PredictionDistributionData(TypedDict):
     bins: pl.DataFrame
     operating_points: pl.DataFrame
+    rank_bins: pl.DataFrame
+
+
+def _aggregate_rank_bins_for_evaluation(
+    probabilities: np.ndarray,
+    outcomes: np.ndarray,
+    by: float,
+    evaluation_metadata: _EvaluationMetadata,
+) -> pl.DataFrame:
+    """Aggregate observed positive and negative mass into probability-quantile rank bins."""
+    by = float(by)
+    q = int(round(1 / by))
+    quant_bounds = np.linspace(0.0, 1.0, q + 1)
+
+    grid_rows = []
+    for i in range(q):
+        grid_rows.append(
+            {
+                "stratum_id": i,
+                "evaluation": evaluation_metadata.evaluation,
+                "model": evaluation_metadata.model,
+                "population": evaluation_metadata.population,
+                "rank_lower": float(quant_bounds[i]),
+                "rank_upper": float(quant_bounds[i + 1]),
+            }
+        )
+
+    grid_schema = {
+        "stratum_id": pl.Int64,
+        "evaluation": pl.String,
+        "model": pl.String,
+        "population": pl.String,
+        "rank_lower": pl.Float64,
+        "rank_upper": pl.Float64,
+    }
+
+    complete_grid = pl.DataFrame(grid_rows, schema=grid_schema)
+
+    if len(probabilities) == 0:
+        return complete_grid.with_columns(
+            pl.lit(0, dtype=pl.Int64).alias("n_positive"),
+            pl.lit(0, dtype=pl.Int64).alias("n_negative"),
+        ).drop("stratum_id")
+
+    bin_indices, _ = _compute_probability_quantile_bin_indices(probabilities, by)
+
+    obs_df = pl.DataFrame(
+        {
+            "stratum_id": bin_indices,
+            "is_pos": (outcomes == 1).astype(int),
+            "is_neg": (outcomes == 0).astype(int),
+        }
+    )
+
+    counts_df = obs_df.group_by("stratum_id").agg(
+        pl.col("is_pos").sum().cast(pl.Int64).alias("n_positive"),
+        pl.col("is_neg").sum().cast(pl.Int64).alias("n_negative"),
+    )
+
+    aggregated_rank_bins = (
+        complete_grid.join(counts_df, on="stratum_id", how="left")
+        .with_columns(
+            pl.col("n_positive").fill_null(0),
+            pl.col("n_negative").fill_null(0),
+        )
+        .drop("stratum_id")
+    )
+
+    return aggregated_rank_bins
 
 
 def _aggregate_bins_for_evaluation(
@@ -236,10 +306,29 @@ def _prepare_probs_distribution_data(
         )
         eval_bins_frames.append(eval_bins)
 
+    eval_rank_bins_frames = []
+    for evaluation_key in evaluation_keys:
+        evaluation_metadata = evaluation_metadata_by_group[evaluation_key]
+        probabilities = np.asarray(probs[evaluation_key], dtype=float)
+        if isinstance(aligned_reals, dict):
+            outcomes = np.asarray(aligned_reals[evaluation_key], dtype=int)
+        else:
+            outcomes = np.asarray(aligned_reals, dtype=int)
+
+        eval_rank_bins = _aggregate_rank_bins_for_evaluation(
+            probabilities=probabilities,
+            outcomes=outcomes,
+            by=by,
+            evaluation_metadata=evaluation_metadata,
+        )
+        eval_rank_bins_frames.append(eval_rank_bins)
+
     bins = pl.concat(eval_bins_frames, how="vertical")
     operating_points = pl.DataFrame(operating_point_rows, schema=operating_point_schema)
+    rank_bins = pl.concat(eval_rank_bins_frames, how="vertical")
 
     return _PredictionDistributionData(
         bins=bins,
         operating_points=operating_points,
+        rank_bins=rank_bins,
     )

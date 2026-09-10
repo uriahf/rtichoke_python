@@ -112,12 +112,14 @@ def test_structure_and_schemas():
 
     res = _prepare_probs_distribution_data(probs, reals, by=0.1)
 
-    assert set(res.keys()) == {"bins", "operating_points"}
+    assert set(res.keys()) == {"bins", "operating_points", "rank_bins"}
     bins = res["bins"]
     ops = res["operating_points"]
+    rank_bins = res["rank_bins"]
 
     assert isinstance(bins, pl.DataFrame)
     assert isinstance(ops, pl.DataFrame)
+    assert isinstance(rank_bins, pl.DataFrame)
 
     assert bins.schema["evaluation"] == pl.String
     assert bins.schema["model"] == pl.String
@@ -136,6 +138,14 @@ def test_structure_and_schemas():
     assert ops.schema["value"] == pl.Float64
     assert ops.schema["cutoff"] == pl.Float64
     assert ops.schema["realized_ppcr"] == pl.Float64
+
+    assert rank_bins.schema["evaluation"] == pl.String
+    assert rank_bins.schema["model"] == pl.String
+    assert rank_bins.schema["population"] == pl.String
+    assert rank_bins.schema["rank_lower"] == pl.Float64
+    assert rank_bins.schema["rank_upper"] == pl.Float64
+    assert rank_bins.schema["n_positive"] == pl.Int64
+    assert rank_bins.schema["n_negative"] == pl.Int64
 
 
 def test_nullable_model_single_keyed_population():
@@ -386,3 +396,71 @@ def test_invalid_inputs():
         ValueError, match="Estimated probabilities must be between 0 and 1"
     ):
         _prepare_probs_distribution_data({"m1": np.array([-0.1, 0.5])}, reals)
+
+
+def test_rank_bins_stratification_invariance():
+    probs = {"m1": np.array([0.0, 0.1, 0.2, 0.5, 0.5, 0.8, 1.0])}
+    reals = np.array([0, 0, 1, 1, 0, 1, 0])
+
+    res_thresh = _prepare_probs_distribution_data(
+        probs, reals, stratified_by=("probability_threshold",), by=0.2
+    )
+    res_ppcr = _prepare_probs_distribution_data(
+        probs, reals, stratified_by=("ppcr",), by=0.2
+    )
+
+    rb_thresh = res_thresh["rank_bins"]
+    rb_ppcr = res_ppcr["rank_bins"]
+
+    assert rb_thresh.equals(rb_ppcr)
+
+
+def test_rank_bins_properties():
+    # 1. Distinct scores mixed outcomes
+    probs = {"m1": np.array([0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95])}
+    reals = np.array([0, 0, 1, 0, 1, 0, 1, 1, 0, 1])
+
+    res = _prepare_probs_distribution_data(probs, reals, by=0.2)
+    rb = res["rank_bins"]
+
+    # Retains complete requested grid (q = 1 / 0.2 = 5)
+    assert len(rb) == 5
+    assert np.allclose(rb["rank_lower"].to_list(), [0.0, 0.2, 0.4, 0.6, 0.8])
+    assert np.allclose(rb["rank_upper"].to_list(), [0.2, 0.4, 0.6, 0.8, 1.0])
+
+    # Total mass conservation
+    assert rb["n_positive"].sum() == (reals == 1).sum()
+    assert rb["n_negative"].sum() == (reals == 0).sum()
+
+
+def test_rank_bins_ties_never_split():
+    # All scores tied
+    probs = {"m1": np.array([0.5, 0.5, 0.5, 0.5, 0.5])}
+    reals = np.array([1, 0, 1, 0, 1])
+
+    res = _prepare_probs_distribution_data(probs, reals, by=0.2)
+    rb = res["rank_bins"]
+
+    # Retains complete q=5 grid
+    assert len(rb) == 5
+    # All mass assigned to a single bin, empty strata retained explicitly
+    non_zero_strata = rb.filter((pl.col("n_positive") > 0) | (pl.col("n_negative") > 0))
+    assert len(non_zero_strata) == 1
+    assert non_zero_strata["n_positive"][0] == 3
+    assert non_zero_strata["n_negative"][0] == 2
+
+    assert rb["n_positive"].sum() == 3
+    assert rb["n_negative"].sum() == 2
+
+
+def test_rank_bins_small_n_less_than_q():
+    probs = {"m1": np.array([0.2, 0.8])}
+    reals = np.array([0, 1])
+
+    res = _prepare_probs_distribution_data(probs, reals, by=0.2)
+    rb = res["rank_bins"]
+
+    # Grid retained (q = 5)
+    assert len(rb) == 5
+    assert rb["n_positive"].sum() == 1
+    assert rb["n_negative"].sum() == 1

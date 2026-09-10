@@ -1,7 +1,31 @@
+from typing import Dict, Sequence, Union
 import numpy as np
 import polars as pl
-from typing import Dict, Union
 from rtichoke.processing.combinations import create_breaks_values
+
+
+def _compute_probability_quantile_bin_indices(
+    probs: Union[np.ndarray, Sequence[float]], by: float
+) -> tuple[np.ndarray, int]:
+    """Compute observation-level probability-quantile bin indices 0..q-1.
+
+    Reproduces equal-frequency quantile binning using R Type 7 linear quantiles,
+    accumulated boundary monotonicity, pinned endpoints [0, 1], and right-closed
+    digitization.
+    """
+    by = float(by)
+    q = int(round(1 / by))  # e.g. 0.2 -> 5 bins
+
+    probs_arr = np.asarray(probs, float)
+
+    edges = np.quantile(probs_arr, np.linspace(0.0, 1.0, q + 1), method="linear")
+    edges = np.maximum.accumulate(edges)
+
+    edges[0] = 0.0
+    edges[-1] = 1.0
+
+    bin_idx = np.digitize(probs_arr, bins=edges[1:-1], right=True)
+    return bin_idx, q
 
 
 def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFrame:
@@ -32,20 +56,7 @@ def add_cutoff_strata(data: pl.DataFrame, by: float, stratified_by) -> pl.DataFr
             )
 
         if "ppcr" in stratified_by:
-            # --- Compute strata_ppcr as equal-frequency quantile bins by rank ---
-            by = float(by)
-            q = int(round(1 / by))  # e.g. 0.2 -> 5 bins
-
-            probs = np.asarray(probs, float)
-
-            edges = np.quantile(probs, np.linspace(0.0, 1.0, q + 1), method="linear")
-
-            edges = np.maximum.accumulate(edges)
-
-            edges[0] = 0.0
-            edges[-1] = 1.0
-
-            bin_idx = np.digitize(probs, bins=edges[1:-1], right=True)
+            bin_idx, q = _compute_probability_quantile_bin_indices(probs, by)
 
             s = str(by)
             decimals = len(s.split(".")[-1]) if "." in s else 0
