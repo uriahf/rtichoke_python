@@ -417,7 +417,9 @@ def test_rank_bins_stratification_invariance():
 
 def test_rank_bins_properties():
     # 1. Distinct scores mixed outcomes
-    probs = {"m1": np.array([0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95])}
+    probs = {
+        "m1": np.array([0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95])
+    }
     reals = np.array([0, 0, 1, 0, 1, 0, 1, 1, 0, 1])
 
     res = _prepare_probs_distribution_data(probs, reals, by=0.2)
