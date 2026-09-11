@@ -165,11 +165,12 @@ def extract_aj_estimate_by_cutoffs(
                 )
 
             elif stratification_criteria == "ppcr":
+                target_bound = round(1 - chosen_cutoff, 10)
                 mask_predicted_positives = (
-                    pl.col("lower_bound") > 1 - chosen_cutoff
+                    pl.col("lower_bound").round(10) > target_bound
                 ) & (pl.col("stratified_by") == "ppcr")
                 mask_predicted_negatives = (
-                    pl.col("lower_bound") <= 1 - chosen_cutoff
+                    pl.col("lower_bound").round(10) <= target_bound
                 ) & (pl.col("stratified_by") == "ppcr")
 
             predicted_positives = data_to_adjust.filter(mask_predicted_positives)

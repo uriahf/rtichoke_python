@@ -531,7 +531,7 @@ def test_frozen_r_oracle_ppcr_tied_fixture():
         (0.20, 0.71, 2.00 / 9.0, 1, 1, 3, 4, 0.2, 0.75, 0.5, 3 / 7, 0.9),
         (0.40, 0.50, 3.00 / 9.0, 2, 1, 3, 3, 0.4, 0.75, 2 / 3, 0.5, 1.2),
         (0.60, 0.50, 3.00 / 9.0, 2, 1, 3, 3, 0.4, 0.75, 2 / 3, 0.5, 1.2),
-        (0.80, 0.24, 9.00 / 9.0, 5, 4, 0, 0, 1.0, 0.0, 5 / 9, np.nan, 1.0),
+        (0.80, 0.24, 7.00 / 9.0, 4, 3, 1, 1, 0.8, 0.25, 4 / 7, 0.5, 36 / 35),
         (1.00, 0.00, 9.00 / 9.0, 5, 4, 0, 0, 1.0, 0.0, 5 / 9, np.nan, 1.0),
     ]
 
@@ -595,6 +595,7 @@ def test_ppcr_repeated_effective_cutoffs_under_ties():
     probs = {"m1": np.array([0.00, 0.15, 0.30, 0.50, 0.50, 0.50, 0.65, 0.80, 1.00])}
     reals = np.array([0, 1, 0, 1, 0, 1, 1, 0, 1])
 
+    perf_df = prepare_performance_data(probs, reals, stratified_by=("ppcr",), by=0.20)
     dist = _prepare_probs_distribution_data(
         probs, reals, stratified_by=("ppcr",), by=0.20
     )
@@ -602,6 +603,9 @@ def test_ppcr_repeated_effective_cutoffs_under_ties():
 
     op_04 = ops.filter(pl.col("value") == 0.40).row(0, named=True)
     op_06 = ops.filter(pl.col("value") == 0.60).row(0, named=True)
+
+    perf_04 = perf_df.filter(pl.col("chosen_cutoff") == 0.40).row(0, named=True)
+    perf_06 = perf_df.filter(pl.col("chosen_cutoff") == 0.60).row(0, named=True)
 
     # Different requested value
     assert op_04["value"] == pytest.approx(0.40)
@@ -615,6 +619,12 @@ def test_ppcr_repeated_effective_cutoffs_under_ties():
         == pytest.approx(op_06["realized_ppcr"])
         == pytest.approx(3 / 9)
     )
+
+    # Explicitly compare TP/FP/TN/FN
+    assert perf_04["true_positives"] == perf_06["true_positives"] == 2
+    assert perf_04["false_positives"] == perf_06["false_positives"] == 1
+    assert perf_04["true_negatives"] == perf_06["true_negatives"] == 3
+    assert perf_04["false_negatives"] == perf_06["false_negatives"] == 3
 
 
 def test_ppcr_n_less_than_q():
@@ -733,8 +743,8 @@ def test_ppcr_pre_post_non_regression():
     assert rb["n_positive"].to_list() == [1, 2, 0, 1, 1]
     assert rb["n_negative"].to_list() == [1, 2, 0, 0, 1]
 
-    # Metrics frozen
-    assert perf_df["true_positives"].to_list() == [0, 1, 2, 2, 5, 5]
-    assert perf_df["false_positives"].to_list() == [0, 1, 1, 1, 4, 4]
-    assert perf_df["true_negatives"].to_list() == [4, 3, 3, 3, 0, 0]
-    assert perf_df["false_negatives"].to_list() == [5, 4, 3, 3, 0, 0]
+    # Metrics frozen matching R oracle
+    assert perf_df["true_positives"].to_list() == [0, 1, 2, 2, 4, 5]
+    assert perf_df["false_positives"].to_list() == [0, 1, 1, 1, 3, 4]
+    assert perf_df["true_negatives"].to_list() == [4, 3, 3, 3, 1, 0]
+    assert perf_df["false_negatives"].to_list() == [5, 4, 3, 3, 1, 0]
