@@ -53,6 +53,7 @@ def _dump_dom(url: str) -> subprocess.CompletedProcess[str]:
             _chrome_executable(),
             "--headless=new",
             "--no-sandbox",
+            "--disable-dev-shm-usage",
             "--disable-gpu",
             "--enable-logging=stderr",
             "--log-level=0",
