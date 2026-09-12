@@ -504,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 <div class="doc-usage-source">
 <p>Usage</p>
-<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/performance_data/performance_data.py#L210-L279" target="_blank" rel="noopener">Source</a></p>
+<p><a href="https://github.com/uriahf/rtichoke_python/blob/main/src/rtichoke/performance_data/performance_data.py#L211-L320" target="_blank" rel="noopener">Source</a></p>
 </div>
 <div class="doc-signature doc-Kind.FUNCTION">
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">prepare_performance_data</span>(</span>
@@ -544,7 +544,7 @@ The step size for probability thresholds, determining the number of points at wh
 <dl>
 <dt><code> <span class="doc-parameter-annotation">pl.DataFrame</span></code></dt>
 <dd>
-A Polars DataFrame where each row corresponds to a probability cutoff for a given model/dataset. Columns include the cutoff value and a rich set of performance metrics (e.g., <code>tpr</code>, <code>fpr</code>, <code>ppv</code>, <code>net_benefit</code>).
+A Polars DataFrame where each row corresponds to an operating point for a given model/dataset. Columns include <code>chosen_cutoff</code> (requested grid value), <code>probability_threshold</code> (effective score boundary corresponding to the grid point), <code>ppcr</code>, and a rich set of performance metrics (e.g., <code>sensitivity</code>, <code>specificity</code>, <code>ppv</code>, <code>net_benefit</code>).
 </dd>
 </dl>
 </div>

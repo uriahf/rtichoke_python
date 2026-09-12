@@ -41,9 +41,11 @@ by : float, optional
 Returns
 -------
 pl.DataFrame
-    A Polars DataFrame where each row corresponds to a probability cutoff
-    for a given model/dataset. Columns include the cutoff value and a rich
-    set of performance metrics (e.g., `tpr`, `fpr`, `ppv`, `net_benefit`).
+    A Polars DataFrame where each row corresponds to an operating point for a
+    given model/dataset. Columns include `chosen_cutoff` (requested grid value),
+    `probability_threshold` (effective score boundary corresponding to the grid
+    point), `ppcr`, and a rich set of performance metrics (e.g., `sensitivity`,
+    `specificity`, `ppv`, `net_benefit`).
 
 Examples
 --------
