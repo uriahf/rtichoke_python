@@ -396,7 +396,10 @@ def _cast_and_join_adjusted_data_binary(
                     & (pl.col("stratified_by") == "probability_threshold")
                 )
                 | (
-                    ((1 - pl.col("chosen_cutoff")) >= pl.col("mid_point"))
+                    (
+                        (1 - pl.col("chosen_cutoff")).round(10)
+                        >= pl.col("mid_point").round(10)
+                    )
                     & (pl.col("stratified_by") == "ppcr")
                 )
             )

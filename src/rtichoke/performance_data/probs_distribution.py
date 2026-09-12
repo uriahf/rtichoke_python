@@ -202,7 +202,11 @@ def _prepare_probs_distribution_data(
     Returns
     -------
     _PredictionDistributionData
-        TypedDict containing ``bins`` and ``operating_points`` Polars DataFrames.
+        TypedDict containing ``bins``, ``operating_points``, and ``rank_bins``
+        Polars DataFrames. In ``operating_points``, ``value`` is the requested grid
+        point (requested PPCR or probability threshold), ``cutoff`` is the effective
+        predicted-probability boundary (from ``probability_threshold``), and
+        ``realized_ppcr`` is the empirical proportion classified positive.
     """
     if not isinstance(stratified_by, (list, tuple)) or len(stratified_by) != 1:
         raise ValueError(
@@ -270,7 +274,7 @@ def _prepare_probs_distribution_data(
             requested_value = float(
                 row["ppcr"] if stratification_type == "ppcr" else row["chosen_cutoff"]
             )
-            effective_cutoff = float(row["chosen_cutoff"])
+            effective_cutoff = float(row["probability_threshold"])
             n_observations = int(row["n"])
             predicted_positives = int(row["predicted_positives"])
             realized_ppcr = (
@@ -292,7 +296,11 @@ def _prepare_probs_distribution_data(
             )
 
         # Build interval boundaries from effective cutoffs
-        cutoffs = evaluation_performance_data["chosen_cutoff"].to_numpy().astype(float)
+        cutoffs = (
+            evaluation_performance_data["probability_threshold"]
+            .to_numpy()
+            .astype(float)
+        )
         interval_boundaries = np.unique(np.concatenate(([0.0, 1.0], cutoffs)))
         interval_boundaries.sort()
 

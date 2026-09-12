@@ -13,6 +13,7 @@ EXPECTED_COLUMNS = [
     "reference_group",
     "stratified_by",
     "chosen_cutoff",
+    "probability_threshold",
     "true_positives",
     "true_negatives",
     "false_positives",

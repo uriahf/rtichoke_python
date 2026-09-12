@@ -23,6 +23,7 @@ _PERFORMANCE_DATA_COLUMNS = [
     "reference_group",
     "stratified_by",
     "chosen_cutoff",
+    "probability_threshold",
     "true_positives",
     "true_negatives",
     "false_positives",
@@ -244,9 +245,11 @@ def prepare_performance_data(
     Returns
     -------
     pl.DataFrame
-        A Polars DataFrame where each row corresponds to a probability cutoff
-        for a given model/dataset. Columns include the cutoff value and a rich
-        set of performance metrics (e.g., `tpr`, `fpr`, `ppv`, `net_benefit`).
+        A Polars DataFrame where each row corresponds to an operating point for a
+        given model/dataset. Columns include `chosen_cutoff` (requested grid value),
+        `probability_threshold` (effective score boundary corresponding to the grid
+        point), `ppcr`, and a rich set of performance metrics (e.g., `sensitivity`,
+        `specificity`, `ppv`, `net_benefit`).
 
     Examples
     --------
@@ -273,6 +276,44 @@ def prepare_performance_data(
     cumulative_aj_data = _calculate_cumulative_aj_data_binary(final_adjusted_data)
 
     performance_data = _turn_cumulative_aj_to_performance_data(cumulative_aj_data)
+
+    prob_threshold_rows = []
+    for group_name, probs_array in probs.items():
+        probs_g = np.asarray(probs_array, dtype=float)
+        unique_cutoffs = performance_data.filter(
+            pl.col("reference_group") == group_name
+        )["chosen_cutoff"].unique()
+        for c in unique_cutoffs:
+            eff_cutoff = float(np.quantile(probs_g, 1.0 - float(c), method="linear"))
+            prob_threshold_rows.append(
+                {
+                    "reference_group": group_name,
+                    "stratified_by": "ppcr",
+                    "chosen_cutoff": float(c),
+                    "probability_threshold": eff_cutoff,
+                }
+            )
+
+    ppcr_threshold_df = pl.DataFrame(
+        prob_threshold_rows,
+        schema={
+            "reference_group": performance_data.schema["reference_group"],
+            "stratified_by": performance_data.schema["stratified_by"],
+            "chosen_cutoff": pl.Float64,
+            "probability_threshold": pl.Float64,
+        },
+    )
+
+    performance_data = performance_data.join(
+        ppcr_threshold_df,
+        on=["reference_group", "stratified_by", "chosen_cutoff"],
+        how="left",
+    ).with_columns(
+        pl.when(pl.col("stratified_by") == "probability_threshold")
+        .then(pl.col("chosen_cutoff"))
+        .otherwise(pl.col("probability_threshold"))
+        .alias("probability_threshold")
+    )
 
     return performance_data.select(_PERFORMANCE_DATA_COLUMNS).sort(
         ["reference_group", "stratified_by", "chosen_cutoff"]
