@@ -85,16 +85,29 @@ def test_probs_histogram_browser_acceptance_http_and_file_uri(tmp_path: Path):
         assert page.locator("svg").count() >= 1
         assert len(errors) == 0, f"Console errors found over file://: {errors}"
 
-        # 3. Test changing operating point / controls
+        # 3. Test changing operating point / controls and verify downstream state changes
+        initial_text = page.locator("body").inner_text()
+        assert "Sensitivity" in initial_text
+        assert "100.0%" in initial_text
+
         op_slider = page.locator("input[type='range']")
-        if op_slider.count() > 0:
-            page.evaluate("""
-                const el = document.querySelector("input[type='range']");
-                el.value = 2;
-                el.dispatchEvent(new Event('input', { bubbles: true }));
-                el.dispatchEvent(new Event('change', { bubbles: true }));
-            """)
-            assert op_slider.input_value() == "2"
+        assert op_slider.count() > 0
+        page.evaluate("""
+            const el = document.querySelector("input[type='range']");
+            el.value = 2;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        """)
+        assert op_slider.input_value() == "2"
+
+        updated_text = page.locator("body").inner_text()
+        assert updated_text != initial_text
+        # Verify specific updated downstream performance values (sensitivity changed from 100% to 80%)
+        assert "80.0%" in updated_text
+
+        # Verify no sidecar JS/CSS files were written to the output directory
+        assert not (tmp_path / "rtichoke-viz.js").exists()
+        assert not (tmp_path / "rtichoke-viz.css").exists()
 
         browser.close()
 

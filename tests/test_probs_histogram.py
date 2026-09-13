@@ -399,6 +399,220 @@ def test_join_failures():
             _prediction_distribution_v2_spec_from_performance_data(probs, reals, by=0.5)
 
 
+def test_authoritative_schema_validation_probability_threshold_and_ppcr():
+    from jsonschema import Draft202012Validator
+
+    schema_json = {
+        "type": "object",
+        "required": [
+            "schemaVersion",
+            "type",
+            "evaluations",
+            "bins",
+            "operatingPoints",
+        ],
+        "properties": {
+            "schemaVersion": {"const": "2.0", "type": "string"},
+            "type": {"const": "prediction_distribution", "type": "string"},
+            "evaluations": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": ["id", "population"],
+                    "properties": {
+                        "id": {"type": "string"},
+                        "model": {"type": "string"},
+                        "population": {"type": "string"},
+                    },
+                },
+            },
+            "operatingPoint": {
+                "type": "object",
+                "required": ["dimension"],
+                "properties": {
+                    "dimension": {"enum": ["probability_threshold", "ppcr"]}
+                },
+            },
+            "bins": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "evaluationId",
+                        "lower",
+                        "upper",
+                        "includeLower",
+                        "includeUpper",
+                        "nPositive",
+                        "nNegative",
+                    ],
+                    "properties": {
+                        "evaluationId": {"type": "string"},
+                        "lower": {"minimum": 0, "maximum": 1, "type": "number"},
+                        "upper": {"minimum": 0, "maximum": 1, "type": "number"},
+                        "includeLower": {"type": "boolean"},
+                        "includeUpper": {"type": "boolean"},
+                        "nPositive": {"minimum": 0, "type": "integer"},
+                        "nNegative": {"minimum": 0, "type": "integer"},
+                    },
+                },
+            },
+            "rankBins": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "evaluationId",
+                        "rankLower",
+                        "rankUpper",
+                        "positiveMass",
+                        "negativeMass",
+                    ],
+                    "properties": {
+                        "evaluationId": {"type": "string"},
+                        "rankLower": {"minimum": 0, "maximum": 1, "type": "number"},
+                        "rankUpper": {"minimum": 0, "maximum": 1, "type": "number"},
+                        "positiveMass": {"minimum": 0, "type": "number"},
+                        "negativeMass": {"minimum": 0, "type": "number"},
+                    },
+                },
+            },
+            "operatingPoints": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "evaluationId",
+                        "type",
+                        "value",
+                        "cutoff",
+                        "realizedPpcr",
+                    ],
+                    "properties": {
+                        "evaluationId": {"type": "string"},
+                        "type": {"enum": ["probability_threshold", "ppcr"]},
+                        "value": {"minimum": 0, "maximum": 1, "type": "number"},
+                        "cutoff": {"minimum": 0, "maximum": 1, "type": "number"},
+                        "realizedPpcr": {"minimum": 0, "maximum": 1, "type": "number"},
+                        "performance": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["metricId", "estimate"],
+                                "properties": {
+                                    "metricId": {"type": "string"},
+                                    "estimate": {"type": ["number", "null"]},
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }
+    validator = Draft202012Validator(schema_json)
+
+    probs = {"m1": np.array([0.00, 0.15, 0.30, 0.50, 0.50, 0.50, 0.65, 0.80, 1.00])}
+    reals = np.array([0, 1, 0, 1, 0, 1, 1, 0, 1])
+
+    # 1. Probability Threshold mode schema validation
+    chart_thresh = rtichoke.create_probs_histogram(
+        probs=probs, reals=reals, by=0.20, stratified_by=("probability_threshold",)
+    )
+    errors_thresh = list(validator.iter_errors(chart_thresh.spec))
+    assert not errors_thresh, (
+        f"Schema validation errors in probability_threshold mode: {errors_thresh}"
+    )
+
+    # 2. PPCR mode schema validation
+    chart_ppcr = rtichoke.create_probs_histogram(
+        probs=probs, reals=reals, by=0.20, stratified_by=("ppcr",)
+    )
+    errors_ppcr = list(validator.iter_errors(chart_ppcr.spec))
+    assert not errors_ppcr, f"Schema validation errors in PPCR mode: {errors_ppcr}"
+
+
+def test_stratified_by_boundary_validation():
+    probs = {"m1": np.array([0.1, 0.5, 0.9])}
+    reals = np.array([0, 1, 1])
+
+    # Plain string error
+    with pytest.raises(ValueError, match="plain string"):
+        rtichoke.create_probs_histogram(
+            probs, reals, stratified_by="probability_threshold"
+        )
+
+    # Empty sequence error
+    with pytest.raises(ValueError, match="contain exactly one element"):
+        rtichoke.create_probs_histogram(probs, reals, stratified_by=())
+
+    # Sequence with > 1 elements
+    with pytest.raises(ValueError, match="contain exactly one element"):
+        rtichoke.create_probs_histogram(
+            probs, reals, stratified_by=("probability_threshold", "ppcr")
+        )
+
+    # Unsupported dimension key error
+    with pytest.raises(ValueError, match="Unsupported stratification key"):
+        rtichoke.create_probs_histogram(
+            probs, reals, stratified_by=("unsupported_key",)
+        )
+
+
+def test_negative_contract_failures():
+    probs = {"m1": np.array([0.1, 0.5, 0.9])}
+    reals = np.array([0, 1, 1])
+
+    dist_data = _prepare_probs_distribution_data(probs, reals, by=0.5)
+    perf_data = prepare_performance_data(probs, reals, by=0.5)
+    eval_meta = _build_evaluation_metadata(probs, reals, np.array([]))
+
+    # 1. Unknown reference group in bins
+    bad_bins = dist_data["bins"].with_columns(
+        pl.lit("unknown_group").alias("evaluation")
+    )
+    bad_dist = dict(dist_data, bins=bad_bins)
+    with pytest.raises(ValueError, match="Unknown reference group in bins"):
+        _prediction_distribution_v2_spec(bad_dist, perf_data, eval_meta)
+
+    # 2. Unknown reference group in rank bins
+    bad_rank_bins = dist_data["rank_bins"].with_columns(
+        pl.lit("unknown_group").alias("evaluation")
+    )
+    bad_dist_rank = dict(dist_data, rank_bins=bad_rank_bins)
+    with pytest.raises(ValueError, match="Unknown reference group in rank bins"):
+        _prediction_distribution_v2_spec(bad_dist_rank, perf_data, eval_meta)
+
+    # 3. Unknown reference group in operating points
+    bad_ops = dist_data["operating_points"].with_columns(
+        pl.lit("unknown_group").alias("evaluation")
+    )
+    bad_dist_op = dict(dist_data, operating_points=bad_ops)
+    with pytest.raises(ValueError, match="Unknown reference group in operating points"):
+        _prediction_distribution_v2_spec(bad_dist_op, perf_data, eval_meta)
+
+    # 4. Non-finite requested operating-point value
+    bad_op_value = dist_data["operating_points"].with_columns(
+        pl.when(pl.col("value") == 0.0)
+        .then(float("nan"))
+        .otherwise(pl.col("value"))
+        .alias("value")
+    )
+    bad_dist_nan = dict(dist_data, operating_points=bad_op_value)
+    with pytest.raises(ValueError, match="Non-finite operating point value"):
+        _prediction_distribution_v2_spec(bad_dist_nan, perf_data, eval_meta)
+
+    # 5. Incomplete evaluation coverage
+    partial_meta = {"m1": eval_meta["m1"], "m2": eval_meta["m1"]}
+    with pytest.raises(
+        ValueError, match="Missing performance row|Incomplete evaluation coverage"
+    ):
+        _prediction_distribution_v2_spec(dist_data, perf_data, partial_meta)
+
+
 def test_producer_owned_performance_wins():
     probs = {"m1": np.array([0.1, 0.5, 0.9])}
     reals = np.array([0, 1, 1])

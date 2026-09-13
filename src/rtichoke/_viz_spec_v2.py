@@ -87,6 +87,34 @@ def _to_json_int(value: Any) -> int | None:
     return int(val)
 
 
+def _validate_stratified_by(stratified_by: Any) -> tuple[str, ...]:
+    if isinstance(stratified_by, str):
+        raise ValueError(
+            f"`stratified_by` must be a sequence of strings (e.g. ({stratified_by!r},)), got plain string {stratified_by!r}."
+        )
+
+    if not isinstance(stratified_by, (list, tuple)):
+        try:
+            strat_tuple = tuple(stratified_by)
+        except TypeError as err:
+            raise ValueError("`stratified_by` must be a sequence of strings.") from err
+    else:
+        strat_tuple = tuple(stratified_by)
+
+    if len(strat_tuple) != 1:
+        raise ValueError(
+            f"`stratified_by` must contain exactly one element, got {len(strat_tuple)} elements: {strat_tuple!r}."
+        )
+
+    dimension = strat_tuple[0]
+    if dimension not in ("probability_threshold", "ppcr"):
+        raise ValueError(
+            f"Unsupported stratification key {dimension!r}. Must be 'probability_threshold' or 'ppcr'."
+        )
+
+    return strat_tuple
+
+
 def _prediction_distribution_v2_spec(
     distribution_data: Any,
     performance_data: pl.DataFrame,
@@ -94,6 +122,7 @@ def _prediction_distribution_v2_spec(
     stratified_by: tuple[str, ...] = ("probability_threshold",),
 ) -> dict[str, object]:
     """Map pre-computed distribution and performance data to canonical PredictionDistributionSpec."""
+    strat_tuple = _validate_stratified_by(stratified_by)
     evaluation_keys = list(evaluation_metadata.keys())
     evaluation_ids = {
         group: f"evaluation-{index}"
@@ -147,7 +176,7 @@ def _prediction_distribution_v2_spec(
 
     # Convert Operating Points and Join Performance Metrics
     operating_points_data: list[dict[str, object]] = []
-    dimension = stratified_by[0]
+    dimension = strat_tuple[0]
 
     for row in distribution_data["operating_points"].iter_rows(named=True):
         group = str(row["evaluation"])
@@ -250,20 +279,21 @@ def _prediction_distribution_v2_spec_from_performance_data(
     stratified_by: tuple[str, ...] = ("probability_threshold",),
 ) -> dict[str, object]:
     """Build exact v0.22.0 PredictionDistributionSpec from raw inputs."""
+    strat_tuple = _validate_stratified_by(stratified_by)
     dummy_times = pl.Series(dtype=pl.Float64).to_numpy()
     evaluation_metadata = _build_evaluation_metadata(probs, reals, dummy_times)
 
     distribution_data = _prepare_probs_distribution_data(
         probs=probs,
         reals=reals,
-        stratified_by=stratified_by,
+        stratified_by=strat_tuple,
         by=by,
     )
 
     performance_data = prepare_performance_data(
         probs=probs,
         reals=reals,
-        stratified_by=stratified_by,
+        stratified_by=strat_tuple,
         by=by,
     )
 
@@ -271,7 +301,7 @@ def _prediction_distribution_v2_spec_from_performance_data(
         distribution_data=distribution_data,
         performance_data=performance_data,
         evaluation_metadata=evaluation_metadata,
-        stratified_by=stratified_by,
+        stratified_by=strat_tuple,
     )
 
 

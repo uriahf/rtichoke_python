@@ -94,7 +94,30 @@ def create_probs_histogram(
     ... }
     >>> chart = rtichoke.create_probs_histogram(probs=probs, reals=reals)
     """
-    strat_tuple = tuple(stratified_by)
+    if isinstance(stratified_by, str):
+        raise ValueError(
+            f"`stratified_by` must be a sequence of strings (e.g. ({stratified_by!r},)), got plain string {stratified_by!r}."
+        )
+
+    if not isinstance(stratified_by, (list, tuple)):
+        try:
+            strat_tuple = tuple(stratified_by)
+        except TypeError as err:
+            raise ValueError("`stratified_by` must be a sequence of strings.") from err
+    else:
+        strat_tuple = tuple(stratified_by)
+
+    if len(strat_tuple) != 1:
+        raise ValueError(
+            f"`stratified_by` must contain exactly one element, got {len(strat_tuple)} elements: {strat_tuple!r}."
+        )
+
+    dimension = strat_tuple[0]
+    if dimension not in ("probability_threshold", "ppcr"):
+        raise ValueError(
+            f"Unsupported stratification key {dimension!r}. Must be 'probability_threshold' or 'ppcr'."
+        )
+
     spec = _prediction_distribution_v2_spec_from_performance_data(
         probs=probs,
         reals=reals,
