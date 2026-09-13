@@ -2,6 +2,7 @@ import rtichoke
 
 
 EXPECTED_PUBLIC_EXPORTS = {
+    "create_probs_histogram",
     "create_roc_curve",
     "create_roc_curve_times",
     "plot_roc_curve",

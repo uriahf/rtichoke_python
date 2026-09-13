@@ -8,6 +8,8 @@ from importlib.resources import files
 from pathlib import Path
 from typing import Any, Literal
 
+from rtichoke._report_browser import _resolve_render_report_symbol, _sanitize_nan_values
+
 Renderer = Literal["plotly", "matplotlib", "browser", "rtichoke_viz"]
 
 _SUPPORTED_RENDERERS = ("plotly", "matplotlib", "browser", "rtichoke_viz")
@@ -46,31 +48,69 @@ class RtichokeBrowserChart:
         output = Path(path)
         output.parent.mkdir(parents=True, exist_ok=True)
         vendor = files("rtichoke").joinpath("_vendor", "rtichoke_viz")
-        for asset in ("rtichoke-viz.js", "rtichoke-viz.css"):
-            (output.parent / asset).write_bytes(vendor.joinpath(asset).read_bytes())
 
-        render_export = {
-            "roc": "renderRocV2",
-            "calibration": "renderCalibrationV2",
-            "precision_recall": "renderPrecisionRecallV2",
-            "gains": "renderGainsV2",
-            "lift": "renderLiftV2",
-            "decision_curve": "renderDecisionCurveV2",
-            "interventions_avoided": "renderInterventionsAvoidedV2",
-        }.get(str(self.spec.get("type")))
-        if render_export is None:
-            raise ValueError(
-                f"rtichoke_viz does not support chart type {self.spec.get('type')!r}."
+        chart_type = str(self.spec.get("type"))
+        if chart_type == "prediction_distribution":
+            viz_js = vendor.joinpath("rtichoke-viz.js").read_text(encoding="utf-8")
+            viz_css = vendor.joinpath("rtichoke-viz.css").read_text(encoding="utf-8")
+            render_fn = _resolve_render_report_symbol(
+                viz_js, "renderPredictionDistribution"
+            )
+            sanitized_spec = _sanitize_nan_values(self.spec)
+            spec_json = json.dumps(sanitized_spec, separators=(",", ":")).replace(
+                "</", "<\\/"
             )
 
-        spec_json = json.dumps(self.spec, separators=(",", ":")).replace("</", "<\\/")
-        html = f"""<!doctype html>
+            html = f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+{viz_css}
+  </style>
+  <title>rtichoke prediction_distribution chart</title>
+</head>
+<body>
+  <div id="rtichoke-chart" class="rtichoke-viz-chart"></div>
+  <script id="rtichoke-spec" type="application/json">{spec_json}</script>
+  <script type="module">
+{viz_js}
+    const spec = JSON.parse(document.querySelector("#rtichoke-spec").textContent);
+    const chart = {render_fn}(spec, {{ width: {self.size}, height: {self.size} }});
+    document.querySelector("#rtichoke-chart").append(chart);
+  </script>
+</body>
+</html>
+"""
+        else:
+            for asset in ("rtichoke-viz.js", "rtichoke-viz.css"):
+                (output.parent / asset).write_bytes(vendor.joinpath(asset).read_bytes())
+
+            render_export = {
+                "roc": "renderRocV2",
+                "calibration": "renderCalibrationV2",
+                "precision_recall": "renderPrecisionRecallV2",
+                "gains": "renderGainsV2",
+                "lift": "renderLiftV2",
+                "decision_curve": "renderDecisionCurveV2",
+                "interventions_avoided": "renderInterventionsAvoidedV2",
+            }.get(chart_type)
+            if render_export is None:
+                raise ValueError(
+                    f"rtichoke_viz does not support chart type {chart_type!r}."
+                )
+
+            spec_json = json.dumps(self.spec, separators=(",", ":")).replace(
+                "</", "<\\/"
+            )
+            html = f"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="./rtichoke-viz.css">
-  <title>rtichoke {self.spec.get("type")} chart</title>
+  <title>rtichoke {chart_type} chart</title>
 </head>
 <body>
   <div id="rtichoke-chart" class="rtichoke-viz-chart"></div>

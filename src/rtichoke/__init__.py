@@ -57,12 +57,17 @@ from rtichoke.performance_table import (
     render_performance_table as render_performance_table,
 )
 
+from rtichoke.probs_distribution import (
+    create_probs_histogram as create_probs_histogram,
+)
+
 from rtichoke.summary_report.summary_report import (
     create_summary_report as create_summary_report,
     create_summary_report_times as create_summary_report_times,
 )
 
 __all__ = [
+    "create_probs_histogram",
     "create_roc_curve",
     "create_roc_curve_times",
     "plot_roc_curve",
