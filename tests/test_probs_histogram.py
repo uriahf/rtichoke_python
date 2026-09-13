@@ -8,7 +8,15 @@ import polars as pl
 import pytest
 
 import rtichoke
-from rtichoke._viz_spec_v2 import _prediction_distribution_v2_spec_from_performance_data
+from rtichoke._viz_spec_v2 import (
+    _prediction_distribution_v2_spec,
+    _prediction_distribution_v2_spec_from_performance_data,
+)
+from rtichoke.performance_data.performance_data import prepare_performance_data
+from rtichoke.performance_data.probs_distribution import (
+    _prepare_probs_distribution_data,
+)
+from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 
 
 def test_frozen_tied_fixture_exact_canonical_spec():
@@ -80,55 +88,55 @@ def test_frozen_tied_fixture_exact_canonical_spec():
             "value": 0.00,
             "cutoff": 1.00,
             "realizedPpcr": 0.0 / 9.0,
-            "TP": 0.0,
-            "FP": 0.0,
-            "TN": 4.0,
-            "FN": 5.0,
+            "TP": 0,
+            "FP": 0,
+            "TN": 4,
+            "FN": 5,
         },
         {
             "value": 0.20,
             "cutoff": 0.71,
             "realizedPpcr": 2.0 / 9.0,
-            "TP": 1.0,
-            "FP": 1.0,
-            "TN": 3.0,
-            "FN": 4.0,
+            "TP": 1,
+            "FP": 1,
+            "TN": 3,
+            "FN": 4,
         },
         {
             "value": 0.40,
             "cutoff": 0.50,
             "realizedPpcr": 3.0 / 9.0,
-            "TP": 2.0,
-            "FP": 1.0,
-            "TN": 3.0,
-            "FN": 3.0,
+            "TP": 2,
+            "FP": 1,
+            "TN": 3,
+            "FN": 3,
         },
         {
             "value": 0.60,
             "cutoff": 0.50,
             "realizedPpcr": 3.0 / 9.0,
-            "TP": 2.0,
-            "FP": 1.0,
-            "TN": 3.0,
-            "FN": 3.0,
+            "TP": 2,
+            "FP": 1,
+            "TN": 3,
+            "FN": 3,
         },
         {
             "value": 0.80,
             "cutoff": 0.24,
             "realizedPpcr": 7.0 / 9.0,
-            "TP": 4.0,
-            "FP": 3.0,
-            "TN": 1.0,
-            "FN": 1.0,
+            "TP": 4,
+            "FP": 3,
+            "TN": 1,
+            "FN": 1,
         },
         {
             "value": 1.00,
             "cutoff": 0.00,
             "realizedPpcr": 9.0 / 9.0,
-            "TP": 5.0,
-            "FP": 4.0,
-            "TN": 0.0,
-            "FN": 0.0,
+            "TP": 5,
+            "FP": 4,
+            "TN": 0,
+            "FN": 0,
         },
     ]
 
@@ -140,10 +148,110 @@ def test_frozen_tied_fixture_exact_canonical_spec():
         assert pytest.approx(op["realizedPpcr"]) == exp["realizedPpcr"]
 
         metrics = {m["metricId"]: m["estimate"] for m in op["performance"]}
-        assert pytest.approx(metrics["true_positives"]) == exp["TP"]
-        assert pytest.approx(metrics["false_positives"]) == exp["FP"]
-        assert pytest.approx(metrics["true_negatives"]) == exp["TN"]
-        assert pytest.approx(metrics["false_negatives"]) == exp["FN"]
+        assert metrics["true_positives"] == exp["TP"]
+        assert isinstance(metrics["true_positives"], int)
+        assert metrics["false_positives"] == exp["FP"]
+        assert isinstance(metrics["false_positives"], int)
+        assert metrics["true_negatives"] == exp["TN"]
+        assert isinstance(metrics["true_negatives"], int)
+        assert metrics["false_negatives"] == exp["FN"]
+        assert isinstance(metrics["false_negatives"], int)
+
+
+def test_prepared_data_builder_does_not_call_statistical_producers():
+    probs = {"m1": np.array([0.1, 0.4, 0.7])}
+    reals = np.array([0, 1, 1])
+
+    dist_data = _prepare_probs_distribution_data(probs, reals, by=0.5)
+    perf_data = prepare_performance_data(probs, reals, by=0.5)
+    eval_meta = _build_evaluation_metadata(probs, reals, np.array([]))
+
+    with (
+        patch("rtichoke._viz_spec_v2.prepare_performance_data") as mock_perf,
+        patch("rtichoke._viz_spec_v2._prepare_probs_distribution_data") as mock_dist,
+    ):
+        spec = _prediction_distribution_v2_spec(
+            distribution_data=dist_data,
+            performance_data=perf_data,
+            evaluation_metadata=eval_meta,
+            stratified_by=("probability_threshold",),
+        )
+        mock_perf.assert_not_called()
+        mock_dist.assert_not_called()
+        assert spec["type"] == "prediction_distribution"
+
+
+def test_public_wrapper_and_prepared_builder_produce_identical_spec():
+    probs = {"m1": np.array([0.0, 0.25, 0.5, 0.75, 1.0])}
+    reals = np.array([0, 0, 1, 1, 1])
+    by = 0.25
+
+    spec_wrapper = _prediction_distribution_v2_spec_from_performance_data(
+        probs=probs, reals=reals, by=by, stratified_by=("probability_threshold",)
+    )
+
+    dist_data = _prepare_probs_distribution_data(probs, reals, by=by)
+    perf_data = prepare_performance_data(probs, reals, by=by)
+    eval_meta = _build_evaluation_metadata(probs, reals, np.array([]))
+
+    spec_direct = _prediction_distribution_v2_spec(
+        distribution_data=dist_data,
+        performance_data=perf_data,
+        evaluation_metadata=eval_meta,
+        stratified_by=("probability_threshold",),
+    )
+
+    assert spec_wrapper == spec_direct
+
+
+def test_confusion_matrix_estimates_are_integers():
+    probs = {"m1": np.array([0.1, 0.5, 0.9])}
+    reals = np.array([0, 1, 1])
+
+    chart = rtichoke.create_probs_histogram(probs=probs, reals=reals, by=0.5)
+    spec = chart.spec
+
+    for op in spec["operatingPoints"]:
+        metrics = {m["metricId"]: m["estimate"] for m in op["performance"]}
+        for metric_id in (
+            "true_positives",
+            "true_negatives",
+            "false_positives",
+            "false_negatives",
+        ):
+            val = metrics[metric_id]
+            assert isinstance(val, int), f"{metric_id} should be int, got {type(val)}"
+
+
+def test_undefined_metrics_null_serialization():
+    probs = {"m1": np.array([0.1, 0.4, 0.7])}
+    reals = np.array([0, 0, 0])  # No positives -> sensitivity & PPV undefined
+
+    chart = rtichoke.create_probs_histogram(probs=probs, reals=reals, by=0.5)
+    spec = chart.spec
+
+    # Check metric estimates
+    op = spec["operatingPoints"][0]
+    metrics = {m["metricId"]: m["estimate"] for m in op["performance"]}
+    assert metrics["sensitivity"] is None
+
+    # Check serialized JSON
+    tmp_path = Path("tmp_chart.html")
+    try:
+        chart.write_html(tmp_path)
+        content = tmp_path.read_text(encoding="utf-8")
+        assert '{"metricId":"sensitivity","estimate":null}' in content
+
+        # Check that the embedded JSON spec payload has no NaN
+        spec_text = content.split(
+            '<script id="rtichoke-spec" type="application/json">'
+        )[1].split("</script>")[0]
+        assert "NaN" not in spec_text
+        spec_data = json.loads(spec_text)
+        assert spec_data["operatingPoints"][0]["performance"][4]["estimate"] is None
+    finally:
+        if tmp_path.exists():
+            tmp_path.unlink()
 
 
 def test_n_less_than_q_empty_rank_bins_and_mass_conservation():
@@ -259,8 +367,6 @@ def test_join_failures():
 
     with patch("rtichoke._viz_spec_v2.prepare_performance_data") as mock_perf:
         # 1. Missing performance row
-        import polars as pl
-
         mock_perf.return_value = pl.DataFrame(
             schema={
                 "reference_group": pl.String,
@@ -293,42 +399,11 @@ def test_join_failures():
             _prediction_distribution_v2_spec_from_performance_data(probs, reals, by=0.5)
 
 
-def test_undefined_metrics_null_serialization():
-    probs = {"m1": np.array([0.1, 0.4, 0.7])}
-    reals = np.array([0, 0, 0])  # No positives -> sensitivity & PPV undefined
-
-    chart = rtichoke.create_probs_histogram(probs=probs, reals=reals, by=0.5)
-    spec = chart.spec
-
-    # Check metric estimates
-    op = spec["operatingPoints"][0]
-    metrics = {m["metricId"]: m["estimate"] for m in op["performance"]}
-    assert metrics["sensitivity"] is None
-
-    # Check serialized JSON
-    tmp_path = Path("tmp_chart.html")
-    try:
-        chart.write_html(tmp_path)
-        content = tmp_path.read_text(encoding="utf-8")
-        assert '{"metricId":"sensitivity","estimate":null}' in content
-
-        # Check that the embedded JSON spec payload has no NaN
-        spec_text = content.split(
-            '<script id="rtichoke-spec" type="application/json">'
-        )[1].split("</script>")[0]
-        assert "NaN" not in spec_text
-        spec_data = json.loads(spec_text)
-        assert spec_data["operatingPoints"][0]["performance"][4]["estimate"] is None
-    finally:
-        if tmp_path.exists():
-            tmp_path.unlink()
-
-
 def test_producer_owned_performance_wins():
     probs = {"m1": np.array([0.1, 0.5, 0.9])}
     reals = np.array([0, 1, 1])
 
-    # Patch prepare_performance_data to return a distinct patched value 999.0
+    # Patch prepare_performance_data to return a distinct patched value 999
     with patch("rtichoke._viz_spec_v2.prepare_performance_data") as mock_perf:
         from rtichoke.performance_data.performance_data import prepare_performance_data
 
@@ -337,7 +412,7 @@ def test_producer_owned_performance_wins():
         )
         patched_df = real_df.with_columns(
             pl.when(pl.col("chosen_cutoff") == 0.0)
-            .then(999.0)
+            .then(999)
             .otherwise(pl.col("true_positives"))
             .alias("true_positives")
         )
@@ -352,4 +427,5 @@ def test_producer_owned_performance_wins():
             for m in op_0["performance"]
             if m["metricId"] == "true_positives"
         ][0]
-        assert tp_estimate == 999.0
+        assert tp_estimate == 999
+        assert isinstance(tp_estimate, int)

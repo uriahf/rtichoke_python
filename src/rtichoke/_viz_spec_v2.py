@@ -61,8 +61,8 @@ _REQUIRED_LIFT_COLUMNS = {
 }
 
 
-def _to_json_number(value: Any) -> float | int | None:
-    """Convert numpy/python scalars to float/int or None for invalid/non-finite numbers."""
+def _to_json_number(value: Any) -> float | None:
+    """Convert numpy/python scalars to float or None for invalid/non-finite numbers."""
     if value is None:
         return None
     try:
@@ -74,31 +74,27 @@ def _to_json_number(value: Any) -> float | int | None:
     return val
 
 
-def _prediction_distribution_v2_spec_from_performance_data(
-    probs: dict[str, Any],
-    reals: Any,
-    by: float = 0.01,
+def _to_json_int(value: Any) -> int | None:
+    """Convert numpy/python scalars to int or None for invalid/non-finite numbers."""
+    if value is None:
+        return None
+    try:
+        val = float(value)
+    except (ValueError, TypeError):
+        return None
+    if math.isnan(val) or math.isinf(val):
+        return None
+    return int(val)
+
+
+def _prediction_distribution_v2_spec(
+    distribution_data: Any,
+    performance_data: pl.DataFrame,
+    evaluation_metadata: Mapping[str, _EvaluationMetadata],
     stratified_by: tuple[str, ...] = ("probability_threshold",),
 ) -> dict[str, object]:
-    """Build exact v0.22.0 PredictionDistributionSpec without recalculating statistics."""
-    dummy_times = pl.Series(dtype=pl.Float64).to_numpy()
-    evaluation_metadata_by_group = _build_evaluation_metadata(probs, reals, dummy_times)
-
-    dist_data = _prepare_probs_distribution_data(
-        probs=probs,
-        reals=reals,
-        stratified_by=stratified_by,
-        by=by,
-    )
-
-    performance_data = prepare_performance_data(
-        probs=probs,
-        reals=reals,
-        stratified_by=stratified_by,
-        by=by,
-    )
-
-    evaluation_keys = list(evaluation_metadata_by_group.keys())
+    """Map pre-computed distribution and performance data to canonical PredictionDistributionSpec."""
+    evaluation_keys = list(evaluation_metadata.keys())
     evaluation_ids = {
         group: f"evaluation-{index}"
         for index, group in enumerate(evaluation_keys, start=1)
@@ -106,7 +102,7 @@ def _prediction_distribution_v2_spec_from_performance_data(
 
     evaluations: list[dict[str, object]] = []
     for group in evaluation_keys:
-        metadata = evaluation_metadata_by_group[group]
+        metadata = evaluation_metadata[group]
         evaluation: dict[str, object] = {
             "id": evaluation_ids[group],
             "population": metadata.population,
@@ -117,7 +113,7 @@ def _prediction_distribution_v2_spec_from_performance_data(
 
     # Convert Bins
     bins_data: list[dict[str, object]] = []
-    for row in dist_data["bins"].iter_rows(named=True):
+    for row in distribution_data["bins"].iter_rows(named=True):
         group = str(row["evaluation"])
         if group not in evaluation_ids:
             raise ValueError(f"Unknown reference group in bins: {group!r}")
@@ -135,7 +131,7 @@ def _prediction_distribution_v2_spec_from_performance_data(
 
     # Convert Rank Bins
     rank_bins_data: list[dict[str, object]] = []
-    for row in dist_data["rank_bins"].iter_rows(named=True):
+    for row in distribution_data["rank_bins"].iter_rows(named=True):
         group = str(row["evaluation"])
         if group not in evaluation_ids:
             raise ValueError(f"Unknown reference group in rank bins: {group!r}")
@@ -153,7 +149,7 @@ def _prediction_distribution_v2_spec_from_performance_data(
     operating_points_data: list[dict[str, object]] = []
     dimension = stratified_by[0]
 
-    for row in dist_data["operating_points"].iter_rows(named=True):
+    for row in distribution_data["operating_points"].iter_rows(named=True):
         group = str(row["evaluation"])
         if group not in evaluation_ids:
             raise ValueError(f"Unknown reference group in operating points: {group!r}")
@@ -192,19 +188,19 @@ def _prediction_distribution_v2_spec_from_performance_data(
         canonical_metrics = [
             {
                 "metricId": "true_positives",
-                "estimate": _to_json_number(perf_row.get("true_positives")),
+                "estimate": _to_json_int(perf_row.get("true_positives")),
             },
             {
                 "metricId": "true_negatives",
-                "estimate": _to_json_number(perf_row.get("true_negatives")),
+                "estimate": _to_json_int(perf_row.get("true_negatives")),
             },
             {
                 "metricId": "false_positives",
-                "estimate": _to_json_number(perf_row.get("false_positives")),
+                "estimate": _to_json_int(perf_row.get("false_positives")),
             },
             {
                 "metricId": "false_negatives",
-                "estimate": _to_json_number(perf_row.get("false_negatives")),
+                "estimate": _to_json_int(perf_row.get("false_negatives")),
             },
             {
                 "metricId": "sensitivity",
@@ -245,6 +241,38 @@ def _prediction_distribution_v2_spec_from_performance_data(
         "rankBins": rank_bins_data,
         "operatingPoints": operating_points_data,
     }
+
+
+def _prediction_distribution_v2_spec_from_performance_data(
+    probs: dict[str, Any],
+    reals: Any,
+    by: float = 0.01,
+    stratified_by: tuple[str, ...] = ("probability_threshold",),
+) -> dict[str, object]:
+    """Build exact v0.22.0 PredictionDistributionSpec from raw inputs."""
+    dummy_times = pl.Series(dtype=pl.Float64).to_numpy()
+    evaluation_metadata = _build_evaluation_metadata(probs, reals, dummy_times)
+
+    distribution_data = _prepare_probs_distribution_data(
+        probs=probs,
+        reals=reals,
+        stratified_by=stratified_by,
+        by=by,
+    )
+
+    performance_data = prepare_performance_data(
+        probs=probs,
+        reals=reals,
+        stratified_by=stratified_by,
+        by=by,
+    )
+
+    return _prediction_distribution_v2_spec(
+        distribution_data=distribution_data,
+        performance_data=performance_data,
+        evaluation_metadata=evaluation_metadata,
+        stratified_by=stratified_by,
+    )
 
 
 def _add_operating_point_to_spec(

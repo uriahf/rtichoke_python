@@ -24,7 +24,7 @@ def create_probs_histogram(
     operating-point controls.
 
     In Probability Threshold mode, the x-axis represents predicted probability
-    intervals. In PPCR (Positive Predicted Value / Positive Rate) mode, the x-axis
+    intervals. In PPCR (Predicted Positives Condition Rate) mode, the x-axis
     displays the producer-owned risk-rank distribution (percentile strata).
     Bars in each bin are decomposed by observed binary outcome (positives and
     negatives). Moving the operating-point control changes the classification
