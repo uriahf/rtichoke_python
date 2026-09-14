@@ -7,11 +7,20 @@ into the canonical visualization contract.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
+from typing import Any
 
 import polars as pl
 
-from rtichoke.processing.evaluation_semantics import _EvaluationMetadata
+from rtichoke.performance_data.performance_data import prepare_performance_data
+from rtichoke.performance_data.probs_distribution import (
+    _prepare_probs_distribution_data,
+)
+from rtichoke.processing.evaluation_semantics import (
+    _EvaluationMetadata,
+    _build_evaluation_metadata,
+)
 
 _REQUIRED_ROC_COLUMNS = {
     "reference_group",
@@ -50,6 +59,250 @@ _REQUIRED_LIFT_COLUMNS = {
     "real_positives",
     "n",
 }
+
+
+def _to_json_number(value: Any) -> float | None:
+    """Convert numpy/python scalars to float or None for invalid/non-finite numbers."""
+    if value is None:
+        return None
+    try:
+        val = float(value)
+    except (ValueError, TypeError):
+        return None
+    if math.isnan(val) or math.isinf(val):
+        return None
+    return val
+
+
+def _to_json_int(value: Any) -> int | None:
+    """Convert numpy/python scalars to int or None for invalid/non-finite numbers."""
+    if value is None:
+        return None
+    try:
+        val = float(value)
+    except (ValueError, TypeError):
+        return None
+    if math.isnan(val) or math.isinf(val):
+        return None
+    return int(val)
+
+
+def _validate_stratified_by(stratified_by: Any) -> tuple[str, ...]:
+    if isinstance(stratified_by, str):
+        raise ValueError(
+            f"`stratified_by` must be a sequence of strings (e.g. ({stratified_by!r},)), got plain string {stratified_by!r}."
+        )
+
+    if not isinstance(stratified_by, (list, tuple)):
+        try:
+            strat_tuple = tuple(stratified_by)
+        except TypeError as err:
+            raise ValueError("`stratified_by` must be a sequence of strings.") from err
+    else:
+        strat_tuple = tuple(stratified_by)
+
+    if len(strat_tuple) != 1:
+        raise ValueError(
+            f"`stratified_by` must contain exactly one element, got {len(strat_tuple)} elements: {strat_tuple!r}."
+        )
+
+    dimension = strat_tuple[0]
+    if dimension not in ("probability_threshold", "ppcr"):
+        raise ValueError(
+            f"Unsupported stratification key {dimension!r}. Must be 'probability_threshold' or 'ppcr'."
+        )
+
+    return strat_tuple
+
+
+def _prediction_distribution_v2_spec(
+    distribution_data: Any,
+    performance_data: pl.DataFrame,
+    evaluation_metadata: Mapping[str, _EvaluationMetadata],
+    stratified_by: tuple[str, ...] = ("probability_threshold",),
+) -> dict[str, object]:
+    """Map pre-computed distribution and performance data to canonical PredictionDistributionSpec."""
+    strat_tuple = _validate_stratified_by(stratified_by)
+    evaluation_keys = list(evaluation_metadata.keys())
+    evaluation_ids = {
+        group: f"evaluation-{index}"
+        for index, group in enumerate(evaluation_keys, start=1)
+    }
+
+    evaluations: list[dict[str, object]] = []
+    for group in evaluation_keys:
+        metadata = evaluation_metadata[group]
+        evaluation: dict[str, object] = {
+            "id": evaluation_ids[group],
+            "population": metadata.population,
+        }
+        if metadata.model is not None:
+            evaluation["model"] = metadata.model
+        evaluations.append(evaluation)
+
+    # Convert Bins
+    bins_data: list[dict[str, object]] = []
+    for row in distribution_data["bins"].iter_rows(named=True):
+        group = str(row["evaluation"])
+        if group not in evaluation_ids:
+            raise ValueError(f"Unknown reference group in bins: {group!r}")
+        bins_data.append(
+            {
+                "evaluationId": evaluation_ids[group],
+                "lower": float(row["lower"]),
+                "upper": float(row["upper"]),
+                "includeLower": bool(row["include_lower"]),
+                "includeUpper": bool(row["include_upper"]),
+                "nPositive": int(row["n_positive"]),
+                "nNegative": int(row["n_negative"]),
+            }
+        )
+
+    # Convert Rank Bins
+    rank_bins_data: list[dict[str, object]] = []
+    for row in distribution_data["rank_bins"].iter_rows(named=True):
+        group = str(row["evaluation"])
+        if group not in evaluation_ids:
+            raise ValueError(f"Unknown reference group in rank bins: {group!r}")
+        rank_bins_data.append(
+            {
+                "evaluationId": evaluation_ids[group],
+                "rankLower": float(row["rank_lower"]),
+                "rankUpper": float(row["rank_upper"]),
+                "positiveMass": int(row["n_positive"]),
+                "negativeMass": int(row["n_negative"]),
+            }
+        )
+
+    # Convert Operating Points and Join Performance Metrics
+    operating_points_data: list[dict[str, object]] = []
+    dimension = strat_tuple[0]
+
+    for row in distribution_data["operating_points"].iter_rows(named=True):
+        group = str(row["evaluation"])
+        if group not in evaluation_ids:
+            raise ValueError(f"Unknown reference group in operating points: {group!r}")
+
+        req_val = float(row["value"])
+        if not math.isfinite(req_val):
+            raise ValueError(f"Non-finite operating point value: {req_val}")
+
+        # Exact join to performance row
+        if dimension == "probability_threshold":
+            matches = performance_data.filter(
+                (pl.col("reference_group") == group)
+                & (pl.col("stratified_by") == "probability_threshold")
+                & (pl.col("chosen_cutoff") == req_val)
+            )
+        elif dimension == "ppcr":
+            matches = performance_data.filter(
+                (pl.col("reference_group") == group)
+                & (pl.col("stratified_by") == "ppcr")
+                & (pl.col("ppcr") == req_val)
+            )
+        else:
+            raise ValueError(f"Unexpected dimension: {dimension!r}")
+
+        if len(matches) == 0:
+            raise ValueError(
+                f"Missing performance row for evaluation {group!r}, dimension {dimension!r}, value {req_val}"
+            )
+        if len(matches) > 1:
+            raise ValueError(
+                f"Duplicate performance match for evaluation {group!r}, dimension {dimension!r}, value {req_val}"
+            )
+
+        perf_row = matches.to_dicts()[0]
+
+        canonical_metrics = [
+            {
+                "metricId": "true_positives",
+                "estimate": _to_json_int(perf_row.get("true_positives")),
+            },
+            {
+                "metricId": "true_negatives",
+                "estimate": _to_json_int(perf_row.get("true_negatives")),
+            },
+            {
+                "metricId": "false_positives",
+                "estimate": _to_json_int(perf_row.get("false_positives")),
+            },
+            {
+                "metricId": "false_negatives",
+                "estimate": _to_json_int(perf_row.get("false_negatives")),
+            },
+            {
+                "metricId": "sensitivity",
+                "estimate": _to_json_number(perf_row.get("sensitivity")),
+            },
+            {
+                "metricId": "specificity",
+                "estimate": _to_json_number(perf_row.get("specificity")),
+            },
+            {"metricId": "ppv", "estimate": _to_json_number(perf_row.get("ppv"))},
+            {"metricId": "npv", "estimate": _to_json_number(perf_row.get("npv"))},
+            {"metricId": "lift", "estimate": _to_json_number(perf_row.get("lift"))},
+        ]
+
+        operating_points_data.append(
+            {
+                "evaluationId": evaluation_ids[group],
+                "type": dimension,
+                "value": req_val,
+                "cutoff": float(row["cutoff"]),
+                "realizedPpcr": float(row["realized_ppcr"]),
+                "performance": canonical_metrics,
+            }
+        )
+
+    # Validate evaluation coverage
+    covered_op_evals = {op["evaluationId"] for op in operating_points_data}
+    all_eval_ids = set(evaluation_ids.values())
+    if covered_op_evals != all_eval_ids:
+        raise ValueError("Incomplete evaluation coverage in operating points.")
+
+    return {
+        "schemaVersion": "2.0",
+        "type": "prediction_distribution",
+        "evaluations": evaluations,
+        "operatingPoint": {"dimension": dimension},
+        "bins": bins_data,
+        "rankBins": rank_bins_data,
+        "operatingPoints": operating_points_data,
+    }
+
+
+def _prediction_distribution_v2_spec_from_performance_data(
+    probs: dict[str, Any],
+    reals: Any,
+    by: float = 0.01,
+    stratified_by: tuple[str, ...] = ("probability_threshold",),
+) -> dict[str, object]:
+    """Build exact v0.22.1 PredictionDistributionSpec from raw inputs."""
+    strat_tuple = _validate_stratified_by(stratified_by)
+    dummy_times = pl.Series(dtype=pl.Float64).to_numpy()
+    evaluation_metadata = _build_evaluation_metadata(probs, reals, dummy_times)
+
+    distribution_data = _prepare_probs_distribution_data(
+        probs=probs,
+        reals=reals,
+        stratified_by=strat_tuple,
+        by=by,
+    )
+
+    performance_data = prepare_performance_data(
+        probs=probs,
+        reals=reals,
+        stratified_by=strat_tuple,
+        by=by,
+    )
+
+    return _prediction_distribution_v2_spec(
+        distribution_data=distribution_data,
+        performance_data=performance_data,
+        evaluation_metadata=evaluation_metadata,
+        stratified_by=strat_tuple,
+    )
 
 
 def _add_operating_point_to_spec(
