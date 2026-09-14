@@ -71,6 +71,19 @@ a:focus-visible {
   color: var(--rtichoke-primary) !important;
 }
 
+.navbar-brand {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.45rem;
+}
+
+.rtichoke-brand-logo {
+  display: block;
+  height: 2.25rem;
+  object-fit: contain;
+  width: 2.25rem;
+}
+
 .navbar .nav-link:hover,
 .navbar .nav-link:focus,
 .navbar .nav-link.active {
@@ -272,4 +285,3 @@ uriahtalks-horizon-explorer .uriah-horizon-key {
     width: 720px;
   }
 }
-
