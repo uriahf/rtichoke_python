@@ -159,6 +159,29 @@ def test_type_aware_schema_version_validation() -> None:
         _build_report_spec_v11(sections_v2)
 
 
+def test_prediction_distribution_schema_version_validation() -> None:
+    valid_pred_dist = _curve_spec("prediction_distribution")
+    sections_valid = [
+        {
+            "id": "discrimination",
+            "components": [{"id": "prediction-distribution", "spec": valid_pred_dist}],
+        }
+    ]
+    report = _build_report_spec_v11(sections_valid)
+    assert report["schemaVersion"] == "1.1"
+
+    bad_pred_dist = _curve_spec("prediction_distribution")
+    bad_pred_dist["schemaVersion"] = "1.0"
+    sections_invalid = [
+        {
+            "id": "discrimination",
+            "components": [{"id": "prediction-distribution", "spec": bad_pred_dist}],
+        }
+    ]
+    with pytest.raises(ValueError, match="requires schemaVersion '2.0'"):
+        _build_report_spec_v11(sections_invalid)
+
+
 def test_existing_summary_report_still_uses_r_backend(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
