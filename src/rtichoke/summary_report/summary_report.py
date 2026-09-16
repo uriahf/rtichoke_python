@@ -35,6 +35,7 @@ from rtichoke._viz_spec_v2 import (
     _lift_v2_spec_from_performance_data,
     _precision_recall_times_v2_spec_from_performance_data,
     _precision_recall_v2_spec_from_performance_data,
+    _prediction_distribution_v2_spec,
     _roc_times_v2_spec_from_performance_data,
     _roc_v2_spec_from_performance_data,
 )
@@ -43,6 +44,9 @@ from rtichoke.calibration.calibration import (
     _create_calibration_curve_list_times,
 )
 from rtichoke.performance_data.performance_data import prepare_performance_data
+from rtichoke.performance_data.probs_distribution import (
+    _prepare_probs_distribution_data,
+)
 from rtichoke.performance_data.performance_data_times import (
     prepare_performance_data_times,
 )
@@ -328,6 +332,9 @@ def create_summary_report(
     is an explicit opt-in path that uses Python's existing production
     calculations, canonical standalone component builders, canonical ReportSpec
     assembly, and the vendored ``rtichoke_viz`` ``renderReport()`` composer.
+    For ``renderer="browser"``, the static Discrimination section includes
+    Prediction Distribution by Probability Threshold and Prediction Distribution
+    by PPCR / Risk Percentile.
 
     Parameters
     ----------
@@ -371,15 +378,42 @@ def _create_browser_summary_report(
     output_file: str | Path,
 ) -> Path:
     """Build the canonical static ReportSpec v1.1 browser summary report."""
+    by = 0.01
     metadata = _build_evaluation_metadata(probs, reals, np.array([]))
 
     # Stratified by probability threshold
     perf_data_thresh = prepare_performance_data(
-        probs, reals, stratified_by=("probability_threshold",), by=0.01
+        probs, reals, stratified_by=("probability_threshold",), by=by
     )
     # Stratified by PPCR
     perf_data_ppcr = prepare_performance_data(
-        probs, reals, stratified_by=("ppcr",), by=0.01
+        probs, reals, stratified_by=("ppcr",), by=by
+    )
+
+    threshold_distribution_data = _prepare_probs_distribution_data(
+        probs=probs,
+        reals=reals,
+        by=by,
+        stratified_by=("probability_threshold",),
+    )
+    ppcr_distribution_data = _prepare_probs_distribution_data(
+        probs=probs,
+        reals=reals,
+        by=by,
+        stratified_by=("ppcr",),
+    )
+
+    threshold_prediction_distribution = _prediction_distribution_v2_spec(
+        distribution_data=threshold_distribution_data,
+        performance_data=perf_data_thresh,
+        evaluation_metadata=metadata,
+        stratified_by=("probability_threshold",),
+    )
+    ppcr_prediction_distribution = _prediction_distribution_v2_spec(
+        distribution_data=ppcr_distribution_data,
+        performance_data=perf_data_ppcr,
+        evaluation_metadata=metadata,
+        stratified_by=("ppcr",),
     )
 
     calibration_curve_list = _create_calibration_curve_list(probs, reals)
@@ -478,6 +512,11 @@ def _create_browser_summary_report(
                     "id": "discrimination-probability-threshold",
                     "title": "By Probability Threshold",
                     "components": [
+                        {
+                            "id": "prediction-distribution",
+                            "title": "Prediction Distribution",
+                            "spec": threshold_prediction_distribution,
+                        },
                         {"id": "roc", "title": "ROC", "spec": roc_thresh_spec},
                         {
                             "id": "precision-recall",
@@ -496,6 +535,11 @@ def _create_browser_summary_report(
                     "id": "discrimination-ppcr",
                     "title": "By PPCR",
                     "components": [
+                        {
+                            "id": "prediction-distribution-2",
+                            "title": "Prediction Distribution",
+                            "spec": ppcr_prediction_distribution,
+                        },
                         {"id": "roc-2", "title": "ROC", "spec": roc_ppcr_spec},
                         {
                             "id": "precision-recall-2",

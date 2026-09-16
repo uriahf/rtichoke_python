@@ -144,6 +144,7 @@ format: html
                     "Model" in tbl_text
                     or "Probability Threshold" in tbl_text
                     or "True Positives" in tbl_text
+                    or "Sensitivity" in tbl_text
                 )
                 assert frame.locator("svg").count() >= 2
                 assert len(errors) == 0, f"Console errors found: {errors}"
@@ -243,6 +244,7 @@ format: html
                         "Model" in tbl_text
                         or "Probability Threshold" in tbl_text
                         or "True Positives" in tbl_text
+                        or "Sensitivity" in tbl_text
                     )
                     assert frame.locator("svg").count() >= 2
 
