@@ -317,7 +317,11 @@ def test_static_performance_table_confusion_matrix_disclosure(tmp_path):
     RtichokeBrowserReport(ppcr_report_spec).write_html(output_ppcr)
 
     with _serve(tmp_path) as base_url, sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        executable = _chrome_executable()
+        try:
+            browser = p.chromium.launch(headless=True)
+        except Exception:
+            browser = p.chromium.launch(headless=True, executable_path=executable)
         page = browser.new_page()
         errors: list[str] = []
         page.on("console", lambda msg: print("CONSOLE:", msg.type, msg.text))
@@ -370,6 +374,72 @@ def test_static_performance_table_confusion_matrix_disclosure(tmp_path):
         assert ppcr_container.get_attribute("data-operating-point-value") is not None
 
         assert len(errors) == 0
+        browser.close()
+
+
+def test_browser_summary_report_prediction_distribution_components_render(tmp_path):
+    try:
+        from playwright.sync_api import sync_playwright  # type: ignore[import-untyped]
+    except ImportError:
+        pytest.skip("playwright is not available")
+
+    probs, reals = _inputs()
+    output = tmp_path / "pred_dist_render.html"
+    create_summary_report(probs, reals, renderer="browser", output_file=output)
+
+    with _serve(tmp_path) as base_url, sync_playwright() as p:
+        executable = _chrome_executable()
+        try:
+            browser = p.chromium.launch(headless=True)
+        except Exception:
+            browser = p.chromium.launch(headless=True, executable_path=executable)
+        page = browser.new_page()
+        errors: list[str] = []
+        page.on(
+            "console",
+            lambda msg: errors.append(msg.text)
+            if msg.type in ["error", "warning"]
+            and "Failed to load resource" not in msg.text
+            else None,
+        )
+        page.on("pageerror", lambda err: errors.append(str(err)))
+
+        page.goto(f"{base_url}/{output.name}")
+        page.wait_for_selector("#discrimination")
+
+        # 1. Activate probability threshold group tab and verify prediction-distribution
+        thresh_tab = page.locator(
+            "button[aria-controls='discrimination-probability-threshold']"
+        )
+        thresh_tab.click()
+
+        comp_thresh = page.locator("[data-component-id='prediction-distribution']")
+        comp_thresh.wait_for()
+        assert comp_thresh.is_visible()
+
+        svg_thresh = comp_thresh.locator("svg").first
+        svg_thresh.wait_for()
+        bbox_thresh = svg_thresh.bounding_box()
+        assert bbox_thresh is not None
+        assert bbox_thresh["width"] > 0
+        assert bbox_thresh["height"] > 0
+
+        # 2. Activate PPCR group tab and verify prediction-distribution-2
+        ppcr_tab = page.locator("button[aria-controls='discrimination-ppcr']")
+        ppcr_tab.click()
+
+        comp_ppcr = page.locator("[data-component-id='prediction-distribution-2']")
+        comp_ppcr.wait_for()
+        assert comp_ppcr.is_visible()
+
+        svg_ppcr = comp_ppcr.locator("svg").first
+        svg_ppcr.wait_for()
+        bbox_ppcr = svg_ppcr.bounding_box()
+        assert bbox_ppcr is not None
+        assert bbox_ppcr["width"] > 0
+        assert bbox_ppcr["height"] > 0
+
+        assert len(errors) == 0, f"Console errors found: {errors}"
         browser.close()
 
 
