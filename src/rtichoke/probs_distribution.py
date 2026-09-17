@@ -19,13 +19,13 @@ def create_probs_histogram(
     """Create a standalone Prediction Distribution browser chart.
 
     This function generates a canonical prediction distribution chart displaying
-    predicted probability histograms or risk percentile rank distributions,
+    predicted probability histograms or prediction percentile rank distributions,
     decomposed by observed binary outcome, with interactive threshold and PPCR
     operating-point controls.
 
     In Probability Threshold mode, the x-axis represents predicted probability
     intervals. In PPCR (Predicted Positives Condition Rate) mode, the x-axis
-    displays the producer-owned risk-rank distribution (percentile strata).
+    displays the producer-owned rank distribution (percentile strata).
     Bars in each bin are decomposed by observed binary outcome (positives and
     negatives). Moving the operating-point control changes the classification
     partition and updates performance metrics attached to each operating point.
@@ -65,7 +65,7 @@ def create_probs_histogram(
     >>> reals = np.array([0, 0, 1, 1])
     >>> chart = rtichoke.create_probs_histogram(probs=probs, reals=reals)
 
-    Create a prediction distribution chart in PPCR / Risk Percentile mode:
+    Create a prediction distribution chart in PPCR mode:
 
     >>> chart = rtichoke.create_probs_histogram(
     ...     probs=probs,
