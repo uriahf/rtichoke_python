@@ -78,6 +78,20 @@ def create_summary_report_times(
 ) -> Path:
     """Create a canonical browser time-dependent model-performance summary report.
 
+    The generated time-dependent browser report contains five top-level sections:
+
+    1. Event Probability
+    2. Calibration
+    3. Discrimination
+    4. Utility
+    5. Performance Table
+
+    Compared with the static browser Summary Report, it intentionally omits:
+
+    * Prevalence section (replaced by Event Probability over time);
+    * Prediction Distribution section;
+    * AUROC summary metric.
+
     Parameters
     ----------
     probs : Dict[str, np.ndarray]
@@ -92,7 +106,8 @@ def create_summary_report_times(
         List of heuristic configurations for censoring and competing events.
         Defaults to ``[{"censoring_heuristic": "adjusted", "competing_heuristic": "adjusted_as_negative"}]``.
     by : float, optional
-        Step size for probability thresholds / PPCR. Defaults to 0.01.
+        Step size for probability thresholds / Predicted Positives Condition Rate (PPCR).
+        Defaults to 0.01.
     output_file : str or pathlib.Path, optional
         HTML destination file path. Defaults to ``"summary_report_times.html"``.
 
@@ -332,9 +347,9 @@ def create_summary_report(
     is an explicit opt-in path that uses Python's existing production
     calculations, canonical standalone component builders, canonical ReportSpec
     assembly, and the vendored ``rtichoke_viz`` ``renderReport()`` composer.
-    For ``renderer="browser"``, the static Discrimination section includes
-    Prediction Distribution by Probability Threshold and Prediction Distribution
-    by PPCR / Risk Percentile.
+    For ``renderer="browser"``, the static browser Summary Report contains six
+    top-level sections: Prevalence, Prediction Distribution, Calibration,
+    Discrimination, Utility, and Performance Table.
 
     Parameters
     ----------
