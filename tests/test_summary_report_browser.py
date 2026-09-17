@@ -205,6 +205,10 @@ def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(
     assert '<link rel="stylesheet" href="./rtichoke-viz.css">' not in html
     assert "<style>" in html
     assert 'sectionGroupPresentation: "tabs"' in html
+    assert 'groupPresentation: "tabs"' in html
+    assert 'sectionComponentPresentation: "tabs"' in html
+    assert 'groupPresentation: "stacked"' not in html
+    assert ".rtichoke-report {\n  max-width: 1040px;" in html
 
 
 def test_browser_summary_report_executes_when_opened_directly(tmp_path):
@@ -446,6 +450,62 @@ def test_browser_summary_report_prediction_distribution_components_render(tmp_pa
         assert bbox_ppcr is not None
         assert bbox_ppcr["width"] > 0
         assert bbox_ppcr["height"] > 0
+
+        # 4. Component-level tab set verification: Calibration Smooth & Discrete
+        calib_smooth_tab = page.locator(
+            "button[aria-controls='panel-calibration-calibration-smooth']"
+        )
+        calib_discrete_tab = page.locator(
+            "button[aria-controls='panel-calibration-calibration']"
+        )
+        assert calib_smooth_tab.is_visible()
+        assert calib_discrete_tab.is_visible()
+
+        # Click Smooth tab and verify component & non-zero chart SVG dimensions
+        calib_smooth_tab.click()
+        smooth_comp = page.locator("[data-component-id='calibration-smooth']")
+        smooth_comp.wait_for()
+        assert smooth_comp.is_visible()
+        smooth_svg = smooth_comp.locator("svg").first
+        smooth_svg.wait_for()
+        smooth_bbox = smooth_svg.bounding_box()
+        assert smooth_bbox is not None
+        assert smooth_bbox["width"] > 0
+        assert smooth_bbox["height"] > 0
+
+        # Click Discrete tab and verify component & non-zero chart SVG dimensions
+        calib_discrete_tab.click()
+        discrete_comp = page.locator("[data-component-id='calibration']")
+        discrete_comp.wait_for()
+        assert discrete_comp.is_visible()
+        discrete_svg = discrete_comp.locator("svg").first
+        discrete_svg.wait_for()
+        discrete_bbox = discrete_svg.bounding_box()
+        assert discrete_bbox is not None
+        assert discrete_bbox["width"] > 0
+        assert discrete_bbox["height"] > 0
+
+        # 5. Component-level tab set verification: Discrimination Curve Tabs (ROC, Lift, PR, Gains)
+        disc_ppcr_group_tab = page.locator(
+            "button[aria-controls='discrimination-ppcr']"
+        )
+        disc_ppcr_group_tab.click()
+
+        lift_comp_tab = page.locator(
+            "button[aria-controls='panel-discrimination-ppcr-lift-2']"
+        )
+        assert lift_comp_tab.is_visible()
+        lift_comp_tab.click()
+
+        lift_comp = page.locator("[data-component-id='lift-2']")
+        lift_comp.wait_for()
+        assert lift_comp.is_visible()
+        lift_svg = lift_comp.locator("svg").first
+        lift_svg.wait_for()
+        lift_bbox = lift_svg.bounding_box()
+        assert lift_bbox is not None
+        assert lift_bbox["width"] > 0
+        assert lift_bbox["height"] > 0
 
         assert len(errors) == 0, f"Console errors found: {errors}"
         browser.close()
