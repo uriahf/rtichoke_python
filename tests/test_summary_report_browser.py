@@ -184,6 +184,7 @@ def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(
     assert not (tmp_path / "rtichoke-viz.css").exists()
 
     html = output.read_text(encoding="utf-8")
+    assert "<title>Summary Report</title>" in html
     report = _embedded_report(html)
     assert report["schemaVersion"] == "1.1"
     assert report["type"] == "report"
