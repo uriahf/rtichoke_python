@@ -278,7 +278,7 @@ def _prediction_distribution_v2_spec_from_performance_data(
     by: float = 0.01,
     stratified_by: tuple[str, ...] = ("probability_threshold",),
 ) -> dict[str, object]:
-    """Build exact v0.22.1 PredictionDistributionSpec from raw inputs."""
+    """Build exact PredictionDistributionSpec from raw inputs."""
     strat_tuple = _validate_stratified_by(stratified_by)
     dummy_times = pl.Series(dtype=pl.Float64).to_numpy()
     evaluation_metadata = _build_evaluation_metadata(probs, reals, dummy_times)

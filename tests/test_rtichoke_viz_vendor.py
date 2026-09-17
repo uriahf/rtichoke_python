@@ -3,19 +3,19 @@ import tarfile
 from pathlib import Path
 
 _VENDOR = Path(__file__).parents[1] / "src" / "rtichoke" / "_vendor" / "rtichoke_viz"
-_RELEASE_DIR = "rtichoke-viz-0.22.1"
-_SHA256 = "b812f3fc283d404d3d5982cd1a84157c3cce1f13afcdc87c392d7c9ddc029189"
-_SOURCE_COMMIT = "7cc8e8c23ee2f073ff3d8e4f32198eaac4785eb2"
+_RELEASE_DIR = "rtichoke-viz-0.22.2"
+_SHA256 = "37d82506653d747d8191747f1646544053c5ffeb3a6c38d22ea28b62e72dcc81"
+_SOURCE_COMMIT = "34fd54ce2866bb0f578e66ec6c69362b6e727dc0"
 
 
-def test_vendored_rtichoke_viz_v0221_provenance_archive_and_schemas():
+def test_vendored_rtichoke_viz_v0222_provenance_archive_and_schemas():
     provenance = (_VENDOR / "VENDORED_FROM").read_text()
-    assert "release=v0.22.1" in provenance
+    assert "release=v0.22.2" in provenance
     assert f"source_commit={_SOURCE_COMMIT}" in provenance
-    assert "archive=rtichoke-viz-0.22.1.tar.gz" in provenance
+    assert "archive=rtichoke-viz-0.22.2.tar.gz" in provenance
     assert f"sha256={_SHA256}" in provenance
 
-    archive = _VENDOR / "rtichoke-viz-0.22.1.tar.gz"
+    archive = _VENDOR / "rtichoke-viz-0.22.2.tar.gz"
     assert hashlib.sha256(archive.read_bytes()).hexdigest() == _SHA256
     with tarfile.open(archive, "r:gz") as release:
         assert set(release.getnames()) == {
@@ -30,7 +30,7 @@ def test_vendored_rtichoke_viz_v0221_provenance_archive_and_schemas():
         manifest = release.extractfile(f"{_RELEASE_DIR}/MANIFEST")
         assert manifest is not None
         assert manifest.read().decode() == (
-            f"version=0.22.1\ncommit={_SOURCE_COMMIT}\n"
+            f"version=0.22.2\ncommit={_SOURCE_COMMIT}\n"
         )
         for filename in (
             "rtichoke-viz.css",
@@ -43,6 +43,7 @@ def test_vendored_rtichoke_viz_v0221_provenance_archive_and_schemas():
             assert packaged is not None
             assert (_VENDOR / filename).read_bytes() == packaged.read()
 
+    assert not (_VENDOR / "rtichoke-viz-0.22.1.tar.gz").exists()
     assert not (_VENDOR / "rtichoke-viz-0.22.0.tar.gz").exists()
     assert not (_VENDOR / "rtichoke-viz-0.20.2.tar.gz").exists()
     assert not (_VENDOR / "rtichoke-viz-0.20.1.tar.gz").exists()
@@ -63,7 +64,7 @@ def test_vendored_rtichoke_viz_v0221_provenance_archive_and_schemas():
     assert '"summary_metrics"' in report_schema
 
 
-def test_v0221_bundle_keeps_existing_exports_and_prediction_distribution():
+def test_v0222_bundle_keeps_existing_exports_and_prediction_distribution():
     bundle = (_VENDOR / "rtichoke-viz.js").read_text(encoding="utf-8")
     for export_name in (
         "renderRoc",
@@ -87,3 +88,6 @@ def test_v0221_bundle_keeps_existing_exports_and_prediction_distribution():
         assert export_name in bundle
 
     assert "Fixed Time Horizon" in bundle
+    assert "Event Probability" in bundle
+    assert "Prediction Percentile" in bundle
+    assert "Prediction Score" in bundle
