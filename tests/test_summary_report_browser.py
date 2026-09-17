@@ -350,15 +350,14 @@ def test_static_performance_table_confusion_matrix_disclosure(tmp_path):
             const cheatSheet = document.querySelector('.rtichoke-cheat-sheet');
             const nav = document.querySelector('.rtichoke-report__nav');
             if (!header || !cheatSheet || !nav) return false;
-            return (
-                header.compareDocumentPosition(cheatSheet) & Node.DOCUMENT_POSITION_FOLLOWING &&
-                cheatSheet.compareDocumentPosition(nav) & Node.DOCUMENT_POSITION_FOLLOWING
-            );
+            const afterHeader = (header.compareDocumentPosition(cheatSheet) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+            const beforeNav = (cheatSheet.compareDocumentPosition(nav) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+            return afterHeader && beforeNav;
         }""")
-        assert is_correct_order is True or is_correct_order == 1
+        assert is_correct_order is True
 
         # Check cheat sheet text/formulas
-        cs_text = cs.inner_text()
+        cs_text = cs.text_content()
         assert "Confusion Matrix" in cs_text
         assert "Prevalence" in cs_text
         assert "PPCR" in cs_text
