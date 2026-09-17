@@ -203,7 +203,9 @@ def test_browser_report_title_html_escaped(tmp_path):
     report_spec = {"title": title_with_special, "sections": []}
     output = RtichokeBrowserReport(report_spec).write_html(tmp_path / "report.html")
     html_content = output.read_text(encoding="utf-8")
-    expected_title = "Summary &amp; Performance &lt;Report&gt; &#x27;v1.0&#x27; &quot;Draft&quot;"
+    expected_title = (
+        "Summary &amp; Performance &lt;Report&gt; &#x27;v1.0&#x27; &quot;Draft&quot;"
+    )
     assert f"<title>{expected_title}</title>" in html_content
 
 
