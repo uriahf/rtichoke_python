@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import json
 import re
 from importlib.resources import files
@@ -120,7 +121,14 @@ class RtichokeBrowserReport:
         viz_js = vendor.joinpath("rtichoke-viz.js").read_text(encoding="utf-8")
         viz_css = vendor.joinpath("rtichoke-viz.css").read_text(encoding="utf-8")
         render_fn = _resolve_render_report_symbol(viz_js)
-        html = f"""<!doctype html>
+
+        raw_title = self.spec.get("title")
+        if isinstance(raw_title, str) and raw_title.strip():
+            doc_title = html.escape(raw_title)
+        else:
+            doc_title = "rtichoke report"
+
+        html_content = f"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -129,7 +137,7 @@ class RtichokeBrowserReport:
 {viz_css}
 {_summary_report_density_css()}
   </style>
-  <title>rtichoke report</title>
+  <title>{doc_title}</title>
 </head>
 <body>
   <div id="rtichoke-report"></div>
@@ -148,5 +156,5 @@ class RtichokeBrowserReport:
 </body>
 </html>
 """
-        output.write_text(html, encoding="utf-8")
+        output.write_text(html_content, encoding="utf-8")
         return output

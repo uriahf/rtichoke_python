@@ -164,6 +164,74 @@ def test_browser_report_does_not_delete_or_overwrite_preexisting_assets(tmp_path
     assert existing_css.read_text(encoding="utf-8") == "/* custom preexisting css */"
 
 
+import copy
+
+
+def test_browser_report_title_usable(tmp_path):
+    report_spec = {"title": "Summary Report", "sections": []}
+    output = RtichokeBrowserReport(report_spec).write_html(tmp_path / "report.html")
+    html_content = output.read_text(encoding="utf-8")
+    assert "<title>Summary Report</title>" in html_content
+
+
+def test_browser_report_title_preserves_unstripped_usable_string(tmp_path):
+    report_spec = {"title": "  Summary Report  ", "sections": []}
+    output = RtichokeBrowserReport(report_spec).write_html(tmp_path / "report.html")
+    html_content = output.read_text(encoding="utf-8")
+    assert "<title>  Summary Report  </title>" in html_content
+
+
+@pytest.mark.parametrize(
+    "invalid_title",
+    [
+        None,
+        "",
+        "   ",
+        "\t\n ",
+        123,
+        ["Summary Report"],
+        {"a": "b"},
+    ],
+)
+def test_browser_report_title_fallback(tmp_path, invalid_title):
+    spec = {} if invalid_title is None else {"title": invalid_title}
+    output = RtichokeBrowserReport(spec).write_html(tmp_path / "report.html")
+    html_content = output.read_text(encoding="utf-8")
+    assert "<title>rtichoke report</title>" in html_content
+
+
+def test_browser_report_title_html_escaped(tmp_path):
+    title_with_special = "Summary & Performance <Report> 'v1.0' \"Draft\""
+    report_spec = {"title": title_with_special, "sections": []}
+    output = RtichokeBrowserReport(report_spec).write_html(tmp_path / "report.html")
+    html_content = output.read_text(encoding="utf-8")
+    expected_title = "Summary &amp; Performance &lt;Report&gt; &#x27;v1.0&#x27; &quot;Draft&quot;"
+    assert f"<title>{expected_title}</title>" in html_content
+
+
+def test_browser_report_does_not_mutate_spec(tmp_path):
+    original_spec = {
+        "title": "Summary Report",
+        "sections": [],
+        "value_nan": float("nan"),
+    }
+    spec_copy = copy.deepcopy(original_spec)
+
+    report = RtichokeBrowserReport(original_spec)
+    output = report.write_html(tmp_path / "report.html")
+    html_content = output.read_text(encoding="utf-8")
+
+    assert report.spec is original_spec
+    # original_spec itself should not be mutated
+    assert repr(original_spec["value_nan"]) == repr(spec_copy["value_nan"])
+    assert original_spec["title"] == "Summary Report"
+
+    # Embedded spec in HTML is sanitized (NaN -> None)
+    embedded = _embedded_report(html_content)
+    assert embedded["title"] == "Summary Report"
+    assert embedded["value_nan"] is None
+
+
 def test_resolve_render_report_symbol_export_clauses():
     # Unminified / shorthand export
     shorthand_js = "export { foo, renderReport, bar };"
