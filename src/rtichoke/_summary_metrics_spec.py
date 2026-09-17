@@ -266,7 +266,7 @@ def _event_risk_summary_metrics_spec(
     return {
         "schemaVersion": "1.1",
         "type": "summary_metrics",
-        "title": "Event Risk",
+        "title": "Event Probability",
         "evaluations": [],
         "populations": populations_list,
         "metrics": metrics_list,

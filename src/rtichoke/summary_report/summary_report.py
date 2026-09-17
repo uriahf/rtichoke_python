@@ -200,11 +200,11 @@ def create_summary_report_times(
     sections = [
         {
             "id": "event-risk",
-            "title": "Event Risk",
+            "title": "Event Probability",
             "components": [
                 {
                     "id": "event-risk",
-                    "title": "Event Risk",
+                    "title": "Event Probability",
                     "spec": event_risk_spec,
                 }
             ],
@@ -234,6 +234,7 @@ def create_summary_report_times(
                     "title": "By Probability Threshold",
                     "components": [
                         {"id": "roc", "title": "ROC", "spec": roc_thresh_spec},
+                        {"id": "lift", "title": "Lift", "spec": lift_thresh_spec},
                         {
                             "id": "precision-recall",
                             "title": "Precision-Recall",
@@ -244,7 +245,6 @@ def create_summary_report_times(
                             "title": "Gains",
                             "spec": gains_thresh_spec,
                         },
-                        {"id": "lift", "title": "Lift", "spec": lift_thresh_spec},
                     ],
                 },
                 {
@@ -252,6 +252,7 @@ def create_summary_report_times(
                     "title": "By Predicted Positives Condition Rate (PPCR)",
                     "components": [
                         {"id": "roc-2", "title": "ROC", "spec": roc_ppcr_spec},
+                        {"id": "lift-2", "title": "Lift", "spec": lift_ppcr_spec},
                         {
                             "id": "precision-recall-2",
                             "title": "Precision-Recall",
@@ -262,7 +263,6 @@ def create_summary_report_times(
                             "title": "Gains",
                             "spec": gains_ppcr_spec,
                         },
-                        {"id": "lift-2", "title": "Lift", "spec": lift_ppcr_spec},
                     ],
                 },
             ],
@@ -313,7 +313,7 @@ def create_summary_report_times(
         },
     ]
 
-    report = _build_report_spec_v11(sections, title="rtichoke summary report")
+    report = _build_report_spec_v11(sections, title="Summary Report")
     return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(output_file)
 
 
