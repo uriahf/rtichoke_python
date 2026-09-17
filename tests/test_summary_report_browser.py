@@ -333,6 +333,41 @@ def test_static_performance_table_confusion_matrix_disclosure(tmp_path):
         page.on("console", lambda msg: print("CONSOLE:", msg.type, msg.text))
         page.on("pageerror", lambda err: print("PAGE ERROR:", err))
 
+        # 0. Cheat sheet presence, placement, and content in static summary report
+        page.goto(f"{base_url}/{output_thresh.name}")
+        page.wait_for_selector(".rtichoke-report")
+
+        cheat_sheets = page.locator(".rtichoke-cheat-sheet")
+        assert cheat_sheets.count() == 1
+
+        cs = cheat_sheets.first
+        summary_el = cs.locator("summary")
+        assert summary_el.inner_text() == "Performance Metrics Cheat Sheet"
+
+        # Verify element order: .rtichoke-report__header -> .rtichoke-cheat-sheet -> .rtichoke-report__nav
+        is_correct_order = page.evaluate("""() => {
+            const header = document.querySelector('.rtichoke-report__header');
+            const cheatSheet = document.querySelector('.rtichoke-cheat-sheet');
+            const nav = document.querySelector('.rtichoke-report__nav');
+            if (!header || !cheatSheet || !nav) return false;
+            const afterHeader = (header.compareDocumentPosition(cheatSheet) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+            const beforeNav = (cheatSheet.compareDocumentPosition(nav) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+            return afterHeader && beforeNav;
+        }""")
+        assert is_correct_order is True
+
+        # Check cheat sheet text/formulas
+        cs_text = cs.text_content()
+        assert "Confusion Matrix" in cs_text
+        assert "Prevalence" in cs_text
+        assert "PPCR" in cs_text
+        assert "Sensitivity / Recall / TPR" in cs_text
+        assert "Specificity / TNR" in cs_text
+        assert "PPV / Precision" in cs_text
+        assert "NPV" in cs_text
+        assert "Lift" in cs_text
+        assert "Net Benefit" in cs_text
+
         # 1. Static probability threshold performance table disclosure
         page.goto(f"{base_url}/{output_thresh.name}")
         page.wait_for_selector(".rtichoke-performance-table__table")

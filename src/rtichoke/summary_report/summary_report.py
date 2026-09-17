@@ -636,7 +636,9 @@ def _create_browser_summary_report(
     ]
 
     report = _build_report_spec_v11(sections, title="Summary Report")
-    return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(output_file)
+    return RtichokeBrowserReport(
+        cast(dict[str, Any], report), include_cheat_sheet=True
+    ).write_html(output_file)
 
 
 def render_summary_report():

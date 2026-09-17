@@ -130,7 +130,7 @@ format: html
                 assert frame is not None
 
                 frame.wait_for_selector("#rtichoke-report")
-                frame.wait_for_selector("table")
+                frame.wait_for_selector(".rtichoke-performance-table__table")
                 frame.wait_for_selector("svg")
 
                 assert "Performance" in frame.content()
@@ -230,7 +230,7 @@ format: html
                     assert frame is not None
 
                     frame.wait_for_selector("#rtichoke-report")
-                    frame.wait_for_selector("table")
+                    frame.wait_for_selector(".rtichoke-performance-table__table")
                     frame.wait_for_selector("svg")
 
                     assert "Performance" in frame.content()

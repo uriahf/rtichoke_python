@@ -118,6 +118,7 @@ def _assert_report_rendered(browser: subprocess.CompletedProcess[str]) -> None:
     assert "By Predicted Positives Condition Rate (PPCR)" in rendered
     assert "<table" in rendered
     assert rendered.count("<svg") >= 2
+    assert "rtichoke-cheat-sheet" not in rendered
 
 
 def test_public_export_create_summary_report_times():
