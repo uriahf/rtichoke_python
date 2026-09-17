@@ -486,7 +486,9 @@ def test_browser_summary_report_prediction_distribution_components_render(tmp_pa
         assert discrete_bbox["height"] > 0
 
         # 5. Component-level tab set verification: Discrimination Curve Tabs (ROC, Lift, PR, Gains)
-        disc_ppcr_group_tab = page.locator("button[aria-controls='discrimination-ppcr']")
+        disc_ppcr_group_tab = page.locator(
+            "button[aria-controls='discrimination-ppcr']"
+        )
         disc_ppcr_group_tab.click()
 
         lift_comp_tab = page.locator(
