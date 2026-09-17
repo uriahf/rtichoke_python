@@ -92,4 +92,4 @@ The time-dependent summary report intentionally differs from the binary static r
 - **No Prediction Distribution section**: Prediction distribution histograms are omitted in time-dependent reports.
 - **No AUROC summary metric**: AUROC summary metric cards are omitted in time-dependent reports.
 
-The browser backend does not replace Quarto or the historical R backend, and `renderer="browser"` is an opt-in path. Existing Plotly, Matplotlib, table, and standalone browser-chart APIs remain unchanged.
+The browser backend does not replace Quarto or the historical R backend. `renderer="browser"` is an explicit opt-in parameter for [create_summary_report()](../reference/create_summary_report.md#rtichoke.create_summary_report), whereas `create_summary_report_times()` generates a browser summary report directly without requiring a `renderer` argument. Existing Plotly, Matplotlib, table, and standalone browser-chart APIs remain unchanged.

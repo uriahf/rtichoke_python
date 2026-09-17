@@ -447,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <li><strong>No Prediction Distribution section</strong>: Prediction distribution histograms are omitted in time-dependent reports.</li>
 <li><strong>No AUROC summary metric</strong>: AUROC summary metric cards are omitted in time-dependent reports.</li>
 </ul>
-<p>The browser backend does not replace Quarto or the historical R backend, and <code>renderer="browser"</code> is an opt-in path. Existing Plotly, Matplotlib, table, and standalone browser-chart APIs remain unchanged.</p>
+<p>The browser backend does not replace Quarto or the historical R backend. <code>renderer="browser"</code> is an explicit opt-in parameter for <a href="../reference/create_summary_report.html#rtichoke.create_summary_report" class="gdls-link gdls-code">create_summary_report()</a>, whereas <code>create_summary_report_times()</code> generates a browser summary report directly without requiring a <code>renderer</code> argument. Existing Plotly, Matplotlib, table, and standalone browser-chart APIs remain unchanged.</p>
 
 
 </section>
