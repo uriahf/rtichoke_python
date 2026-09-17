@@ -205,6 +205,10 @@ def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(
     assert '<link rel="stylesheet" href="./rtichoke-viz.css">' not in html
     assert "<style>" in html
     assert 'sectionGroupPresentation: "tabs"' in html
+    assert 'groupPresentation: "tabs"' in html
+    assert 'sectionComponentPresentation: "tabs"' in html
+    assert 'groupPresentation: "stacked"' not in html
+    assert ".rtichoke-report {\n  max-width: 1040px;" in html
 
 
 def test_browser_summary_report_executes_when_opened_directly(tmp_path):

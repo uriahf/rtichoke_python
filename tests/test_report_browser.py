@@ -68,7 +68,10 @@ def test_browser_report_uses_real_producers_and_only_shared_render_report(tmp_pa
     assert viz_css in html
     assert '<link rel="stylesheet" href="./rtichoke-viz.css">' not in html
     assert 'sectionGroupPresentation: "tabs"' in html
-    assert 'groupPresentation: "stacked"' in html
+    assert 'groupPresentation: "tabs"' in html
+    assert 'sectionComponentPresentation: "tabs"' in html
+    assert 'groupPresentation: "stacked"' not in html
+    assert ".rtichoke-report {\n  max-width: 1040px;" in html
     assert _embedded_report(html) == report
     assert [item["id"] for item in report["sections"][0]["items"]] == [
         "performance-table",

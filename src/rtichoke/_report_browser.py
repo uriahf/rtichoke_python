@@ -49,6 +49,57 @@ def _sanitize_nan_values(obj: Any) -> Any:
     return obj
 
 
+def _summary_report_density_css() -> str:
+    """Generate layout density CSS for browser summary reports."""
+    return (
+        ".rtichoke-report {\n"
+        "  max-width: 1040px;\n"
+        "  gap: 1.5rem;\n"
+        "}\n"
+        ".rtichoke-report__section {\n"
+        "  gap: 1.25rem;\n"
+        "}\n"
+        ".rtichoke-report__group {\n"
+        "  gap: 0.875rem;\n"
+        "}\n"
+        ".rtichoke-report__component,\n"
+        ".rtichoke-report__tabpanel {\n"
+        "  gap: 0.5rem;\n"
+        "}\n"
+        ".rtichoke-report .rtichoke-viz-chart {\n"
+        "  min-height: 500px;\n"
+        "  height: 500px;\n"
+        "}\n"
+        ".rtichoke-report .rtichoke-calibration {\n"
+        "  min-height: 550px;\n"
+        "  height: 550px;\n"
+        "}\n"
+        ".rtichoke-report__tabpanel .rtichoke-report__component-title {\n"
+        "  display: none;\n"
+        "}\n"
+        ".rtichoke-report__nav {\n"
+        "  background-color: transparent;\n"
+        "  border: none;\n"
+        "  border-bottom: 1px solid #e5e7eb;\n"
+        "  border-radius: 0;\n"
+        "  padding: 0.5rem 0;\n"
+        "}\n"
+        ".rtichoke-report .rtichoke-summary-metrics {\n"
+        "  border: none;\n"
+        "  background: transparent;\n"
+        "  box-shadow: none;\n"
+        "}\n"
+        ".rtichoke-report .rtichoke-summary-metrics__title {\n"
+        "  display: none;\n"
+        "}\n"
+        ".rtichoke-report .rtichoke-summary-metrics__table th,\n"
+        ".rtichoke-report .rtichoke-summary-metrics__table td {\n"
+        "  padding: 0.35rem 0.65rem;\n"
+        "  border-bottom: 1px solid #e5e7eb;\n"
+        "}\n"
+    )
+
+
 class RtichokeBrowserReport:
     """A complete canonical ReportSpec rendered by shared ``rtichoke_viz``."""
 
@@ -76,6 +127,7 @@ class RtichokeBrowserReport:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
 {viz_css}
+{_summary_report_density_css()}
   </style>
   <title>rtichoke report</title>
 </head>
@@ -89,7 +141,8 @@ class RtichokeBrowserReport:
     );
     document.querySelector("#rtichoke-report").append({render_fn}(spec, {{
       sectionGroupPresentation: "tabs",
-      groupPresentation: "stacked"
+      groupPresentation: "tabs",
+      sectionComponentPresentation: "tabs"
     }}));
   </script>
 </body>
