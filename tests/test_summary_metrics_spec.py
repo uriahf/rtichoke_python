@@ -144,7 +144,7 @@ def test_event_risk_summary_metrics_spec_multiple_models_shared_population():
     spec = _event_risk_summary_metrics_spec(perf_data, metadata, horizons)
     assert spec["schemaVersion"] == "1.1"
     assert spec["type"] == "summary_metrics"
-    assert spec["title"] == "Event Risk"
+    assert spec["title"] == "Event Probability"
     assert spec["evaluations"] == []
     assert len(spec["populations"]) == 1
     assert spec["populations"][0]["id"] == "population-1"

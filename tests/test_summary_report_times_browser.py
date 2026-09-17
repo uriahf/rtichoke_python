@@ -139,6 +139,7 @@ def test_summary_report_times_spec_structure_and_ordering(tmp_path):
     report = _embedded_report(output.read_text(encoding="utf-8"))
     assert report["schemaVersion"] == "1.1"
     assert report["type"] == "report"
+    assert report["title"] == "Summary Report"
 
     # Exact section hierarchy
     sections = report["sections"]
@@ -153,23 +154,28 @@ def test_summary_report_times_spec_structure_and_ordering(tmp_path):
 
     # Section titles
     assert [s["title"] for s in sections] == [
-        "Event Risk",
+        "Event Probability",
         "Calibration",
         "Discrimination",
         "Utility",
         "Performance Table",
     ]
 
-    # Event Risk section checks
+    # Event Probability section checks
     event_risk_sec = sections[0]
+    assert event_risk_sec["id"] == "event-risk"
+    assert event_risk_sec["title"] == "Event Probability"
     assert [c["id"] for c in event_risk_sec["items"]] == ["event-risk"]
+    assert event_risk_sec["items"][0]["title"] == "Event Probability"
     assert event_risk_sec["items"][0]["spec"]["schemaVersion"] == "1.1"
     assert event_risk_sec["items"][0]["spec"]["type"] == "summary_metrics"
+    assert event_risk_sec["items"][0]["spec"]["title"] == "Event Probability"
     assert event_risk_sec["items"][0]["spec"]["metrics"][0]["metric"] == "event_risk"
 
     # Explicit omissions check
     assert "prevalence" not in section_ids
     assert "auroc" not in json.dumps(report)
+    assert "prediction-distribution" not in section_ids
 
     # Calibration section components
     calib = sections[1]
@@ -185,30 +191,30 @@ def test_summary_report_times_spec_structure_and_ordering(tmp_path):
     assert g1["title"] == "By Probability Threshold"
     assert [c["id"] for c in g1["components"]] == [
         "roc",
+        "lift",
         "precision-recall",
         "gains",
-        "lift",
     ]
     assert [c["title"] for c in g1["components"]] == [
         "ROC",
+        "Lift",
         "Precision-Recall",
         "Gains",
-        "Lift",
     ]
 
     assert g2["id"] == "discrimination-ppcr"
     assert g2["title"] == "By Predicted Positives Condition Rate (PPCR)"
     assert [c["id"] for c in g2["components"]] == [
         "roc-2",
+        "lift-2",
         "precision-recall-2",
         "gains-2",
-        "lift-2",
     ]
     assert [c["title"] for c in g2["components"]] == [
         "ROC",
+        "Lift",
         "Precision-Recall",
         "Gains",
-        "Lift",
     ]
 
     # Utility section components
@@ -311,12 +317,13 @@ def test_summary_report_times_preserves_standalone_canonical_producers(tmp_path)
 
     report_event_risk = report["sections"][0]["items"][0]["spec"]
     assert report_event_risk["schemaVersion"] == "1.1"
+    assert report_event_risk["title"] == "Event Probability"
     report_calib_smooth = report["sections"][1]["items"][0]["spec"]
     report_roc_thresh = report["sections"][2]["items"][0]["components"][0]["spec"]
-    report_pr_thresh = report["sections"][2]["items"][0]["components"][1]["spec"]
+    report_lift_thresh = report["sections"][2]["items"][0]["components"][1]["spec"]
+    report_pr_thresh = report["sections"][2]["items"][0]["components"][2]["spec"]
     report_roc_ppcr = report["sections"][2]["items"][1]["components"][0]["spec"]
-    report_gains_ppcr = report["sections"][2]["items"][1]["components"][2]["spec"]
-    report_lift_thresh = report["sections"][2]["items"][0]["components"][3]["spec"]
+    report_gains_ppcr = report["sections"][2]["items"][1]["components"][3]["spec"]
     report_dc = report["sections"][3]["items"][0]["spec"]
     report_ia = report["sections"][3]["items"][1]["spec"]
     report_table_thresh = report["sections"][4]["items"][0]["components"][0]["spec"]
