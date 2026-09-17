@@ -482,6 +482,34 @@ def _create_browser_summary_report(
             ],
         },
         {
+            "id": "prediction-distribution",
+            "title": "Prediction Distribution",
+            "groups": [
+                {
+                    "id": "prediction-distribution-probability-threshold",
+                    "title": "By Probability Threshold",
+                    "components": [
+                        {
+                            "id": "prediction-distribution",
+                            "title": "Prediction Distribution",
+                            "spec": threshold_prediction_distribution,
+                        }
+                    ],
+                },
+                {
+                    "id": "prediction-distribution-ppcr",
+                    "title": "By Predicted Positives Condition Rate (PPCR)",
+                    "components": [
+                        {
+                            "id": "prediction-distribution-2",
+                            "title": "Prediction Distribution",
+                            "spec": ppcr_prediction_distribution,
+                        }
+                    ],
+                },
+            ],
+        },
+        {
             "id": "calibration",
             "title": "Calibration",
             "components": [
@@ -512,11 +540,6 @@ def _create_browser_summary_report(
                     "id": "discrimination-probability-threshold",
                     "title": "By Probability Threshold",
                     "components": [
-                        {
-                            "id": "prediction-distribution",
-                            "title": "Prediction Distribution",
-                            "spec": threshold_prediction_distribution,
-                        },
                         {"id": "roc", "title": "ROC", "spec": roc_thresh_spec},
                         {
                             "id": "precision-recall",
@@ -535,11 +558,6 @@ def _create_browser_summary_report(
                     "id": "discrimination-ppcr",
                     "title": "By PPCR",
                     "components": [
-                        {
-                            "id": "prediction-distribution-2",
-                            "title": "Prediction Distribution",
-                            "spec": ppcr_prediction_distribution,
-                        },
                         {"id": "roc-2", "title": "ROC", "spec": roc_ppcr_spec},
                         {
                             "id": "precision-recall-2",
