@@ -190,6 +190,7 @@ def test_browser_summary_report_is_opt_in_and_uses_real_canonical_components(
     section_ids = [section["id"] for section in report["sections"]]
     assert section_ids == [
         "prevalence",
+        "prediction-distribution",
         "calibration",
         "discrimination",
         "utility",
@@ -262,8 +263,8 @@ def test_browser_summary_report_preserves_component_local_identity(tmp_path):
     assert "horizon" not in report
 
     prev_spec = report["sections"][0]["items"][0]["spec"]
-    calib_smooth_spec = report["sections"][1]["items"][0]["spec"]
-    calib_discrete_spec = report["sections"][1]["items"][1]["spec"]
+    calib_smooth_spec = report["sections"][2]["items"][0]["spec"]
+    calib_discrete_spec = report["sections"][2]["items"][1]["spec"]
 
     assert prev_spec["schemaVersion"] == "1.0"
     assert prev_spec["type"] == "summary_metrics"
@@ -405,11 +406,18 @@ def test_browser_summary_report_prediction_distribution_components_render(tmp_pa
         page.on("pageerror", lambda err: errors.append(str(err)))
 
         page.goto(f"{base_url}/{output.name}")
-        page.wait_for_selector("#discrimination")
 
-        # 1. Activate probability threshold group tab and verify prediction-distribution
+        # 1. Activate top-level Prediction Distribution section tab
+        pred_dist_section_tab = page.locator(
+            "button[aria-controls='prediction-distribution']"
+        )
+        if pred_dist_section_tab.is_visible():
+            pred_dist_section_tab.click()
+        page.wait_for_selector("#prediction-distribution")
+
+        # 2. Activate probability threshold group tab and verify prediction-distribution
         thresh_tab = page.locator(
-            "button[aria-controls='discrimination-probability-threshold']"
+            "button[aria-controls='prediction-distribution-probability-threshold']"
         )
         thresh_tab.click()
 
@@ -424,8 +432,8 @@ def test_browser_summary_report_prediction_distribution_components_render(tmp_pa
         assert bbox_thresh["width"] > 0
         assert bbox_thresh["height"] > 0
 
-        # 2. Activate PPCR group tab and verify prediction-distribution-2
-        ppcr_tab = page.locator("button[aria-controls='discrimination-ppcr']")
+        # 3. Activate PPCR group tab and verify prediction-distribution-2
+        ppcr_tab = page.locator("button[aria-controls='prediction-distribution-ppcr']")
         ppcr_tab.click()
 
         comp_ppcr = page.locator("[data-component-id='prediction-distribution-2']")
@@ -450,51 +458,90 @@ def test_browser_summary_report_structure_and_component_counts(tmp_path):
 
     report = _embedded_report(output.read_text(encoding="utf-8"))
 
-    # 5 sections
+    # Exactly 6 sections
     sections = report["sections"]
-    assert len(sections) == 5
+    assert len(sections) == 6
     section_ids = [s["id"] for s in sections]
     assert section_ids == [
         "prevalence",
+        "prediction-distribution",
         "calibration",
         "discrimination",
         "utility",
         "performance-table",
     ]
+    section_titles = [s["title"] for s in sections]
+    assert section_titles == [
+        "Prevalence",
+        "Prediction Distribution",
+        "Calibration",
+        "Discrimination",
+        "Utility",
+        "Performance Table",
+    ]
 
-    # Discrimination section
-    disc_sec = sections[2]
-    assert disc_sec["id"] == "discrimination"
+    # Section 1: Prediction Distribution section
+    pd_sec = sections[1]
+    assert pd_sec["id"] == "prediction-distribution"
+    assert pd_sec["title"] == "Prediction Distribution"
 
-    items = disc_sec["items"]
-    assert len(items) == 3
-    assert items[0]["id"] == "auroc"
+    pd_items = pd_sec["items"]
+    assert len(pd_items) == 2
 
     # Group 1: By Probability Threshold
-    grp_thresh = items[1]
-    assert grp_thresh["id"] == "discrimination-probability-threshold"
-    thresh_comps = grp_thresh["components"]
-    assert [c["id"] for c in thresh_comps] == [
-        "prediction-distribution",
+    pd_thresh = pd_items[0]
+    assert pd_thresh["id"] == "prediction-distribution-probability-threshold"
+    assert pd_thresh["title"] == "By Probability Threshold"
+    thresh_pd_comps = pd_thresh["components"]
+    assert len(thresh_pd_comps) == 1
+    assert thresh_pd_comps[0]["id"] == "prediction-distribution"
+    assert thresh_pd_comps[0]["title"] == "Prediction Distribution"
+    assert thresh_pd_comps[0]["spec"]["type"] == "prediction_distribution"
+    assert (
+        thresh_pd_comps[0]["spec"]["operatingPoint"]["dimension"]
+        == "probability_threshold"
+    )
+
+    # Group 2: By PPCR
+    pd_ppcr = pd_items[1]
+    assert pd_ppcr["id"] == "prediction-distribution-ppcr"
+    assert pd_ppcr["title"] == "By Predicted Positives Condition Rate (PPCR)"
+    ppcr_pd_comps = pd_ppcr["components"]
+    assert len(ppcr_pd_comps) == 1
+    assert ppcr_pd_comps[0]["id"] == "prediction-distribution-2"
+    assert ppcr_pd_comps[0]["title"] == "Prediction Distribution"
+    assert ppcr_pd_comps[0]["spec"]["type"] == "prediction_distribution"
+    assert ppcr_pd_comps[0]["spec"]["operatingPoint"]["dimension"] == "ppcr"
+
+    # Section 3: Discrimination section
+    disc_sec = sections[3]
+    assert disc_sec["id"] == "discrimination"
+
+    disc_items = disc_sec["items"]
+    assert len(disc_items) == 3
+    assert disc_items[0]["id"] == "auroc"
+
+    # Discrimination Group 1: By Probability Threshold
+    disc_grp_thresh = disc_items[1]
+    assert disc_grp_thresh["id"] == "discrimination-probability-threshold"
+    disc_thresh_comps = disc_grp_thresh["components"]
+    assert [c["id"] for c in disc_thresh_comps] == [
         "roc",
         "precision-recall",
         "gains",
         "lift",
     ]
-    assert thresh_comps[0]["spec"]["type"] == "prediction_distribution"
 
-    # Group 2: By PPCR
-    grp_ppcr = items[2]
-    assert grp_ppcr["id"] == "discrimination-ppcr"
-    ppcr_comps = grp_ppcr["components"]
-    assert [c["id"] for c in ppcr_comps] == [
-        "prediction-distribution-2",
+    # Discrimination Group 2: By PPCR
+    disc_grp_ppcr = disc_items[2]
+    assert disc_grp_ppcr["id"] == "discrimination-ppcr"
+    disc_ppcr_comps = disc_grp_ppcr["components"]
+    assert [c["id"] for c in disc_ppcr_comps] == [
         "roc-2",
         "precision-recall-2",
         "gains-2",
         "lift-2",
     ]
-    assert ppcr_comps[0]["spec"]["type"] == "prediction_distribution"
 
     # Collect all component IDs across report
     all_comp_ids = []
@@ -508,6 +555,10 @@ def test_browser_summary_report_structure_and_component_counts(tmp_path):
 
     assert len(all_comp_ids) == 18
     assert len(set(all_comp_ids)) == 18
+    assert "prediction-distribution" in all_comp_ids
+    assert "prediction-distribution-2" in all_comp_ids
+    assert all_comp_ids.count("prediction-distribution") == 1
+    assert all_comp_ids.count("prediction-distribution-2") == 1
 
 
 def test_browser_summary_report_default_grid_and_standalone_identity(tmp_path):
@@ -517,9 +568,9 @@ def test_browser_summary_report_default_grid_and_standalone_identity(tmp_path):
 
     report = _embedded_report(output.read_text(encoding="utf-8"))
 
-    disc_sec = report["sections"][2]
-    embedded_thresh_spec = disc_sec["items"][1]["components"][0]["spec"]
-    embedded_ppcr_spec = disc_sec["items"][2]["components"][0]["spec"]
+    pd_sec = report["sections"][1]
+    embedded_thresh_spec = pd_sec["items"][0]["components"][0]["spec"]
+    embedded_ppcr_spec = pd_sec["items"][1]["components"][0]["spec"]
 
     # Grid check 0.00, 0.01, ..., 1.00
     expected_grid = [round(x, 2) for x in np.linspace(0.0, 1.0, 101)]
@@ -640,7 +691,7 @@ def test_browser_summary_report_multiple_evaluations(tmp_path):
     )
     report_multi_model = _embedded_report(out_multi_model.read_text(encoding="utf-8"))
 
-    thresh_spec = report_multi_model["sections"][2]["items"][1]["components"][0]["spec"]
+    thresh_spec = report_multi_model["sections"][1]["items"][0]["components"][0]["spec"]
     evals = thresh_spec["evaluations"]
     assert len(evals) == 2
     assert evals[0]["id"] == "evaluation-1"
@@ -664,7 +715,7 @@ def test_browser_summary_report_multiple_evaluations(tmp_path):
     )
     report_multi_pop = _embedded_report(out_multi_pop.read_text(encoding="utf-8"))
 
-    thresh_spec_pop = report_multi_pop["sections"][2]["items"][1]["components"][0][
+    thresh_spec_pop = report_multi_pop["sections"][1]["items"][0]["components"][0][
         "spec"
     ]
     evals_pop = thresh_spec_pop["evaluations"]
@@ -700,18 +751,53 @@ def test_browser_summary_report_authoritative_schema_validation(tmp_path):
     report_errors = list(report_validator.iter_errors(report_spec))
     assert not report_errors, f"Report schema validation errors: {report_errors}"
 
-    disc_sec = report_spec["sections"][2]
-    thresh_pred_dist = disc_sec["items"][1]["components"][0]["spec"]
+    pd_sec = report_spec["sections"][1]
+    thresh_pred_dist = pd_sec["items"][0]["components"][0]["spec"]
     thresh_errors = list(v2_validator.iter_errors(thresh_pred_dist))
     assert not thresh_errors, (
         f"Threshold prediction distribution v2 schema errors: {thresh_errors}"
     )
 
-    ppcr_pred_dist = disc_sec["items"][2]["components"][0]["spec"]
+    ppcr_pred_dist = pd_sec["items"][1]["components"][0]["spec"]
     ppcr_errors = list(v2_validator.iter_errors(ppcr_pred_dist))
     assert not ppcr_errors, (
         f"PPCR prediction distribution v2 schema errors: {ppcr_errors}"
     )
+
+
+def test_browser_summary_report_does_not_duplicate_producer_calls(
+    monkeypatch, tmp_path
+):
+    probs, reals = _inputs()
+    output = tmp_path / "producer_counts.html"
+
+    perf_calls = []
+    orig_perf = summary_report_module.prepare_performance_data
+
+    def spy_perf(*args, **kwargs):
+        perf_calls.append(kwargs.get("stratified_by"))
+        return orig_perf(*args, **kwargs)
+
+    dist_calls = []
+    orig_dist = summary_report_module._prepare_probs_distribution_data
+
+    def spy_dist(*args, **kwargs):
+        dist_calls.append(kwargs.get("stratified_by"))
+        return orig_dist(*args, **kwargs)
+
+    def fail_create_probs_histogram(*args, **kwargs):
+        raise AssertionError("report must not call public create_probs_histogram")
+
+    monkeypatch.setattr(summary_report_module, "prepare_performance_data", spy_perf)
+    monkeypatch.setattr(
+        summary_report_module, "_prepare_probs_distribution_data", spy_dist
+    )
+    monkeypatch.setattr(rtichoke, "create_probs_histogram", fail_create_probs_histogram)
+
+    create_summary_report(probs, reals, renderer="browser", output_file=output)
+
+    assert perf_calls == [("probability_threshold",), ("ppcr",)]
+    assert dist_calls == [("probability_threshold",), ("ppcr",)]
 
 
 def test_browser_summary_report_non_regression():
