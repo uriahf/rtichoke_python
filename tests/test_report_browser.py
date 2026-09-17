@@ -12,6 +12,7 @@ from rtichoke._performance_table_spec import (
 )
 from rtichoke._report_browser import (
     RtichokeBrowserReport,
+    _performance_metrics_cheat_sheet_html,
     _resolve_render_report_symbol,
 )
 from rtichoke._report_spec import _build_report_spec_v11
@@ -253,3 +254,68 @@ def test_resolve_render_report_symbol_export_clauses():
     missing_js = "export { foo, bar };"
     with pytest.raises(ValueError, match="Could not resolve 'renderReport' export"):
         _resolve_render_report_symbol(missing_js)
+
+
+def test_cheat_sheet_html_exact_markup():
+    html = _performance_metrics_cheat_sheet_html()
+    assert html.startswith('<details class="rtichoke-cheat-sheet">\n')
+    assert "<summary>Performance Metrics Cheat Sheet</summary>" in html
+    assert "<h4>Confusion Matrix</h4>" in html
+    assert "<th>Predicted +</th>" in html
+    assert "<th>Predicted -</th>" in html
+    assert "<th>Real Positive</th>" in html
+    assert "<td>TP</td>" in html
+    assert "<td>FN</td>" in html
+    assert "<th>Real Negative</th>" in html
+    assert "<td>FP</td>" in html
+    assert "<td>TN</td>" in html
+    assert "<h4>Metrics &amp; Formulas</h4>" in html
+    assert "<dt>Prevalence</dt>" in html
+    assert "<dd><code>(TP + FN) / (TP + FP + TN + FN)</code></dd>" in html
+    assert "<dt>PPCR</dt>" in html
+    assert "<dd><code>(TP + FP) / (TP + FP + TN + FN)</code></dd>" in html
+    assert "<dt>Sensitivity / Recall / TPR</dt>" in html
+    assert "<code>TP / (TP + FN)</code>" in html
+    assert "<code>TP / Real Positives</code>" in html
+    assert "<code>P(Predicted Positive | Real Positive)</code>" in html
+    assert "<dt>Specificity / TNR</dt>" in html
+    assert "<code>TN / (TN + FP)</code>" in html
+    assert "<code>TN / Real Negatives</code>" in html
+    assert "<code>P(Predicted Negative | Real Negative)</code>" in html
+    assert "<dt>PPV / Precision</dt>" in html
+    assert "<code>TP / (TP + FP)</code>" in html
+    assert "<code>TP / Predicted Positives</code>" in html
+    assert "<code>P(Real Positive | Predicted Positive)</code>" in html
+    assert "<dt>NPV</dt>" in html
+    assert "<code>TN / (TN + FN)</code>" in html
+    assert "<code>TN / Predicted Negatives</code>" in html
+    assert "<code>P(Real Negative | Predicted Negative)</code>" in html
+    assert "<dt>Lift</dt>" in html
+    assert "<dd><code>PPV / Prevalence</code></dd>" in html
+    assert "<dt>Net Benefit</dt>" in html
+    assert "<code>TP / N - FP / N * p_t / (1 - p_t)</code>" in html
+    assert "<small>where N = TP + FP + TN + FN</small>" in html
+    assert html.endswith("</details>")
+
+
+def test_browser_report_include_cheat_sheet_flag_default(tmp_path):
+    report_spec = {"title": "Summary Report", "sections": []}
+    report = RtichokeBrowserReport(report_spec)
+    assert report.include_cheat_sheet is False
+
+    output = report.write_html(tmp_path / "default_report.html")
+    html_content = output.read_text(encoding="utf-8")
+    assert "rtichoke-cheat-sheet" not in html_content
+
+
+def test_browser_report_include_cheat_sheet_opt_in(tmp_path):
+    report_spec = {"title": "Summary Report", "sections": []}
+    report = RtichokeBrowserReport(report_spec, include_cheat_sheet=True)
+    assert report.include_cheat_sheet is True
+
+    output = report.write_html(tmp_path / "cheat_sheet_report.html")
+    html_content = output.read_text(encoding="utf-8")
+    assert "rtichoke-cheat-sheet" in html_content
+    assert "cheatSheetWrapper.innerHTML =" in html_content
+    assert "insertBefore(cheatSheetNode, headerNode.nextSibling)" in html_content
+    assert _embedded_report(html_content) == report_spec

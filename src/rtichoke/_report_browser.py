@@ -37,6 +37,81 @@ def _resolve_render_report_symbol(
     )
 
 
+def _performance_metrics_cheat_sheet_html() -> str:
+    """Generate Performance Metrics Cheat Sheet HTML for browser summary reports."""
+    return (
+        '<details class="rtichoke-cheat-sheet">\n'
+        '  <summary>Performance Metrics Cheat Sheet</summary>\n'
+        '  <div class="rtichoke-cheat-sheet__content">\n'
+        '    <section class="rtichoke-cheat-sheet__section">\n'
+        '      <h4>Confusion Matrix</h4>\n'
+        '      <table class="rtichoke-cheat-sheet__table">\n'
+        '        <thead>\n'
+        '          <tr>\n'
+        '            <th></th>\n'
+        '            <th>Predicted +</th>\n'
+        '            <th>Predicted -</th>\n'
+        '          </tr>\n'
+        '        </thead>\n'
+        '        <tbody>\n'
+        '          <tr>\n'
+        '            <th>Real Positive</th>\n'
+        '            <td>TP</td>\n'
+        '            <td>FN</td>\n'
+        '          </tr>\n'
+        '          <tr>\n'
+        '            <th>Real Negative</th>\n'
+        '            <td>FP</td>\n'
+        '            <td>TN</td>\n'
+        '          </tr>\n'
+        '        </tbody>\n'
+        '      </table>\n'
+        '    </section>\n'
+        '    <section class="rtichoke-cheat-sheet__section">\n'
+        '      <h4>Metrics &amp; Formulas</h4>\n'
+        '      <dl class="rtichoke-cheat-sheet__metrics">\n'
+        '        <dt>Prevalence</dt>\n'
+        '        <dd><code>(TP + FN) / (TP + FP + TN + FN)</code></dd>\n'
+        '        <dt>PPCR</dt>\n'
+        '        <dd><code>(TP + FP) / (TP + FP + TN + FN)</code></dd>\n'
+        '        <dt>Sensitivity / Recall / TPR</dt>\n'
+        '        <dd>\n'
+        '          <code>TP / (TP + FN)</code><br />\n'
+        '          <code>TP / Real Positives</code><br />\n'
+        '          <code>P(Predicted Positive | Real Positive)</code>\n'
+        '        </dd>\n'
+        '        <dt>Specificity / TNR</dt>\n'
+        '        <dd>\n'
+        '          <code>TN / (TN + FP)</code><br />\n'
+        '          <code>TN / Real Negatives</code><br />\n'
+        '          <code>P(Predicted Negative | Real Negative)</code>\n'
+        '        </dd>\n'
+        '        <dt>PPV / Precision</dt>\n'
+        '        <dd>\n'
+        '          <code>TP / (TP + FP)</code><br />\n'
+        '          <code>TP / Predicted Positives</code><br />\n'
+        '          <code>P(Real Positive | Predicted Positive)</code>\n'
+        '        </dd>\n'
+        '        <dt>NPV</dt>\n'
+        '        <dd>\n'
+        '          <code>TN / (TN + FN)</code><br />\n'
+        '          <code>TN / Predicted Negatives</code><br />\n'
+        '          <code>P(Real Negative | Predicted Negative)</code>\n'
+        '        </dd>\n'
+        '        <dt>Lift</dt>\n'
+        '        <dd><code>PPV / Prevalence</code></dd>\n'
+        '        <dt>Net Benefit</dt>\n'
+        '        <dd>\n'
+        '          <code>TP / N - FP / N * p_t / (1 - p_t)</code><br />\n'
+        '          <small>where N = TP + FP + TN + FN</small>\n'
+        '        </dd>\n'
+        '      </dl>\n'
+        '    </section>\n'
+        '  </div>\n'
+        '</details>'
+    )
+
+
 def _sanitize_nan_values(obj: Any) -> Any:
     """Recursively replace NaN and Inf float values with None for valid JSON serialization."""
     if isinstance(obj, dict):
@@ -104,8 +179,14 @@ def _summary_report_density_css() -> str:
 class RtichokeBrowserReport:
     """A complete canonical ReportSpec rendered by shared ``rtichoke_viz``."""
 
-    def __init__(self, spec: dict[str, Any]) -> None:
+    def __init__(
+        self,
+        spec: dict[str, Any],
+        *,
+        include_cheat_sheet: bool = False,
+    ) -> None:
         self.spec = spec
+        self.include_cheat_sheet = include_cheat_sheet
 
     def write_html(self, path: str | Path) -> Path:
         """Write an offline HTML page that delegates composition to renderReport()."""
@@ -128,6 +209,32 @@ class RtichokeBrowserReport:
         else:
             doc_title = "rtichoke report"
 
+        if self.include_cheat_sheet:
+            cheat_sheet_json = json.dumps(
+                _performance_metrics_cheat_sheet_html()
+            ).replace("</", "<\\/")
+            mount_js = f"""    const reportNode = {render_fn}(spec, {{
+      sectionGroupPresentation: "tabs",
+      groupPresentation: "tabs",
+      sectionComponentPresentation: "tabs"
+    }});
+    const headerNode = reportNode.querySelector(".rtichoke-report__header");
+    const cheatSheetWrapper = document.createElement("div");
+    cheatSheetWrapper.innerHTML = {cheat_sheet_json};
+    const cheatSheetNode = cheatSheetWrapper.firstElementChild;
+    if (headerNode && headerNode.nextSibling) {{
+      reportNode.insertBefore(cheatSheetNode, headerNode.nextSibling);
+    }} else {{
+      reportNode.appendChild(cheatSheetNode);
+    }}
+    document.querySelector("#rtichoke-report").append(reportNode);"""
+        else:
+            mount_js = f"""    document.querySelector("#rtichoke-report").append({render_fn}(spec, {{
+      sectionGroupPresentation: "tabs",
+      groupPresentation: "tabs",
+      sectionComponentPresentation: "tabs"
+    }}));"""
+
         html_content = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -147,11 +254,7 @@ class RtichokeBrowserReport:
     const spec = JSON.parse(
       document.querySelector("#rtichoke-report-spec").textContent
     );
-    document.querySelector("#rtichoke-report").append({render_fn}(spec, {{
-      sectionGroupPresentation: "tabs",
-      groupPresentation: "tabs",
-      sectionComponentPresentation: "tabs"
-    }}));
+{mount_js}
   </script>
 </body>
 </html>
