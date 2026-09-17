@@ -458,6 +458,9 @@ def test_browser_summary_report_structure_and_component_counts(tmp_path):
 
     report = _embedded_report(output.read_text(encoding="utf-8"))
 
+    # Exact report title
+    assert report["title"] == "Summary Report"
+
     # Exactly 6 sections
     sections = report["sections"]
     assert len(sections) == 6
@@ -524,24 +527,34 @@ def test_browser_summary_report_structure_and_component_counts(tmp_path):
     # Discrimination Group 1: By Probability Threshold
     disc_grp_thresh = disc_items[1]
     assert disc_grp_thresh["id"] == "discrimination-probability-threshold"
+    assert disc_grp_thresh["title"] == "By Probability Threshold"
     disc_thresh_comps = disc_grp_thresh["components"]
     assert [c["id"] for c in disc_thresh_comps] == [
         "roc",
+        "lift",
         "precision-recall",
         "gains",
-        "lift",
     ]
 
     # Discrimination Group 2: By PPCR
     disc_grp_ppcr = disc_items[2]
     assert disc_grp_ppcr["id"] == "discrimination-ppcr"
+    assert disc_grp_ppcr["title"] == "By Predicted Positives Condition Rate (PPCR)"
     disc_ppcr_comps = disc_grp_ppcr["components"]
     assert [c["id"] for c in disc_ppcr_comps] == [
         "roc-2",
+        "lift-2",
         "precision-recall-2",
         "gains-2",
-        "lift-2",
     ]
+
+    # Performance Table section
+    perf_sec = sections[5]
+    assert perf_sec["id"] == "performance-table"
+    perf_items = perf_sec["items"]
+    assert len(perf_items) == 2
+    assert perf_items[0]["title"] == "By Probability Threshold"
+    assert perf_items[1]["title"] == "By Predicted Positives Condition Rate (PPCR)"
 
     # Collect all component IDs across report
     all_comp_ids = []
