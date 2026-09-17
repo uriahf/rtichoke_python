@@ -165,15 +165,15 @@ document.addEventListener('DOMContentLoaded', () => {
 <link rel="stylesheet" href="../site.css">
   <link rel="alternate" type="text/markdown" href="summary-reports.md">
   <link rel="canonical" href="https://uriahf.github.io/rtichoke_python/user-guide/summary-reports.html">
-  <meta name="description" content="The browser path uses the same production calculations as the standalone Python components, converts those results with the existing canonical...">
+  <meta name="description" content="The browser path uses the same production calculations as the standalone Python components, converts those results with existing canonical component...">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Summary reports – rtichoke | rtichoke">
-  <meta property="og:description" content="The browser path uses the same production calculations as the standalone Python components, converts those results with the existing canonical...">
+  <meta property="og:description" content="The browser path uses the same production calculations as the standalone Python components, converts those results with existing canonical component...">
   <meta property="og:url" content="https://uriahf.github.io/rtichoke_python/user-guide/summary-reports.html">
   <meta property="og:site_name" content="rtichoke">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Summary reports – rtichoke | rtichoke">
-  <meta name="twitter:description" content="The browser path uses the same production calculations as the standalone Python components, converts those results with the existing canonical...">
+  <meta name="twitter:description" content="The browser path uses the same production calculations as the standalone Python components, converts those results with existing canonical component...">
 </head>
 
 <body class="nav-sidebar floating nav-fixed quarto-light">
@@ -324,8 +324,18 @@ document.addEventListener('DOMContentLoaded', () => {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#static-browser-summary-report" id="toc-static-browser-summary-report" class="nav-link active" data-scroll-target="#static-browser-summary-report">Static browser Summary Report</a></li>
+  <li><a href="#time-dependent-summary-report" id="toc-time-dependent-summary-report" class="nav-link" data-scroll-target="#time-dependent-summary-report">Time-dependent Summary Report</a>
+  <ul class="collapse">
+  <li><a href="#architectural-differences-from-static-reports" id="toc-architectural-differences-from-static-reports" class="nav-link" data-scroll-target="#architectural-differences-from-static-reports">Architectural differences from static reports</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -366,17 +376,82 @@ document.addEventListener('DOMContentLoaded', () => {
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    renderer<span class="op">=</span><span class="st">"browser"</span>,</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    output_file<span class="op">=</span><span class="st">"summary_report.html"</span>,</span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
-<p>The browser path uses the same production calculations as the standalone Python components, converts those results with the existing canonical component builders, assembles a canonical ReportSpec, and delegates report composition to the vendored immutable <code>rtichoke_viz v0.5.0</code> <code>renderReport()</code> implementation.</p>
-<p>The first public browser report contains, in deterministic order:</p>
+<p>The browser path uses the same production calculations as the standalone Python components, converts those results with existing canonical component builders, assembles a canonical ReportSpec, and delegates report composition to the vendored immutable <code>rtichoke_viz</code> renderer.</p>
+<p>The Summary Report browser backend writes a single self-contained, offline-ready HTML artifact with all required shared renderer JavaScript and CSS embedded directly into the file. The browser backend returns the generated HTML <code>pathlib.Path</code>; the default historical R backend retains its existing <code>None</code> return behavior.</p>
+<section id="static-browser-summary-report" class="level1">
+<h1>Static browser Summary Report</h1>
+<p>The static browser Summary Report contains six top-level sections in the following exact order:</p>
 <ol type="1">
-<li>PerformanceTable;</li>
-<li>ROC-v2;</li>
-<li>calibration-v2.</li>
+<li><strong>Prevalence</strong>: Displays population prevalence summary metrics.</li>
+<li><strong>Prediction Distribution</strong>: Displays decomposed predicted probability histograms with interactive operating-point controls, offered in two views/groups:
+<ul>
+<li><strong>By Probability Threshold</strong></li>
+<li><strong>By Predicted Positives Condition Rate (PPCR)</strong></li>
+</ul></li>
+<li><strong>Calibration</strong>: Displays model calibration curves in two views:
+<ul>
+<li><strong>Smooth</strong></li>
+<li><strong>Discrete</strong></li>
+</ul></li>
+<li><strong>Discrimination</strong>: Displays summary metrics (AUROC) and curve visualizations across both operating-point dimensions (<strong>By Probability Threshold</strong> and <strong>By Predicted Positives Condition Rate (PPCR)</strong>) in exact component order:
+<ul>
+<li><strong>ROC</strong></li>
+<li><strong>Lift</strong></li>
+<li><strong>Precision-Recall</strong></li>
+<li><strong>Gains</strong></li>
+</ul></li>
+<li><strong>Utility</strong>: Displays Decision Curve and Interventions Avoided curves.</li>
+<li><strong>Performance Table</strong>: Displays full performance metrics across operating points, grouped <strong>By Probability Threshold</strong> and <strong>By Predicted Positives Condition Rate (PPCR)</strong>.</li>
 </ol>
-<p>The generated HTML is accompanied by <code>rtichoke-viz.js</code> and <code>rtichoke-viz.css</code> in the same directory, so those three files should be kept together when moving the report. The browser backend returns the generated HTML <code>pathlib.Path</code>; the default historical R backend retains its existing <code>None</code> return behavior.</p>
-<p>The browser backend does not replace Quarto or the historical R backend, and it is not the default. Existing Plotly, Matplotlib, table, standalone browser-chart, and time-dependent APIs are unchanged by this opt-in report path.</p>
+</section>
+<section id="time-dependent-summary-report" class="level1">
+<h1>Time-dependent Summary Report</h1>
+<p>For survival and time-to-event outcomes, <code>create_summary_report_times()</code> generates a canonical time-dependent browser summary report at fixed time horizons:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> rtichoke <span class="im">import</span> create_summary_report_times</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>probs <span class="op">=</span> {</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Model A"</span>: np.array(</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        [<span class="fl">0.03</span>, <span class="fl">0.08</span>, <span class="fl">0.12</span>, <span class="fl">0.18</span>, <span class="fl">0.25</span>, <span class="fl">0.32</span>, <span class="fl">0.40</span>, <span class="fl">0.50</span>, <span class="fl">0.62</span>, <span class="fl">0.75</span>, <span class="fl">0.88</span>, <span class="fl">0.96</span>]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>reals <span class="op">=</span> np.array([<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>])</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> np.array([<span class="dv">10</span>, <span class="dv">12</span>, <span class="dv">15</span>, <span class="dv">8</span>, <span class="dv">20</span>, <span class="dv">25</span>, <span class="dv">30</span>, <span class="dv">18</span>, <span class="dv">22</span>, <span class="dv">14</span>, <span class="dv">19</span>, <span class="dv">28</span>])</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>create_summary_report_times(</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    probs,</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    reals,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    times,</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    fixed_time_horizons<span class="op">=</span>[<span class="fl">15.0</span>],</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    output_file<span class="op">=</span><span class="st">"summary_report_times.html"</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>The time-dependent browser report contains five top-level sections in exact order:</p>
+<ol type="1">
+<li><strong>Event Probability</strong>: Displays population event probabilities at specified fixed time horizons (derived using time-dependent estimators accounting for censoring and competing events).</li>
+<li><strong>Calibration</strong>: Displays smooth and discrete time-dependent calibration curves.</li>
+<li><strong>Discrimination</strong>: Displays time-dependent curve visualizations grouped <strong>By Probability Threshold</strong> and <strong>By Predicted Positives Condition Rate (PPCR)</strong> in exact component order:
+<ul>
+<li><strong>ROC</strong></li>
+<li><strong>Lift</strong></li>
+<li><strong>Precision-Recall</strong></li>
+<li><strong>Gains</strong></li>
+</ul></li>
+<li><strong>Utility</strong>: Displays time-dependent Decision Curve and Interventions Avoided curves.</li>
+<li><strong>Performance Table</strong>: Displays time-dependent performance tables grouped <strong>By Probability Threshold</strong> and <strong>By Predicted Positives Condition Rate (PPCR)</strong>.</li>
+</ol>
+<section id="architectural-differences-from-static-reports" class="level2">
+<h2 class="anchored" data-anchor-id="architectural-differences-from-static-reports">Architectural differences from static reports</h2>
+<p>The time-dependent summary report intentionally differs from the binary static report in three key ways:</p>
+<ul>
+<li><strong>No Prevalence section</strong>: Replaced by the time-horizon <strong>Event Probability</strong> section to account for censoring and competing events over time.</li>
+<li><strong>No Prediction Distribution section</strong>: Prediction distribution histograms are omitted in time-dependent reports.</li>
+<li><strong>No AUROC summary metric</strong>: AUROC summary metric cards are omitted in time-dependent reports.</li>
+</ul>
+<p>The browser backend does not replace Quarto or the historical R backend. <code>renderer="browser"</code> is an explicit opt-in parameter for <a href="../reference/create_summary_report.html#rtichoke.create_summary_report" class="gdls-link gdls-code">create_summary_report()</a>, whereas <code>create_summary_report_times()</code> generates a browser summary report directly without requiring a <code>renderer</code> argument. Existing Plotly, Matplotlib, table, and standalone browser-chart APIs remain unchanged.</p>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

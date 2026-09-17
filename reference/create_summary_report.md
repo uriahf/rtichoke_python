@@ -18,7 +18,7 @@ create_summary_report(
 ```
 
 
-The default `renderer="r"` preserves the historical public behavior and delegates to the R rtichoke backend at `url_api`. `renderer="browser"` is an explicit opt-in path that uses Python's existing production calculations, canonical standalone component builders, canonical ReportSpec assembly, and the vendored `rtichoke_viz` `renderReport()` composer. For `renderer="browser"`, the static Discrimination section includes Prediction Distribution by Probability Threshold and Prediction Distribution by PPCR / Risk Percentile.
+The default `renderer="r"` preserves the historical public behavior and delegates to the R rtichoke backend at `url_api`. `renderer="browser"` is an explicit opt-in path that uses Python's existing production calculations, canonical standalone component builders, canonical ReportSpec assembly, and the vendored `rtichoke_viz` `renderReport()` composer. For `renderer="browser"`, the static browser Summary Report contains six top-level sections: Prevalence, Prediction Distribution, Calibration, Discrimination, Utility, and Performance Table.
 
 
 ## Parameters
