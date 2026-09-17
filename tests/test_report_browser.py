@@ -1,3 +1,4 @@
+import copy
 import json
 from importlib.resources import files
 from typing import Any, cast
@@ -162,9 +163,6 @@ def test_browser_report_does_not_delete_or_overwrite_preexisting_assets(tmp_path
 
     assert existing_js.read_text(encoding="utf-8") == "// custom preexisting js"
     assert existing_css.read_text(encoding="utf-8") == "/* custom preexisting css */"
-
-
-import copy
 
 
 def test_browser_report_title_usable(tmp_path):
