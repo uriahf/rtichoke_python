@@ -78,6 +78,20 @@ def create_summary_report_times(
 ) -> Path:
     """Create a canonical browser time-dependent model-performance summary report.
 
+    The generated time-dependent browser report contains five top-level sections:
+
+    1. Event Probability
+    2. Calibration
+    3. Discrimination
+    4. Utility
+    5. Performance Table
+
+    Compared with the static browser Summary Report, it intentionally omits:
+
+    * Prevalence section (replaced by Event Probability over time);
+    * Prediction Distribution section;
+    * AUROC summary metric.
+
     Parameters
     ----------
     probs : Dict[str, np.ndarray]
@@ -92,7 +106,8 @@ def create_summary_report_times(
         List of heuristic configurations for censoring and competing events.
         Defaults to ``[{"censoring_heuristic": "adjusted", "competing_heuristic": "adjusted_as_negative"}]``.
     by : float, optional
-        Step size for probability thresholds / PPCR. Defaults to 0.01.
+        Step size for probability thresholds / Predicted Positives Condition Rate (PPCR).
+        Defaults to 0.01.
     output_file : str or pathlib.Path, optional
         HTML destination file path. Defaults to ``"summary_report_times.html"``.
 
