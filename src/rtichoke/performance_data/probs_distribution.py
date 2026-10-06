@@ -815,15 +815,10 @@ def _prepare_probs_distribution_data_times(
         else:
             outcomes = np.asarray(reals, dtype=int)
 
-        # Get unique cutoffs for this group from performance_data
-        eval_perf = performance_data.filter(pl.col("reference_group") == evaluation_key)
-        if stratification_type == "ppcr":
-            cutoffs = eval_perf["ppcr"].to_numpy().astype(float)
-        else:
-            cutoffs = eval_perf["chosen_cutoff"].to_numpy().astype(float)
-
-        interval_boundaries = np.unique(np.concatenate(([0.0, 1.0], cutoffs)))
-        interval_boundaries.sort()
+        # In both probability_threshold and ppcr modes, bins should be generated on genuine raw probability boundaries
+        interval_boundaries = np.arange(0.0, 1.0 + float(by), float(by))
+        interval_boundaries = np.clip(interval_boundaries, 0.0, 1.0)
+        interval_boundaries = np.unique(interval_boundaries)
 
         eval_bins = _aggregate_bins_for_evaluation_times(
             probabilities=probabilities,
