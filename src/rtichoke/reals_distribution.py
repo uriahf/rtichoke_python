@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import numpy as np
 
 from rtichoke._renderers import RtichokeBrowserChart
+
+RealsDistributionRenderer = Literal["browser", "rtichoke_viz"]
 
 _DEFAULT_STATE_LABELS = {
     "real_positive": "Target event",
@@ -169,7 +171,7 @@ def create_reals_distribution_times(
     times: Union[np.ndarray, List[float], Dict[str, Any]],
     fixed_time_horizons: List[float],
     *,
-    renderer: str = "browser",
+    renderer: RealsDistributionRenderer = "browser",
     state_labels: Optional[Dict[str, str]] = None,
 ) -> RtichokeBrowserChart:
     """Create a time-dependent reals/outcome distribution browser chart."""

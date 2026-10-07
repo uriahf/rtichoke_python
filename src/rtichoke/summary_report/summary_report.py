@@ -58,6 +58,7 @@ from rtichoke.processing.transforms import _create_list_data_to_adjust
 from rtichoke.reals_distribution import _outcome_distribution_v2_spec
 
 SummaryReportRenderer = Literal["r", "browser"]
+RealsSummaryReportRenderer = Literal["browser", "rtichoke_viz"]
 
 _DEFAULT_TIME_HEURISTICS = [
     {
@@ -338,7 +339,7 @@ def create_reals_summary_report_times(
     times: Union[np.ndarray, list[float], Dict[str, Any]],
     fixed_time_horizons: list[float],
     *,
-    renderer: SummaryReportRenderer = "browser",
+    renderer: RealsSummaryReportRenderer = "browser",
     output_file: str | Path = "summary_report_times.html",
 ) -> Path:
     """Create a minimal time-dependent outcome distribution browser summary report.
