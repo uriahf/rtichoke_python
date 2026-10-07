@@ -25,6 +25,7 @@ _V20_SCHEMA_TYPES = {
     "decision_curve",
     "interventions_avoided",
     "prediction_distribution",
+    "outcome_distribution",
 }
 
 _ALL_SUPPORTED_TYPES = _V10_SCHEMA_TYPES | _V20_SCHEMA_TYPES

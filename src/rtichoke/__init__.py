@@ -61,6 +61,10 @@ from rtichoke.probs_distribution import (
     create_probs_histogram as create_probs_histogram,
 )
 
+from rtichoke.reals_distribution import (
+    create_reals_distribution_times as create_reals_distribution_times,
+)
+
 from rtichoke.summary_report.summary_report import (
     create_summary_report as create_summary_report,
     create_summary_report_times as create_summary_report_times,
@@ -68,6 +72,7 @@ from rtichoke.summary_report.summary_report import (
 
 __all__ = [
     "create_probs_histogram",
+    "create_reals_distribution_times",
     "create_roc_curve",
     "create_roc_curve_times",
     "plot_roc_curve",
