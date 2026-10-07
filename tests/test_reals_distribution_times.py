@@ -8,7 +8,7 @@ from rtichoke.reals_distribution import (
     create_reals_distribution_times,
 )
 from rtichoke.summary_report.summary_report import (
-    create_reals_summary_report_times,
+    _create_reals_summary_report_times,
     create_summary_report_times,
 )
 
@@ -176,12 +176,15 @@ def test_unsupported_renderer_fails_clearly():
         )
 
     with pytest.raises(ValueError, match="Unsupported renderer"):
-        create_reals_summary_report_times(
-            reals, times, horizons, renderer="invalid_renderer"
+        _create_reals_summary_report_times(
+            reals,
+            times,
+            horizons,
+            renderer="invalid_renderer",  # type: ignore[arg-type]
         )
 
 
-def test_create_reals_summary_report_times_returns_valid_minimal_report_spec(
+def test_internal_reals_summary_report_times_returns_valid_minimal_report_spec(
     tmp_path: Path,
 ):
     times = [24.1, 9.7, 49.9, 18.6, 34.8, 14.2, 39.2, 46.0, 31.5, 4.3]
@@ -189,7 +192,7 @@ def test_create_reals_summary_report_times_returns_valid_minimal_report_spec(
     fixed_time_horizons = [10, 20, 30, 40, 50]
 
     out_file = tmp_path / "minimal_report.html"
-    result = create_reals_summary_report_times(
+    result = _create_reals_summary_report_times(
         reals, times, fixed_time_horizons, output_file=out_file
     )
 

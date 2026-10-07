@@ -334,7 +334,7 @@ def create_summary_report_times(
     return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(output_file)
 
 
-def create_reals_summary_report_times(
+def _create_reals_summary_report_times(
     reals: Union[np.ndarray, list[int], Dict[str, Any]],
     times: Union[np.ndarray, list[float], Dict[str, Any]],
     fixed_time_horizons: list[float],
