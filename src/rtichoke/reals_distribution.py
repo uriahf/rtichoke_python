@@ -172,7 +172,6 @@ def create_reals_distribution_times(
     fixed_time_horizons: List[float],
     *,
     renderer: RealsDistributionRenderer = "browser",
-    state_labels: Optional[Dict[str, str]] = None,
 ) -> RtichokeBrowserChart:
     """Create a time-dependent reals/outcome distribution browser chart."""
     if renderer not in _SUPPORTED_REALS_DISTRIBUTION_RENDERERS:
@@ -188,6 +187,5 @@ def create_reals_distribution_times(
         times=times,
         fixed_time_horizons=fixed_time_horizons,
         title="Outcome Distribution",
-        state_labels=state_labels,
     )
     return RtichokeBrowserChart(spec=spec)

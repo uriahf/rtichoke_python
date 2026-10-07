@@ -367,7 +367,7 @@ def _create_reals_summary_report_times(
     """
     if renderer not in ("browser", "rtichoke_viz"):
         raise ValueError(
-            f"Unsupported renderer {renderer!r}. 'create_reals_summary_report_times' supports 'browser' and 'rtichoke_viz'."
+            f"Unsupported renderer {renderer!r}. '_create_reals_summary_report_times' supports 'browser' and 'rtichoke_viz'."
         )
 
     outcome_spec = _outcome_distribution_v2_spec(
