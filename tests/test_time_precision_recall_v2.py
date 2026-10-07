@@ -272,6 +272,7 @@ def test_time_precision_recall_browser_chart_executes_and_switches_horizons_in_c
                 "--headless=new",
                 "--no-sandbox",
                 "--disable-gpu",
+                "--disable-dev-shm-usage",
                 "--enable-logging=stderr",
                 "--log-level=0",
                 "--dump-dom",

@@ -331,6 +331,7 @@ def test_public_browser_chart_executes_to_svg_when_chrome_is_available(tmp_path:
                 "--headless=new",
                 "--no-sandbox",
                 "--disable-gpu",
+                "--disable-dev-shm-usage",
                 "--enable-logging=stderr",
                 "--log-level=0",
                 "--dump-dom",
