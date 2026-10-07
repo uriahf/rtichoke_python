@@ -44,19 +44,21 @@ from rtichoke.calibration.calibration import (
     _create_calibration_curve_list_times,
 )
 from rtichoke.performance_data.performance_data import prepare_performance_data
-from rtichoke.performance_data.probs_distribution import (
-    _prepare_probs_distribution_data,
-)
 from rtichoke.performance_data.performance_data_times import (
     prepare_performance_data_times,
+)
+from rtichoke.performance_data.probs_distribution import (
+    _prepare_probs_distribution_data,
 )
 from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 from rtichoke.processing.send_post_request_to_r_rtichoke import (
     send_requests_to_rtichoke_r,
 )
 from rtichoke.processing.transforms import _create_list_data_to_adjust
+from rtichoke.reals_distribution import _outcome_distribution_v2_spec
 
 SummaryReportRenderer = Literal["r", "browser"]
+RealsSummaryReportRenderer = Literal["browser", "rtichoke_viz"]
 
 _DEFAULT_TIME_HEURISTICS = [
     {
@@ -329,6 +331,65 @@ def create_summary_report_times(
     ]
 
     report = _build_report_spec_v11(sections, title="Summary Report")
+    return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(output_file)
+
+
+def _create_reals_summary_report_times(
+    reals: Union[np.ndarray, list[int], Dict[str, Any]],
+    times: Union[np.ndarray, list[float], Dict[str, Any]],
+    fixed_time_horizons: list[float],
+    *,
+    renderer: RealsSummaryReportRenderer = "browser",
+    output_file: str | Path = "summary_report_times.html",
+) -> Path:
+    """Create a minimal time-dependent outcome distribution browser summary report.
+
+    The generated report contains a single section and component for the
+    Outcome Distribution.
+
+    Parameters
+    ----------
+    reals : Union[np.ndarray, list[int], Dict[str, Any]]
+        Outcome status labels.
+    times : Union[np.ndarray, list[float], Dict[str, Any]]
+        Follow-up times.
+    fixed_time_horizons : list[float]
+        Fixed time horizons for evaluation.
+    renderer : {"browser", "rtichoke_viz"}, optional
+        Renderer backend. Defaults to ``"browser"``.
+    output_file : str or pathlib.Path, optional
+        HTML destination file path. Defaults to ``"summary_report_times.html"``.
+
+    Returns
+    -------
+    pathlib.Path
+        The generated HTML file path.
+    """
+    if renderer not in ("browser", "rtichoke_viz"):
+        raise ValueError(
+            f"Unsupported renderer {renderer!r}. '_create_reals_summary_report_times' supports 'browser' and 'rtichoke_viz'."
+        )
+
+    outcome_spec = _outcome_distribution_v2_spec(
+        reals=reals,
+        times=times,
+        fixed_time_horizons=fixed_time_horizons,
+        title="Outcome Distribution",
+    )
+    sections = [
+        {
+            "id": "outcome-distribution",
+            "title": "Outcome Distribution",
+            "components": [
+                {
+                    "id": "outcome-distribution",
+                    "title": "Outcome Distribution",
+                    "spec": outcome_spec,
+                }
+            ],
+        }
+    ]
+    report = _build_report_spec_v11(sections, title="Time-Dependent Summary Report")
     return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(output_file)
 
 
