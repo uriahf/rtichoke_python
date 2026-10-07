@@ -1,11 +1,16 @@
 import json
+from pathlib import Path
 
+import pytest
 
 from rtichoke.reals_distribution import (
     _outcome_distribution_v2_spec,
     create_reals_distribution_times,
 )
-from rtichoke.summary_report.summary_report import create_summary_report_times
+from rtichoke.summary_report.summary_report import (
+    create_reals_summary_report_times,
+    create_summary_report_times,
+)
 
 
 def test_create_reals_distribution_times_returns_browser_chart_with_outcome_distribution_spec():
@@ -160,13 +165,31 @@ def test_spec_includes_event_table_and_fixed_time_horizon_rows():
     assert origins == {"event_table", "fixed_time_horizon"}
 
 
-def test_create_summary_report_times_returns_valid_minimal_report_spec(tmp_path):
+def test_unsupported_renderer_fails_clearly():
+    times = [10.0, 20.0]
+    reals = [1, 0]
+    horizons = [15.0]
+
+    with pytest.raises(ValueError, match="Unsupported renderer"):
+        create_reals_distribution_times(
+            reals, times, horizons, renderer="invalid_renderer"
+        )
+
+    with pytest.raises(ValueError, match="Unsupported renderer"):
+        create_reals_summary_report_times(
+            reals, times, horizons, renderer="invalid_renderer"
+        )
+
+
+def test_create_reals_summary_report_times_returns_valid_minimal_report_spec(
+    tmp_path: Path,
+):
     times = [24.1, 9.7, 49.9, 18.6, 34.8, 14.2, 39.2, 46.0, 31.5, 4.3]
     reals = [1, 1, 1, 1, 0, 2, 1, 2, 0, 1]
     fixed_time_horizons = [10, 20, 30, 40, 50]
 
     out_file = tmp_path / "minimal_report.html"
-    result = create_summary_report_times(
+    result = create_reals_summary_report_times(
         reals, times, fixed_time_horizons, output_file=out_file
     )
 
@@ -198,3 +221,33 @@ def test_create_summary_report_times_returns_valid_minimal_report_spec(tmp_path)
     comp_spec = comp["spec"]
     assert comp_spec["schemaVersion"] == "2.0"
     assert comp_spec["type"] == "outcome_distribution"
+
+
+def test_existing_create_summary_report_times_remains_unchanged(tmp_path: Path):
+    probs = {"Model A": [0.1, 0.4, 0.7]}
+    reals = [0, 1, 0]
+    times = [5.0, 10.0, 15.0]
+    horizons = [10.0]
+
+    out_file = tmp_path / "full_report.html"
+    result = create_summary_report_times(
+        probs, reals, times, horizons, output_file=out_file
+    )
+
+    assert result == out_file
+    assert out_file.exists()
+
+    html = out_file.read_text(encoding="utf-8")
+    start = html.index('<script id="rtichoke-report-spec" type="application/json">')
+    start = html.index(">", start) + 1
+    end = html.index("</script>", start)
+    report = json.loads(html[start:end])
+
+    section_ids = [s["id"] for s in report["sections"]]
+    assert section_ids == [
+        "event-risk",
+        "calibration",
+        "discrimination",
+        "utility",
+        "performance-table",
+    ]

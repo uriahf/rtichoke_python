@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 
-from rtichoke._renderers import RtichokeBrowserChart, _validate_renderer
+from rtichoke._renderers import RtichokeBrowserChart
 
 _DEFAULT_STATE_LABELS = {
     "real_positive": "Target event",
@@ -22,6 +22,8 @@ _STATE_ORDER = [
     "real_censored",
 ]
 
+_SUPPORTED_REALS_DISTRIBUTION_RENDERERS = ("browser", "rtichoke_viz")
+
 
 def _outcome_distribution_v2_spec(
     reals: Union[np.ndarray, List[int], Dict[str, Any]],
@@ -29,7 +31,6 @@ def _outcome_distribution_v2_spec(
     fixed_time_horizons: List[float],
     *,
     title: str = "Outcome Distribution",
-    evaluation: Optional[Any] = None,
     state_labels: Optional[Dict[str, str]] = None,
 ) -> dict[str, Any]:
     """Build a canonical v2 outcome_distribution spec using raw counts."""
@@ -169,18 +170,22 @@ def create_reals_distribution_times(
     fixed_time_horizons: List[float],
     *,
     renderer: str = "browser",
-    title: str = "Outcome Distribution",
-    evaluation: Optional[Any] = None,
     state_labels: Optional[Dict[str, str]] = None,
 ) -> RtichokeBrowserChart:
     """Create a time-dependent reals/outcome distribution browser chart."""
-    _validate_renderer(renderer)
+    if renderer not in _SUPPORTED_REALS_DISTRIBUTION_RENDERERS:
+        supported = ", ".join(
+            repr(r) for h, r in enumerate(_SUPPORTED_REALS_DISTRIBUTION_RENDERERS)
+        )
+        raise ValueError(
+            f"Unsupported renderer {renderer!r}. 'create_reals_distribution_times' supports {supported}."
+        )
+
     spec = _outcome_distribution_v2_spec(
         reals=reals,
         times=times,
         fixed_time_horizons=fixed_time_horizons,
-        title=title,
-        evaluation=evaluation,
+        title="Outcome Distribution",
         state_labels=state_labels,
     )
     return RtichokeBrowserChart(spec=spec)

@@ -43,19 +43,19 @@ from rtichoke.calibration.calibration import (
     _create_calibration_curve_list,
     _create_calibration_curve_list_times,
 )
-from rtichoke.reals_distribution import _outcome_distribution_v2_spec
 from rtichoke.performance_data.performance_data import prepare_performance_data
-from rtichoke.performance_data.probs_distribution import (
-    _prepare_probs_distribution_data,
-)
 from rtichoke.performance_data.performance_data_times import (
     prepare_performance_data_times,
+)
+from rtichoke.performance_data.probs_distribution import (
+    _prepare_probs_distribution_data,
 )
 from rtichoke.processing.evaluation_semantics import _build_evaluation_metadata
 from rtichoke.processing.send_post_request_to_r_rtichoke import (
     send_requests_to_rtichoke_r,
 )
 from rtichoke.processing.transforms import _create_list_data_to_adjust
+from rtichoke.reals_distribution import _outcome_distribution_v2_spec
 
 SummaryReportRenderer = Literal["r", "browser"]
 
@@ -68,75 +68,55 @@ _DEFAULT_TIME_HEURISTICS = [
 
 
 def create_summary_report_times(
-    reals_or_probs: Any,
-    times_or_reals: Any = None,
-    fixed_time_horizons_or_times: Any = None,
-    fixed_time_horizons: list[float] | None = None,
+    probs: Dict[str, np.ndarray],
+    reals: Union[np.ndarray, Dict[str, np.ndarray]],
+    times: Union[np.ndarray, Dict[str, np.ndarray]],
+    fixed_time_horizons: list[float],
     heuristics_sets: list[dict] | None = None,
     by: float = 0.01,
     *,
-    probs: Dict[str, np.ndarray] | None = None,
-    renderer: SummaryReportRenderer = "browser",
-    title: str = "Time-Dependent Summary Report",
     output_file: str | Path = "summary_report_times.html",
 ) -> Path:
-    """Create a canonical browser time-dependent summary report.
+    """Create a canonical browser time-dependent model-performance summary report.
 
-    When ``probs`` is omitted or ``None``, creates a minimal outcome accounting
-    report containing only the Outcome Distribution section and component.
-    When ``probs`` is provided, creates a model-performance summary report.
+    The generated time-dependent browser report contains five top-level sections:
+
+    1. Event Probability
+    2. Calibration
+    3. Discrimination
+    4. Utility
+    5. Performance Table
+
+    Compared with the static browser Summary Report, it intentionally omits:
+
+    * Prevalence section (replaced by Event Probability over time);
+    * Prediction Distribution section;
+    * AUROC summary metric.
+
+    Parameters
+    ----------
+    probs : Dict[str, np.ndarray]
+        A dictionary mapping model or population names to predicted probabilities.
+    reals : Union[np.ndarray, Dict[str, np.ndarray]]
+        The true outcome labels (0, 1, 2).
+    times : Union[np.ndarray, Dict[str, np.ndarray]]
+        Follow-up times.
+    fixed_time_horizons : list[float]
+        Fixed time horizons for evaluation.
+    heuristics_sets : list[dict], optional
+        List of heuristic configurations for censoring and competing events.
+        Defaults to ``[{"censoring_heuristic": "adjusted", "competing_heuristic": "adjusted_as_negative"}]``.
+    by : float, optional
+        Step size for probability thresholds / Predicted Positives Condition Rate (PPCR).
+        Defaults to 0.01.
+    output_file : str or pathlib.Path, optional
+        HTML destination file path. Defaults to ``"summary_report_times.html"``.
+
+    Returns
+    -------
+    pathlib.Path
+        The generated HTML file path.
     """
-    resolved_probs = probs
-    if (
-        resolved_probs is None
-        and isinstance(reals_or_probs, dict)
-        and fixed_time_horizons is not None
-    ):
-        resolved_probs = reals_or_probs
-        reals = times_or_reals
-        times = fixed_time_horizons_or_times
-        horizons = fixed_time_horizons
-    elif resolved_probs is not None:
-        reals = times_or_reals if times_or_reals is not None else reals_or_probs
-        times = fixed_time_horizons_or_times
-        horizons = fixed_time_horizons if fixed_time_horizons is not None else []
-    else:
-        reals = reals_or_probs
-        times = times_or_reals
-        horizons = (
-            fixed_time_horizons_or_times
-            if fixed_time_horizons_or_times is not None
-            else (fixed_time_horizons or [])
-        )
-
-    if resolved_probs is None:
-        outcome_spec = _outcome_distribution_v2_spec(
-            reals=reals,
-            times=times,
-            fixed_time_horizons=horizons,
-            title="Outcome Distribution",
-        )
-        sections = [
-            {
-                "id": "outcome-distribution",
-                "title": "Outcome Distribution",
-                "components": [
-                    {
-                        "id": "outcome-distribution",
-                        "title": "Outcome Distribution",
-                        "spec": outcome_spec,
-                    }
-                ],
-            }
-        ]
-        report = _build_report_spec_v11(sections, title=title)
-        return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(
-            output_file
-        )
-
-    probs = resolved_probs
-    fixed_time_horizons = horizons
-
     if heuristics_sets is None:
         heuristics_sets = [dict(_DEFAULT_TIME_HEURISTICS[0])]
 
@@ -350,6 +330,65 @@ def create_summary_report_times(
     ]
 
     report = _build_report_spec_v11(sections, title="Summary Report")
+    return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(output_file)
+
+
+def create_reals_summary_report_times(
+    reals: Union[np.ndarray, list[int], Dict[str, Any]],
+    times: Union[np.ndarray, list[float], Dict[str, Any]],
+    fixed_time_horizons: list[float],
+    *,
+    renderer: SummaryReportRenderer = "browser",
+    output_file: str | Path = "summary_report_times.html",
+) -> Path:
+    """Create a minimal time-dependent outcome distribution browser summary report.
+
+    The generated report contains a single section and component for the
+    Outcome Distribution.
+
+    Parameters
+    ----------
+    reals : Union[np.ndarray, list[int], Dict[str, Any]]
+        Outcome status labels.
+    times : Union[np.ndarray, list[float], Dict[str, Any]]
+        Follow-up times.
+    fixed_time_horizons : list[float]
+        Fixed time horizons for evaluation.
+    renderer : {"browser", "rtichoke_viz"}, optional
+        Renderer backend. Defaults to ``"browser"``.
+    output_file : str or pathlib.Path, optional
+        HTML destination file path. Defaults to ``"summary_report_times.html"``.
+
+    Returns
+    -------
+    pathlib.Path
+        The generated HTML file path.
+    """
+    if renderer not in ("browser", "rtichoke_viz"):
+        raise ValueError(
+            f"Unsupported renderer {renderer!r}. 'create_reals_summary_report_times' supports 'browser' and 'rtichoke_viz'."
+        )
+
+    outcome_spec = _outcome_distribution_v2_spec(
+        reals=reals,
+        times=times,
+        fixed_time_horizons=fixed_time_horizons,
+        title="Outcome Distribution",
+    )
+    sections = [
+        {
+            "id": "outcome-distribution",
+            "title": "Outcome Distribution",
+            "components": [
+                {
+                    "id": "outcome-distribution",
+                    "title": "Outcome Distribution",
+                    "spec": outcome_spec,
+                }
+            ],
+        }
+    ]
+    report = _build_report_spec_v11(sections, title="Time-Dependent Summary Report")
     return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(output_file)
 
 
