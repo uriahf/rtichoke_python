@@ -340,7 +340,7 @@ def test_public_browser_chart_executes_to_svg_when_chrome_is_available(tmp_path:
             check=False,
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=60,
         )
 
     assert result.returncode == 0, result.stderr

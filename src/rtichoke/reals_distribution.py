@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any, Dict, List, Literal, Optional, Union
 
 import numpy as np
@@ -11,10 +12,10 @@ from rtichoke._renderers import RtichokeBrowserChart
 RealsDistributionRenderer = Literal["browser", "rtichoke_viz"]
 
 _DEFAULT_STATE_LABELS = {
-    "real_positive": "Target event",
-    "real_competing": "Competing outcome",
-    "real_negative": "No target event",
-    "real_censored": "Unknown / excluded",
+    "real_positive": "Event",
+    "real_competing": "Competing event",
+    "real_negative": "Event-free",
+    "real_censored": "Censored",
 }
 
 _STATE_ORDER = [
@@ -42,14 +43,21 @@ def _outcome_distribution_v2_spec(
 
     eval_data: dict[str, tuple[np.ndarray, np.ndarray]] = {}
 
+    for h in fixed_time_horizons:
+        h_float = float(h)
+        if not math.isfinite(h_float) or h_float < 0.0:
+            raise ValueError(
+                f"Invalid fixed_time_horizons value {h!r}: horizons must be finite and non-negative."
+            )
+
     if isinstance(reals, dict) or isinstance(times, dict):
         if not isinstance(reals, dict) or not isinstance(times, dict):
             raise ValueError(
                 "When 'reals' or 'times' is a dict, both must be dicts with matching keys."
             )
-        if set(reals.keys()) != set(times.keys()):
+        if list(reals.keys()) != list(times.keys()):
             raise ValueError(
-                "'reals' and 'times' dictionaries must have matching keys."
+                "'reals' and 'times' dictionaries must have matching keys and key order."
             )
         for key in reals:
             eval_data[key] = (
@@ -64,6 +72,8 @@ def _outcome_distribution_v2_spec(
 
     evaluations: list[dict[str, Any]] = []
     state_distributions: list[dict[str, Any]] = []
+
+    fixed_horizons = sorted(set([0.0] + [float(h) for h in fixed_time_horizons]))
 
     for index, (group_name, (reals_arr, times_arr)) in enumerate(
         eval_data.items(), start=1
@@ -83,11 +93,6 @@ def _outcome_distribution_v2_spec(
             )
 
         # 1. fixed_time_horizon stateDistributions
-        horizons_float = [float(h) for h in fixed_time_horizons]
-        if 0.0 not in horizons_float:
-            fixed_horizons = [0.0] + horizons_float
-        else:
-            fixed_horizons = horizons_float
 
         for h in fixed_horizons:
             pos_count = int(np.sum((reals_arr == 1) & (times_arr <= h)))
