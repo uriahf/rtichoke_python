@@ -44,40 +44,40 @@ def test_canonical_example_exact_fixed_horizon_counts():
 
     expected = {
         0.0: {
-            "Target event": 0,
-            "Competing outcome": 0,
-            "No target event": 10,
-            "Unknown / excluded": 0,
+            "Event": 0,
+            "Competing event": 0,
+            "Event-free": 10,
+            "Censored": 0,
         },
         10.0: {
-            "Target event": 2,
-            "Competing outcome": 0,
-            "No target event": 8,
-            "Unknown / excluded": 0,
+            "Event": 2,
+            "Competing event": 0,
+            "Event-free": 8,
+            "Censored": 0,
         },
         20.0: {
-            "Target event": 3,
-            "Competing outcome": 1,
-            "No target event": 6,
-            "Unknown / excluded": 0,
+            "Event": 3,
+            "Competing event": 1,
+            "Event-free": 6,
+            "Censored": 0,
         },
         30.0: {
-            "Target event": 4,
-            "Competing outcome": 1,
-            "No target event": 5,
-            "Unknown / excluded": 0,
+            "Event": 4,
+            "Competing event": 1,
+            "Event-free": 5,
+            "Censored": 0,
         },
         40.0: {
-            "Target event": 5,
-            "Competing outcome": 1,
-            "No target event": 2,
-            "Unknown / excluded": 2,
+            "Event": 5,
+            "Competing event": 1,
+            "Event-free": 2,
+            "Censored": 2,
         },
         50.0: {
-            "Target event": 6,
-            "Competing outcome": 2,
-            "No target event": 0,
-            "Unknown / excluded": 2,
+            "Event": 6,
+            "Competing event": 2,
+            "Event-free": 0,
+            "Censored": 2,
         },
     }
 
@@ -96,7 +96,17 @@ def test_canonical_example_exact_fixed_horizon_counts():
         )
 
 
-def test_time_zero_included_and_all_observations_no_target_event():
+def test_state_labels_exact_canonical():
+    times = [10.0]
+    reals = [1]
+    horizons = [10.0]
+
+    spec = _outcome_distribution_v2_spec(reals, times, horizons)
+    labels = [st["label"] for st in spec["stateDistributions"][0]["states"]]
+    assert labels == ["Event", "Competing event", "Event-free", "Censored"]
+
+
+def test_time_zero_included_and_all_observations_event_free():
     times = [10.0, 20.0, 30.0]
     reals = [1, 0, 2]
     horizons = [15.0]
@@ -110,30 +120,42 @@ def test_time_zero_included_and_all_observations_no_target_event():
     )
 
     counts = {st["label"]: st["count"] for st in h0_dist["states"]}
-    assert counts["Target event"] == 0
-    assert counts["Competing outcome"] == 0
-    assert counts["Unknown / excluded"] == 0
-    assert counts["No target event"] == len(reals)
+    assert counts["Event"] == 0
+    assert counts["Competing event"] == 0
+    assert counts["Censored"] == 0
+    assert counts["Event-free"] == len(reals)
 
 
-def test_censored_before_horizon_counted_as_unknown_excluded():
-    times = [5.0, 15.0]
+def test_censoring_strictly_before_versus_at_horizon():
+    # Censored observation at time 10.0, event at time 15.0
+    times = [10.0, 15.0]
     reals = [0, 1]
-    horizons = [10.0]
 
-    spec = _outcome_distribution_v2_spec(reals, times, horizons)
-
+    # At horizon 10.0: censoring at 10.0 is NOT strictly before 10.0 (times < 10.0 is False),
+    # so count for Censored is 0, and it remains Event-free.
+    spec_h10 = _outcome_distribution_v2_spec(reals, times, [10.0])
     h10_dist = next(
         sd
-        for sd in spec["stateDistributions"]
+        for sd in spec_h10["stateDistributions"]
         if sd["estimateOrigin"] == "fixed_time_horizon" and sd["horizon"] == 10.0
     )
+    counts_10 = {st["label"]: st["count"] for st in h10_dist["states"]}
+    assert counts_10["Censored"] == 0
+    assert counts_10["Event-free"] == 2
+    assert counts_10["Event"] == 0
 
-    counts = {st["label"]: st["count"] for st in h10_dist["states"]}
-    assert counts["Unknown / excluded"] == 1
-    assert counts["No target event"] == 1
-    assert counts["Target event"] == 0
-    assert counts["Competing outcome"] == 0
+    # At horizon 12.0: censoring at 10.0 IS strictly before 12.0 (times < 12.0 is True),
+    # so count for Censored is 1, and Event-free is 1.
+    spec_h12 = _outcome_distribution_v2_spec(reals, times, [12.0])
+    h12_dist = next(
+        sd
+        for sd in spec_h12["stateDistributions"]
+        if sd["estimateOrigin"] == "fixed_time_horizon" and sd["horizon"] == 12.0
+    )
+    counts_12 = {st["label"]: st["count"] for st in h12_dist["states"]}
+    assert counts_12["Censored"] == 1
+    assert counts_12["Event-free"] == 1
+    assert counts_12["Event"] == 0
 
 
 def test_spec_uses_estimator_raw_and_count_values_only():
@@ -165,6 +187,41 @@ def test_spec_includes_event_table_and_fixed_time_horizon_rows():
     assert origins == {"event_table", "fixed_time_horizon"}
 
 
+def test_multi_population_dict_preserves_insertion_order():
+    reals = {
+        "Pop B": [1, 0],
+        "Pop A": [0, 1],
+    }
+    times = {
+        "Pop B": [10.0, 20.0],
+        "Pop A": [5.0, 15.0],
+    }
+    horizons = [10.0]
+
+    spec = _outcome_distribution_v2_spec(reals, times, horizons)
+    evaluations = spec["evaluations"]
+
+    assert len(evaluations) == 2
+    assert evaluations[0]["population"] == "Pop B"
+    assert evaluations[0]["id"] == "evaluation-1"
+    assert evaluations[1]["population"] == "Pop A"
+    assert evaluations[1]["id"] == "evaluation-2"
+
+
+def test_horizon_sorting_deduplication_and_zero_prepending():
+    times = [10.0, 20.0]
+    reals = [1, 0]
+    horizons = [30.0, 10.0, 0.0, 20.0, 10.0]
+
+    spec = _outcome_distribution_v2_spec(reals, times, horizons)
+    fh_horizons = [
+        sd["horizon"]
+        for sd in spec["stateDistributions"]
+        if sd["estimateOrigin"] == "fixed_time_horizon"
+    ]
+    assert fh_horizons == [0.0, 10.0, 20.0, 30.0]
+
+
 def test_unsupported_renderer_fails_clearly():
     times = [10.0, 20.0]
     reals = [1, 0]
@@ -172,7 +229,10 @@ def test_unsupported_renderer_fails_clearly():
 
     with pytest.raises(ValueError, match="Unsupported renderer"):
         create_reals_distribution_times(
-            reals, times, horizons, renderer="invalid_renderer"
+            reals,
+            times,
+            horizons,
+            renderer="invalid_renderer",  # type: ignore[arg-type]
         )
 
     with pytest.raises(ValueError, match="Unsupported renderer"):
@@ -182,6 +242,15 @@ def test_unsupported_renderer_fails_clearly():
             horizons,
             renderer="invalid_renderer",  # type: ignore[arg-type]
         )
+
+
+def test_invalid_horizon_values_raise_value_error():
+    times = [10.0, 20.0]
+    reals = [1, 0]
+
+    for invalid_h in [-5.0, float("nan"), float("inf"), float("-inf")]:
+        with pytest.raises(ValueError, match="fixed_time_horizons"):
+            _outcome_distribution_v2_spec(reals, times, [invalid_h])
 
 
 def test_internal_reals_summary_report_times_returns_valid_minimal_report_spec(
