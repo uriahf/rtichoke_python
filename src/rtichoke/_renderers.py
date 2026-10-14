@@ -50,6 +50,15 @@ class RtichokeBrowserChart:
         vendor = files("rtichoke").joinpath("_vendor", "rtichoke_viz")
 
         chart_type = str(self.spec.get("type"))
+        x_axis_kind = self.spec.get("xAxisKind")
+        if chart_type == "outcome_distribution" and x_axis_kind == "step":
+            raise ValueError(
+                "Rendering observed longitudinal state distributions (xAxisKind='step') "
+                "in the browser is currently unsupported with vendored renderer v0.23.2. "
+                "This capability requires rtichoke_viz PR #125. "
+                "To access the canonical specification directly, inspect chart.spec."
+            )
+
         if chart_type == "prediction_distribution":
             viz_js = vendor.joinpath("rtichoke-viz.js").read_text(encoding="utf-8")
             viz_css = vendor.joinpath("rtichoke-viz.css").read_text(encoding="utf-8")
