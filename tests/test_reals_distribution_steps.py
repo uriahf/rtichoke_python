@@ -260,3 +260,51 @@ def test_public_create_reals_distribution_steps():
     assert hasattr(chart, "spec")
     assert chart.spec["type"] == "outcome_distribution"
     assert chart.spec["xAxisKind"] == "step"
+
+
+def test_write_html_raises_compatibility_error_for_observed_step_chart(tmp_path):
+    data = pl.DataFrame(
+        {
+            "subject": ["A", "B"],
+            "step": [0, 0],
+            "state": ["S1", "S2"],
+        }
+    )
+    chart = create_reals_distribution_steps(data)
+    out_file = tmp_path / "chart.html"
+
+    with pytest.raises(
+        ValueError, match="Rendering observed longitudinal state distributions"
+    ):
+        chart.write_html(out_file)
+
+
+def test_pr_125_schema_contract_structural_validation():
+    data = pl.DataFrame(
+        {
+            "subject": ["A", "B"],
+            "step": [0, 1],
+            "state": ["Low", "High"],
+        }
+    )
+    spec = _outcome_distribution_steps_v2_spec(data)
+
+    # Validate PR #125 schema contract properties
+    assert spec["schemaVersion"] == "2.0"
+    assert spec["type"] == "outcome_distribution"
+    assert spec["xAxisKind"] == "step"
+    assert "stateOrder" in spec
+    assert isinstance(spec["stateOrder"], list)
+    assert "evaluations" in spec
+    assert "stateDistributions" in spec
+
+    for dist in spec["stateDistributions"]:
+        assert dist["estimator"] == "raw"
+        assert dist["estimateOrigin"] == "observed_step"
+        assert isinstance(dist["horizon"], int)
+        assert "states" in dist
+        for st in dist["states"]:
+            assert "stateId" in st
+            assert "label" in st
+            assert "count" in st
+            assert isinstance(st["count"], int)

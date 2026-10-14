@@ -273,19 +273,25 @@ def _outcome_distribution_steps_v2_spec(
 
     if state_order is not None:
         state_order_list = list(state_order)
-        # Validate state_order
-        # Must contain no duplicates
-        if len(state_order_list) != len(set(state_order_list)):
+        # Validate state_order against original observed state values
+        order_ids = [str(x) for x in state_order_list]
+        if len(state_order_list) != len(set(state_order_list)) or len(order_ids) != len(
+            set(order_ids)
+        ):
             raise ValueError("`state_order` contains duplicate values.")
 
-        order_ids = [str(x) for x in state_order_list]
-        observed_ids = set(state_id_map.values())
+        # Check for original values matching
+        observed_set = set(observed_state_vals)
+        order_set = set(state_order_list)
 
-        if set(order_ids) != observed_ids:
-            raise ValueError(
-                f"`state_order` does not match observed states exactly. "
-                f"Expected exact set {sorted(observed_ids)}, got {sorted(order_ids)}."
-            )
+        if observed_set != order_set:
+            # Check if matching on string representations instead
+            observed_ids = set(state_id_map.values())
+            if set(order_ids) != observed_ids:
+                raise ValueError(
+                    f"`state_order` does not match observed states exactly. "
+                    f"Expected exact set {sorted(observed_state_vals, key=lambda x: str(x))}, got {state_order_list}."
+                )
 
         canonical_state_ids = order_ids
     else:
@@ -373,7 +379,48 @@ def create_reals_distribution_steps(
     title: str = "Outcome Distribution",
     renderer: RealsDistributionRenderer = "browser",
 ) -> RtichokeBrowserChart:
-    """Calculate empirical distributions of observed longitudinal states at discrete steps."""
+    """Calculate empirical distributions of observed longitudinal states at discrete steps.
+
+    Parameters
+    ----------
+    data : pl.DataFrame
+        Long-format Polars DataFrame containing observation records.
+    subject_col : str, default "subject"
+        Column name for subject identifiers.
+    step_col : str, default "step"
+        Column name for discrete non-negative integer steps.
+    state_col : str, default "state"
+        Column name for observed categorical/ordinal states.
+    state_order : sequence of str, int, or Any, optional
+        Explicit ordering of states. If provided, must cover all observed non-null states without duplicates.
+    title : str, default "Outcome Distribution"
+        Chart title.
+    renderer : {"browser", "rtichoke_viz"}, default "browser"
+        Renderer backend selection.
+
+    Returns
+    -------
+    RtichokeBrowserChart
+        A chart container holding the canonical v2 specification (`xAxisKind="step"`, `estimateOrigin="observed_step"`).
+
+    Notes
+    -----
+    Browser rendering for `xAxisKind="step"` is pending the release and vendoring of `rtichoke_viz` with PR #125.
+    To access the canonical specification directly, inspect `chart.spec`.
+
+    Examples
+    --------
+    >>> import polars as pl
+    >>> from rtichoke import create_reals_distribution_steps
+    >>> df = pl.DataFrame({
+    ...     "subject": ["A", "B", "A", "B"],
+    ...     "step": [0, 0, 1, 1],
+    ...     "state": ["Low", "High", "Moderate", "High"]
+    ... })
+    >>> chart = create_reals_distribution_steps(df)
+    >>> chart.spec["xAxisKind"]
+    'step'
+    """
     if renderer not in _SUPPORTED_REALS_DISTRIBUTION_RENDERERS:
         supported = ", ".join(repr(r) for r in _SUPPORTED_REALS_DISTRIBUTION_RENDERERS)
         raise ValueError(
