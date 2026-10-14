@@ -189,7 +189,9 @@ def _outcome_distribution_steps_v2_spec(
 
     for col_name in (subject_col, step_col, state_col):
         if col_name not in data.columns:
-            raise ValueError(f"Column {col_name!r} not found in DataFrame columns: {data.columns}.")
+            raise ValueError(
+                f"Column {col_name!r} not found in DataFrame columns: {data.columns}."
+            )
 
     df = data.select([subject_col, step_col, state_col])
 
@@ -208,7 +210,9 @@ def _outcome_distribution_steps_v2_spec(
     validated_steps = []
     for step_val in steps_raw:
         if isinstance(step_val, bool):
-            raise ValueError(f"Invalid step coordinate {step_val!r}: step coordinates must be integer-valued non-negative numbers.")
+            raise ValueError(
+                f"Invalid step coordinate {step_val!r}: step coordinates must be integer-valued non-negative numbers."
+            )
         if isinstance(step_val, (int, np.integer)):
             step_int = int(step_val)
         elif isinstance(step_val, (float, np.floating)):
@@ -240,7 +244,9 @@ def _outcome_distribution_steps_v2_spec(
     valid_df = df.filter(pl.col(state_col).is_not_null())
 
     if valid_df.is_empty():
-        raise ValueError("No valid observed steps remain after excluding missing states.")
+        raise ValueError(
+            "No valid observed steps remain after excluding missing states."
+        )
 
     # Extract list of observed non-null state values directly
     raw_state_list = valid_df[state_col].to_list()
@@ -260,7 +266,9 @@ def _outcome_distribution_steps_v2_spec(
         if sid in state_id_map.values():
             existing_val = [k for k, v in state_id_map.items() if v == sid][0]
             if existing_val != val:
-                raise ValueError(f"State value collision: {val!r} and {existing_val!r} both map to stateId {sid!r}.")
+                raise ValueError(
+                    f"State value collision: {val!r} and {existing_val!r} both map to stateId {sid!r}."
+                )
         state_id_map[val] = sid
 
     if state_order is not None:
@@ -285,17 +293,21 @@ def _outcome_distribution_steps_v2_spec(
         if isinstance(state_series.dtype, pl.Enum):
             # Enum has declared categories order
             categories = state_series.dtype.categories.to_list()
-            canonical_state_ids = [str(c) for c in categories if str(c) in state_id_map.values()]
+            canonical_state_ids = [
+                str(c) for c in categories if str(c) in state_id_map.values()
+            ]
         else:
             # Deterministic sorting
             # Sort by string stateId
-            sorted_vals = sorted(observed_state_vals, key=lambda x: (str(x), x if isinstance(x, (int, float)) else 0))
+            sorted_vals = sorted(
+                observed_state_vals,
+                key=lambda x: (str(x), x if isinstance(x, (int, float)) else 0),
+            )
             canonical_state_ids = [str(v) for v in sorted_vals]
 
     # Map stateId -> label (default label is string representation, which is stateId)
     state_objects_order = [
-        {"stateId": sid, "label": sid}
-        for sid in canonical_state_ids
+        {"stateId": sid, "label": sid} for sid in canonical_state_ids
     ]
 
     # Group by step and state to get counts
@@ -363,9 +375,7 @@ def create_reals_distribution_steps(
 ) -> RtichokeBrowserChart:
     """Calculate empirical distributions of observed longitudinal states at discrete steps."""
     if renderer not in _SUPPORTED_REALS_DISTRIBUTION_RENDERERS:
-        supported = ", ".join(
-            repr(r) for r in _SUPPORTED_REALS_DISTRIBUTION_RENDERERS
-        )
+        supported = ", ".join(repr(r) for r in _SUPPORTED_REALS_DISTRIBUTION_RENDERERS)
         raise ValueError(
             f"Unsupported renderer {renderer!r}. 'create_reals_distribution_steps' supports {supported}."
         )

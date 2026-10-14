@@ -10,7 +10,16 @@ def test_shared_fixture_independent_numerical_reference():
         {
             "subject": ["A", "B", "C", "A", "B", "C", "A", "C"],
             "step": [0, 0, 0, 1, 1, 1, 3, 3],
-            "state": ["Low", "Moderate", "High", "Moderate", "Moderate", None, "High", "High"],
+            "state": [
+                "Low",
+                "Moderate",
+                "High",
+                "Moderate",
+                "Moderate",
+                None,
+                "High",
+                "High",
+            ],
         }
     )
 
@@ -228,11 +237,13 @@ def test_null_subject():
 
 def test_state_value_collision():
     # If state column contains int 1 and string '1', they serialize to same stateId '1'
-    data = pl.DataFrame({
-        "subject": ["A", "B"],
-        "step": [0, 0],
-        "state": pl.Series("state", [1, "1"], dtype=pl.Object),
-    })
+    data = pl.DataFrame(
+        {
+            "subject": ["A", "B"],
+            "step": [0, 0],
+            "state": pl.Series("state", [1, "1"], dtype=pl.Object),
+        }
+    )
     with pytest.raises(ValueError, match="State value collision"):
         _outcome_distribution_steps_v2_spec(data)
 
