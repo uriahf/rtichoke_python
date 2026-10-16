@@ -329,14 +329,7 @@ def create_reals_distribution_steps(
         if isinstance(data[state_col].dtype, pl.Enum):
             is_ordered_cat = True
         elif isinstance(data[state_col].dtype, pl.Categorical):
-            try:
-                is_ordered_cat = (
-                    data[state_col].dtype.is_ordered
-                    if hasattr(data[state_col].dtype, "is_ordered")
-                    else False
-                )
-            except Exception:
-                is_ordered_cat = False
+            is_ordered_cat = getattr(data[state_col].dtype, "is_ordered", False)
 
         all_numeric = all(
             isinstance(s, (int, float, np.integer, np.floating))
@@ -349,6 +342,8 @@ def create_reals_distribution_steps(
         else:
             resolved_state_scale = "nominal"
 
+    # Note: resolved_state_scale is resolved internally for future palette selection contract.
+    _ = resolved_state_scale
 
     observed_steps = sorted([int(s) for s in data[step_col].unique().to_list()])
     if len(observed_steps) == 0:
@@ -388,6 +383,11 @@ def create_reals_distribution_steps(
                 }
             )
     else:
+        if not hasattr(polarstate, "prepare_transition_table_steps"):
+            raise NotImplementedError(
+                "Discrete-step Aalen-Johansen estimation ('censoring_heuristic=\"adjusted\"') "
+                "requires polarstate >= 0.1.9."
+            )
         tt = polarstate.prepare_transition_table_steps(
             data,
             id_col=id_col,
@@ -395,7 +395,10 @@ def create_reals_distribution_steps(
             state_col=state_col,
             state_order=resolved_state_order,
         )
-        aj_df = polarstate.predict_aj_estimates(tt)
+        if hasattr(polarstate, "_predict_transition_steps"):
+            aj_df = polarstate._predict_transition_steps(tt)
+        else:
+            aj_df = polarstate.predict_aj_estimates(tt)
 
         for step_val in observed_steps:
             step_aj = aj_df.filter(pl.col("step") == step_val)
@@ -426,7 +429,6 @@ def create_reals_distribution_steps(
     spec: dict[str, Any] = {
         "schemaVersion": "2.0",
         "type": "outcome_distribution",
-        "stateScale": resolved_state_scale,
         "title": title,
         "evaluations": [
             {
