@@ -26,13 +26,19 @@ def create_aj_data(
 
     exploded = assign_and_explode_polars(reference_group_data, fixed_time_horizons)
 
-    event_table = prepare_event_table(reference_group_data)
-
-    # TODO: solve strata in the pipeline
-
-    excluded_events = _extract_excluded_events(
-        event_table, fixed_time_horizons, censoring_heuristic, competing_heuristic
-    )
+    if reference_group_data.height > 0:
+        event_table = prepare_event_table(reference_group_data)
+        excluded_events = _extract_excluded_events(
+            event_table, fixed_time_horizons, censoring_heuristic, competing_heuristic
+        )
+    else:
+        excluded_events = pl.DataFrame(
+            {
+                "fixed_time_horizon": [float(h) for h in fixed_time_horizons],
+                "real_censored_est": [0.0] * len(fixed_time_horizons),
+                "real_competing_est": [0.0] * len(fixed_time_horizons),
+            }
+        )
 
     aj_dfs = []
     for rscope in risk_set_scope:
@@ -336,6 +342,18 @@ def extract_aj_estimate_by_cutoffs(
 
 def extract_aj_estimate_for_strata(data_to_adjust, horizons, full_event_table: bool):
     n = data_to_adjust.height
+    if n == 0:
+        return pl.DataFrame(
+            {
+                "strata": [],
+                "times": [],
+                "fixed_time_horizon": [],
+                "real_negatives_est": [],
+                "real_positives_est": [],
+                "real_competing_est": [],
+                "estimate_origin": [],
+            }
+        )
 
     event_table = prepare_event_table(data_to_adjust)
 
