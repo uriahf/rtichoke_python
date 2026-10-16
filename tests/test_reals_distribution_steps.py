@@ -1,6 +1,5 @@
 import json
 
-import polarstate
 import polars as pl
 import pytest
 
