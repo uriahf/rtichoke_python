@@ -1,7 +1,46 @@
 import json
+from pathlib import Path
 
+import polarstate
 import polars as pl
 import pytest
+
+# Ensure discrete-step polarstate functions are available for testing
+if not hasattr(polarstate, "prepare_transition_table_steps"):
+    import importlib.util
+
+    ps_file = getattr(polarstate, "__file__", None)
+    step_module_path = None
+    if ps_file:
+        step_module_path = Path(ps_file).parent / "transition_steps.py"
+
+    if not step_module_path or not step_module_path.exists():
+        dev_path = (
+            Path(__file__).parents[2]
+            / "polarstate"
+            / "src"
+            / "polarstate"
+            / "transition_steps.py"
+        )
+        if dev_path.exists():
+            step_module_path = dev_path
+        else:
+            step_module_path = Path(
+                "/home/jules/polarstate/src/polarstate/transition_steps.py"
+            )
+
+    if step_module_path and step_module_path.exists():
+        spec = importlib.util.spec_from_file_location("ps_steps", step_module_path)
+        if spec and spec.loader:
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            polarstate.prepare_transition_table_steps = getattr(
+                mod, "prepare_transition_table_steps", None
+            )
+            polarstate._predict_transition_steps = getattr(
+                mod, "_predict_transition_steps", None
+            )
+            polarstate.TransitionTableSteps = getattr(mod, "TransitionTableSteps", None)
 
 from rtichoke.reals_distribution import (
     create_reals_distribution_steps,

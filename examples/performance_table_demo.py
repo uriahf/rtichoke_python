@@ -69,13 +69,15 @@ def _(create_performance_table, mo, model_a, model_b, reals):
 
 @app.cell
 def _(np):
-    # Sufficient observations in every threshold stratum for time-dependent
-    # Aalen-Johansen calculations (the former 10-row example had empty risk sets).
-    n = 400
-    time_probs = {"Model A": np.linspace(0.05, 0.95, n)}
-    time_reals = np.tile(np.array([0, 1, 1, 0, 1]), n // 5)
-    times = np.resize(np.array([2, 3, 5, 7, 9, 11, 14]), n).astype(float)
+    time_probs = {
+        "Model A": np.array(
+            [0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00]
+        )
+    }
+    time_reals = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
+    times = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     return time_probs, time_reals, times
+
 
 @app.cell
 def _(create_performance_table_times, mo, time_probs, time_reals, times):
