@@ -342,7 +342,6 @@ def create_reals_distribution_steps(
         else:
             resolved_state_scale = "nominal"
 
-
     observed_steps = sorted([int(s) for s in data[step_col].unique().to_list()])
     if len(observed_steps) == 0:
         raise ValueError("No steps found in data.")
