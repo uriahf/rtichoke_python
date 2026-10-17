@@ -213,11 +213,13 @@ def _compute_population_event_risk_times(
             .alias("reals")
         )
 
-    event_table = prepare_event_table(df)
-    estimate = predict_aj_estimates(
-        event_table, pl.Series([float(horizon)]), full_event_table=False
-    )
-    return float(estimate["state_occupancy_probability_1"][0])
+    if df.height > 0:
+        event_table = prepare_event_table(df)
+        estimate = predict_aj_estimates(
+            event_table, pl.Series([float(horizon)]), full_event_table=False
+        )
+        return float(estimate["state_occupancy_probability_1"][0])
+    return 0.0
 
 
 def _recalculate_interventions_avoided_times(
