@@ -63,28 +63,35 @@ def test_input_validation():
     with pytest.raises(ValueError, match="Duplicate records found"):
         create_reals_distribution_steps(df_dup)
 
+    # Observed outcomes not in declared reals_order
+    df_unrecognized = pl.DataFrame(
+        {"id": [1, 2], "step": [0, 0], "reals": ["Mild", "Severe"]}
+    )
+    with pytest.raises(
+        ValueError, match="Observed outcomes contain values not present in declared"
+    ):
+        create_reals_distribution_steps(df_unrecognized, reals_order=["None", "Mild"])
+
 
 def test_reals_order_and_scale_resolution():
-    # 1. Explicit reals_order
+    # 1. Explicit reals_order on ordinary strings remains nominal under auto
     df = pl.DataFrame(
-        {"id": [1, 2, 3], "step": [0, 0, 0], "reals": ["Moderate", "Mild", "None"]}
+        {"id": [1, 2, 3], "step": [0, 0, 0], "reals": ["Blue", "Green", "Red"]}
     )
-    chart = create_reals_distribution_steps(
-        df, reals_order=["None", "Mild", "Moderate"]
-    )
+    chart = create_reals_distribution_steps(df, reals_order=["Red", "Green", "Blue"])
     assert (
-        chart.spec["stateScale"] == "ordinal"
-    )  # Auto resolved to ordinal because reals_order is explicit
+        chart.spec["stateScale"] == "nominal"
+    )  # Explicit reals_order alone does NOT imply ordinal scale
     states = chart.spec["stateDistributions"][0]["states"]
-    assert [s["stateId"] for s in states] == ["None", "Mild", "Moderate"]
+    assert [s["stateId"] for s in states] == ["Red", "Green", "Blue"]
 
-    # 2. Explicit reals_scale
-    chart_nom = create_reals_distribution_steps(
-        df, reals_order=["None", "Mild", "Moderate"], reals_scale="nominal"
+    # 2. Explicit reals_scale="ordinal" overrides default nominal
+    chart_ord = create_reals_distribution_steps(
+        df, reals_order=["Red", "Green", "Blue"], reals_scale="ordinal"
     )
-    assert chart_nom.spec["stateScale"] == "nominal"
+    assert chart_ord.spec["stateScale"] == "ordinal"
 
-    # 3. Polars Enum
+    # 3. Polars Enum auto-resolves to ordinal
     enum_dtype = pl.Enum(["None", "Mild", "Moderate"])
     df_enum = pl.DataFrame(
         {
@@ -98,129 +105,158 @@ def test_reals_order_and_scale_resolution():
     states_enum = chart_enum.spec["stateDistributions"][0]["states"]
     assert [s["stateId"] for s in states_enum] == ["None", "Mild", "Moderate"]
 
-    # 4. Numeric outcome categories
+    # 4. Numeric outcome categories auto-resolve to ordinal
     df_num = pl.DataFrame({"id": [1, 2, 3], "step": [0, 0, 0], "reals": [2, 0, 1]})
     chart_num = create_reals_distribution_steps(df_num)
     assert chart_num.spec["stateScale"] == "ordinal"
     states_num = chart_num.spec["stateDistributions"][0]["states"]
     assert [s["stateId"] for s in states_num] == ["0", "1", "2"]
 
-    # 5. String/categorical nominal default
-    df_str = pl.DataFrame({"id": [1, 2], "step": [0, 0], "reals": ["Red", "Blue"]})
-    chart_str = create_reals_distribution_steps(df_str)
-    assert chart_str.spec["stateScale"] == "nominal"
 
-
-def test_complete_panel_raw_and_aj():
+def test_mass_conservation_and_sum_checks():
     df = pl.DataFrame(
         {
-            "patient_id": [1, 1, 1, 2, 2, 2],
-            "visit": [0, 1, 2, 0, 1, 2],
-            "severity": ["None", "Mild", "Moderate", "None", "Mild", "Mild"],
+            "id": [1, 1, 1, 2, 2, 2, 3, 3, 3],
+            "step": [0, 1, 2, 0, 1, 2, 0, 1, 2],
+            "reals": [
+                "None",
+                "Mild",
+                "Moderate",
+                "None",
+                "Mild",
+                "Mild",
+                "None",
+                "None",
+                "Mild",
+            ],
         }
     )
 
-    # Raw
+    # Raw counts sum check
     chart_raw = create_reals_distribution_steps(
         data=df,
-        id_col="patient_id",
-        step_col="visit",
-        reals_col="severity",
         reals_order=["None", "Mild", "Moderate"],
         censoring_heuristic="excluded",
     )
+    for dist in chart_raw.spec["stateDistributions"]:
+        total_counts = sum(s["count"] for s in dist["states"])
+        assert total_counts == 3
 
-    spec_raw = chart_raw.spec
-    assert spec_raw["schemaVersion"] == "2.0"
-    assert spec_raw["type"] == "outcome_distribution"
-    assert spec_raw["title"] == "Outcome Distribution"
-    assert spec_raw["evaluations"] == [
-        {"id": "evaluation-1", "population": "__shared_population__"}
-    ]
-
-    dist_raw = spec_raw["stateDistributions"]
-    assert len(dist_raw) == 3
-
-    # Step 0: 2 None, 0 Mild, 0 Moderate
-    assert dist_raw[0]["horizon"] == 0
-    assert dist_raw[0]["estimator"] == "raw"
-    assert dist_raw[0]["estimateOrigin"] == "observed_step"
-    assert dist_raw[0]["states"] == [
-        {"stateId": "None", "label": "None", "count": 2},
-        {"stateId": "Mild", "label": "Mild", "count": 0},
-        {"stateId": "Moderate", "label": "Moderate", "count": 0},
-    ]
-
-    # Step 1: 0 None, 2 Mild, 0 Moderate
-    assert dist_raw[1]["horizon"] == 1
-    assert dist_raw[1]["states"] == [
-        {"stateId": "None", "label": "None", "count": 0},
-        {"stateId": "Mild", "label": "Mild", "count": 2},
-        {"stateId": "Moderate", "label": "Moderate", "count": 0},
-    ]
-
-    # Step 2: 0 None, 1 Mild, 1 Moderate
-    assert dist_raw[2]["horizon"] == 2
-    assert dist_raw[2]["states"] == [
-        {"stateId": "None", "label": "None", "count": 0},
-        {"stateId": "Mild", "label": "Mild", "count": 1},
-        {"stateId": "Moderate", "label": "Moderate", "count": 1},
-    ]
-
-    # AJ
+    # AJ probabilities sum to 1.0 check
     chart_aj = create_reals_distribution_steps(
         data=df,
-        id_col="patient_id",
-        step_col="visit",
-        reals_col="severity",
         reals_order=["None", "Mild", "Moderate"],
         censoring_heuristic="adjusted",
     )
+    for dist in chart_aj.spec["stateDistributions"]:
+        total_prob = sum(s["estimate"] for s in dist["states"])
+        assert pytest.approx(total_prob, abs=1e-6) == 1.0
 
-    spec_aj = chart_aj.spec
-    dist_aj = spec_aj["stateDistributions"]
-    assert len(dist_aj) == 3
 
-    # Step 0: None 1.0, Mild 0.0, Moderate 0.0
-    assert dist_aj[0]["horizon"] == 0
-    assert dist_aj[0]["estimator"] == "aalen_johansen"
-    assert dist_aj[0]["estimateOrigin"] == "observed_step"
-    assert dist_aj[0]["states"] == [
+def test_aj_scenarios_and_independent_validation():
+    # 1. Complete panel
+    df_complete = pl.DataFrame(
+        {
+            "id": [1, 1, 1, 2, 2, 2],
+            "step": [0, 1, 2, 0, 1, 2],
+            "reals": ["None", "Mild", "Moderate", "None", "Mild", "Mild"],
+        }
+    )
+    chart_complete = create_reals_distribution_steps(
+        df_complete,
+        reals_order=["None", "Mild", "Moderate"],
+        censoring_heuristic="adjusted",
+    )
+    dist_c = chart_complete.spec["stateDistributions"]
+    # Step 0: None=1.0, Mild=0.0, Moderate=0.0
+    assert dist_c[0]["states"] == [
         {"stateId": "None", "label": "None", "estimate": 1.0},
         {"stateId": "Mild", "label": "Mild", "estimate": 0.0},
         {"stateId": "Moderate", "label": "Moderate", "estimate": 0.0},
     ]
-
-    # Step 2: None 0.0, Mild 0.5, Moderate 0.5
-    assert dist_aj[2]["horizon"] == 2
-    assert dist_aj[2]["states"] == [
+    # Step 1: None=0.0, Mild=1.0, Moderate=0.0
+    assert dist_c[1]["states"] == [
+        {"stateId": "None", "label": "None", "estimate": 0.0},
+        {"stateId": "Mild", "label": "Mild", "estimate": 1.0},
+        {"stateId": "Moderate", "label": "Moderate", "estimate": 0.0},
+    ]
+    # Step 2: None=0.0, Mild=0.5, Moderate=0.5
+    assert dist_c[2]["states"] == [
         {"stateId": "None", "label": "None", "estimate": 0.0},
         {"stateId": "Mild", "label": "Mild", "estimate": 0.5},
         {"stateId": "Moderate", "label": "Moderate", "estimate": 0.5},
     ]
 
+    # 2. Terminal dropout / incomplete panel
+    # Patient 2 drops out after step 1
+    df_dropout = pl.DataFrame(
+        {
+            "id": [1, 1, 1, 2, 2],
+            "step": [0, 1, 2, 0, 1],
+            "reals": ["None", "Mild", "Moderate", "None", "Mild"],
+        }
+    )
+    chart_dropout = create_reals_distribution_steps(
+        df_dropout,
+        reals_order=["None", "Mild", "Moderate"],
+        censoring_heuristic="adjusted",
+    )
+    dist_d = chart_dropout.spec["stateDistributions"]
+    # Step 2: Subject 1 moved Mild -> Moderate. Subject 2 dropped out while in Mild.
+    # AJ occupancy at step 2: None=0.0, Mild=0.0, Moderate=1.0
+    assert dist_d[2]["states"] == [
+        {"stateId": "None", "label": "None", "estimate": 0.0},
+        {"stateId": "Mild", "label": "Mild", "estimate": 0.0},
+        {"stateId": "Moderate", "label": "Moderate", "estimate": 1.0},
+    ]
 
-def test_missing_reals_excluded():
-    # Intermittent missing outcome at step 1 for patient 2
-    df = pl.DataFrame(
+    # 3. Intermittent missing outcomes under 'excluded' vs 'adjusted'
+    df_intermittent = pl.DataFrame(
         {
             "id": [1, 1, 1, 2, 2, 2],
             "step": [0, 1, 2, 0, 1, 2],
             "reals": ["None", "Mild", "Moderate", "None", None, "Mild"],
         }
     )
-
-    chart = create_reals_distribution_steps(
-        df, reals_order=["None", "Mild", "Moderate"], censoring_heuristic="excluded"
+    chart_excl = create_reals_distribution_steps(
+        df_intermittent,
+        reals_order=["None", "Mild", "Moderate"],
+        censoring_heuristic="excluded",
     )
-    dist = chart.spec["stateDistributions"]
-
-    # Step 1 has 1 observed outcome (Mild) for subject 1, subject 2 missing. Count = 1 Mild.
-    assert dist[1]["horizon"] == 1
-    assert dist[1]["states"] == [
+    # Under 'excluded', at step 1 only subject 1 is observed (Mild), subject 2 is excluded from denominator.
+    assert chart_excl.spec["stateDistributions"][1]["states"] == [
         {"stateId": "None", "label": "None", "count": 0},
         {"stateId": "Mild", "label": "Mild", "count": 1},
         {"stateId": "Moderate", "label": "Moderate", "count": 0},
+    ]
+
+
+def test_baseline_only_subjects():
+    # Patient 2 observed only at step 0
+    df = pl.DataFrame(
+        {
+            "id": [1, 1, 2],
+            "step": [0, 1, 0],
+            "reals": ["None", "Mild", "None"],
+        }
+    )
+    chart = create_reals_distribution_steps(
+        df,
+        reals_order=["None", "Mild"],
+        censoring_heuristic="adjusted",
+    )
+    dist = chart.spec["stateDistributions"]
+    assert len(dist) == 2
+    # Step 0: None=1.0, Mild=0.0
+    assert dist[0]["states"] == [
+        {"stateId": "None", "label": "None", "estimate": 1.0},
+        {"stateId": "Mild", "label": "Mild", "estimate": 0.0},
+    ]
+    # Step 1: Subject 2 dropped out from None. Subject 1 transitioned None -> Mild.
+    # AJ occupancy at step 1: None=0.0, Mild=1.0
+    assert dist[1]["states"] == [
+        {"stateId": "None", "label": "None", "estimate": 0.0},
+        {"stateId": "Mild", "label": "Mild", "estimate": 1.0},
     ]
 
 

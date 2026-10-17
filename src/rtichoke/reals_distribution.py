@@ -294,13 +294,19 @@ def create_reals_distribution_steps(
             "Distinct category values collapsed into duplicate string representations in reals_order."
         )
 
+    # Verify all non-null observed values are present in resolved_reals_order
+    observed_non_null = [
+        str(x) for x in data[reals_col].drop_nulls().unique().to_list()
+    ]
+    unrecognized = set(observed_non_null) - set(resolved_reals_order)
+    if unrecognized:
+        raise ValueError(
+            f"Observed outcomes contain values not present in declared 'reals_order': {sorted(unrecognized)}"
+        )
+
     # Resolve reals_scale
     if reals_scale == "auto":
-        if (
-            reals_order is not None
-            or isinstance(reals_dtype, pl.Enum)
-            or reals_dtype.is_numeric()
-        ):
+        if isinstance(reals_dtype, pl.Enum) or reals_dtype.is_numeric():
             resolved_scale = "ordinal"
         else:
             resolved_scale = "nominal"
