@@ -1,0 +1,95 @@
+# Common Errors & Fixes
+
+This page is deliberately keyed by **literal error text**. If an rtichoke call fails, search this page for a distinctive part of the exception before tracing into the implementation.
+
+
+# Population key or length mismatch
+
+For matching `probs` and `reals` dictionaries, rtichoke pairs values population-by-population. Different populations may have different sample sizes, but lengths must match within each key.
+
+``` python
+probs = {
+    "Train": train_probs,
+    "Test": test_probs,
+}
+reals = {
+    "Train": train_outcomes,
+    "Test": test_outcomes,
+}
+```
+
+Check that the keys match and that each pair has equal length. Unequal Train/Test sample sizes are supported across the curve families that accept these inputs. For time-dependent calls, dictionary-valued `times` must follow the same population alignment.
+
+See [Curve API Compatibility](curve-api-compatibility.md) for the family-by-family comparison.
+
+
+# `Unsupported calibration heuristics`
+
+
+## Where this appears
+
+[create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times).
+
+
+## Why it happens
+
+Calibration does not support `competing_heuristic="adjusted_as_censored"`. This input is rejected before curve construction rather than silently skipping every requested horizon.
+
+
+## Fix
+
+Pass a supported calibration heuristic explicitly. For example:
+
+``` python
+heuristics_sets = [
+    {
+        "censoring_heuristic": "adjusted",
+        "competing_heuristic": "adjusted_as_negative",
+    }
+]
+```
+
+Do not infer calibration defaults from the other time-dependent curve families.
+
+A heuristic only changes estimates when the corresponding outcome type is present: a competing-event rule has no statistical effect when there are no competing events, and a censoring rule has no statistical effect when there is no censoring. Input validation is separate from this statistical point, so unsupported calibration combinations can still be rejected even when the relevant outcome type is absent.
+
+
+# `No data remaining after applying heuristics and time horizons.`
+
+Unsupported calibration heuristics now raise the targeted error above. If this message still appears, the supported heuristic and horizon combination removed all observations. Check the observed times, event values, requested horizons, and exclusion rules.
+
+
+# Integer and floating-point time horizons
+
+`fixed_time_horizons` accepts integer and floating-point numeric values. Integer horizons are normalized to floats internally:
+
+``` python
+fixed_time_horizons=[3, 6, 9]
+```
+
+is equivalent to:
+
+``` python
+fixed_time_horizons=[3.0, 6.0, 9.0]
+```
+
+
+# Why is `heuristics_sets` missing?
+
+If Python reports that [create_calibration_curve_times()](../reference/create_calibration_curve_times.md#rtichoke.create_calibration_curve_times) is missing the required `heuristics_sets` argument, that is currently expected API behavior. Unlike the ROC, precision-recall, Gains, Lift, and decision-curve `_times` functions, calibration does not currently provide a default.
+
+Pass it explicitly rather than copying a sibling default:
+
+``` python
+heuristics_sets = [
+    {
+        "censoring_heuristic": "excluded",
+        "competing_heuristic": "adjusted_as_negative",
+    }
+]
+```
+
+
+# Still stuck?
+
+Check [Curve API Compatibility](curve-api-compatibility.md) first. The most important remaining difference is calibration's required and narrower heuristic selection, not unequal population sizes or integer horizons.
