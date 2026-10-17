@@ -182,17 +182,57 @@ def extract_aj_estimate_by_cutoffs(
                 mask_predicted_negatives
             )
 
-            event_table_predicted_positives = prepare_event_table(predicted_positives)
-            event_table_predicted_negatives = prepare_event_table(predicted_negatives)
+            estimate_origin_enum = pl.Enum(["fixed_time_horizons", "event_table"])
+
+            if len(predicted_positives) > 0:
+                event_table_predicted_positives = prepare_event_table(
+                    predicted_positives
+                )
+                aj_pos = predict_aj_estimates(
+                    event_table_predicted_positives,
+                    pl.Series(horizons),
+                    full_event_table,
+                )
+            else:
+                aj_pos = pl.DataFrame(
+                    {
+                        "times": horizons,
+                        "state_occupancy_probability_0": [0.0] * len(horizons),
+                        "state_occupancy_probability_1": [0.0] * len(horizons),
+                        "state_occupancy_probability_2": [0.0] * len(horizons),
+                        "estimate_origin": pl.Series(
+                            ["fixed_time_horizons"] * len(horizons),
+                            dtype=estimate_origin_enum,
+                        ),
+                    }
+                )
+
+            if len(predicted_negatives) > 0:
+                event_table_predicted_negatives = prepare_event_table(
+                    predicted_negatives
+                )
+                aj_neg = predict_aj_estimates(
+                    event_table_predicted_negatives,
+                    pl.Series(horizons),
+                    full_event_table,
+                )
+            else:
+                aj_neg = pl.DataFrame(
+                    {
+                        "times": horizons,
+                        "state_occupancy_probability_0": [0.0] * len(horizons),
+                        "state_occupancy_probability_1": [0.0] * len(horizons),
+                        "state_occupancy_probability_2": [0.0] * len(horizons),
+                        "estimate_origin": pl.Series(
+                            ["fixed_time_horizons"] * len(horizons),
+                            dtype=estimate_origin_enum,
+                        ),
+                    }
+                )
 
             aj_estimate_predicted_positives = (
                 (
-                    predict_aj_estimates(
-                        event_table_predicted_positives,
-                        pl.Series(horizons),
-                        full_event_table,
-                    )
-                    .with_columns(
+                    aj_pos.with_columns(
                         pl.lit(chosen_cutoff).alias("chosen_cutoff"),
                         pl.lit(stratification_criteria)
                         .alias("stratified_by")
@@ -237,12 +277,7 @@ def extract_aj_estimate_by_cutoffs(
 
             aj_estimate_predicted_negatives = (
                 (
-                    predict_aj_estimates(
-                        event_table_predicted_negatives,
-                        pl.Series(horizons),
-                        full_event_table,
-                    )
-                    .with_columns(
+                    aj_neg.with_columns(
                         pl.lit(chosen_cutoff).alias("chosen_cutoff"),
                         pl.lit(stratification_criteria)
                         .alias("stratified_by")
