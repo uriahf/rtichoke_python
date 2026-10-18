@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -2069,14 +2069,14 @@ wheels = [
 
 [[package]]
 name = "polarstate"
-version = "0.1.10"
+version = "0.1.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "polars" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f3/ee/5642831bcf8427fb167568adfade20623afa5ae1781b8f85b83bd5df7f5b/polarstate-0.1.10.tar.gz", hash = "sha256:3953d282f648dc837fc410d9e9245e92f635cbd309622dfc2b34f7310c901d4d", size = 8829, upload-time = "2026-10-18T09:49:46.909Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/50/63/f2267a3d38017712530180547a8391b47bdc534596133fbedd12c5dd02dd/polarstate-0.1.9.tar.gz", hash = "sha256:801dfa0aedeb11a4bddf7cd26c95bf906212e7ee0f05316d111c1ccac97fe5c1", size = 8672, upload-time = "2026-10-16T18:26:49.513Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5d/39/19cd5b706cedb4bba9d53db03dbe19627eee00d2891cd0cf5d164678748f/polarstate-0.1.10-py3-none-any.whl", hash = "sha256:beb28cc1979e2863c4136aacbc51931c292267bf171cbd4149ce5568505a9c02", size = 11073, upload-time = "2026-10-18T09:49:46.073Z" },
+    { url = "https://files.pythonhosted.org/packages/03/7e/03b93b990a56f1c2c602c6780591ecb7bf6f6cb105ffdcb92ff8b173976b/polarstate-0.1.9-py3-none-any.whl", hash = "sha256:07606e86295148409e626e09ff275f4e58e54d20aed87316497ec55d561390ea", size = 10938, upload-time = "2026-10-16T18:26:48.724Z" },
 ]
 
 [[package]]
@@ -2610,16 +2610,13 @@ docs = [
     { name = "great-docs" },
 ]
 
-[package.group-requires-python]
-docs = ">=3.12"
-
 [package.metadata]
 requires-dist = [
     { name = "great-tables", specifier = ">=0.18.0" },
     { name = "matplotlib", marker = "extra == 'matplotlib'", specifier = ">=3.9.0" },
     { name = "plotly", specifier = ">=6.0.0,<7.0.0" },
     { name = "polars", specifier = ">=1.31.0" },
-    { name = "polarstate", specifier = "==0.1.10" },
+    { name = "polarstate", specifier = "==0.1.9" },
     { name = "reactable", specifier = ">=0.1.5" },
     { name = "scikit-learn", specifier = ">=1.6.1" },
     { name = "smoothstate", specifier = ">=0.1.1" },

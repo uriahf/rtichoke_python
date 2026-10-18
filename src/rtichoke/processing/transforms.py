@@ -281,13 +281,13 @@ def _create_list_data_to_adjust(
             {
                 "reference_group": np.repeat(reference_group_labels, len(probs_array)),
                 "probs": probs_array,
-                "reals": reals_array,
+                "reals": np.asarray(reals_array, dtype=int),
                 "times": times_array,
             }
         ).with_columns(pl.col("reference_group").cast(reference_group_enum))
 
     elif num_keys_reals == 1:
-        reals_array = np.asarray(reals_dict)
+        reals_array = np.asarray(reals_dict, dtype=int)
         times_array = np.asarray(times_dict)
         n = len(reals_array)
 
@@ -308,7 +308,7 @@ def _create_list_data_to_adjust(
                 {
                     "reference_group": reference_group_labels,
                     "probs": list(probs_dict.values()),
-                    "reals": list(reals_dict.values()),
+                    "reals": [np.asarray(r, dtype=int) for r in reals_dict.values()],
                     "times": list(times_dict.values()),
                 }
             )
