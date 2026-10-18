@@ -183,7 +183,7 @@ def _compute_population_event_risk_times(
     """Compute the genuine pooled full-population KM/AJ event risk estimate."""
     df = pl.DataFrame(
         {
-            "reals": np.asarray(reals, dtype=int),
+            "reals": np.asarray(reals),
             "times": np.asarray(times, dtype=float),
             "fixed_time_horizon": float(horizon),
         }
