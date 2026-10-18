@@ -1,0 +1,31 @@
+name: Refresh polarstate lockfile for PR 437
+
+on:
+  push:
+    branches:
+      - feat/create-reals_distribution_steps-8491542656530194103
+    paths:
+      - .github/workflows/refresh-polarstate-lock-temporary.yml
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: astral-sh/setup-uv@v5
+      - name: Regenerate lockfile
+        run: uv lock
+      - name: Commit regenerated lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add uv.lock
+          if ! git diff --cached --quiet; then
+            git commit -m "build: lock polarstate 0.1.10"
+            git push
+          fi
