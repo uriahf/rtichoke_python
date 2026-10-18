@@ -284,3 +284,39 @@ def test_zero_count_category_preservation():
         {"stateId": "Mild", "label": "Mild", "count": 2},
         {"stateId": "Severe", "label": "Severe", "count": 0},
     ]
+
+
+def test_write_html_outcome_distribution(tmp_path):
+    df = pl.DataFrame(
+        {
+            "id": [1, 1, 2, 2],
+            "step": [0, 1, 0, 1],
+            "reals": ["None", "Mild", "None", "Moderate"],
+        }
+    )
+
+    # 1. Censoring heuristic: excluded
+    chart_excluded = create_reals_distribution_steps(
+        df,
+        reals_order=["None", "Mild", "Moderate"],
+        censoring_heuristic="excluded",
+    )
+    out_excluded = chart_excluded.write_html(tmp_path / "excluded.html")
+    assert out_excluded.exists()
+    content_excluded = out_excluded.read_text(encoding="utf-8")
+    assert "renderOutcomeDistribution" in content_excluded
+    assert "rtichoke-viz.js" in content_excluded
+    assert "outcome_distribution" in content_excluded
+
+    # 2. Censoring heuristic: adjusted
+    chart_adjusted = create_reals_distribution_steps(
+        df,
+        reals_order=["None", "Mild", "Moderate"],
+        censoring_heuristic="adjusted",
+    )
+    out_adjusted = chart_adjusted.write_html(tmp_path / "adjusted.html")
+    assert out_adjusted.exists()
+    content_adjusted = out_adjusted.read_text(encoding="utf-8")
+    assert "renderOutcomeDistribution" in content_adjusted
+    assert "rtichoke-viz.js" in content_adjusted
+    assert "outcome_distribution" in content_adjusted

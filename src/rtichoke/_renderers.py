@@ -95,6 +95,7 @@ class RtichokeBrowserChart:
                 "lift": "renderLiftV2",
                 "decision_curve": "renderDecisionCurveV2",
                 "interventions_avoided": "renderInterventionsAvoidedV2",
+                "outcome_distribution": "renderOutcomeDistribution",
             }.get(chart_type)
             if render_export is None:
                 raise ValueError(
