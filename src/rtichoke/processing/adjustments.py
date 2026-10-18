@@ -182,108 +182,126 @@ def extract_aj_estimate_by_cutoffs(
                 mask_predicted_negatives
             )
 
-            event_table_predicted_positives = prepare_event_table(predicted_positives)
-            event_table_predicted_negatives = prepare_event_table(predicted_negatives)
+            empty_aj_schema = {
+                "strata": data_to_adjust.schema["strata"],
+                "times": pl.Float64,
+                "chosen_cutoff": pl.Float64,
+                "real_negatives_est": pl.Float64,
+                "real_positives_est": pl.Float64,
+                "real_competing_est": pl.Float64,
+                "estimate_origin": pl.Enum(["fixed_time_horizons", "event_table"]),
+                "fixed_time_horizon": pl.Float64,
+            }
 
-            aj_estimate_predicted_positives = (
-                (
-                    predict_aj_estimates(
-                        event_table_predicted_positives,
-                        pl.Series(horizons),
-                        full_event_table,
+            if predicted_positives.height > 0:
+                event_table_predicted_positives = prepare_event_table(
+                    predicted_positives
+                )
+                aj_estimate_predicted_positives = (
+                    (
+                        predict_aj_estimates(
+                            event_table_predicted_positives,
+                            pl.Series(horizons),
+                            full_event_table,
+                        )
+                        .with_columns(
+                            pl.lit(chosen_cutoff).alias("chosen_cutoff"),
+                            pl.lit(stratification_criteria)
+                            .alias("stratified_by")
+                            .cast(pl.Enum(["probability_threshold", "ppcr"])),
+                        )
+                        .join(
+                            counts_per_strata_predicted_positives,
+                            on=["stratified_by"],
+                            how="left",
+                        )
+                        .with_columns(
+                            [
+                                (
+                                    pl.col("state_occupancy_probability_0")
+                                    * pl.col("strata_count")
+                                ).alias("real_negatives_est"),
+                                (
+                                    pl.col("state_occupancy_probability_1")
+                                    * pl.col("strata_count")
+                                ).alias("real_positives_est"),
+                                (
+                                    pl.col("state_occupancy_probability_2")
+                                    * pl.col("strata_count")
+                                ).alias("real_competing_est"),
+                            ]
+                        )
                     )
-                    .with_columns(
-                        pl.lit(chosen_cutoff).alias("chosen_cutoff"),
-                        pl.lit(stratification_criteria)
-                        .alias("stratified_by")
-                        .cast(pl.Enum(["probability_threshold", "ppcr"])),
-                    )
-                    .join(
-                        counts_per_strata_predicted_positives,
-                        on=["stratified_by"],
-                        how="left",
-                    )
-                    .with_columns(
+                    .select(
                         [
-                            (
-                                pl.col("state_occupancy_probability_0")
-                                * pl.col("strata_count")
-                            ).alias("real_negatives_est"),
-                            (
-                                pl.col("state_occupancy_probability_1")
-                                * pl.col("strata_count")
-                            ).alias("real_positives_est"),
-                            (
-                                pl.col("state_occupancy_probability_2")
-                                * pl.col("strata_count")
-                            ).alias("real_competing_est"),
+                            "strata",
+                            "times",
+                            "chosen_cutoff",
+                            "real_negatives_est",
+                            "real_positives_est",
+                            "real_competing_est",
+                            "estimate_origin",
                         ]
                     )
+                    .with_columns([pl.col("times").alias("fixed_time_horizon")])
                 )
-                .select(
-                    [
-                        "strata",
-                        # "stratified_by",
-                        "times",
-                        "chosen_cutoff",
-                        "real_negatives_est",
-                        "real_positives_est",
-                        "real_competing_est",
-                        "estimate_origin",
-                    ]
-                )
-                .with_columns([pl.col("times").alias("fixed_time_horizon")])
-            )
+            else:
+                aj_estimate_predicted_positives = pl.DataFrame(schema=empty_aj_schema)
 
-            aj_estimate_predicted_negatives = (
-                (
-                    predict_aj_estimates(
-                        event_table_predicted_negatives,
-                        pl.Series(horizons),
-                        full_event_table,
+            if predicted_negatives.height > 0:
+                event_table_predicted_negatives = prepare_event_table(
+                    predicted_negatives
+                )
+                aj_estimate_predicted_negatives = (
+                    (
+                        predict_aj_estimates(
+                            event_table_predicted_negatives,
+                            pl.Series(horizons),
+                            full_event_table,
+                        )
+                        .with_columns(
+                            pl.lit(chosen_cutoff).alias("chosen_cutoff"),
+                            pl.lit(stratification_criteria)
+                            .alias("stratified_by")
+                            .cast(pl.Enum(["probability_threshold", "ppcr"])),
+                        )
+                        .join(
+                            counts_per_strata_predicted_negatives,
+                            on=["stratified_by"],
+                            how="left",
+                        )
+                        .with_columns(
+                            [
+                                (
+                                    pl.col("state_occupancy_probability_0")
+                                    * pl.col("strata_count")
+                                ).alias("real_negatives_est"),
+                                (
+                                    pl.col("state_occupancy_probability_1")
+                                    * pl.col("strata_count")
+                                ).alias("real_positives_est"),
+                                (
+                                    pl.col("state_occupancy_probability_2")
+                                    * pl.col("strata_count")
+                                ).alias("real_competing_est"),
+                            ]
+                        )
                     )
-                    .with_columns(
-                        pl.lit(chosen_cutoff).alias("chosen_cutoff"),
-                        pl.lit(stratification_criteria)
-                        .alias("stratified_by")
-                        .cast(pl.Enum(["probability_threshold", "ppcr"])),
-                    )
-                    .join(
-                        counts_per_strata_predicted_negatives,
-                        on=["stratified_by"],
-                        how="left",
-                    )
-                    .with_columns(
+                    .select(
                         [
-                            (
-                                pl.col("state_occupancy_probability_0")
-                                * pl.col("strata_count")
-                            ).alias("real_negatives_est"),
-                            (
-                                pl.col("state_occupancy_probability_1")
-                                * pl.col("strata_count")
-                            ).alias("real_positives_est"),
-                            (
-                                pl.col("state_occupancy_probability_2")
-                                * pl.col("strata_count")
-                            ).alias("real_competing_est"),
+                            "strata",
+                            "times",
+                            "chosen_cutoff",
+                            "real_negatives_est",
+                            "real_positives_est",
+                            "real_competing_est",
+                            "estimate_origin",
                         ]
                     )
+                    .with_columns([pl.col("times").alias("fixed_time_horizon")])
                 )
-                .select(
-                    [
-                        "strata",
-                        # "stratified_by",
-                        "times",
-                        "chosen_cutoff",
-                        "real_negatives_est",
-                        "real_positives_est",
-                        "real_competing_est",
-                        "estimate_origin",
-                    ]
-                )
-                .with_columns([pl.col("times").alias("fixed_time_horizon")])
-            )
+            else:
+                aj_estimate_predicted_negatives = pl.DataFrame(schema=empty_aj_schema)
 
             aj_estimates_predicted_negatives = pl.concat(
                 [aj_estimates_predicted_negatives, aj_estimate_predicted_negatives],
