@@ -98,32 +98,19 @@ def _extract_excluded_events(
     censoring_heuristic: str,
     competing_heuristic: str,
 ) -> pl.DataFrame:
-    horizons_df = pl.DataFrame({"times": fixed_time_horizons}).sort("times")
-
-    excluded_events = horizons_df.join_asof(
-        event_table.with_columns(
-            pl.col("count_0").cum_sum().cast(pl.Float64).alias("real_censored_est"),
-            pl.col("count_2").cum_sum().cast(pl.Float64).alias("real_competing_est"),
-        ).select(
-            pl.col("times"),
-            pl.col("real_censored_est"),
-            pl.col("real_competing_est"),
-        ),
-        left_on="times",
-        right_on="times",
-    ).with_columns([pl.col("times").alias("fixed_time_horizon")])
-
-    if censoring_heuristic != "excluded":
-        excluded_events = excluded_events.with_columns(
-            pl.lit(0.0).alias("real_censored_est")
+    rows = []
+    for h in fixed_time_horizons:
+        c_count = float(event_table.filter(pl.col("times") < float(h))["count_0"].sum()) if censoring_heuristic == "excluded" else 0.0
+        comp_count = float(event_table.filter(pl.col("times") <= float(h))["count_2"].sum()) if competing_heuristic == "excluded" else 0.0
+        rows.append(
+            {
+                "fixed_time_horizon": float(h),
+                "real_censored_est": c_count,
+                "real_competing_est": comp_count,
+            }
         )
 
-    if competing_heuristic != "excluded":
-        excluded_events = excluded_events.with_columns(
-            pl.lit(0.0).alias("real_competing_est")
-        )
-
-    return excluded_events
+    return pl.DataFrame(rows)
 
 
 def extract_crude_estimate_polars(data: pl.DataFrame) -> pl.DataFrame:
@@ -498,7 +485,7 @@ def create_adjusted_data(
 def _censored_count(df: pl.DataFrame) -> pl.DataFrame:
     return (
         df.with_columns(
-            ((pl.col("times") <= pl.col("fixed_time_horizon")) & (pl.col("reals") == 0))
+            ((pl.col("times") < pl.col("fixed_time_horizon")) & (pl.col("reals") == 0))
             .cast(pl.Float64)
             .alias("is_censored")
         )
@@ -610,7 +597,10 @@ def _aj_adjusted_events(
     # Special-case: both excluded (faster branch in original)
     if censoring == "excluded" and competing == "excluded":
         non_censored_non_competing = exploded.filter(
-            (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") == 1)
+            ~(
+                ((pl.col("reals") == 0) & (pl.col("times") < pl.col("fixed_time_horizon")))
+                | ((pl.col("reals") == 2) & (pl.col("times") <= pl.col("fixed_time_horizon")))
+            )
         )
 
         adjusted = _aj_estimates_per_horizon(
@@ -669,7 +659,7 @@ def _aj_adjusted_events(
     # - "excluded": remove administratively censored observations (use exploded with filter)
     base_df = (
         exploded.filter(
-            (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
+            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
         )
         if censoring == "excluded"
         else reference_group_data

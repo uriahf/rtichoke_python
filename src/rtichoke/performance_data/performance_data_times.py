@@ -94,7 +94,9 @@ def prepare_performance_data_times(
         performance. Integer inputs are accepted and normalized to floats.
     heuristics_sets : list[Dict], optional
         A list of dictionaries, each specifying how to handle censored data
-        and competing events. The default is
+        and competing events. Under ``censoring_heuristic="excluded"``,
+        observations censored exactly at the evaluation horizon (``time == horizon``)
+        are retained as event-free. The default is
         ``[{"censoring_heuristic": "adjusted",
         "competing_heuristic": "adjusted_as_negative"}]``.
     stratified_by : Sequence[str], optional
