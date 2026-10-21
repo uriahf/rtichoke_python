@@ -156,7 +156,9 @@ def create_calibration_curve_times(
         List of prediction horizons (times) at which to evaluate calibration.
     heuristics_sets : List[Dict[str, str]]
         List of heuristic dictionaries defining censoring and competing risk
-        adjustments.
+        adjustments. Note: under ``censoring_heuristic="excluded"``, observations
+        censored exactly at the evaluation horizon (``time == horizon``) are
+        retained as event-free.
     calibration_type : str, optional
         Type of calibration plot, either ``"discrete"`` (binned) or ``"smooth"``.
         Defaults to ``"discrete"``.
@@ -1145,7 +1147,7 @@ def _apply_heuristics_and_censoring(
 
     # Heuristics for events before or at horizon
     if censoring_heuristic == "excluded":
-        df_adj = df_adj.filter(~((pl.col("real") == 0) & (pl.col("time") <= horizon)))
+        df_adj = df_adj.filter(~((pl.col("real") == 0) & (pl.col("time") < horizon)))
 
     if competing_heuristic == "excluded":
         df_adj = df_adj.filter(~((pl.col("real") == 2) & (pl.col("time") <= horizon)))

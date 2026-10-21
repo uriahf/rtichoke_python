@@ -47,11 +47,13 @@ def test_censoring_excluded(sample_data):
     result = _apply_heuristics_and_censoring(
         sample_data, 10, "excluded", "adjusted_as_negative"
     )
-    # Excludes censored at times 2, 10. Admin censors time > 10. Competing at 3,9 -> 0.
+    # Excludes censored at time 2 (time < 10).
+    # Censored at time 10 (time == 10) is retained as event-free.
+    # Admin censors time > 10. Competing at 3, 9 -> 0.
     expected = pl.DataFrame(
         {
-            "real": [1, 0, 1, 0, 0],
-            "time": [1, 3, 8, 9, 12],
+            "real": [1, 0, 1, 0, 0, 0],
+            "time": [1, 3, 8, 9, 10, 12],
         }
     )
     assert_frame_equal(result.sort("time"), expected.sort("time"))
