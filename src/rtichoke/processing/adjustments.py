@@ -100,8 +100,16 @@ def _extract_excluded_events(
 ) -> pl.DataFrame:
     rows = []
     for h in fixed_time_horizons:
-        c_count = float(event_table.filter(pl.col("times") < float(h))["count_0"].sum()) if censoring_heuristic == "excluded" else 0.0
-        comp_count = float(event_table.filter(pl.col("times") <= float(h))["count_2"].sum()) if competing_heuristic == "excluded" else 0.0
+        c_count = (
+            float(event_table.filter(pl.col("times") < float(h))["count_0"].sum())
+            if censoring_heuristic == "excluded"
+            else 0.0
+        )
+        comp_count = (
+            float(event_table.filter(pl.col("times") <= float(h))["count_2"].sum())
+            if competing_heuristic == "excluded"
+            else 0.0
+        )
         rows.append(
             {
                 "fixed_time_horizon": float(h),
@@ -598,8 +606,14 @@ def _aj_adjusted_events(
     if censoring == "excluded" and competing == "excluded":
         non_censored_non_competing = exploded.filter(
             ~(
-                ((pl.col("reals") == 0) & (pl.col("times") < pl.col("fixed_time_horizon")))
-                | ((pl.col("reals") == 2) & (pl.col("times") <= pl.col("fixed_time_horizon")))
+                (
+                    (pl.col("reals") == 0)
+                    & (pl.col("times") < pl.col("fixed_time_horizon"))
+                )
+                | (
+                    (pl.col("reals") == 2)
+                    & (pl.col("times") <= pl.col("fixed_time_horizon"))
+                )
             )
         )
 
