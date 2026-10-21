@@ -43,7 +43,7 @@ Follow-up times corresponding to `reals`.
 List of prediction horizons (times) at which to evaluate calibration.
 
 `heuristics_sets: List[Dict[str, str]]`  
-List of heuristic dictionaries defining censoring and competing risk adjustments.
+List of heuristic dictionaries defining censoring and competing risk adjustments. Note: under `censoring_heuristic="excluded"`, observations censored exactly at the evaluation horizon (`time == horizon`) are retained as event-free.
 
 `calibration_type: str = ``"discrete"`  
 Type of calibration plot, either `"discrete"` (binned) or `"smooth"`. Defaults to `"discrete"`.

@@ -41,7 +41,7 @@ A list of numeric time points at which to evaluate the model's performance. Inte
 
 `heuristics_sets: list[Dict] = [{``"censoring_heuristic": `<span class="st">`"adjusted"``, ``"competing_heuristic"``: ``"adjusted_as_negative"``}]`\
 </span>  
-A list of dictionaries, each specifying how to handle censored data and competing events. The default is `[{"censoring_heuristic": "adjusted", "competing_heuristic": "adjusted_as_negative"}]`.
+A list of dictionaries, each specifying how to handle censored data and competing events. Under `censoring_heuristic="excluded"`, observations censored exactly at the evaluation horizon (`time == horizon`) are retained as event-free. The default is `[{"censoring_heuristic": "adjusted", "competing_heuristic": "adjusted_as_negative"}]`.
 
 `stratified_by: Sequence[str] = (`<span class="st">`"probability_threshold",)`\
 </span>  

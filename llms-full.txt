@@ -129,7 +129,9 @@ fixed_time_horizons : list[float]
     performance. Integer inputs are accepted and normalized to floats.
 heuristics_sets : list[Dict], optional
     A list of dictionaries, each specifying how to handle censored data
-    and competing events. The default is
+    and competing events. Under ``censoring_heuristic="excluded"``,
+    observations censored exactly at the evaluation horizon (``time == horizon``)
+    are retained as event-free. The default is
     ``[{"censoring_heuristic": "adjusted",
     "competing_heuristic": "adjusted_as_negative"}]``.
 stratified_by : Sequence[str], optional
@@ -666,7 +668,9 @@ fixed_time_horizons : List[float]
     List of prediction horizons (times) at which to evaluate calibration.
 heuristics_sets : List[Dict[str, str]]
     List of heuristic dictionaries defining censoring and competing risk
-    adjustments.
+    adjustments. Note: under ``censoring_heuristic="excluded"``, observations
+    censored exactly at the evaluation horizon (``time == horizon``) are
+    retained as event-free.
 calibration_type : str, optional
     Type of calibration plot, either ``"discrete"`` (binned) or ``"smooth"``.
     Defaults to ``"discrete"``.
