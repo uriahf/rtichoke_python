@@ -193,7 +193,7 @@ def _compute_population_event_risk_times(
 
     if censoring_heuristic == "excluded":
         df = df.filter(
-            (pl.col("times") > pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
+            (pl.col("times") >= pl.col("fixed_time_horizon")) | (pl.col("reals") > 0)
         )
 
     if competing_heuristic == "excluded":
