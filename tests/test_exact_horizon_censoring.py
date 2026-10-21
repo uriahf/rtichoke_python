@@ -68,6 +68,8 @@ def test_fixture_a_exact_horizon_censoring_semantics(fixture_a_data):
         by=0.1,
     )
 
+    assert binned_df.height > 0
+
     # 1. Subject C (censored at time 5) retention/exclusion assertions
     # Under censoring_heuristic="excluded", at horizon 5, Subject C (time 5.0) is retained.
     # At horizon 10, Subject C (time 5.0 < 10.0) is excluded.
