@@ -13,6 +13,15 @@ include_in_header:
   - text: |
       <script>
       document.addEventListener('DOMContentLoaded', () => {
+        const brand = document.querySelector('a.navbar-brand');
+        if (brand && !brand.querySelector('.rtichoke-brand-logo')) {
+          const logo = document.createElement('img');
+          logo.className = 'rtichoke-brand-logo';
+          logo.src = 'https://raw.githubusercontent.com/uriahf/rtichoke/main/man/figures/logo.png';
+          logo.alt = '';
+          brand.prepend(logo);
+        }
+
         const nav = document.querySelector('nav.navbar ul.navbar-nav.me-auto');
         if (!nav || nav.querySelector('[data-rtichoke-guides-link]')) return;
 
