@@ -26,13 +26,19 @@ def create_aj_data(
 
     exploded = assign_and_explode_polars(reference_group_data, fixed_time_horizons)
 
-    event_table = prepare_event_table(reference_group_data)
-
-    # TODO: solve strata in the pipeline
-
-    excluded_events = _extract_excluded_events(
-        event_table, fixed_time_horizons, censoring_heuristic, competing_heuristic
-    )
+    if reference_group_data.height > 0:
+        event_table = prepare_event_table(reference_group_data)
+        excluded_events = _extract_excluded_events(
+            event_table, fixed_time_horizons, censoring_heuristic, competing_heuristic
+        )
+    else:
+        excluded_events = pl.DataFrame(
+            {
+                "fixed_time_horizon": [float(h) for h in fixed_time_horizons],
+                "real_censored_est": [0.0] * len(fixed_time_horizons),
+                "real_competing_est": [0.0] * len(fixed_time_horizons),
+            }
+        )
 
     aj_dfs = []
     for rscope in risk_set_scope:
@@ -177,17 +183,53 @@ def extract_aj_estimate_by_cutoffs(
                 mask_predicted_negatives
             )
 
-            event_table_predicted_positives = prepare_event_table(predicted_positives)
-            event_table_predicted_negatives = prepare_event_table(predicted_negatives)
+            if predicted_positives.height > 0:
+                event_table_predicted_positives = prepare_event_table(
+                    predicted_positives
+                )
+                aj_pos_raw = predict_aj_estimates(
+                    event_table_predicted_positives,
+                    pl.Series(horizons),
+                    full_event_table,
+                )
+            else:
+                aj_pos_raw = pl.DataFrame(
+                    {
+                        "times": [float(h) for h in horizons],
+                        "state_occupancy_probability_0": [1.0] * len(horizons),
+                        "state_occupancy_probability_1": [0.0] * len(horizons),
+                        "state_occupancy_probability_2": [0.0] * len(horizons),
+                        "estimate_origin": pl.Series(
+                            ["fixed_time_horizons"] * len(horizons)
+                        ).cast(pl.Enum(["fixed_time_horizons", "event_table"])),
+                    }
+                )
+
+            if predicted_negatives.height > 0:
+                event_table_predicted_negatives = prepare_event_table(
+                    predicted_negatives
+                )
+                aj_neg_raw = predict_aj_estimates(
+                    event_table_predicted_negatives,
+                    pl.Series(horizons),
+                    full_event_table,
+                )
+            else:
+                aj_neg_raw = pl.DataFrame(
+                    {
+                        "times": [float(h) for h in horizons],
+                        "state_occupancy_probability_0": [1.0] * len(horizons),
+                        "state_occupancy_probability_1": [0.0] * len(horizons),
+                        "state_occupancy_probability_2": [0.0] * len(horizons),
+                        "estimate_origin": pl.Series(
+                            ["fixed_time_horizons"] * len(horizons)
+                        ).cast(pl.Enum(["fixed_time_horizons", "event_table"])),
+                    }
+                )
 
             aj_estimate_predicted_positives = (
                 (
-                    predict_aj_estimates(
-                        event_table_predicted_positives,
-                        pl.Series(horizons),
-                        full_event_table,
-                    )
-                    .with_columns(
+                    aj_pos_raw.with_columns(
                         pl.lit(chosen_cutoff).alias("chosen_cutoff"),
                         pl.lit(stratification_criteria)
                         .alias("stratified_by")
@@ -232,12 +274,7 @@ def extract_aj_estimate_by_cutoffs(
 
             aj_estimate_predicted_negatives = (
                 (
-                    predict_aj_estimates(
-                        event_table_predicted_negatives,
-                        pl.Series(horizons),
-                        full_event_table,
-                    )
-                    .with_columns(
+                    aj_neg_raw.with_columns(
                         pl.lit(chosen_cutoff).alias("chosen_cutoff"),
                         pl.lit(stratification_criteria)
                         .alias("stratified_by")
@@ -300,6 +337,18 @@ def extract_aj_estimate_by_cutoffs(
 
 def extract_aj_estimate_for_strata(data_to_adjust, horizons, full_event_table: bool):
     n = data_to_adjust.height
+    if n == 0:
+        return pl.DataFrame(
+            {
+                "strata": [],
+                "times": [],
+                "fixed_time_horizon": [],
+                "real_negatives_est": [],
+                "real_positives_est": [],
+                "real_competing_est": [],
+                "estimate_origin": [],
+            }
+        )
 
     event_table = prepare_event_table(data_to_adjust)
 
