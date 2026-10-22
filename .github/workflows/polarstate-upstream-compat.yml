@@ -1,0 +1,29 @@
+name: Upstream polarstate compatibility verification
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  full-regression-suite:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install locked rtichoke dependencies
+        run: uv sync --all-extras --dev --frozen
+      - name: Replace only polarstate with upstream compatibility commit
+        run: |
+          uv pip install --python .venv/bin/python --no-deps "git+https://github.com/uriahf/polarstate.git@7d2cfb080af2cbb2a1594a7cd6b9af4051c7f52a"
+          uv run --no-sync python -c "import polarstate; from importlib.metadata import version; print(version('polarstate')); print(polarstate.__file__)"
+      - name: Execute all existing tests with upstream patch
+        run: uv run --no-sync pytest tests -q
