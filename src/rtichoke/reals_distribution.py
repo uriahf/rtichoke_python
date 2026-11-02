@@ -330,9 +330,6 @@ def create_reals_distribution_steps(
             step_sub = data.filter(pl.col(step_col) == step_val)
             observed_reals = step_sub[reals_col].drop_nulls()
 
-            if observed_reals.len() == 0:
-                continue
-
             # Count occurrences of each category
             counts_df = observed_reals.cast(pl.String).value_counts()
             counts_dict = dict(

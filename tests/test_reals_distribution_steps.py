@@ -231,6 +231,30 @@ def test_aj_scenarios_and_independent_validation():
     ]
 
 
+def test_step_with_all_missing_outcomes_is_preserved_in_excluded():
+    # Step 1 has only missing outcomes; it must be preserved with 0 counts for all states
+    df = pl.DataFrame(
+        {
+            "id": [1, 1, 1, 2, 2, 2],
+            "step": [0, 1, 2, 0, 1, 2],
+            "reals": ["None", None, "Moderate", "None", None, "Mild"],
+        }
+    )
+    chart = create_reals_distribution_steps(
+        df,
+        reals_order=["None", "Mild", "Moderate"],
+        censoring_heuristic="excluded",
+    )
+    dists = chart.spec["stateDistributions"]
+    assert len(dists) == 3
+    assert dists[1]["horizon"] == 1
+    assert dists[1]["states"] == [
+        {"stateId": "None", "label": "None", "count": 0},
+        {"stateId": "Mild", "label": "Mild", "count": 0},
+        {"stateId": "Moderate", "label": "Moderate", "count": 0},
+    ]
+
+
 def test_baseline_only_subjects():
     # Patient 2 observed only at step 0
     df = pl.DataFrame(

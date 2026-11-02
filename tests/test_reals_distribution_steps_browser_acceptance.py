@@ -90,6 +90,14 @@ def test_reals_distribution_steps_browser_acceptance(tmp_path: Path):
 
             assert page.locator("svg").count() >= 1
             assert len(errors) == 0, f"Console errors in excluded mode: {errors}"
+
+            # Step-axis validation and slider interaction
+            text_excl = page.locator("body").inner_text()
+            assert "Step" in text_excl
+            assert "State occupancy (%)" in text_excl
+            assert "Outcome Distribution" in text_excl
+            assert page.locator("input[type='range']").count() == 1
+
             page.close()
 
             # Test Adjusted Mode HTML
@@ -111,11 +119,15 @@ def test_reals_distribution_steps_browser_acceptance(tmp_path: Path):
             assert len(errors_adj) == 0, (
                 f"Console errors in adjusted mode: {errors_adj}"
             )
+
+            text_adj = page_adj.locator("body").inner_text()
+            assert "Step" in text_adj
+            assert "Occupancy (%)" in text_adj
             page_adj.close()
 
             browser.close()
 
-    # Verify direct file:// loading
+    # Verify direct file:// loading and step horizon switching
     with sync_playwright() as p:
         browser = p.chromium.launch(
             headless=True,
@@ -135,6 +147,24 @@ def test_reals_distribution_steps_browser_acceptance(tmp_path: Path):
 
         assert page.locator("svg").count() >= 1
         assert len(errors) == 0, f"Console errors found over file://: {errors}"
+
+        # Initial active step is step 2
+        initial_text = page.locator("body").inner_text()
+        assert "Active Step: Step = 2" in initial_text
+
+        # Change step slider position to index 1 (Step 1)
+        slider = page.locator("input[type='range']")
+        assert slider.count() == 1
+        page.evaluate("""
+            const el = document.querySelector("input[type='range']");
+            el.value = 1;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        """)
+        updated_text = page.locator("body").inner_text()
+        assert "Active Step: Step = 1" in updated_text
+        assert updated_text != initial_text
+
         browser.close()
 
 
@@ -180,4 +210,11 @@ def test_reals_distribution_nominal_browser_acceptance(tmp_path: Path):
 
         assert page.locator("svg").count() >= 1
         assert len(errors) == 0, f"Console errors in nominal mode: {errors}"
+
+        text = page.locator("body").inner_text()
+        assert "Red" in text
+        assert "Green" in text
+        assert "Blue" in text
+        assert "Step" in text
+
         browser.close()
