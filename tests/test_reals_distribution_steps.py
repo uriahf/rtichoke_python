@@ -2,6 +2,7 @@
 
 import polars as pl
 import pytest
+
 import rtichoke
 from rtichoke.reals_distribution import create_reals_distribution_steps
 
@@ -304,7 +305,9 @@ def test_independent_multistate_aj_reference_with_right_censoring():
         ref_data = json.load(f)
 
     # Validate against checked-in reference fixture
-    for step_str, expected_states in ref_data["occupancy"].items():
+    for step_str, expected_states in ref_data["cases"]["right_censored"][
+        "occupancy"
+    ].items():
         step_int = int(step_str)
         step_dist = dists[step_int]
         step_p = {s["stateId"]: s["estimate"] for s in step_dist["states"]}
