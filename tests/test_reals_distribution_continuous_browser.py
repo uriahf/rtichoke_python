@@ -61,7 +61,6 @@ def test_continuous_heatmap_and_selected_histogram(tmp_path: Path):
         histogram = root.locator(".rtichoke-continuous-histogram-wrapper svg")
         assert heatmap.count() >= 1
         assert histogram.count() >= 1
-        first = histogram.first.inner_text()
         slider = root.locator("input[type='range']")
         assert slider.count() == 1
         assert slider.get_attribute("aria-valuetext") == "0"
