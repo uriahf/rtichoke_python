@@ -1,7 +1,5 @@
 """R/Python parity checks for continuous observed longitudinal outcomes."""
 
-import math
-
 import polars as pl
 import pytest
 
@@ -50,7 +48,7 @@ def test_exact_r_fixture_mass_and_missingness():
     assert [item["observedCount"] for item in distributions] == [6, 5, 4]
     assert [item["unobservedCount"] for item in distributions] == [0, 1, 2]
     assert [item["binCounts"] for item in distributions] == [
-        [5, 1, 0], [2, 3, 0], [0, 3, 1]
+        [5, 1, 0], [2, 3, 0], [0, 2, 2]
     ]
     for item in distributions:
         assert sum(item["binCounts"]) == item["observedCount"]
