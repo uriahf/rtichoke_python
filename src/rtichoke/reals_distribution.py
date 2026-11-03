@@ -322,7 +322,32 @@ def create_reals_distribution_steps(
     renderer: RealsDistributionRenderer = "browser",
     bins: int | Sequence[float] = 10,
 ) -> RtichokeBrowserChart:
-    """Create a discrete-step reals/outcome distribution browser chart."""
+    """Create observed categorical, ordinal, or continuous outcome distributions.
+
+    For continuous data, set `reals_scale="continuous"` explicitly. The
+    `bins` argument accepts a positive number of equal-width bins or strictly
+    increasing numeric edges. Bins are left-closed and right-open, except that
+    the last bin includes its upper edge. Each supplied step retains its
+    own observed denominator; absent subject-step rows and missing outcomes
+    are counted as unobserved against the reference population of all IDs.
+
+    Continuous mode uses raw empirical probability mass, not density, and
+    does not support adjusted censoring or `reals_order`. The default
+    categorical/ordinal behavior, including Aalen-Johansen adjustment,
+    remains unchanged.
+
+    Example
+    -------
+    >>> import polars as pl
+    >>> from rtichoke import create_reals_distribution_steps
+    >>> data = pl.DataFrame({"id": [1, 1, 2, 2], "step": [0, 1, 0, 1],
+    ...                      "reals": [10.0, 20.0, 20.0, 30.0]})
+    >>> chart = create_reals_distribution_steps(
+    ...     data, reals_scale="continuous", bins=[10, 20, 30]
+    ... )
+    >>> chart.spec["type"]
+    'continuous_outcome_distribution'
+    """
     if not isinstance(data, pl.DataFrame):
         raise TypeError(f"data must be a Polars DataFrame, got {type(data).__name__}")
 
