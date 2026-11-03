@@ -198,6 +198,109 @@ def create_reals_distribution_times(
     return RtichokeBrowserChart(spec=spec)
 
 
+def _continuous_outcome_distribution_steps_v2_spec(
+    data: pl.DataFrame,
+    *,
+    id_col: str = "id",
+    step_col: str = "step",
+    reals_col: str = "reals",
+    bins: int | Sequence[float] = 10,
+    title: str = "Outcome Distribution",
+) -> dict[str, Any]:
+    """Prepare R-compatible raw continuous outcome mass across supplied steps."""
+    if not isinstance(data, pl.DataFrame):
+        raise TypeError("data must be a Polars DataFrame")
+
+    missing = [col for col in (id_col, step_col, reals_col) if col not in data.columns]
+    if missing:
+        raise ValueError(f"Missing required columns in DataFrame: {missing}")
+    if data[id_col].null_count():
+        raise ValueError("`id_col` contains missing values.")
+    if data[step_col].null_count():
+        raise ValueError("`step_col` contains missing values.")
+
+    step_values = data[step_col].to_list()
+    if any(
+        isinstance(step, bool)
+        or not isinstance(step, (int, float))
+        or not math.isfinite(step)
+        or step < 0
+        or step != int(step)
+        for step in step_values
+    ):
+        raise ValueError("`step_col` must contain non-missing, non-negative, finite integer values.")
+    if data.select([id_col, step_col]).is_duplicated().any():
+        raise ValueError("Each subject-step combination in `data` must be unique.")
+
+    values = data[reals_col].to_list()
+    if any(value is not None and not isinstance(value, (int, float)) for value in values):
+        raise ValueError("`reals_col` must be numeric.")
+    if any(value is not None and math.isinf(value) for value in values):
+        raise ValueError("`reals_col` contains infinite values (`Inf` or `-Inf`).")
+    observed = [float(value) for value in values if value is not None and not math.isnan(value)]
+    if not observed:
+        raise ValueError("All outcomes in `data` are missing.")
+
+    if isinstance(bins, bool):
+        raise ValueError("Scalar `bins` must be a single positive integer.")
+    if isinstance(bins, (int, float)):
+        if not math.isfinite(bins) or bins <= 0 or bins != int(bins):
+            raise ValueError("Scalar `bins` must be a single positive integer.")
+        k = int(bins)
+        lower, upper = min(observed), max(observed)
+        if lower == upper:
+            lower -= 0.5
+            upper += 0.5
+        edges = np.linspace(lower, upper, k + 1).tolist()
+    else:
+        try:
+            edges = [float(edge) for edge in bins]
+        except (TypeError, ValueError) as err:
+            raise ValueError("`bins` must be numeric bin edges.") from err
+        if len(edges) < 2 or any(not math.isfinite(edge) for edge in edges):
+            raise ValueError("`bins` must contain at least two finite edges.")
+        if any(right <= left for left, right in zip(edges, edges[1:])):
+            raise ValueError("`bins` must be strictly increasing.")
+        if min(observed) < edges[0] or max(observed) > edges[-1]:
+            raise ValueError("Observed outcomes fall outside the explicit `bins` range.")
+        k = len(edges) - 1
+
+    n_reference = data[id_col].n_unique()
+    distributions: list[dict[str, Any]] = []
+    for step in sorted(set(int(value) for value in step_values)):
+        step_values_observed = [
+            float(value)
+            for row_step, value in zip(step_values, values)
+            if row_step == step and value is not None and not math.isnan(value)
+        ]
+        count = len(step_values_observed)
+        bin_counts = [0] * k
+        for value in step_values_observed:
+            index = min(int(np.searchsorted(edges, value, side="right")) - 1, k - 1)
+            bin_counts[index] += 1
+        distributions.append(
+            {
+                "evaluationId": "evaluation-1",
+                "step": step,
+                "referenceSampleSize": n_reference,
+                "observedCount": count,
+                "unobservedCount": n_reference - count,
+                "binCounts": bin_counts,
+            }
+        )
+
+    return {
+        "schemaVersion": "2.0",
+        "type": "continuous_outcome_distribution",
+        "title": title,
+        "xAxisKind": "step",
+        "estimator": "raw",
+        "binEdges": edges,
+        "evaluations": [{"id": "evaluation-1", "population": "population"}],
+        "distributions": distributions,
+    }
+
+
 def create_reals_distribution_steps(
     data: pl.DataFrame,
     *,
@@ -205,10 +308,11 @@ def create_reals_distribution_steps(
     step_col: str = "step",
     reals_col: str = "reals",
     reals_order: Sequence[Any] | None = None,
-    reals_scale: Literal["auto", "nominal", "ordinal"] = "auto",
+    reals_scale: Literal["auto", "nominal", "ordinal", "continuous"] = "auto",
     censoring_heuristic: Literal["excluded", "adjusted"] = "excluded",
     title: str = "Outcome Distribution",
     renderer: RealsDistributionRenderer = "browser",
+    bins: int | Sequence[float] = 10,
 ) -> RtichokeBrowserChart:
     """Create a discrete-step reals/outcome distribution browser chart."""
     if not isinstance(data, pl.DataFrame):
@@ -220,6 +324,22 @@ def create_reals_distribution_steps(
         )
         raise ValueError(
             f"Unsupported renderer {renderer!r}. 'create_reals_distribution_steps' supports {supported}."
+        )
+
+    if reals_scale == "continuous":
+        if reals_order is not None:
+            raise ValueError('`reals_order` is not supported when `reals_scale = "continuous"`.')
+        if censoring_heuristic != "excluded":
+            raise ValueError("Adjusted censoring mode is not supported for continuous outcomes.")
+        return RtichokeBrowserChart(
+            spec=_continuous_outcome_distribution_steps_v2_spec(
+                data,
+                id_col=id_col,
+                step_col=step_col,
+                reals_col=reals_col,
+                bins=bins,
+                title=title,
+            )
         )
 
     if censoring_heuristic not in ("excluded", "adjusted"):
