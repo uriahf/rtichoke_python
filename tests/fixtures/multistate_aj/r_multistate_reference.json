@@ -1,0 +1,282 @@
+{
+  "reference_package": "survival",
+  "version": "3.8.12",
+  "method": "survfit multistate Aalen-Johansen; pstate with empirical initial distribution",
+  "steps": [0, 1, 2],
+  "states": ["A", "B", "C"],
+  "cases": {
+    "complete": {
+      "panel": [
+        {
+          "id": 1,
+          "step": 0,
+          "state": "A"
+        },
+        {
+          "id": 1,
+          "step": 1,
+          "state": "B"
+        },
+        {
+          "id": 1,
+          "step": 2,
+          "state": "C"
+        },
+        {
+          "id": 2,
+          "step": 0,
+          "state": "A"
+        },
+        {
+          "id": 2,
+          "step": 1,
+          "state": "A"
+        },
+        {
+          "id": 2,
+          "step": 2,
+          "state": "B"
+        },
+        {
+          "id": 3,
+          "step": 0,
+          "state": "B"
+        },
+        {
+          "id": 3,
+          "step": 1,
+          "state": "B"
+        },
+        {
+          "id": 3,
+          "step": 2,
+          "state": "B"
+        },
+        {
+          "id": 4,
+          "step": 0,
+          "state": "B"
+        },
+        {
+          "id": 4,
+          "step": 1,
+          "state": "C"
+        },
+        {
+          "id": 4,
+          "step": 2,
+          "state": "C"
+        }
+      ],
+      "intervals": [
+        {
+          "id": 1,
+          "start": 0,
+          "stop": 1,
+          "initial": "A",
+          "event": "B"
+        },
+        {
+          "id": 1,
+          "start": 1,
+          "stop": 2,
+          "initial": "B",
+          "event": "C"
+        },
+        {
+          "id": 2,
+          "start": 0,
+          "stop": 1,
+          "initial": "A",
+          "event": "censor"
+        },
+        {
+          "id": 2,
+          "start": 1,
+          "stop": 2,
+          "initial": "A",
+          "event": "B"
+        },
+        {
+          "id": 3,
+          "start": 0,
+          "stop": 1,
+          "initial": "B",
+          "event": "censor"
+        },
+        {
+          "id": 3,
+          "start": 1,
+          "stop": 2,
+          "initial": "B",
+          "event": "censor"
+        },
+        {
+          "id": 4,
+          "start": 0,
+          "stop": 1,
+          "initial": "B",
+          "event": "C"
+        },
+        {
+          "id": 4,
+          "start": 1,
+          "stop": 2,
+          "initial": "C",
+          "event": "censor"
+        }
+      ],
+      "occupancy": {
+        "0": {
+          "A": 0.5,
+          "B": 0.5,
+          "C": 0
+        },
+        "1": {
+          "A": 0.25,
+          "B": 0.5,
+          "C": 0.25
+        },
+        "2": {
+          "A": 0,
+          "B": 0.5,
+          "C": 0.5
+        }
+      }
+    },
+    "right_censored": {
+      "panel": [
+        {
+          "id": 1,
+          "step": 0,
+          "state": "A"
+        },
+        {
+          "id": 1,
+          "step": 1,
+          "state": "B"
+        },
+        {
+          "id": 1,
+          "step": 2,
+          "state": "C"
+        },
+        {
+          "id": 2,
+          "step": 0,
+          "state": "A"
+        },
+        {
+          "id": 2,
+          "step": 1,
+          "state": "A"
+        },
+        {
+          "id": 2,
+          "step": 2,
+          "state": "B"
+        },
+        {
+          "id": 3,
+          "step": 0,
+          "state": "B"
+        },
+        {
+          "id": 3,
+          "step": 1,
+          "state": "B"
+        },
+        {
+          "id": 4,
+          "step": 0,
+          "state": "B"
+        },
+        {
+          "id": 4,
+          "step": 1,
+          "state": "C"
+        },
+        {
+          "id": 4,
+          "step": 2,
+          "state": "C"
+        }
+      ],
+      "intervals": [
+        {
+          "id": 1,
+          "start": 0,
+          "stop": 1,
+          "initial": "A",
+          "event": "B"
+        },
+        {
+          "id": 1,
+          "start": 1,
+          "stop": 2,
+          "initial": "B",
+          "event": "C"
+        },
+        {
+          "id": 2,
+          "start": 0,
+          "stop": 1,
+          "initial": "A",
+          "event": "censor"
+        },
+        {
+          "id": 2,
+          "start": 1,
+          "stop": 2,
+          "initial": "A",
+          "event": "B"
+        },
+        {
+          "id": 3,
+          "start": 0,
+          "stop": 1,
+          "initial": "B",
+          "event": "censor"
+        },
+        {
+          "id": 4,
+          "start": 0,
+          "stop": 1,
+          "initial": "B",
+          "event": "C"
+        },
+        {
+          "id": 4,
+          "start": 1,
+          "stop": 2,
+          "initial": "C",
+          "event": "censor"
+        },
+        {
+          "id": 3,
+          "start": 1,
+          "stop": 1.5,
+          "initial": "B",
+          "event": "censor"
+        }
+      ],
+      "occupancy": {
+        "0": {
+          "A": 0.5,
+          "B": 0.5,
+          "C": 0
+        },
+        "1": {
+          "A": 0.25,
+          "B": 0.5,
+          "C": 0.25
+        },
+        "2": {
+          "A": 0,
+          "B": 0.25,
+          "C": 0.75
+        }
+      }
+    }
+  }
+}

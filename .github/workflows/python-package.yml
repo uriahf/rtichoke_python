@@ -8,6 +8,26 @@ on:
     branches: ["main"]
 
 jobs:
+  r-multistate-reference:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+      - name: Install independent R reference dependencies
+        run: Rscript -e 'install.packages(c("survival", "jsonlite"), repos="https://cloud.r-project.org")'
+      - run: uv sync --all-extras --dev
+      - name: Regenerate R reference and compare Python AJ
+        env:
+          RSCRIPT: Rscript
+        run: uv run pytest tests/test_multistate_r_reference.py -v
+
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -52,7 +72,7 @@ jobs:
           prefix = "rtichoke/_vendor/rtichoke_viz/"
           required = {
               f"{prefix}VENDORED_FROM",
-              f"{prefix}rtichoke-viz-0.23.2.tar.gz",
+              f"{prefix}rtichoke-viz-0.24.0.tar.gz",
               f"{prefix}rtichoke-viz.js",
               f"{prefix}rtichoke-viz.css",
               f"{prefix}rtichoke-viz.schema.json",
@@ -60,6 +80,7 @@ jobs:
               f"{prefix}rtichoke-viz-report.schema.json",
           }
           assert required <= names
+          assert f"{prefix}rtichoke-viz-0.23.2.tar.gz" not in names
           assert f"{prefix}rtichoke-viz-0.23.0.tar.gz" not in names
           assert f"{prefix}rtichoke-viz-0.22.3.tar.gz" not in names
           assert f"{prefix}rtichoke-viz-0.22.2.tar.gz" not in names

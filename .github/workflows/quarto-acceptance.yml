@@ -17,6 +17,8 @@ on:
       - "tests/test_decision_curve_browser_acceptance.py"
       - "tests/test_probs_histogram_browser_acceptance.py"
       - "src/rtichoke/probs_distribution.py"
+      - "src/rtichoke/reals_distribution.py"
+      - "tests/test_reals_distribution_steps_browser_acceptance.py"
       - ".github/workflows/quarto-acceptance.yml"
   pull_request:
     branches: ["main"]
@@ -34,6 +36,8 @@ on:
       - "tests/test_decision_curve_browser_acceptance.py"
       - "tests/test_probs_histogram_browser_acceptance.py"
       - "src/rtichoke/probs_distribution.py"
+      - "src/rtichoke/reals_distribution.py"
+      - "tests/test_reals_distribution_steps_browser_acceptance.py"
       - ".github/workflows/quarto-acceptance.yml"
   workflow_dispatch:
 
@@ -70,3 +74,4 @@ jobs:
           tests/test_summary_report_browser.py
           tests/test_summary_report_times_browser.py
           tests/test_probs_histogram_browser_acceptance.py
+          tests/test_reals_distribution_steps_browser_acceptance.py

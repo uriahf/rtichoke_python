@@ -1,0 +1,2 @@
+# Preserve immutable release bytes on Windows as well as Unix checkouts.
+src/rtichoke/_vendor/rtichoke_viz/* -text
