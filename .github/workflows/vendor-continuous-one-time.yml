@@ -1,0 +1,57 @@
+name: One-time vendor verified continuous renderer
+on:
+  push:
+    branches: [feat/continuous-outcome-steps-parity]
+    paths:
+      - .github/workflows/vendor-continuous-one-time.yml
+permissions:
+  contents: write
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch exact R-tested renderer archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=src/rtichoke/_vendor/rtichoke_viz
+          curl -fL --retry 3 -o "$dir/rtichoke-viz-0.24.1.tar.gz" \
+            https://raw.githubusercontent.com/uriahf/rtichoke/main/inst/rtichoke-viz/rtichoke-viz-0.24.1.tar.gz
+          echo "33221daee8f440e4f93754b900b8e36ead7d99f386aa705ffe801985c9f03699  $dir/rtichoke-viz-0.24.1.tar.gz" | sha256sum --check
+          mkdir -p /tmp/rtichoke-viz-bundle
+          tar -xzf "$dir/rtichoke-viz-0.24.1.tar.gz" -C /tmp/rtichoke-viz-bundle
+          root=/tmp/rtichoke-viz-bundle/rtichoke-viz-0.24.1
+          grep -Fx 'version=0.24.1' "$root/MANIFEST"
+          grep -Fx 'commit=c415f509841fe8b624cdbca4f0bd75c4e76e6ed3' "$root/MANIFEST"
+          for asset in rtichoke-viz.js rtichoke-viz.css rtichoke-viz.schema.json rtichoke-viz-v2.schema.json rtichoke-viz-report.schema.json; do
+            cp "$root/$asset" "$dir/$asset"
+          done
+          grep -q 'renderContinuousOutcomeDistribution' "$dir/rtichoke-viz.js"
+          cat > "$dir/VENDORED_FROM" <<'EOF'
+          repository=https://github.com/uriahf/rtichoke_viz
+          release=v0.24.1
+          snapshot=not-an-immutable-release
+          source_commit=c415f509841fe8b624cdbca4f0bd75c4e76e6ed3
+          archive=rtichoke-viz-0.24.1.tar.gz
+          sha256=33221daee8f440e4f93754b900b8e36ead7d99f386aa705ffe801985c9f03699
+          EOF
+          git rm -f "$dir/rtichoke-viz-0.24.0.tar.gz"
+      - name: Format, test, and commit verified assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv sync --all-extras --dev
+          uv run ruff format src/rtichoke/reals_distribution.py tests/test_reals_distribution_continuous.py tests/test_rtichoke_viz_vendor.py
+          uv run ruff check src/rtichoke/reals_distribution.py tests/test_reals_distribution_continuous.py tests/test_rtichoke_viz_vendor.py
+          uv run pytest tests/test_reals_distribution_continuous.py tests/test_rtichoke_viz_vendor.py -q
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/rtichoke/reals_distribution.py src/rtichoke/_vendor/rtichoke_viz/ tests/test_reals_distribution_continuous.py tests/test_rtichoke_viz_vendor.py
+          git commit -m 'build: vendor R-tested continuous renderer and format Python'
+          git push origin HEAD:feat/continuous-outcome-steps-parity
