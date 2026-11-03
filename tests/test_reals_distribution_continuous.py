@@ -7,12 +7,23 @@ from rtichoke import create_reals_distribution_steps
 
 # Exact values from rtichoke/data-raw/continuous_outcomes_steps.R.
 R_ROWS = [
-    (1, 0, 10), (1, 1, 15), (1, 3, 20),
-    (2, 0, 12), (2, 1, 17), (2, 3, 25),
-    (3, 0, 14), (3, 1, None), (3, 3, 30),
-    (4, 0, 16), (4, 1, 20), (4, 3, None),
-    (5, 0, 18), (5, 1, 22), (5, 3, 35),
-    (6, 0, 20), (6, 1, 24),
+    (1, 0, 10),
+    (1, 1, 15),
+    (1, 3, 20),
+    (2, 0, 12),
+    (2, 1, 17),
+    (2, 3, 25),
+    (3, 0, 14),
+    (3, 1, None),
+    (3, 3, 30),
+    (4, 0, 16),
+    (4, 1, 20),
+    (4, 3, None),
+    (5, 0, 18),
+    (5, 1, 22),
+    (5, 3, 35),
+    (6, 0, 20),
+    (6, 1, 24),
 ]
 
 
@@ -48,21 +59,27 @@ def test_exact_r_fixture_mass_and_missingness():
     assert [item["observedCount"] for item in distributions] == [6, 5, 4]
     assert [item["unobservedCount"] for item in distributions] == [0, 1, 2]
     assert [item["binCounts"] for item in distributions] == [
-        [5, 1, 0], [2, 3, 0], [0, 2, 2]
+        [5, 1, 0],
+        [2, 3, 0],
+        [0, 2, 2],
     ]
     for item in distributions:
         assert sum(item["binCounts"]) == item["observedCount"]
 
 
 def test_boundary_assignment_and_equal_width_bins():
-    df = pl.DataFrame({"id": [1, 2, 3, 4], "step": [2] * 4, "reals": [0., 1., 2., 3.]})
+    df = pl.DataFrame(
+        {"id": [1, 2, 3, 4], "step": [2] * 4, "reals": [0.0, 1.0, 2.0, 3.0]}
+    )
     result = spec(df, [0, 1, 2, 3])
     assert result["distributions"][0]["binCounts"] == [1, 1, 2]
     assert spec(df, 3)["binEdges"] == [0.0, 1.0, 2.0, 3.0]
 
 
 def test_constant_values_and_zero_observed_supplied_step():
-    df = pl.DataFrame({"id": [1, 1, 2, 2], "step": [0, 1, 0, 1], "reals": [7., None, 7., None]})
+    df = pl.DataFrame(
+        {"id": [1, 1, 2, 2], "step": [0, 1, 0, 1], "reals": [7.0, None, 7.0, None]}
+    )
     result = spec(df, 2)
     assert result["binEdges"] == [6.5, 7.0, 7.5]
     assert result["distributions"][0]["binCounts"] == [0, 2]
@@ -73,15 +90,15 @@ def test_constant_values_and_zero_observed_supplied_step():
 @pytest.mark.parametrize(
     ("rows", "bins", "error"),
     [
-        ([(1, 0, 1.), (1, 0, 2.)], 3, "unique"),
-        ([(None, 0, 1.)], 3, "missing values"),
-        ([(1, None, 1.)], 3, "missing values"),
-        ([(1, -1, 1.)], 3, "non-negative"),
-        ([(1, 1.5, 1.)], 3, "integer"),
+        ([(1, 0, 1.0), (1, 0, 2.0)], 3, "unique"),
+        ([(None, 0, 1.0)], 3, "missing values"),
+        ([(1, None, 1.0)], 3, "missing values"),
+        ([(1, -1, 1.0)], 3, "non-negative"),
+        ([(1, 1.5, 1.0)], 3, "integer"),
         ([(1, 0, float("inf"))], 3, "infinite"),
-        ([(1, 0, 1.)], 0, "positive integer"),
-        ([(1, 0, 1.)], [1, 1, 2], "strictly increasing"),
-        ([(1, 0, 1.)], [2, 3], "outside"),
+        ([(1, 0, 1.0)], 0, "positive integer"),
+        ([(1, 0, 1.0)], [1, 1, 2], "strictly increasing"),
+        ([(1, 0, 1.0)], [2, 3], "outside"),
     ],
 )
 def test_invalid_data_and_bins(rows, bins, error):
@@ -91,7 +108,13 @@ def test_invalid_data_and_bins(rows, bins, error):
 
 
 def test_all_missing_values_and_missing_column():
-    df = pl.DataFrame({"id": [1, 2], "step": [0, 0], "reals": pl.Series([None, None], dtype=pl.Float64)})
+    df = pl.DataFrame(
+        {
+            "id": [1, 2],
+            "step": [0, 0],
+            "reals": pl.Series([None, None], dtype=pl.Float64),
+        }
+    )
     with pytest.raises(ValueError, match="All outcomes"):
         spec(df)
     with pytest.raises(ValueError, match="Missing required columns"):
@@ -100,9 +123,13 @@ def test_all_missing_values_and_missing_column():
 
 def test_continuous_rejects_order_and_adjustment():
     with pytest.raises(ValueError, match="reals_order"):
-        create_reals_distribution_steps(fixture(), reals_scale="continuous", reals_order=[1, 2])
+        create_reals_distribution_steps(
+            fixture(), reals_scale="continuous", reals_order=[1, 2]
+        )
     with pytest.raises(ValueError, match="Adjusted censoring"):
-        create_reals_distribution_steps(fixture(), reals_scale="continuous", censoring_heuristic="adjusted")
+        create_reals_distribution_steps(
+            fixture(), reals_scale="continuous", censoring_heuristic="adjusted"
+        )
 
 
 def test_numeric_auto_remains_ordinal():
@@ -112,7 +139,9 @@ def test_numeric_auto_remains_ordinal():
 
 
 def test_renderer_exports_continuous(tmp_path):
-    chart = create_reals_distribution_steps(fixture(), reals_scale="continuous", bins=[10, 20, 30, 40])
+    chart = create_reals_distribution_steps(
+        fixture(), reals_scale="continuous", bins=[10, 20, 30, 40]
+    )
     output = chart.write_html(tmp_path / "chart.html")
     html = output.read_text()
     assert "renderContinuousOutcomeDistribution" in html

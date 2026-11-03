@@ -228,16 +228,22 @@ def _continuous_outcome_distribution_steps_v2_spec(
         or step != int(step)
         for step in step_values
     ):
-        raise ValueError("`step_col` must contain non-missing, non-negative, finite integer values.")
+        raise ValueError(
+            "`step_col` must contain non-missing, non-negative, finite integer values."
+        )
     if data.select([id_col, step_col]).is_duplicated().any():
         raise ValueError("Each subject-step combination in `data` must be unique.")
 
     values = data[reals_col].to_list()
-    if any(value is not None and not isinstance(value, (int, float)) for value in values):
+    if any(
+        value is not None and not isinstance(value, (int, float)) for value in values
+    ):
         raise ValueError("`reals_col` must be numeric.")
     if any(value is not None and math.isinf(value) for value in values):
         raise ValueError("`reals_col` contains infinite values (`Inf` or `-Inf`).")
-    observed = [float(value) for value in values if value is not None and not math.isnan(value)]
+    observed = [
+        float(value) for value in values if value is not None and not math.isnan(value)
+    ]
     if not observed:
         raise ValueError("All outcomes in `data` are missing.")
 
@@ -262,7 +268,9 @@ def _continuous_outcome_distribution_steps_v2_spec(
         if any(right <= left for left, right in zip(edges, edges[1:])):
             raise ValueError("`bins` must be strictly increasing.")
         if min(observed) < edges[0] or max(observed) > edges[-1]:
-            raise ValueError("Observed outcomes fall outside the explicit `bins` range.")
+            raise ValueError(
+                "Observed outcomes fall outside the explicit `bins` range."
+            )
         k = len(edges) - 1
 
     n_reference = data[id_col].n_unique()
@@ -328,9 +336,13 @@ def create_reals_distribution_steps(
 
     if reals_scale == "continuous":
         if reals_order is not None:
-            raise ValueError('`reals_order` is not supported when `reals_scale = "continuous"`.')
+            raise ValueError(
+                '`reals_order` is not supported when `reals_scale = "continuous"`.'
+            )
         if censoring_heuristic != "excluded":
-            raise ValueError("Adjusted censoring mode is not supported for continuous outcomes.")
+            raise ValueError(
+                "Adjusted censoring mode is not supported for continuous outcomes."
+            )
         return RtichokeBrowserChart(
             spec=_continuous_outcome_distribution_steps_v2_spec(
                 data,
