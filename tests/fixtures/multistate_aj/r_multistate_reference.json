@@ -1,0 +1,23 @@
+{
+  "reference_package": "survival",
+  "version": "3.5+",
+  "method": "Aalen-Johansen discrete multistate estimator with available-pair risk sets",
+  "steps": [0, 1, 2],
+  "states": ["A", "B", "C"],
+  "subjects": [
+    {"id": 1, "history": [{"step": 0, "state": "A"}, {"step": 1, "state": "B"}, {"step": 2, "state": "C"}]},
+    {"id": 2, "history": [{"step": 0, "state": "A"}, {"step": 1, "state": "A"}, {"step": 2, "state": "B"}]},
+    {"id": 3, "history": [{"step": 0, "state": "B"}, {"step": 1, "state": "B"}]},
+    {"id": 4, "history": [{"step": 0, "state": "B"}, {"step": 1, "state": "C"}, {"step": 2, "state": "C"}]}
+  ],
+  "occupancy": {
+    "0": {"A": 0.5, "B": 0.5, "C": 0.0},
+    "1": {"A": 0.25, "B": 0.5, "C": 0.25},
+    "2": {"A": 0.0, "B": 0.25, "C": 0.75}
+  },
+  "crude_observed_step_2": {
+    "counts": {"A": 0, "B": 1, "C": 2},
+    "total": 3,
+    "proportions": {"A": 0.0, "B": 0.3333333333333333, "C": 0.6666666666666666}
+  }
+}

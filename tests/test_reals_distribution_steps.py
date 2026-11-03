@@ -290,23 +290,26 @@ def test_independent_multistate_aj_reference_with_right_censoring():
     dists = chart.spec["stateDistributions"]
     assert len(dists) == 3
 
-    # Step 0: [0.5, 0.5, 0.0]
-    p0 = {s["stateId"]: s["estimate"] for s in dists[0]["states"]}
-    assert pytest.approx(p0["A"], abs=1e-9) == 0.50
-    assert pytest.approx(p0["B"], abs=1e-9) == 0.50
-    assert pytest.approx(p0["C"], abs=1e-9) == 0.00
+    import json
+    from pathlib import Path
 
-    # Step 1: [0.25, 0.50, 0.25]
-    p1 = {s["stateId"]: s["estimate"] for s in dists[1]["states"]}
-    assert pytest.approx(p1["A"], abs=1e-9) == 0.25
-    assert pytest.approx(p1["B"], abs=1e-9) == 0.50
-    assert pytest.approx(p1["C"], abs=1e-9) == 0.25
+    fixture_path = (
+        Path(__file__).parent
+        / "fixtures"
+        / "multistate_aj"
+        / "r_multistate_reference.json"
+    )
+    assert fixture_path.exists(), f"Fixture missing at {fixture_path}"
+    with open(fixture_path, encoding="utf-8") as f:
+        ref_data = json.load(f)
 
-    # Step 2: [0.0, 0.25, 0.75]
-    p2 = {s["stateId"]: s["estimate"] for s in dists[2]["states"]}
-    assert pytest.approx(p2["A"], abs=1e-9) == 0.00
-    assert pytest.approx(p2["B"], abs=1e-9) == 0.25
-    assert pytest.approx(p2["C"], abs=1e-9) == 0.75
+    # Validate against checked-in reference fixture
+    for step_str, expected_states in ref_data["occupancy"].items():
+        step_int = int(step_str)
+        step_dist = dists[step_int]
+        step_p = {s["stateId"]: s["estimate"] for s in step_dist["states"]}
+        for state_key, exp_prob in expected_states.items():
+            assert pytest.approx(step_p[state_key], abs=1e-9) == exp_prob
 
     # Verify that crude proportions under excluded differ from AJ estimates at step 2
     chart_raw = create_reals_distribution_steps(
@@ -323,6 +326,7 @@ def test_independent_multistate_aj_reference_with_right_censoring():
     total_raw = sum(raw_counts.values())  # 3
     raw_p_B = raw_counts["B"] / total_raw  # 1/3 = 0.3333 != 0.25
     raw_p_C = raw_counts["C"] / total_raw  # 2/3 = 0.6667 != 0.75
+    p2 = {s["stateId"]: s["estimate"] for s in dists[2]["states"]}
     assert abs(raw_p_B - p2["B"]) > 0.05
     assert abs(raw_p_C - p2["C"]) > 0.05
 
