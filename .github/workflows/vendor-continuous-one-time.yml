@@ -1,4 +1,4 @@
-name: One-time vendor verified continuous renderer
+name: One-time vendor verified continuous renderer (retry)
 on:
   push:
     branches: [feat/continuous-outcome-steps-parity]
