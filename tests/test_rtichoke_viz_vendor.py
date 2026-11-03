@@ -10,7 +10,7 @@ _SOURCE_COMMIT = "c415f509841fe8b624cdbca4f0bd75c4e76e6ed3"
 
 def test_vendored_rtichoke_viz_v0241_provenance_archive_and_schemas():
     provenance = (_VENDOR / "VENDORED_FROM").read_text()
-    assert "release=v0.24.1" in provenance
+    assert "version=0.24.1" in provenance
     assert "snapshot=not-an-immutable-release" in provenance
     assert f"source_commit={_SOURCE_COMMIT}" in provenance
     assert "archive=rtichoke-viz-0.24.1.tar.gz" in provenance
