@@ -60,6 +60,10 @@ def test_continuous_heatmap_and_selected_histogram(tmp_path: Path):
         heatmap = root.locator(".rtichoke-continuous-heatmap-wrapper svg")
         histogram = root.locator(".rtichoke-continuous-histogram-wrapper svg")
         assert heatmap.count() >= 1
+        assert histogram.count() == 0  # collapsed by default
+        heatmap.first.focus()
+        heatmap.first.press("Enter")  # supported keyboard action opens histogram
+        histogram.first.wait_for()
         assert histogram.count() >= 1
         slider = root.locator("input[type='range']")
         assert slider.count() == 1
