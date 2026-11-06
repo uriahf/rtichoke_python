@@ -96,7 +96,15 @@ class RtichokeBrowserChart:
                 "decision_curve": "renderDecisionCurveV2",
                 "interventions_avoided": "renderInterventionsAvoidedV2",
                 "outcome_distribution": "renderOutcomeDistribution",
+                "continuous_outcome_distribution": "renderContinuousOutcomeDistribution",
             }.get(chart_type)
+            if chart_type == "continuous_outcome_distribution":
+                bundle = vendor.joinpath("rtichoke-viz.js").read_text(encoding="utf-8")
+                if "renderContinuousOutcomeDistribution" not in bundle:
+                    raise RuntimeError(
+                        "Vendored rtichoke_viz lacks renderContinuousOutcomeDistribution. "
+                        "Re-vendor the verified continuous-capable bundle."
+                    )
             if render_export is None:
                 raise ValueError(
                     f"rtichoke_viz does not support chart type {chart_type!r}."
