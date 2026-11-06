@@ -236,7 +236,9 @@ def _continuous_outcome_distribution_steps_v2_spec(
 
     values = data[reals_col].to_list()
     if any(
-        value is not None and not isinstance(value, (int, float)) for value in values
+        value is not None
+        and (isinstance(value, bool) or not isinstance(value, (int, float)))
+        for value in values
     ):
         raise ValueError("`reals_col` must be numeric.")
     if any(value is not None and math.isinf(value) for value in values):
@@ -260,7 +262,10 @@ def _continuous_outcome_distribution_steps_v2_spec(
         edges = np.linspace(lower, upper, k + 1).tolist()
     else:
         try:
-            edges = [float(edge) for edge in bins]
+            raw_edges = list(bins)
+            if any(isinstance(edge, (bool, str, bytes)) for edge in raw_edges):
+                raise ValueError("`bins` must be numeric bin edges.")
+            edges = [float(edge) for edge in raw_edges]
         except (TypeError, ValueError) as err:
             raise ValueError("`bins` must be numeric bin edges.") from err
         if len(edges) < 2 or any(not math.isfinite(edge) for edge in edges):
