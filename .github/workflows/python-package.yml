@@ -21,12 +21,12 @@ jobs:
         with:
           r-version: release
       - name: Install independent R reference dependencies
-        run: Rscript -e 'install.packages(c("survival", "jsonlite"), repos="https://cloud.r-project.org")'
+        run: Rscript -e 'install.packages(c("survival", "cmprsk", "jsonlite"), repos="https://cloud.r-project.org")'
       - run: uv sync --all-extras --dev
       - name: Regenerate R reference and compare Python AJ
         env:
           RSCRIPT: Rscript
-        run: uv run pytest tests/test_multistate_r_reference.py -v
+        run: uv run pytest tests/test_multistate_r_reference.py tests/test_terminal_event_reference.py -v
 
   build:
     runs-on: ubuntu-latest
