@@ -4,14 +4,16 @@ from pathlib import Path
 
 _VENDOR = Path(__file__).parents[1] / "src" / "rtichoke" / "_vendor" / "rtichoke_viz"
 _RELEASE_DIR = "rtichoke-viz-0.24.1"
-_SHA256 = "33221daee8f440e4f93754b900b8e36ead7d99f386aa705ffe801985c9f03699"
-_SOURCE_COMMIT = "c415f509841fe8b624cdbca4f0bd75c4e76e6ed3"
+_SHA256 = "739782aa3c210998058ae65c7cfc478dde811962cb44f2930cf972a81810c445"
+_SOURCE_COMMIT = "8b1743788edfcce4d076d89da9883d9203dcb35d"
 
 
 def test_vendored_rtichoke_viz_v0241_provenance_archive_and_schemas():
     provenance = (_VENDOR / "VENDORED_FROM").read_text()
     assert "version=0.24.1" in provenance
-    assert "snapshot=not-an-immutable-release" in provenance
+    assert "tag=v0.24.1" in provenance
+    assert "tag_commit=798bc17e0fda9bb413c07ddc07e783de1d64092f" in provenance
+    assert "snapshot=" not in provenance
     assert f"source_commit={_SOURCE_COMMIT}" in provenance
     assert "archive=rtichoke-viz-0.24.1.tar.gz" in provenance
     assert f"sha256={_SHA256}" in provenance
