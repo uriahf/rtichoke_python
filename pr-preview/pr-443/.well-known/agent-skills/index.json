@@ -1,0 +1,11 @@
+{
+  "skills": [
+    {
+      "name": "default",
+      "description": "",
+      "files": [
+        "SKILL.md"
+      ]
+    }
+  ]
+}
