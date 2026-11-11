@@ -23,45 +23,25 @@ Evaluation IDs follow the existing outcome adapter's deterministic population
 enumeration and remain identical across variants/horizons. No model identity is
 inferred for these population-only inputs.
 
-## Published v0.24.1 contract limits
+## Published v0.24.2 status-aware serialization
 
-The immutable vendored JS exports `OutcomeDistributionSpecSchema`,
+The immutable vendored release exports `OutcomeDistributionSpecSchema`,
 `StateDistributionSchema`, and `assertOutcomeDistributionReferentialIntegrity`.
-Tests execute those exports and validate all representable fixture contexts and
-a multi-population payload. They do not use rtichoke_viz/main or rebuild the
-renderer. Python JSON Schema validation uses the existing dev environment's
-jsonschema; Node is needed to execute published integrity checks (CI provides it).
+Tests execute those exports and validate every #441 reference case, including
+all supplied horizons and all eight heuristic pairs. No renderer is rebuilt.
+
+Each distribution maps prepared `status` directly to `estimateStatus`: `defined`,
+`undefined_empty_population`, or `beyond_support_plateau`. Empty retained
+populations preserve complete state vectors with explicit null estimates.
+Supplied plateau values remain unchanged apart from the endpoint-roundoff rule
+below. Variants remain available and retain all populations and horizons.
 
 Available variants contain complete `stateDistributions` and `exclusions`.
 Probabilities use `estimate`, never integer `count`. `originalSampleSize` and
 horizon-specific exclusion counts preserve the original denominator; retained
-size is recoverable as original minus both exclusions. The contract has no
-explicit retained-size field, so none is invented. The required base distribution
-and exclusions are the `adjusted:adjusted_as_negative` variant. No report-level
-configuration or controls are added.
-
-The following preparation statuses cannot be faithfully exported for interactive
-reports under this contract:
-
-- **Empty retained population:** `estimate: null` passes the schema and integrity
-  checks, but there is no per-horizon undefined reason/status. The published
-  renderer's state processing starts proportions at zero and leaves them there
-  when all estimates/masses/counts are null. Thus schema validity alone does not
-  ensure faithful undefined display.
-- **Beyond-support plateau:** package values are preserved internally with
-  `beyond_support_plateau`, as #441 specifies. The state distribution schema has
-  no support-status field to distinguish this from an identified estimate.
-- `status: unsupported` exists only for the entire variant, not a particular
-  population/horizon, and carries neither its distributions nor exclusions.
-  Replacing a whole variant would discard valid horizons and accounting.
-
-`_terminal_outcome_distribution_v2_spec()` therefore raises a diagnostic naming
-every unrepresentable evaluation/pair/horizon/status before producing any
-payload. It does not omit horizons, substitute zero, encode status in unrelated
-fields, invent schema extensions, or mark whole variants unsupported. Internal
-preparation remains complete even when export is blocked. Shared contract and
-renderer work would be required to remove this limitation; both are outside
-this PR.
+size is recoverable as original minus both exclusions. No retained-size field
+is invented. The base payload is the `adjusted:adjusted_as_negative` variant.
+Preparation and serialization remain internal; no public report is wired.
 
 ## Numerical serialization boundary
 

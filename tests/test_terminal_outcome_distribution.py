@@ -75,51 +75,41 @@ def test_every_reference_row(name):
 
 
 @pytest.mark.parametrize("name", REFERENCE["cases"])
-def test_serialization_preserves_every_representable_horizon_or_explicitly_refuses(
-    name,
-):
+def test_serialization_preserves_every_population_horizon_and_status(name):
     case = REFERENCE["cases"][name]
-    for horizon in case["horizons"]:
-        prepared = _prepare_terminal_outcome_distributions(
-            {name: frame(case)}, [horizon]
+    prepared = _prepare_terminal_outcome_distributions(
+        {name: frame(case)}, case["horizons"]
+    )
+    spec = _terminal_outcome_distribution_v2_spec(prepared)
+    assert len(spec["variants"]) == 8
+    for row in prepared:
+        variant = spec["variants"][f"{row.censoring}:{row.competing}"]
+        assert variant["status"] == "available"
+        assert len(variant["stateDistributions"]) == len(case["horizons"])
+        distribution = next(
+            d for d in variant["stateDistributions"] if d["horizon"] == row.horizon
         )
-        unavailable = [r for r in prepared if r.status != "defined"]
-        if unavailable:
-            with pytest.raises(
-                ValueError, match="v0.24.1 cannot faithfully serialize"
-            ) as error:
-                _terminal_outcome_distribution_v2_spec(prepared)
-            for row in unavailable:
-                assert (
-                    f"{row.evaluation_id}/{row.censoring}:{row.competing}@{row.horizon:g}: {row.status}"
-                    in str(error.value)
-                )
-            continue
-        spec = _terminal_outcome_distribution_v2_spec(prepared)
-        assert len(spec["variants"]) == 8
-        for row in prepared:
-            variant = spec["variants"][f"{row.censoring}:{row.competing}"]
-            assert variant["status"] == "available"
-            assert len(variant["stateDistributions"]) == 1
-            distribution = variant["stateDistributions"][0]
-            assert distribution["horizon"] == horizon
-            assert distribution["evaluationId"] == row.evaluation_id
-            assert {
-                s["stateId"]: s["estimate"] for s in distribution["states"]
-            } == pytest.approx(row.probabilities, abs=1e-12)
-            assert all(
-                set(s) == {"stateId", "label", "estimate"}
-                for s in distribution["states"]
-            )
-            exclusion = variant["exclusions"][0]
-            assert exclusion["originalSampleSize"] == row.original_n
-            assert exclusion["excludedCounts"] == [
-                {
-                    "horizon": float(horizon),
-                    "censoredExcludedCount": row.censored_excluded_count,
-                    "competingExcludedCount": row.competing_excluded_count,
-                }
-            ]
+        assert distribution["evaluationId"] == row.evaluation_id
+        assert distribution["estimateStatus"] == row.status
+        assert {
+            state["stateId"]: state["estimate"] for state in distribution["states"]
+        } == pytest.approx(row.probabilities, abs=1e-12)
+        assert all(
+            set(state) == {"stateId", "label", "estimate"}
+            for state in distribution["states"]
+        )
+        if row.status == "undefined_empty_population":
+            assert all(state["estimate"] is None for state in distribution["states"])
+        exclusion = variant["exclusions"][0]
+        assert exclusion["originalSampleSize"] == row.original_n
+        counts = next(
+            c for c in exclusion["excludedCounts"] if c["horizon"] == row.horizon
+        )
+        assert counts == {
+            "horizon": row.horizon,
+            "censoredExcludedCount": row.censored_excluded_count,
+            "competingExcludedCount": row.competing_excluded_count,
+        }
 
 
 def test_populations_and_horizons_keep_semantic_identity():
@@ -152,10 +142,10 @@ def test_published_schema_and_referential_integrity(tmp_path):
         )
     specs = []
     for name, case in REFERENCE["cases"].items():
-        for h in case["horizons"]:
-            rows = _prepare_terminal_outcome_distributions({name: frame(case)}, [h])
-            if all(r.status == "defined" for r in rows):
-                specs.append(_terminal_outcome_distribution_v2_spec(rows))
+        rows = _prepare_terminal_outcome_distributions(
+            {name: frame(case)}, case["horizons"]
+        )
+        specs.append(_terminal_outcome_distribution_v2_spec(rows))
     multi = _prepare_terminal_outcome_distributions(
         {
             "a": frame(REFERENCE["cases"]["fixture_a"]),
@@ -175,17 +165,28 @@ for (const spec of specs) {
   try { viz.assertOutcomeDistributionReferentialIntegrity(spec); }
   catch (error) { console.error(error.message); process.exit(1); }
 }
+const reports = specs.map(spec => ({
+  schemaVersion: "1.1", type: "report",
+  heuristics: {active: "excluded:excluded", available: Object.keys(spec.variants)},
+  sections: [{id: "outcome", title: "Outcome", items: [{type: "component", id: "od", spec}]}]
+}));
+for (const report of reports) viz.assertReportReferentialIntegrity(report);
 const bad = structuredClone(specs[0]);
 bad.variants["excluded:excluded"].stateDistributions[0].evaluationId = "missing";
 let rejected = false;
 try { viz.assertOutcomeDistributionReferentialIntegrity(bad); } catch { rejected = true; }
 if (!rejected) throw Error("integrity negative control was not rejected");
-// Null is structurally valid, but lacks undefined/support semantics in this contract.
-const nullable = structuredClone(specs[0]);
-for (const s of nullable.stateDistributions[0].states) s.estimate = null;
-viz.assertOutcomeDistributionReferentialIntegrity(nullable);
+// Status-aware integrity must reject nulls declared as defined.
+const invalid = structuredClone(specs[0]);
+for (const d of invalid.stateDistributions) {
+  d.estimateStatus = "defined";
+  for (const state of d.states) state.estimate = null;
+}
+rejected = false;
+try { viz.assertOutcomeDistributionReferentialIntegrity(invalid); } catch { rejected = true; }
+if (!rejected) throw Error("status negative control was not rejected");
 console.log(JSON.stringify({schema: viz.OutcomeDistributionSpecSchema,
- stateSchema: viz.StateDistributionSchema, nullable}));
+ stateSchema: viz.StateDistributionSchema, reportSchema: viz.ReportSpecV1_1Schema, reports}));
 """)
     result = subprocess.run(
         [node, str(script), str(VENDOR / "rtichoke-viz.js")],
@@ -199,8 +200,13 @@ console.log(JSON.stringify({schema: viz.OutcomeDistributionSpecSchema,
     validator = Draft7Validator(schemas["schema"])
     for spec in specs:
         validator.validate(spec)
-    validator.validate(schemas["nullable"])
-    assert "status" not in schemas["stateSchema"]["properties"]
+    report_validator = Draft7Validator(schemas["reportSchema"])
+    for report in schemas["reports"]:
+        report_validator.validate(report)
+    assert {
+        branch["const"]
+        for branch in schemas["stateSchema"]["properties"]["estimateStatus"]["anyOf"]
+    } == {"defined", "undefined_empty_population", "beyond_support_plateau"}
     assert "retainedSampleSize" not in schemas["stateSchema"]["properties"]
     invalid = copy.deepcopy(specs[0])
     invalid["variants"]["excluded:excluded"]["exclusions"][0]["excludedCounts"][0][
@@ -249,9 +255,16 @@ def test_mixed_horizons_are_not_silently_dropped():
         "undefined_empty_population",
         "beyond_support_plateau",
     }
-    with pytest.raises(ValueError, match="undefined_empty_population") as error:
-        _terminal_outcome_distribution_v2_spec(rows)
-    assert "beyond_support_plateau" in str(error.value)
+    spec = _terminal_outcome_distribution_v2_spec(rows)
+    assert {
+        d["estimateStatus"]
+        for variant in spec["variants"].values()
+        for d in variant["stateDistributions"]
+    } == {r.status for r in rows}
+    assert all(
+        [d["horizon"] for d in variant["stateDistributions"]] == [0, 3]
+        for variant in spec["variants"].values()
+    )
 
 
 def test_adapter_only_bounds_machine_scale_endpoint_roundoff():

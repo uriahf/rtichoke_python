@@ -26,6 +26,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+!src/rtichoke/_vendor/rtichoke_viz/MANIFEST
 
 # PyInstaller
 *.manifest

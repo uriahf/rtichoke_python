@@ -1,4 +1,4 @@
-"""Internal terminal-event population preparation and v0.24.1 serialization.
+"""Internal terminal-event population preparation and status-aware serialization.
 
 No report entry point uses this module yet. Estimation belongs to polarstate;
 population accounting and canonical adaptation are kept separate below.
@@ -217,12 +217,7 @@ def _canonical_probability(value: float | None) -> float:
 def _terminal_outcome_distribution_v2_spec(
     prepared: Sequence[_TerminalOutcomeDistribution],
 ) -> dict[str, Any]:
-    """Serialize complete defined variants, or fail without emitting partial data.
-
-    v0.24.1 has nullable estimates but no per-horizon undefined/support status.
-    Its renderer converts all-null states to zero proportions. Do not export
-    an apparently available distribution that loses the preparation semantics.
-    """
+    """Serialize every supplied context with its canonical estimate status."""
     if not prepared:
         raise ValueError("Prepared distributions must not be empty.")
     row_keys = {
@@ -235,15 +230,6 @@ def _terminal_outcome_distribution_v2_spec(
     if len(row_keys) != len(prepared) or row_keys != expected_keys:
         raise ValueError(
             "Serialization requires exactly eight pairs per population and horizon."
-        )
-    unrepresentable = [r for r in prepared if r.status != "defined"]
-    if unrepresentable:
-        details = "; ".join(
-            f"{r.evaluation_id}/{r.censoring}:{r.competing}@{r.horizon:g}: {r.status}"
-            for r in unrepresentable
-        )
-        raise ValueError(
-            f"rtichoke_viz v0.24.1 cannot faithfully serialize horizon-specific estimate status: {details}"
         )
     evaluations = list(
         {
@@ -262,6 +248,7 @@ def _terminal_outcome_distribution_v2_spec(
                 "horizon": r.horizon,
                 "estimator": r.estimator,
                 "estimateOrigin": "fixed_time_horizon",
+                "estimateStatus": r.status,
                 "censoringHeuristic": r.censoring,
                 "competingHeuristic": r.competing,
                 "states": [
@@ -273,7 +260,12 @@ def _terminal_outcome_distribution_v2_spec(
                             "composite": "Composite event",
                             "event_free": "Event-free",
                         }[state],
-                        "estimate": _canonical_probability(estimate),
+                        "estimate": (
+                            None
+                            if estimate is None
+                            and r.status == "undefined_empty_population"
+                            else _canonical_probability(estimate)
+                        ),
                     }
                     for state, estimate in r.probabilities.items()
                 ],
