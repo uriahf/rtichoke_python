@@ -8,6 +8,8 @@ on:
       - "src/rtichoke/_report_browser.py"
       - "src/rtichoke/_report_spec.py"
       - "src/rtichoke/_renderers.py"
+      - "src/rtichoke/_terminal_outcome_distribution.py"
+      - "tests/test_terminal_outcome_browser_acceptance.py"
       - "src/rtichoke/_decision_curve_viz_spec_v2.py"
       - "src/rtichoke/utility/decision.py"
       - "src/rtichoke/_vendor/rtichoke_viz/**"
@@ -28,6 +30,8 @@ on:
       - "src/rtichoke/_report_browser.py"
       - "src/rtichoke/_report_spec.py"
       - "src/rtichoke/_renderers.py"
+      - "src/rtichoke/_terminal_outcome_distribution.py"
+      - "tests/test_terminal_outcome_browser_acceptance.py"
       - "src/rtichoke/_decision_curve_viz_spec_v2.py"
       - "src/rtichoke/utility/decision.py"
       - "src/rtichoke/_vendor/rtichoke_viz/**"
@@ -78,3 +82,4 @@ jobs:
           tests/test_probs_histogram_browser_acceptance.py
           tests/test_reals_distribution_steps_browser_acceptance.py
           tests/test_reals_distribution_continuous_browser.py
+          tests/test_terminal_outcome_browser_acceptance.py
