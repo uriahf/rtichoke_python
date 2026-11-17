@@ -2,6 +2,8 @@
 
 <!--next-version-placeholder-->
 
+- Added `create_reals_summary_report_times()` for offline outcome-only reports, with optional interactive censoring/competing-event controls across all eight combinations (`heuristics=True`).
+
 - Fixed exact-horizon censoring semantics under `censoring_heuristic="excluded"`: subjects censored exactly at the evaluation horizon (`time == horizon`) are now retained as event-free rather than excluded.
 - Time-dependent interventions avoided is now derived from model-versus-treat-all net benefit, ensuring finite-sample consistency with decision-curve references and parity with dcurves.
 - Added opt-in canonical browser rendering for static Interventions Avoided using the verified `rtichoke_viz v0.7.0` release while preserving Plotly as the default.

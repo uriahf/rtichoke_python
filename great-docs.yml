@@ -105,6 +105,7 @@ reference:
     desc: Create historical R-backed reports or explicitly opt into canonical browser ReportSpec rendering.
     contents:
       - create_summary_report
+      - create_reals_summary_report_times
 
   - title: Utility
     desc: Decision-curve analysis for classification and time-to-event models.

@@ -1,7 +1,7 @@
 """Internal terminal-event population preparation and status-aware serialization.
 
-No report entry point uses this module yet. Estimation belongs to polarstate;
-population accounting and canonical adaptation are kept separate below.
+Estimation belongs to polarstate; population accounting and canonical adaptation
+are kept separate below and consumed by the outcome-only report.
 """
 
 from collections.abc import Mapping, Sequence

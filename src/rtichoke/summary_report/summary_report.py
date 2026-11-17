@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, Literal, Union, cast
 
 import numpy as np
+import polars as pl
 
 from rtichoke._calibration_viz_spec_v2 import _calibration_v2_spec_from_curve_list
 from rtichoke._decision_curve_viz_spec_v2 import (
@@ -27,6 +28,10 @@ from rtichoke._summary_metrics_spec import (
     _auroc_summary_metrics_spec,
     _event_risk_summary_metrics_spec,
     _prevalence_summary_metrics_spec,
+)
+from rtichoke._terminal_outcome_distribution import (
+    _prepare_terminal_outcome_distributions,
+    _terminal_outcome_distribution_v2_spec,
 )
 from rtichoke._viz_spec_v2 import (
     _gains_times_v2_spec_from_performance_data,
@@ -334,48 +339,77 @@ def create_summary_report_times(
     return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(output_file)
 
 
-def _create_reals_summary_report_times(
+def create_reals_summary_report_times(
     reals: Union[np.ndarray, list[int], Dict[str, Any]],
     times: Union[np.ndarray, list[float], Dict[str, Any]],
     fixed_time_horizons: list[float],
     *,
     renderer: RealsSummaryReportRenderer = "browser",
     output_file: str | Path = "summary_report_times.html",
+    heuristics: bool = False,
 ) -> Path:
     """Create a minimal time-dependent outcome distribution browser summary report.
 
-    The generated report contains a single section and component for the
-    Outcome Distribution.
+    The report contains only Outcome Distribution, without predictions or
+    model-performance metrics. By default it displays raw observed statuses.
+    Enable ``heuristics`` for eight interactive censoring/competing-event
+    combinations using the existing Kaplan-Meier/Aalen-Johansen preparation.
 
     Parameters
     ----------
     reals : Union[np.ndarray, list[int], Dict[str, Any]]
-        Outcome status labels.
+        Outcome labels: 0 = censored, 1 = primary event, 2 = competing event.
+        Dictionary keys name distinct populations and must match ``times``
+        in both keys and order. Each population must be nonempty.
     times : Union[np.ndarray, list[float], Dict[str, Any]]
         Follow-up times.
     fixed_time_horizons : list[float]
-        Fixed time horizons for evaluation.
+        Nonempty finite nonnegative horizons; sorted, deduplicated, with zero
+        included. Events at the horizon are included; censoring at the horizon
+        remains event-free when censoring is excluded.
     renderer : {"browser", "rtichoke_viz"}, optional
         Renderer backend. Defaults to ``"browser"``.
     output_file : str or pathlib.Path, optional
         HTML destination file path. Defaults to ``"summary_report_times.html"``.
+    heuristics : bool, optional
+        Enable censoring and competing-event controls. Defaults to ``False``.
+        The initial selection adjusts censoring and treats competing events as
+        negative. Exclusions define a retained population at each horizon;
+        exclusion percentages use original population size. Empty retained
+        populations have unavailable estimates. Beyond follow-up support,
+        displayed estimates retain the estimator's last plateau. Adjusted
+        estimates require the relevant independent-censoring assumptions.
 
     Returns
     -------
     pathlib.Path
         The generated HTML file path.
+
+    Examples
+    --------
+    >>> create_reals_summary_report_times(
+    ...     reals=[1, 0, 2], times=[2, 5, 4], fixed_time_horizons=[3, 5],
+    ...     output_file="outcomes.html", heuristics=True,
+    ... )  # doctest: +SKIP
     """
     if renderer not in ("browser", "rtichoke_viz"):
         raise ValueError(
-            f"Unsupported renderer {renderer!r}. '_create_reals_summary_report_times' supports 'browser' and 'rtichoke_viz'."
+            f"Unsupported renderer {renderer!r}. 'create_reals_summary_report_times' supports 'browser' and 'rtichoke_viz'."
         )
-
-    outcome_spec = _outcome_distribution_v2_spec(
-        reals=reals,
-        times=times,
-        fixed_time_horizons=fixed_time_horizons,
-        title="Outcome Distribution",
-    )
+    if not isinstance(heuristics, bool):
+        raise ValueError("heuristics must be a bool.")
+    populations, horizons = _reals_report_inputs(reals, times, fixed_time_horizons)
+    if heuristics:
+        outcome_spec = _terminal_outcome_distribution_v2_spec(
+            _prepare_terminal_outcome_distributions(populations, horizons)
+        )
+    else:
+        outcome_spec = _outcome_distribution_v2_spec(
+            reals=reals,
+            times=times,
+            fixed_time_horizons=horizons,
+            title="Outcome Distribution",
+        )
     sections = [
         {
             "id": "outcome-distribution",
@@ -390,7 +424,97 @@ def _create_reals_summary_report_times(
         }
     ]
     report = _build_report_spec_v11(sections, title="Time-Dependent Summary Report")
-    return RtichokeBrowserReport(cast(dict[str, Any], report)).write_html(output_file)
+    if heuristics:
+        report["heuristics"] = {
+            "active": "adjusted:adjusted_as_negative",
+            "available": list(outcome_spec["variants"]),
+        }
+    return RtichokeBrowserReport(
+        cast(dict[str, Any], report),
+        header_annotation_html=_reals_report_note_html(heuristics),
+    ).write_html(output_file)
+
+
+def _reals_report_inputs(
+    reals: Union[np.ndarray, list[int], Dict[str, Any]],
+    times: Union[np.ndarray, list[float], Dict[str, Any]],
+    fixed_time_horizons: list[float],
+) -> tuple[dict[str, pl.DataFrame], list[float]]:
+    """Validate public outcome-only report inputs without coercing outcome labels."""
+    horizons = np.asarray(fixed_time_horizons)
+    if (
+        horizons.ndim != 1
+        or not horizons.size
+        or not np.issubdtype(horizons.dtype, np.number)
+        or np.iscomplexobj(horizons)
+        or not np.all(np.isfinite(horizons))
+        or np.any(horizons < 0)
+    ):
+        raise ValueError("fixed_time_horizons must be finite nonnegative numbers.")
+    if isinstance(reals, dict) or isinstance(times, dict):
+        if not isinstance(reals, dict) or not isinstance(times, dict):
+            raise ValueError(
+                "reals and times must both be dictionaries with matching keys."
+            )
+        if not reals or list(reals) != list(times):
+            raise ValueError(
+                "reals and times must have matching nonempty keys and key order."
+            )
+        pairs = [(name, reals[name], times[name]) for name in reals]
+    else:
+        pairs = [("__shared_population__", reals, times)]
+    populations = {}
+    for name, outcomes, followup in pairs:
+        if not isinstance(name, str) or not name:
+            raise ValueError("Population keys must be nonempty strings.")
+        r, t = np.asarray(outcomes), np.asarray(followup)
+        if r.ndim != 1 or t.ndim != 1 or not r.size or len(r) != len(t):
+            raise ValueError(
+                "reals and times must be nonempty 1D arrays of equal length."
+            )
+        if not np.issubdtype(r.dtype, np.number) or not np.all(np.isin(r, [0, 1, 2])):
+            raise ValueError("reals must contain numeric outcome labels 0, 1, or 2.")
+        if (
+            not np.issubdtype(t.dtype, np.number)
+            or np.iscomplexobj(t)
+            or not np.all(np.isfinite(t))
+            or np.any(t < 0)
+        ):
+            raise ValueError("times must contain finite nonnegative numbers.")
+        if np.iscomplexobj(r):
+            raise ValueError("reals must contain numeric outcome labels 0, 1, or 2.")
+        populations[name] = pl.DataFrame(
+            {"id": np.arange(1, len(r) + 1), "reals": r, "times": t}
+        )
+    return populations, sorted({0.0, *horizons.astype(float).tolist()})
+
+
+def _reals_report_note_html(heuristics: bool) -> str:
+    if heuristics:
+        text = (
+            "Outcome estimates reflect the selected treatment of censoring and competing events. "
+            "Exclusions define a retained population separately at each horizon; exclusion "
+            "percentages use the original population size. When exclusions are selected, "
+            "estimates describe that retained population. Empty retained populations have "
+            "unavailable estimates, not zero probabilities. Beyond observed follow-up support, "
+            "displayed values retain the estimator's last plateau and do not establish "
+            "subsequent outcomes. Censoring-adjusted estimates rely on the relevant "
+            "independent-censoring assumptions."
+        )
+    else:
+        text = (
+            "Outcome Distribution shows raw observed outcome status over time. Censored "
+            "observations are displayed as their own observed status; no Aalen-Johansen, "
+            "IPCW, or other censoring adjustment is applied."
+        )
+    return (
+        '<details class="rtichoke-cheat-sheet"><summary>Outcome Distribution Note</summary>'
+        f'<div class="rtichoke-cheat-sheet__content"><p>{text}</p></div></details>'
+    )
+
+
+# Retain the previous internal import path for existing consumers and tests.
+_create_reals_summary_report_times = create_reals_summary_report_times
 
 
 def create_summary_report(
