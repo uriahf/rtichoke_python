@@ -150,7 +150,7 @@
     "href": "reference/index.html",
     "title": "API Reference",
     "section": "",
-    "text": "Performance Data\n\nPrepare classification and time-to-event data for visualization.\n\n\nprepare_performance_data()\n\nPrepare performance data for binary classification models.\n\nprepare_binned_classification_data()\n\nPrepare probability-binned classification data for binary outcomes.\n\nprepare_performance_data_times()\n\nPrepare performance data for models with time-to-event outcomes.\n\nprepare_binned_classification_data_times()\n\nPrepare binned, time-dependent classification data.\n\n\n\n\nPerformance Tables\n\nSummarize model performance across thresholds and time horizons.\n\n\ncreate_performance_table()\n\nCreate an R-style rtichoke performance table.\n\ncreate_performance_table_times()\n\nCreate a time-dependent rtichoke performance table.\n\nrender_performance_table()\n\nRender prepared performance data with a selected table backend.\n\n\n\n\nDiscrimination\n\nROC, precision-recall, gains, and lift visualizations.\n\n\ncreate_roc_curve()\n\nCreates a Receiver Operating Characteristic (ROC) curve.\n\ncreate_roc_curve_times()\n\nCreates a time-dependent Receiver Operating Characteristic (ROC) curve.\n\nplot_roc_curve()\n\nPlots an ROC curve from pre-computed performance data.\n\ncreate_precision_recall_curve()\n\nCreates a Precision-Recall curve.\n\ncreate_precision_recall_curve_times()\n\nCreates a time-dependent Precision-Recall curve.\n\nplot_precision_recall_curve()\n\nPlots a Precision-Recall curve from pre-computed performance data.\n\ncreate_gains_curve()\n\nCreates a Gains curve.\n\ncreate_gains_curve_times()\n\nCreates a time-dependent Gains curve.\n\nplot_gains_curve()\n\nPlots a Gains curve from pre-computed performance data.\n\ncreate_lift_curve()\n\nCreates a Lift curve.\n\ncreate_lift_curve_times()\n\nCreates a time-dependent Lift curve.\n\nplot_lift_curve()\n\nPlots a Lift curve from pre-computed performance data.\n\n\n\n\nCalibration\n\nCalibration visualizations for classification and time-to-event models. See Curve API Compatibility for time-dependent heuristic and horizon differences.\n\n\ncreate_calibration_curve()\n\nCreates a Calibration Curve.\n\ncreate_calibration_curve_times()\n\nCreate a time-dependent calibration curve across fixed horizons.\n\n\n\n\nSummary Reports\n\nCreate historical R-backed reports or explicitly opt into canonical browser ReportSpec rendering.\n\n\ncreate_summary_report()\n\nCreate an rtichoke model-performance summary report.\n\n\n\n\nUtility\n\nDecision-curve analysis for classification and time-to-event models.\n\n\ncreate_decision_curve()\n\nCreates a Decision Curve.\n\ncreate_decision_curve_times()\n\nCreates a time-dependent Decision Curve.\n\nplot_decision_curve()\n\nPlots a Decision Curve from pre-computed performance data.",
+    "text": "Performance Data\n\nPrepare classification and time-to-event data for visualization.\n\n\nprepare_performance_data()\n\nPrepare performance data for binary classification models.\n\nprepare_binned_classification_data()\n\nPrepare probability-binned classification data for binary outcomes.\n\nprepare_performance_data_times()\n\nPrepare performance data for models with time-to-event outcomes.\n\nprepare_binned_classification_data_times()\n\nPrepare binned, time-dependent classification data.\n\n\n\n\nPerformance Tables\n\nSummarize model performance across thresholds and time horizons.\n\n\ncreate_performance_table()\n\nCreate an R-style rtichoke performance table.\n\ncreate_performance_table_times()\n\nCreate a time-dependent rtichoke performance table.\n\nrender_performance_table()\n\nRender prepared performance data with a selected table backend.\n\n\n\n\nDiscrimination\n\nROC, precision-recall, gains, and lift visualizations.\n\n\ncreate_roc_curve()\n\nCreates a Receiver Operating Characteristic (ROC) curve.\n\ncreate_roc_curve_times()\n\nCreates a time-dependent Receiver Operating Characteristic (ROC) curve.\n\nplot_roc_curve()\n\nPlots an ROC curve from pre-computed performance data.\n\ncreate_precision_recall_curve()\n\nCreates a Precision-Recall curve.\n\ncreate_precision_recall_curve_times()\n\nCreates a time-dependent Precision-Recall curve.\n\nplot_precision_recall_curve()\n\nPlots a Precision-Recall curve from pre-computed performance data.\n\ncreate_gains_curve()\n\nCreates a Gains curve.\n\ncreate_gains_curve_times()\n\nCreates a time-dependent Gains curve.\n\nplot_gains_curve()\n\nPlots a Gains curve from pre-computed performance data.\n\ncreate_lift_curve()\n\nCreates a Lift curve.\n\ncreate_lift_curve_times()\n\nCreates a time-dependent Lift curve.\n\nplot_lift_curve()\n\nPlots a Lift curve from pre-computed performance data.\n\n\n\n\nCalibration\n\nCalibration visualizations for classification and time-to-event models. See Curve API Compatibility for time-dependent heuristic and horizon differences.\n\n\ncreate_calibration_curve()\n\nCreates a Calibration Curve.\n\ncreate_calibration_curve_times()\n\nCreate a time-dependent calibration curve across fixed horizons.\n\n\n\n\nSummary Reports\n\nCreate historical R-backed reports or explicitly opt into canonical browser ReportSpec rendering.\n\n\ncreate_summary_report()\n\nCreate an rtichoke model-performance summary report.\n\ncreate_reals_summary_report_times()\n\nCreate a minimal time-dependent outcome distribution browser summary report.\n\n\n\n\nUtility\n\nDecision-curve analysis for classification and time-to-event models.\n\n\ncreate_decision_curve()\n\nCreates a Decision Curve.\n\ncreate_decision_curve_times()\n\nCreates a time-dependent Decision Curve.\n\nplot_decision_curve()\n\nPlots a Decision Curve from pre-computed performance data.",
     "crumbs": [
       "Reference",
       "API Index"
@@ -169,132 +169,99 @@
     ]
   },
   {
-    "objectID": "reference/create_precision_recall_curve_times.html",
-    "href": "reference/create_precision_recall_curve_times.html",
-    "title": "create_precision_recall_curve_times()",
+    "objectID": "reference/create_reals_summary_report_times.html",
+    "href": "reference/create_reals_summary_report_times.html",
+    "title": "create_reals_summary_report_times()",
     "section": "",
-    "text": "Creates a time-dependent Precision-Recall curve.\n\n\nUsage\nSource\n\n\ncreate_precision_recall_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nGenerates a Precision-Recall curve for time-to-event models, evaluating performance at specified time horizons. It handles censored data and competing risks based on the provided heuristics.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event statuses.\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe event or censoring times.\n\nfixed_time_horizons: list[float]\n\nA list of time points for performance evaluation.\n\nheuristics_sets: list[Dict] = [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n\nSpecifies how to handle censored data and competing events.\n\nby: float = 0.01\n\nThe step size for probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\nrenderer: (plotly, browser, rtichoke_viz) = \"plotly\"\n\nRendering backend. \"plotly\" remains the default. \"browser\" and its \"rtichoke_viz\" alias return a canonical offline browser chart.\n\n\n\n\n\nReturns\n\n\n Figure or RtichokeBrowserChart\n\nA Plotly Figure or canonical offline browser chart depending on renderer.",
+    "text": "Create a minimal time-dependent outcome distribution browser summary report.\n\n\nUsage\nSource\n\n\ncreate_reals_summary_report_times(\n    reals,\n    times,\n    fixed_time_horizons,\n    *,\n    renderer=\"browser\",\n    output_file=\"summary_report_times.html\",\n    heuristics=False\n)\n\n\nThe report contains only Outcome Distribution, without predictions or model-performance metrics. By default it displays raw observed statuses. Enable heuristics for eight interactive censoring/competing-event combinations using the existing Kaplan-Meier/Aalen-Johansen preparation.\n\n\nParameters\n\n\nreals: Union[np.ndarray, list[int], Dict[str, Any]]\n\nOutcome labels: 0 = censored, 1 = primary event, 2 = competing event. Dictionary keys name distinct populations and must match times in both keys and order. Each population must be nonempty.\n\ntimes: Union[np.ndarray, list[float], Dict[str, Any]]\n\nFollow-up times.\n\nfixed_time_horizons: list[float]\n\nNonempty finite nonnegative horizons; sorted, deduplicated, with zero included. Events at the horizon are included; censoring at the horizon remains event-free when censoring is excluded.\n\nrenderer: (\"browser\", \"rtichoke_viz\") = \"browser\"\n\nRenderer backend. Defaults to \"browser\".\n\noutput_file: str or pathlib.Path = \"summary_report_times.html\"\n\nHTML destination file path. Defaults to \"summary_report_times.html\".\n\nheuristics: bool = False\n\nEnable censoring and competing-event controls. Defaults to False. The initial selection adjusts censoring and treats competing events as negative. Exclusions define a retained population at each horizon; exclusion percentages use original population size. Empty retained populations have unavailable estimates. Beyond follow-up support, displayed estimates retain the estimator’s last plateau. Adjusted estimates require the relevant independent-censoring assumptions.\n\n\n\n\n\nReturns\n\n\n pathlib.Path\n\nThe generated HTML file path.\n\n\n\n\n\nExamples\n&gt;&gt;&gt; create_reals_summary_report_times(\n...     reals=[1, 0, 2], times=[2, 5, 4], fixed_time_horizons=[3, 5],\n...     output_file=\"outcomes.html\", heuristics=True,\n... )",
     "crumbs": [
       "Reference",
-      "Discrimination",
-      "[create_precision_recall_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
+      "Summary Reports",
+      "[create_reals_summary_report_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
-    "objectID": "reference/create_performance_table_times.html",
-    "href": "reference/create_performance_table_times.html",
-    "title": "create_performance_table_times()",
+    "objectID": "reference/create_precision_recall_curve.html",
+    "href": "reference/create_precision_recall_curve.html",
+    "title": "create_precision_recall_curve()",
     "section": "",
-    "text": "Create a time-dependent rtichoke performance table.\n\n\nUsage\nSource\n\n\ncreate_performance_table_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=_DEFAULT_HEURISTICS,\n    by=0.01,\n    stratified_by=(\"probability_threshold\",),\n    color_values=DEFAULT_COLORS,\n    renderer=\"great_tables\"\n)\n\n\nNumerical results come from prepare_performance_data_times(). The table keeps time horizon and censoring/competing-event heuristics visible so that multiple requested evaluation scenarios are not collapsed in presentation. Observed times are normalized to floating point at this public wrapper boundary; fixed-horizon normalization is handled by the shared time-dependent performance pipeline.",
+    "text": "Creates a Precision-Recall curve.\n\n\nUsage\nSource\n\n\ncreate_precision_recall_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nThis function generates a Precision-Recall curve, which is a common alternative to the ROC curve, particularly for imbalanced datasets. It plots precision (Positive Predictive Value) against recall (True Positive Rate) for a binary classifier at different probability thresholds.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true binary labels (0 or 1). Can be a single array or a dictionary mapping names to label arrays.\n\nby: float = 0.01\n\nThe step size for the probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the Plotly lines.\n\nrenderer: (plotly, browser, rtichoke_viz) = \"plotly\"\n\nRendering backend. \"plotly\" remains the default. \"browser\" and its \"rtichoke_viz\" alias return a canonical offline browser chart.\n\n\n\n\n\nReturns\n\n\n Figure or RtichokeBrowserChart\n\nA Plotly Figure or canonical offline browser chart.",
+    "crumbs": [
+      "Reference",
+      "Discrimination",
+      "[create_precision_recall_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
+    ]
+  },
+  {
+    "objectID": "reference/create_performance_table.html",
+    "href": "reference/create_performance_table.html",
+    "title": "create_performance_table()",
+    "section": "",
+    "text": "Create an R-style rtichoke performance table.\n\n\nUsage\nSource\n\n\ncreate_performance_table(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=(\"probability_threshold\",),\n    color_values=DEFAULT_COLORS,\n    renderer=\"great_tables\"\n)",
     "crumbs": [
       "Reference",
       "Performance Tables",
-      "[create_performance_table_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
+      "[create_performance_table()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
-    "objectID": "reference/create_lift_curve_times.html",
-    "href": "reference/create_lift_curve_times.html",
-    "title": "create_lift_curve_times()",
+    "objectID": "reference/create_lift_curve.html",
+    "href": "reference/create_lift_curve.html",
+    "title": "create_lift_curve()",
     "section": "",
-    "text": "Creates a time-dependent Lift curve.\n\n\nUsage\nSource\n\n\ncreate_lift_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nGenerates a Lift curve for time-to-event models, which is evaluated at specified time horizons and handles censored data and competing risks.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event statuses.\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe event or censoring times.\n\nfixed_time_horizons: list[float]\n\nA list of time points for performance evaluation.\n\nheuristics_sets: list[Dict] = [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n\nSpecifies how to handle censored data and competing events.\n\nby: float = 0.01\n\nThe step size for probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\nrenderer: (plotly, matplotlib, browser, rtichoke_viz) = \"plotly\"\n\nRendering backend. Plotly remains the default production behavior.\n\n\n\n\n\nReturns\n\n\n Figure or RtichokeBrowserChart\n\nA Plotly or Matplotlib figure, or an offline browser chart, depending on renderer.",
+    "text": "Creates a Lift curve.\n\n\nUsage\nSource\n\n\ncreate_lift_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nA Lift curve is a visual tool used to evaluate the performance of a classification model. It shows how much better the model is at identifying positive outcomes compared to a random guess. The “lift” is the ratio of the results obtained with the model to the results from a random selection.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true binary labels (0 or 1).\n\nby: float = 0.01\n\nThe step size for the probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\nrenderer: (plotly, matplotlib, browser, rtichoke_viz) = \"plotly\"\n\nRendering backend. The default, \"plotly\", preserves the existing return value and behavior. \"matplotlib\" requires the optional Matplotlib dependency. \"browser\" and its \"rtichoke_viz\" alias return an offline browser chart backed by the packaged TypeScript bundle.\n\n\n\n\n\nReturns\n\n\n Figure or RtichokeBrowserChart\n\nA Plotly or Matplotlib figure, or an offline browser chart, depending on renderer.",
     "crumbs": [
       "Reference",
       "Discrimination",
-      "[create_lift_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
+      "[create_lift_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
-    "objectID": "reference/create_gains_curve_times.html",
-    "href": "reference/create_gains_curve_times.html",
-    "title": "create_gains_curve_times()",
+    "objectID": "reference/create_gains_curve.html",
+    "href": "reference/create_gains_curve.html",
+    "title": "create_gains_curve()",
     "section": "",
-    "text": "Creates a time-dependent Gains curve.\n\n\nUsage\nSource\n\n\ncreate_gains_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nGenerates a Gains curve for time-to-event models, which is evaluated at specified time horizons and handles censored data and competing risks.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event statuses.\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe event or censoring times.\n\nfixed_time_horizons: list[float]\n\nA list of time points for performance evaluation.\n\nheuristics_sets: list[Dict] = [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n\nSpecifies how to handle censored data and competing events.\n\nby: float = 0.01\n\nThe step size for probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\nrenderer: (plotly, matplotlib, browser, rtichoke_viz) = \"plotly\"\n\nRendering backend. Plotly remains the default production behavior.\n\n\n\n\n\nReturns\n\n\n Figure or RtichokeBrowserChart\n\nA Plotly or Matplotlib figure, or an offline browser chart, depending on renderer.",
+    "text": "Creates a Gains curve.\n\n\nUsage\nSource\n\n\ncreate_gains_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nA Gains curve is a marketing and business analytics tool that evaluates the performance of a predictive model. It shows the percentage of positive outcomes (the “gain”) that can be captured by targeting a certain percentage of the population, sorted by predicted probability.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true binary labels (0 or 1).\n\nby: float = 0.01\n\nThe step size for the probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\nrenderer: (plotly, matplotlib, browser, rtichoke_viz) = \"plotly\"\n\nRendering backend. The default, \"plotly\", preserves the existing return value and behavior. \"matplotlib\" requires the optional Matplotlib dependency. \"browser\" and its \"rtichoke_viz\" alias return an offline browser chart backed by the packaged TypeScript bundle.\n\n\n\n\n\nReturns\n\n\n Figure or RtichokeBrowserChart\n\nA Plotly or Matplotlib figure, or an offline browser chart, depending on renderer.",
     "crumbs": [
       "Reference",
       "Discrimination",
-      "[create_gains_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
+      "[create_gains_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
-    "objectID": "reference/create_decision_curve_times.html",
-    "href": "reference/create_decision_curve_times.html",
-    "title": "create_decision_curve_times()",
+    "objectID": "reference/create_decision_curve.html",
+    "href": "reference/create_decision_curve.html",
+    "title": "create_decision_curve()",
     "section": "",
-    "text": "Creates a time-dependent Decision Curve.\n\n\nUsage\nSource\n\n\ncreate_decision_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    decision_type=\"conventional\",\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    min_p_threshold=0,\n    max_p_threshold=1,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nrenderer=\"plotly\" preserves the historical default. For time-dependent Decision Curves, \"browser\" and \"rtichoke_viz\" return a canonical RtichokeBrowserChart built from already-computed production values.",
+    "text": "Creates a Decision Curve.\n\n\nUsage\nSource\n\n\ncreate_decision_curve(\n    probs,\n    reals,\n    decision_type=\"conventional\",\n    min_p_threshold=0,\n    max_p_threshold=1,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nrenderer=\"plotly\" preserves the historical default. For static conventional Decision Curves and static Interventions Avoided curves, \"browser\" and \"rtichoke_viz\" return a canonical RtichokeBrowserChart built from already-computed production values.",
     "crumbs": [
       "Reference",
       "Utility",
-      "[create_decision_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
+      "[create_decision_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
-    "objectID": "reference/create_calibration_curve_times.html",
-    "href": "reference/create_calibration_curve_times.html",
-    "title": "create_calibration_curve_times()",
+    "objectID": "reference/create_calibration_curve.html",
+    "href": "reference/create_calibration_curve.html",
+    "title": "create_calibration_curve()",
     "section": "",
-    "text": "Create a time-dependent calibration curve across fixed horizons.\n\n\nUsage\nSource\n\n\ncreate_calibration_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets,\n    calibration_type=\"discrete\",\n    smooth_method=\"local_aj\",\n    bandwidth=None,\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    *,\n    n_bins=10\n)\n\n\nThis function generates time-dependent calibration curves evaluating predicted probabilities against observed outcomes over specified prediction horizons.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nTrue outcome indicators (0 for censored, 1 for event of interest, 2 for competing risk).\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nFollow-up times corresponding to reals.\n\nfixed_time_horizons: List[float]\n\nList of prediction horizons (times) at which to evaluate calibration.\n\nheuristics_sets: List[Dict[str, str]]\n\nList of heuristic dictionaries defining censoring and competing risk adjustments. Note: under censoring_heuristic=\"excluded\", observations censored exactly at the evaluation horizon (time == horizon) are retained as event-free.\n\ncalibration_type: str = \"discrete\"\n\nType of calibration plot, either \"discrete\" (binned) or \"smooth\". Defaults to \"discrete\".\n\nsmooth_method: str = \"local_aj\"\n\nSmoothing method when calibration_type=\"smooth\". Supported options are \"local_aj\" (Gerds’ local Aalen-Johansen/KM neighborhood estimation), \"secondary_cox\" (Austin, Harrell & McLernon secondary Cox regression with 3-knot restricted cubic splines on complementary log-log predictions), or \"pseudo_values\" (jackknife pseudo-values lowess). Defaults to \"local_aj\".\n\nbandwidth: Union[float, None] = None\n\nBandwidth fraction for \"local_aj\" neighborhood smoothing. Defaults to None.\n\nsize: int = 600\n\nWidth and height of the Plotly figure in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nList of hex color strings for traces.\n\nn_bins: int = 10\n\nNumber of bins for discrete calibration curves. Defaults to 10.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the time-dependent calibration curve.\n\n\n\n\n\nRaises\n\n\n ValueError\n\nIf a heuristic set requests competing_heuristic='adjusted_as_censored'.",
+    "text": "Creates a Calibration Curve.\n\n\nUsage\nSource\n\n\ncreate_calibration_curve(\n    probs,\n    reals,\n    calibration_type=\"discrete\",\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    *,\n    n_bins=10\n)\n\n\nThis function generates a calibration curve, which evaluates how well the predicted probabilities from one or more models align with the observed binary outcomes. It can plot either discrete binned calibration (10 bins by default) or a smoothed calibration curve.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true binary labels (0 or 1). Can be a single array or a dictionary mapping names to label arrays.\n\ncalibration_type: str = \"discrete\"\n\nThe type of calibration curve to plot. Options are \"discrete\" (binned) or \"smooth\" (smoothed lowess). Defaults to \"discrete\".\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines/markers.\n\nn_bins: int = 10\n\nNumber of bins for discrete calibration curves. Defaults to 10.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the calibration curve.",
     "crumbs": [
       "Reference",
       "Calibration",
-      "[create_calibration_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
+      "[create_calibration_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
-    "objectID": "package-info.html",
-    "href": "package-info.html",
-    "title": "Package Info",
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Getting Started",
     "section": "",
-    "text": "Package\nVersion Constraint\nLast Published\nPyPI\n\n\n\n\nplotly\n&lt;7.0.0,&gt;=6.0.0\n2026-09-15\n\n\n\npolarstate\n==0.1.10\n2026-10-18\n\n\n\nsmoothstate\n&gt;=0.1.1\n2026-08-19\n\n\n\npolars\n&gt;=1.31.0\n2026-10-25\n\n\n\nreactable\n&gt;=0.1.5\n2025-10-10\n\n\n\ngreat-tables\n&gt;=0.18.0\n2026-10-15\n\n\n\nscikit-learn\n&gt;=1.6.1\n2026-09-10"
-  },
-  {
-    "objectID": "package-info.html#matplotlib",
-    "href": "package-info.html#matplotlib",
-    "title": "Package Info",
-    "section": "matplotlib",
-    "text": "matplotlib\n\n\n\nPackage\nVersion Constraint\nLast Published\nPyPI\n\n\n\n\nmatplotlib\n&gt;=3.9.0\n2026-09-11"
-  },
-  {
-    "objectID": "contributing.html",
-    "href": "contributing.html",
-    "title": "Contributing",
-    "section": "",
-    "text": "Contributions are welcome, and they are greatly appreciated! Every little bit helps, and credit will always be given."
-  },
-  {
-    "objectID": "contributing.html#report-bugs",
-    "href": "contributing.html#report-bugs",
-    "title": "Contributing",
-    "section": "Report Bugs",
-    "text": "Report Bugs\nIf you are reporting a bug, please include:\n\nYour operating system name and version.\nAny details about your local setup that might be helpful in troubleshooting.\nDetailed steps to reproduce the bug."
-  },
-  {
-    "objectID": "contributing.html#fix-bugs",
-    "href": "contributing.html#fix-bugs",
-    "title": "Contributing",
-    "section": "Fix Bugs",
-    "text": "Fix Bugs\nLook through the GitHub issues for bugs. Anything tagged with “bug” and “help wanted” is open to whoever wants to implement it."
-  },
-  {
-    "objectID": "contributing.html#implement-features",
-    "href": "contributing.html#implement-features",
-    "title": "Contributing",
-    "section": "Implement Features",
-    "text": "Implement Features\nLook through the GitHub issues for features. Anything tagged with “enhancement” and “help wanted” is open to whoever wants to implement it."
-  },
-  {
-    "objectID": "contributing.html#write-documentation",
-    "href": "contributing.html#write-documentation",
-    "title": "Contributing",
-    "section": "Write Documentation",
-    "text": "Write Documentation\nYou can never have enough documentation! Please feel free to contribute to any part of the documentation, such as the official docs, docstrings, or even on the web in blog posts, articles, and such."
-  },
-  {
-    "objectID": "contributing.html#submit-feedback",
-    "href": "contributing.html#submit-feedback",
-    "title": "Contributing",
-    "section": "Submit Feedback",
-    "text": "Submit Feedback\nIf you are proposing a feature:\n\nExplain in detail how it would work.\nKeep the scope as narrow as possible, to make it easier to implement.\nRemember that this is a volunteer-driven project, and that contributions are welcome :)"
+    "text": "rtichoke is a Python library for interactive visualization of predictive-model performance. It supports discrimination, calibration, utility, and time-to-event evaluation workflows.\nFor some reproducible examples please visit rtichoke blog!\n\nInstallation\nIf you use uv to manage your Python project, add rtichoke with:\nuv add rtichoke\nThis adds rtichoke to your project dependencies and updates the uv lockfile.\nIf you are not using uv, install rtichoke from PyPI with pip:\npip install rtichoke\n\n\nImport\nimport numpy as np\nimport rtichoke as rk\n\n\nInputs\nMost rtichoke plotting functions use two dictionaries:\n\nprobs: model predictions, keyed by model or population name.\nreals: observed outcomes, keyed by population name.\n\n\n\n\n\n\n\nTip\n\n\n\nSimilar curve families can still differ in defaults and time-dependent handling. See Curve API Compatibility, and if a call fails, search Common Errors & Fixes by literal exception text.\n\n\n\n\nSingle model\nprobs_single = {\n    \"Model A\": np.array([0.1, 0.9, 0.4, 0.8, 0.3, 0.7, 0.2, 0.6])\n}\nreals_single = {\n    \"Population\": np.array([0, 1, 0, 1, 0, 1, 0, 1])\n}\n\nfig = rk.create_roc_curve(\n    probs=probs_single,\n    reals=reals_single,\n)\n\nfig.show()\n\n\nCompare models\nWhen several models are evaluated on the same population, provide one probability vector per model and one outcome vector for the shared population.\nprobs_comparison = {\n    \"Model A\": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),\n    \"Model B\": np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6]),\n    \"Random Guess\": np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),\n}\nreals_comparison = {\n    \"Population\": np.array([0, 1, 0, 1, 0, 1])\n}\n\nfig = rk.create_precision_recall_curve(\n    probs=probs_comparison,\n    reals=reals_comparison,\n)\n\nfig.show()\n\n\nCompare populations\nTo compare a model across populations, provide matching keys in probs and reals. Population sizes may differ; each probability vector only needs to match the outcome vector for the same key.\nprobs_populations = {\n    \"Train\": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),\n    \"Test\": np.array([0.2, 0.8, 0.3, 0.7]),\n}\nreals_populations = {\n    \"Train\": np.array([0, 1, 0, 1, 0, 1]),\n    \"Test\": np.array([0, 1, 0, 0]),\n}\n\nfig = rk.create_calibration_curve(\n    probs=probs_populations,\n    reals=reals_populations,\n)\n\nfig.show()\nHere, Train contains six observations and Test contains four. This matching-key contract is supported by calibration as well as the other curve families.\nFrom here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The Naming Conventions guide explains how the exported function families fit together, while Curve API Compatibility documents where those families still differ.\n\n\nLinks\nView on PyPI Python Tutorials R Package R Tutorials Source Issues Changelog\n\n\nAI / Agents\nSkills llms.txt llms-full.txt\n\n\nDevelopers\n\n\n\nUriah Finkel\n\n\n\n\n\nCommunity\nContributing guide\n\n\nMeta\nRequires: Python &gt;=3.12 Provides-Extra: matplotlib Package Info",
+    "crumbs": [
+      "Getting Started",
+      "Home"
+    ]
   },
   {
     "objectID": "changelog.html",
@@ -353,86 +320,131 @@
     "text": "New Contributors\n\n@uriahf made their first contribution in https://github.com/uriahf/rtichoke_python/pull/84\n@google-labs-jules[bot] made their first contribution in https://github.com/uriahf/rtichoke_python/pull/260\n\nFull Changelog: https://github.com/uriahf/rtichoke_python/commits/v0.1.29"
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Getting Started",
+    "objectID": "contributing.html",
+    "href": "contributing.html",
+    "title": "Contributing",
     "section": "",
-    "text": "rtichoke is a Python library for interactive visualization of predictive-model performance. It supports discrimination, calibration, utility, and time-to-event evaluation workflows.\nFor some reproducible examples please visit rtichoke blog!\n\nInstallation\nIf you use uv to manage your Python project, add rtichoke with:\nuv add rtichoke\nThis adds rtichoke to your project dependencies and updates the uv lockfile.\nIf you are not using uv, install rtichoke from PyPI with pip:\npip install rtichoke\n\n\nImport\nimport numpy as np\nimport rtichoke as rk\n\n\nInputs\nMost rtichoke plotting functions use two dictionaries:\n\nprobs: model predictions, keyed by model or population name.\nreals: observed outcomes, keyed by population name.\n\n\n\n\n\n\n\nTip\n\n\n\nSimilar curve families can still differ in defaults and time-dependent handling. See Curve API Compatibility, and if a call fails, search Common Errors & Fixes by literal exception text.\n\n\n\n\nSingle model\nprobs_single = {\n    \"Model A\": np.array([0.1, 0.9, 0.4, 0.8, 0.3, 0.7, 0.2, 0.6])\n}\nreals_single = {\n    \"Population\": np.array([0, 1, 0, 1, 0, 1, 0, 1])\n}\n\nfig = rk.create_roc_curve(\n    probs=probs_single,\n    reals=reals_single,\n)\n\nfig.show()\n\n\nCompare models\nWhen several models are evaluated on the same population, provide one probability vector per model and one outcome vector for the shared population.\nprobs_comparison = {\n    \"Model A\": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),\n    \"Model B\": np.array([0.2, 0.8, 0.3, 0.7, 0.4, 0.6]),\n    \"Random Guess\": np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),\n}\nreals_comparison = {\n    \"Population\": np.array([0, 1, 0, 1, 0, 1])\n}\n\nfig = rk.create_precision_recall_curve(\n    probs=probs_comparison,\n    reals=reals_comparison,\n)\n\nfig.show()\n\n\nCompare populations\nTo compare a model across populations, provide matching keys in probs and reals. Population sizes may differ; each probability vector only needs to match the outcome vector for the same key.\nprobs_populations = {\n    \"Train\": np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7]),\n    \"Test\": np.array([0.2, 0.8, 0.3, 0.7]),\n}\nreals_populations = {\n    \"Train\": np.array([0, 1, 0, 1, 0, 1]),\n    \"Test\": np.array([0, 1, 0, 0]),\n}\n\nfig = rk.create_calibration_curve(\n    probs=probs_populations,\n    reals=reals_populations,\n)\n\nfig.show()\nHere, Train contains six observations and Test contains four. This matching-key contract is supported by calibration as well as the other curve families.\nFrom here, use the API Reference for the full set of curve types, parameters, and time-to-event variants. The Naming Conventions guide explains how the exported function families fit together, while Curve API Compatibility documents where those families still differ.\n\n\nLinks\nView on PyPI Python Tutorials R Package R Tutorials Source Issues Changelog\n\n\nAI / Agents\nSkills llms.txt llms-full.txt\n\n\nDevelopers\n\n\n\nUriah Finkel\n\n\n\n\n\nCommunity\nContributing guide\n\n\nMeta\nRequires: Python &gt;=3.12 Provides-Extra: matplotlib Package Info",
-    "crumbs": [
-      "Getting Started",
-      "Home"
-    ]
+    "text": "Contributions are welcome, and they are greatly appreciated! Every little bit helps, and credit will always be given."
   },
   {
-    "objectID": "reference/create_calibration_curve.html",
-    "href": "reference/create_calibration_curve.html",
-    "title": "create_calibration_curve()",
+    "objectID": "contributing.html#report-bugs",
+    "href": "contributing.html#report-bugs",
+    "title": "Contributing",
+    "section": "Report Bugs",
+    "text": "Report Bugs\nIf you are reporting a bug, please include:\n\nYour operating system name and version.\nAny details about your local setup that might be helpful in troubleshooting.\nDetailed steps to reproduce the bug."
+  },
+  {
+    "objectID": "contributing.html#fix-bugs",
+    "href": "contributing.html#fix-bugs",
+    "title": "Contributing",
+    "section": "Fix Bugs",
+    "text": "Fix Bugs\nLook through the GitHub issues for bugs. Anything tagged with “bug” and “help wanted” is open to whoever wants to implement it."
+  },
+  {
+    "objectID": "contributing.html#implement-features",
+    "href": "contributing.html#implement-features",
+    "title": "Contributing",
+    "section": "Implement Features",
+    "text": "Implement Features\nLook through the GitHub issues for features. Anything tagged with “enhancement” and “help wanted” is open to whoever wants to implement it."
+  },
+  {
+    "objectID": "contributing.html#write-documentation",
+    "href": "contributing.html#write-documentation",
+    "title": "Contributing",
+    "section": "Write Documentation",
+    "text": "Write Documentation\nYou can never have enough documentation! Please feel free to contribute to any part of the documentation, such as the official docs, docstrings, or even on the web in blog posts, articles, and such."
+  },
+  {
+    "objectID": "contributing.html#submit-feedback",
+    "href": "contributing.html#submit-feedback",
+    "title": "Contributing",
+    "section": "Submit Feedback",
+    "text": "Submit Feedback\nIf you are proposing a feature:\n\nExplain in detail how it would work.\nKeep the scope as narrow as possible, to make it easier to implement.\nRemember that this is a volunteer-driven project, and that contributions are welcome :)"
+  },
+  {
+    "objectID": "package-info.html",
+    "href": "package-info.html",
+    "title": "Package Info",
     "section": "",
-    "text": "Creates a Calibration Curve.\n\n\nUsage\nSource\n\n\ncreate_calibration_curve(\n    probs,\n    reals,\n    calibration_type=\"discrete\",\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    *,\n    n_bins=10\n)\n\n\nThis function generates a calibration curve, which evaluates how well the predicted probabilities from one or more models align with the observed binary outcomes. It can plot either discrete binned calibration (10 bins by default) or a smoothed calibration curve.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true binary labels (0 or 1). Can be a single array or a dictionary mapping names to label arrays.\n\ncalibration_type: str = \"discrete\"\n\nThe type of calibration curve to plot. Options are \"discrete\" (binned) or \"smooth\" (smoothed lowess). Defaults to \"discrete\".\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines/markers.\n\nn_bins: int = 10\n\nNumber of bins for discrete calibration curves. Defaults to 10.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the calibration curve.",
+    "text": "Package\nVersion Constraint\nLast Published\nPyPI\n\n\n\n\nplotly\n&lt;7.0.0,&gt;=6.0.0\n2026-09-15\n\n\n\npolarstate\n==0.1.10\n2026-10-18\n\n\n\nsmoothstate\n&gt;=0.1.1\n2026-08-19\n\n\n\npolars\n&gt;=1.31.0\n2026-10-25\n\n\n\nreactable\n&gt;=0.1.5\n2025-10-10\n\n\n\ngreat-tables\n&gt;=0.18.0\n2026-10-15\n\n\n\nscikit-learn\n&gt;=1.6.1\n2026-09-10"
+  },
+  {
+    "objectID": "package-info.html#matplotlib",
+    "href": "package-info.html#matplotlib",
+    "title": "Package Info",
+    "section": "matplotlib",
+    "text": "matplotlib\n\n\n\nPackage\nVersion Constraint\nLast Published\nPyPI\n\n\n\n\nmatplotlib\n&gt;=3.9.0\n2026-09-11"
+  },
+  {
+    "objectID": "reference/create_calibration_curve_times.html",
+    "href": "reference/create_calibration_curve_times.html",
+    "title": "create_calibration_curve_times()",
+    "section": "",
+    "text": "Create a time-dependent calibration curve across fixed horizons.\n\n\nUsage\nSource\n\n\ncreate_calibration_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets,\n    calibration_type=\"discrete\",\n    smooth_method=\"local_aj\",\n    bandwidth=None,\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    *,\n    n_bins=10\n)\n\n\nThis function generates time-dependent calibration curves evaluating predicted probabilities against observed outcomes over specified prediction horizons.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nTrue outcome indicators (0 for censored, 1 for event of interest, 2 for competing risk).\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nFollow-up times corresponding to reals.\n\nfixed_time_horizons: List[float]\n\nList of prediction horizons (times) at which to evaluate calibration.\n\nheuristics_sets: List[Dict[str, str]]\n\nList of heuristic dictionaries defining censoring and competing risk adjustments. Note: under censoring_heuristic=\"excluded\", observations censored exactly at the evaluation horizon (time == horizon) are retained as event-free.\n\ncalibration_type: str = \"discrete\"\n\nType of calibration plot, either \"discrete\" (binned) or \"smooth\". Defaults to \"discrete\".\n\nsmooth_method: str = \"local_aj\"\n\nSmoothing method when calibration_type=\"smooth\". Supported options are \"local_aj\" (Gerds’ local Aalen-Johansen/KM neighborhood estimation), \"secondary_cox\" (Austin, Harrell & McLernon secondary Cox regression with 3-knot restricted cubic splines on complementary log-log predictions), or \"pseudo_values\" (jackknife pseudo-values lowess). Defaults to \"local_aj\".\n\nbandwidth: Union[float, None] = None\n\nBandwidth fraction for \"local_aj\" neighborhood smoothing. Defaults to None.\n\nsize: int = 600\n\nWidth and height of the Plotly figure in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nList of hex color strings for traces.\n\nn_bins: int = 10\n\nNumber of bins for discrete calibration curves. Defaults to 10.\n\n\n\n\n\nReturns\n\n\n Figure\n\nA Plotly Figure object representing the time-dependent calibration curve.\n\n\n\n\n\nRaises\n\n\n ValueError\n\nIf a heuristic set requests competing_heuristic='adjusted_as_censored'.",
     "crumbs": [
       "Reference",
       "Calibration",
-      "[create_calibration_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
+      "[create_calibration_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
-    "objectID": "reference/create_decision_curve.html",
-    "href": "reference/create_decision_curve.html",
-    "title": "create_decision_curve()",
+    "objectID": "reference/create_decision_curve_times.html",
+    "href": "reference/create_decision_curve_times.html",
+    "title": "create_decision_curve_times()",
     "section": "",
-    "text": "Creates a Decision Curve.\n\n\nUsage\nSource\n\n\ncreate_decision_curve(\n    probs,\n    reals,\n    decision_type=\"conventional\",\n    min_p_threshold=0,\n    max_p_threshold=1,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nrenderer=\"plotly\" preserves the historical default. For static conventional Decision Curves and static Interventions Avoided curves, \"browser\" and \"rtichoke_viz\" return a canonical RtichokeBrowserChart built from already-computed production values.",
+    "text": "Creates a time-dependent Decision Curve.\n\n\nUsage\nSource\n\n\ncreate_decision_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    decision_type=\"conventional\",\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    min_p_threshold=0,\n    max_p_threshold=1,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nrenderer=\"plotly\" preserves the historical default. For time-dependent Decision Curves, \"browser\" and \"rtichoke_viz\" return a canonical RtichokeBrowserChart built from already-computed production values.",
     "crumbs": [
       "Reference",
       "Utility",
-      "[create_decision_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
+      "[create_decision_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
-    "objectID": "reference/create_gains_curve.html",
-    "href": "reference/create_gains_curve.html",
-    "title": "create_gains_curve()",
+    "objectID": "reference/create_gains_curve_times.html",
+    "href": "reference/create_gains_curve_times.html",
+    "title": "create_gains_curve_times()",
     "section": "",
-    "text": "Creates a Gains curve.\n\n\nUsage\nSource\n\n\ncreate_gains_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nA Gains curve is a marketing and business analytics tool that evaluates the performance of a predictive model. It shows the percentage of positive outcomes (the “gain”) that can be captured by targeting a certain percentage of the population, sorted by predicted probability.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true binary labels (0 or 1).\n\nby: float = 0.01\n\nThe step size for the probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\nrenderer: (plotly, matplotlib, browser, rtichoke_viz) = \"plotly\"\n\nRendering backend. The default, \"plotly\", preserves the existing return value and behavior. \"matplotlib\" requires the optional Matplotlib dependency. \"browser\" and its \"rtichoke_viz\" alias return an offline browser chart backed by the packaged TypeScript bundle.\n\n\n\n\n\nReturns\n\n\n Figure or RtichokeBrowserChart\n\nA Plotly or Matplotlib figure, or an offline browser chart, depending on renderer.",
+    "text": "Creates a time-dependent Gains curve.\n\n\nUsage\nSource\n\n\ncreate_gains_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nGenerates a Gains curve for time-to-event models, which is evaluated at specified time horizons and handles censored data and competing risks.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event statuses.\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe event or censoring times.\n\nfixed_time_horizons: list[float]\n\nA list of time points for performance evaluation.\n\nheuristics_sets: list[Dict] = [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n\nSpecifies how to handle censored data and competing events.\n\nby: float = 0.01\n\nThe step size for probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\nrenderer: (plotly, matplotlib, browser, rtichoke_viz) = \"plotly\"\n\nRendering backend. Plotly remains the default production behavior.\n\n\n\n\n\nReturns\n\n\n Figure or RtichokeBrowserChart\n\nA Plotly or Matplotlib figure, or an offline browser chart, depending on renderer.",
     "crumbs": [
       "Reference",
       "Discrimination",
-      "[create_gains_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
+      "[create_gains_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
-    "objectID": "reference/create_lift_curve.html",
-    "href": "reference/create_lift_curve.html",
-    "title": "create_lift_curve()",
+    "objectID": "reference/create_lift_curve_times.html",
+    "href": "reference/create_lift_curve_times.html",
+    "title": "create_lift_curve_times()",
     "section": "",
-    "text": "Creates a Lift curve.\n\n\nUsage\nSource\n\n\ncreate_lift_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nA Lift curve is a visual tool used to evaluate the performance of a classification model. It shows how much better the model is at identifying positive outcomes compared to a random guess. The “lift” is the ratio of the results obtained with the model to the results from a random selection.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true binary labels (0 or 1).\n\nby: float = 0.01\n\nThe step size for the probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\nrenderer: (plotly, matplotlib, browser, rtichoke_viz) = \"plotly\"\n\nRendering backend. The default, \"plotly\", preserves the existing return value and behavior. \"matplotlib\" requires the optional Matplotlib dependency. \"browser\" and its \"rtichoke_viz\" alias return an offline browser chart backed by the packaged TypeScript bundle.\n\n\n\n\n\nReturns\n\n\n Figure or RtichokeBrowserChart\n\nA Plotly or Matplotlib figure, or an offline browser chart, depending on renderer.",
+    "text": "Creates a time-dependent Lift curve.\n\n\nUsage\nSource\n\n\ncreate_lift_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nGenerates a Lift curve for time-to-event models, which is evaluated at specified time horizons and handles censored data and competing risks.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event statuses.\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe event or censoring times.\n\nfixed_time_horizons: list[float]\n\nA list of time points for performance evaluation.\n\nheuristics_sets: list[Dict] = [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n\nSpecifies how to handle censored data and competing events.\n\nby: float = 0.01\n\nThe step size for probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\nrenderer: (plotly, matplotlib, browser, rtichoke_viz) = \"plotly\"\n\nRendering backend. Plotly remains the default production behavior.\n\n\n\n\n\nReturns\n\n\n Figure or RtichokeBrowserChart\n\nA Plotly or Matplotlib figure, or an offline browser chart, depending on renderer.",
     "crumbs": [
       "Reference",
       "Discrimination",
-      "[create_lift_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
+      "[create_lift_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
-    "objectID": "reference/create_performance_table.html",
-    "href": "reference/create_performance_table.html",
-    "title": "create_performance_table()",
+    "objectID": "reference/create_performance_table_times.html",
+    "href": "reference/create_performance_table_times.html",
+    "title": "create_performance_table_times()",
     "section": "",
-    "text": "Create an R-style rtichoke performance table.\n\n\nUsage\nSource\n\n\ncreate_performance_table(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=(\"probability_threshold\",),\n    color_values=DEFAULT_COLORS,\n    renderer=\"great_tables\"\n)",
+    "text": "Create a time-dependent rtichoke performance table.\n\n\nUsage\nSource\n\n\ncreate_performance_table_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=_DEFAULT_HEURISTICS,\n    by=0.01,\n    stratified_by=(\"probability_threshold\",),\n    color_values=DEFAULT_COLORS,\n    renderer=\"great_tables\"\n)\n\n\nNumerical results come from prepare_performance_data_times(). The table keeps time horizon and censoring/competing-event heuristics visible so that multiple requested evaluation scenarios are not collapsed in presentation. Observed times are normalized to floating point at this public wrapper boundary; fixed-horizon normalization is handled by the shared time-dependent performance pipeline.",
     "crumbs": [
       "Reference",
       "Performance Tables",
-      "[create_performance_table()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
+      "[create_performance_table_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {
-    "objectID": "reference/create_precision_recall_curve.html",
-    "href": "reference/create_precision_recall_curve.html",
-    "title": "create_precision_recall_curve()",
+    "objectID": "reference/create_precision_recall_curve_times.html",
+    "href": "reference/create_precision_recall_curve_times.html",
+    "title": "create_precision_recall_curve_times()",
     "section": "",
-    "text": "Creates a Precision-Recall curve.\n\n\nUsage\nSource\n\n\ncreate_precision_recall_curve(\n    probs,\n    reals,\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nThis function generates a Precision-Recall curve, which is a common alternative to the ROC curve, particularly for imbalanced datasets. It plots precision (Positive Predictive Value) against recall (True Positive Rate) for a binary classifier at different probability thresholds.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary mapping model or dataset names to 1-D numpy arrays of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true binary labels (0 or 1). Can be a single array or a dictionary mapping names to label arrays.\n\nby: float = 0.01\n\nThe step size for the probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the Plotly lines.\n\nrenderer: (plotly, browser, rtichoke_viz) = \"plotly\"\n\nRendering backend. \"plotly\" remains the default. \"browser\" and its \"rtichoke_viz\" alias return a canonical offline browser chart.\n\n\n\n\n\nReturns\n\n\n Figure or RtichokeBrowserChart\n\nA Plotly Figure or canonical offline browser chart.",
+    "text": "Creates a time-dependent Precision-Recall curve.\n\n\nUsage\nSource\n\n\ncreate_precision_recall_curve_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons,\n    heuristics_sets=[{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}],\n    by=0.01,\n    stratified_by=[\"probability_threshold\"],\n    size=600,\n    color_values=[\"#1b9e77\", \"#d95f02\", \"#7570b3\", \"#e7298a\", \"#07004D\", \"#E6AB02\", \"#FE5F55\", \"#54494B\", \"#006E90\", \"#BC96E6\", \"#52050A\", \"#1F271B\", \"#BE7C4D\", \"#63768D\", \"#08A045\", \"#320A28\", \"#82FF9E\", \"#2176FF\", \"#D1603D\", \"#585123\"],\n    renderer=\"plotly\"\n)\n\n\nGenerates a Precision-Recall curve for time-to-event models, evaluating performance at specified time horizons. It handles censored data and competing risks based on the provided heuristics.\n\n\nParameters\n\n\nprobs: Dict[str, np.ndarray]\n\nA dictionary of predicted probabilities.\n\nreals: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe true event statuses.\n\ntimes: Union[np.ndarray, Dict[str, np.ndarray]]\n\nThe event or censoring times.\n\nfixed_time_horizons: list[float]\n\nA list of time points for performance evaluation.\n\nheuristics_sets: list[Dict] = [{\"censoring_heuristic\": \"adjusted\", \"competing_heuristic\": \"adjusted_as_negative\"}]\n\nSpecifies how to handle censored data and competing events.\n\nby: float = 0.01\n\nThe step size for probability thresholds. Defaults to 0.01.\n\nstratified_by: Sequence[str] = [\"probability_threshold\"]\n\nVariables for stratification. Defaults to [\"probability_threshold\"].\n\nsize: int = 600\n\nThe width and height of the plot in pixels. Defaults to 600.\n\ncolor_values: List[str] = [    \"#1b9e77\",    \"#d95f02\",    \"#7570b3\",    \"#e7298a\",    \"#07004D\",    \"#E6AB02\",    \"#FE5F55\",    \"#54494B\",    \"#006E90\",    \"#BC96E6\",    \"#52050A\",    \"#1F271B\",    \"#BE7C4D\",    \"#63768D\",    \"#08A045\",    \"#320A28\",    \"#82FF9E\",    \"#2176FF\",    \"#D1603D\",    \"#585123\",]\n\nA list of hex color strings for the plot lines.\n\nrenderer: (plotly, browser, rtichoke_viz) = \"plotly\"\n\nRendering backend. \"plotly\" remains the default. \"browser\" and its \"rtichoke_viz\" alias return a canonical offline browser chart.\n\n\n\n\n\nReturns\n\n\n Figure or RtichokeBrowserChart\n\nA Plotly Figure or canonical offline browser chart depending on renderer.",
     "crumbs": [
       "Reference",
       "Discrimination",
-      "[create_precision_recall_curve()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
+      "[create_precision_recall_curve_times()]{.doc-object-name .doc-function .doc-label .doc-label-function}"
     ]
   },
   {

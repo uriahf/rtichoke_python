@@ -47,6 +47,7 @@
 > Create historical R-backed reports or explicitly opt into canonical browser ReportSpec rendering.
 
 - [create_summary_report](https://uriahf.github.io/rtichoke_python/reference/create_summary_report.html): Create an rtichoke model-performance summary report
+- [create_reals_summary_report_times](https://uriahf.github.io/rtichoke_python/reference/create_reals_summary_report_times.html): Create a minimal time-dependent outcome distribution browser summary report
 
 #### Utility
 > Decision-curve analysis for classification and time-to-event models.

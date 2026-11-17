@@ -101,6 +101,9 @@ Create historical R-backed reports or explicitly opt into canonical browser Repo
 [create_summary_report()](create_summary_report.md#rtichoke.create_summary_report)  
 Create an rtichoke model-performance summary report.
 
+[create_reals_summary_report_times()](create_reals_summary_report_times.md#rtichoke.create_reals_summary_report_times)  
+Create a minimal time-dependent outcome distribution browser summary report.
+
 
 ## Utility
 
