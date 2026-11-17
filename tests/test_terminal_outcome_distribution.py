@@ -7,11 +7,13 @@ import subprocess
 from dataclasses import replace
 from pathlib import Path
 
+import numpy as np
 import polars as pl
 import pytest
 from jsonschema import Draft7Validator
 
 from rtichoke._terminal_outcome_distribution import (
+    _canonical_probability,
     _prepare_terminal_outcome_distributions,
     _terminal_outcome_distribution_v2_spec,
 )
@@ -282,3 +284,22 @@ def test_adapter_only_bounds_machine_scale_endpoint_roundoff():
         _terminal_outcome_distribution_v2_spec((invalid, *rows[1:]))
     with pytest.raises(ValueError, match="exactly eight pairs"):
         _terminal_outcome_distribution_v2_spec(rows[:-1])
+
+
+@pytest.mark.parametrize("n", [1, 600, 1000000])
+def test_endpoint_roundoff_budget_is_bounded_and_does_not_modify_interior(n):
+    tolerance = min(1e-12, 8 * np.finfo(float).eps * n)
+    assert _canonical_probability(-tolerance, retained_n=n) == 0
+    assert _canonical_probability(1 + tolerance / 2, retained_n=n) == 1
+    assert _canonical_probability(0.123456789, retained_n=n) == 0.123456789
+    for value in [
+        -2 * tolerance,
+        1 + 2 * tolerance,
+        -1e-8,
+        1 + 1e-8,
+        np.nan,
+        np.inf,
+        None,
+    ]:
+        with pytest.raises(ValueError, match="finite probability"):
+            _canonical_probability(value, retained_n=n)

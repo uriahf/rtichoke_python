@@ -199,9 +199,12 @@ def _prepare_terminal_outcome_distributions(
     return tuple(result)
 
 
-def _canonical_probability(value: float | None) -> float:
+def _canonical_probability(value: float | None, *, retained_n: int = 1) -> float:
     """Bound floating-point endpoint roundoff without changing prepared estimates."""
-    tolerance = 8 * np.finfo(float).eps
+    # AJ accumulates contributions across event times. Allow endpoint roundoff
+    # to scale with the retained population, but never beyond the 1e-12
+    # absolute tolerance used by independent-reference parity checks.
+    tolerance = min(1e-12, 8 * np.finfo(float).eps * max(1, retained_n))
     if (
         value is None
         or not np.isfinite(value)
@@ -264,7 +267,9 @@ def _terminal_outcome_distribution_v2_spec(
                             None
                             if estimate is None
                             and r.status == "undefined_empty_population"
-                            else _canonical_probability(estimate)
+                            else _canonical_probability(
+                                estimate, retained_n=r.retained_n
+                            )
                         ),
                     }
                     for state, estimate in r.probabilities.items()
