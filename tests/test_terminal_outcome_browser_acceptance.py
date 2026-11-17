@@ -154,3 +154,114 @@ def test_terminal_outcome_status_browser_acceptance(tmp_path: Path):
         assert result == 8 * 2 * 4
         assert errors == []
         browser.close()
+
+
+def test_public_outcome_only_report_controls_and_offline_loading(tmp_path: Path):
+    from rtichoke import create_reals_summary_report_times
+
+    playwright = pytest.importorskip("playwright.sync_api")
+    reference = json.loads(
+        (Path(__file__).parent / "fixtures/terminal_event/reference.json").read_text()
+    )
+    populations = {
+        name: reference["cases"][case]["data"]
+        for name, case in [("censored", "all_censored"), ("zero ties", "zero_ties")]
+    }
+    reals = {name: [r["event"] for r in rows] for name, rows in populations.items()}
+    times = {name: [r["time"] for r in rows] for name, rows in populations.items()}
+    path = create_reals_summary_report_times(
+        reals,
+        times,
+        [3, 1, 2, 1],
+        heuristics=True,
+        output_file=tmp_path / "public.html",
+    )
+    raw = create_reals_summary_report_times(
+        reals,
+        times,
+        [1, 2, 3],
+        output_file=tmp_path / "raw.html",
+    )
+    with _serve(tmp_path) as base_url, playwright.sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        errors = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        page.goto(f"{base_url}/{path.name}")
+        page.wait_for_selector(".rtichoke-report__heuristics-controls")
+        contexts = page.evaluate("""() => {
+          const report = JSON.parse(document.querySelector('#rtichoke-report-spec').textContent);
+          const spec = report.sections[0].items[0].spec;
+          const root = document.querySelector('.rtichoke-report');
+          const check = (ok, msg) => { if (!ok) throw Error(msg); };
+          const choose = selector => {
+            const radio = root.querySelector(selector);
+            check(radio, 'missing control: ' + selector);
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change', {bubbles:true}));
+          };
+          const readout = () => root.querySelector('.rtichoke-outcome-distribution__readout');
+          let contexts = 0;
+          for (const [key, variant] of Object.entries(spec.variants)) {
+            const [c, k] = key.split(':');
+            choose('input[name$="-censoring"][value="' + c + '"]');
+            choose('input[name$="-competing"][value="' + k + '"]');
+            for (const evaluation of spec.evaluations) {
+              choose('input[value="' + evaluation.id + '"]');
+              const exclusion = variant.exclusions.find(e => e.evaluationId === evaluation.id);
+              const distributions = variant.stateDistributions.filter(d => d.evaluationId === evaluation.id);
+              for (const [index, dist] of distributions.entries()) {
+                const slider = root.querySelector('input[type="range"]');
+                slider.value = String(index);
+                slider.dispatchEvent(new Event('input', {bubbles:true}));
+                const text = readout().textContent;
+                check(text.includes('Time = ' + dist.horizon.toFixed(3)), 'lost horizon');
+                const counts = exclusion.excludedCounts.find(e => e.horizon === dist.horizon);
+                for (const [heuristic, label, count] of [
+                  [c, 'Censored excluded', counts.censoredExcludedCount],
+                  [k, 'Competing excluded', counts.competingExcludedCount]]) {
+                  if (heuristic === 'excluded') {
+                    check(text.includes(label + count + ' / ' + exclusion.originalSampleSize + ' ('), 'lost exclusion');
+                  }
+                }
+                const rows = [...readout().querySelectorAll('tbody tr')].slice(0, dist.states.length);
+                check(rows.length === dist.states.length, 'lost states');
+                dist.states.forEach((state, i) => {
+                  if (state.estimate === null) {
+                    check(rows[i].textContent.includes('Unavailable'), 'undefined estimate became zero');
+                    check(!rows[i].querySelector('.rtichoke-performance-table__bar'), 'undefined estimate has bar');
+                  } else {
+                    check(rows[i].textContent.includes((state.estimate * 100).toFixed(1) + '%'), 'estimate changed');
+                  }
+                });
+                check(text.includes('no subjects remain') === (dist.estimateStatus === 'undefined_empty_population'), 'lost undefined notice');
+                check(text.includes('estimator plateaus') === (dist.estimateStatus === 'beyond_support_plateau'), 'lost support notice');
+                contexts++;
+              }
+            }
+            choose('input[name$="-censoring"][value="' + (c === 'excluded' ? 'adjusted' : 'excluded') + '"]');
+            check(readout().textContent.includes('Time = 3.000'), 'pair change lost horizon');
+            check(root.querySelector('input[value="evaluation-2"]').checked, 'pair change lost population');
+          }
+          const ids = [...document.querySelectorAll('[id]')].map(e => e.id);
+          check(new Set(ids).size === ids.length, 'duplicate DOM ids');
+          return contexts;
+        }""")
+        assert contexts == 64
+        note = page.locator(".rtichoke-cheat-sheet").text_content()
+        assert "independent-censoring assumptions" in note
+        assert "unavailable estimates, not zero" in note
+        page.goto(f"{base_url}/{raw.name}")
+        page.wait_for_selector(".rtichoke-outcome-distribution__readout")
+        assert page.locator(".rtichoke-report__heuristics-controls").count() == 0
+        assert (
+            "raw observed outcome status"
+            in page.locator(".rtichoke-cheat-sheet").text_content()
+        )
+        requests = []
+        page.on("request", lambda request: requests.append(request.url))
+        page.goto(path.as_uri())
+        page.wait_for_selector(".rtichoke-report__heuristics-controls")
+        assert not any(url.startswith(("http:", "https:")) for url in requests)
+        assert errors == []
+        browser.close()

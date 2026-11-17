@@ -84,6 +84,7 @@ class _ReportSpecV11(TypedDict, total=False):
     type: str
     title: str
     sections: list[_ReportSectionV11]
+    heuristics: dict[str, Any]
 
 
 def _build_report_spec_v11(

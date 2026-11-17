@@ -31,6 +31,7 @@ EXPECTED_PUBLIC_EXPORTS = {
     "render_performance_table",
     "create_summary_report",
     "create_summary_report_times",
+    "create_reals_summary_report_times",
 }
 
 

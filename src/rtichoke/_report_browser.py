@@ -184,9 +184,11 @@ class RtichokeBrowserReport:
         spec: dict[str, Any],
         *,
         include_cheat_sheet: bool = False,
+        header_annotation_html: str | None = None,
     ) -> None:
         self.spec = spec
         self.include_cheat_sheet = include_cheat_sheet
+        self.header_annotation_html = header_annotation_html
 
     def write_html(self, path: str | Path) -> Path:
         """Write an offline HTML page that delegates composition to renderReport()."""
@@ -209,9 +211,11 @@ class RtichokeBrowserReport:
         else:
             doc_title = "rtichoke report"
 
-        if self.include_cheat_sheet:
+        if self.include_cheat_sheet or self.header_annotation_html is not None:
             cheat_sheet_json = json.dumps(
-                _performance_metrics_cheat_sheet_html()
+                self.header_annotation_html
+                if self.header_annotation_html is not None
+                else _performance_metrics_cheat_sheet_html()
             ).replace("</", "<\\/")
             mount_js = f"""    const reportNode = {render_fn}(spec, {{
       sectionGroupPresentation: "tabs",

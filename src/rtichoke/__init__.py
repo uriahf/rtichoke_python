@@ -67,6 +67,7 @@ from rtichoke.reals_distribution import (
 )
 
 from rtichoke.summary_report.summary_report import (
+    create_reals_summary_report_times as create_reals_summary_report_times,
     create_summary_report as create_summary_report,
     create_summary_report_times as create_summary_report_times,
 )
@@ -101,4 +102,5 @@ __all__ = [
     "render_performance_table",
     "create_summary_report",
     "create_summary_report_times",
+    "create_reals_summary_report_times",
 ]
