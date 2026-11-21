@@ -29,7 +29,7 @@ The report contains only Outcome Distribution, without predictions or model-perf
 Outcome labels: 0 = censored, 1 = primary event, 2 = competing event. Dictionary keys name distinct populations and must match `times` in both keys and order. Each population must be nonempty.
 
 `times: Union[np.ndarray, list[float], Dict[str, Any]]`  
-Follow-up times.
+Follow-up times. Target and competing events require positive times. Censoring may occur at time zero.
 
 `fixed_time_horizons: list[float]`  
 Nonempty finite nonnegative horizons; sorted, deduplicated, with zero included. Events at the horizon are included; censoring at the horizon remains event-free when censoring is excluded.
