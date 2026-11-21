@@ -14,7 +14,7 @@ dependencies = [
     "scikit-learn>=1.6.1",
 ]
 name = "rtichoke"
-version = "0.1.36"
+version = "0.1.37"
 description = "interactive visualizations for performance of predictive models"
 readme = "README.md"
 keywords = [
