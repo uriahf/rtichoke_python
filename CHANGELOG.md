@@ -2,6 +2,8 @@
 
 <!--next-version-placeholder-->
 
+- Fixed outcome-only heuristic reports rejecting accumulated floating-point endpoint roundoff in larger cohorts; substantive out-of-range estimates still raise errors.
+
 - Added `create_reals_summary_report_times()` for offline outcome-only reports, with optional interactive censoring/competing-event controls across all eight combinations (`heuristics=True`).
 
 - Fixed exact-horizon censoring semantics under `censoring_heuristic="excluded"`: subjects censored exactly at the evaluation horizon (`time == horizon`) are now retained as event-free rather than excluded.

@@ -173,3 +173,32 @@ def test_renderer_alias_and_unsupported_renderer(tmp_path):
     )
     with pytest.raises(ValueError, match="Unsupported renderer"):
         create_reals_summary_report_times([1], [2], [1], renderer="plotly")
+
+
+@pytest.mark.parametrize("n", [600, 1200])
+def test_large_complete_cohort_endpoint_roundoff_does_not_abort_public_report(
+    n, tmp_path
+):
+    # With one event per time, the true terminal risk is exactly one. Summing
+    # many AJ increments can overshoot by more than eight machine epsilons.
+    result = create_reals_summary_report_times(
+        [1] * n,
+        list(range(1, n + 1)),
+        [n // 2, n, n + 1],
+        output_file=tmp_path / "complete.html",
+        heuristics=True,
+    )
+    report = embedded_report(result)
+    spec = report["sections"][0]["items"][0]["spec"]
+    for variant in spec["variants"].values():
+        for row in variant["stateDistributions"]:
+            values = {s["stateId"]: s["estimate"] for s in row["states"]}
+            assert all(0 <= p <= 1 for p in values.values())
+            assert sum(values.values()) == pytest.approx(1, abs=1e-12)
+            if row["horizon"] >= n:
+                assert values["event_free"] == pytest.approx(0, abs=1e-12)
+                assert values.get("primary", values.get("composite")) == pytest.approx(
+                    1, abs=1e-12
+                )
+            elif row["horizon"] == n // 2:
+                assert values["event_free"] == pytest.approx(0.5, abs=1e-12)
