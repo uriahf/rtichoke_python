@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.1.37
+
+- Add browser-rendered outcome distribution charts for follow-up times and for categorical and continuous outcomes observed at discrete steps.
+- Require positive follow-up times for primary and competing events in the time-dependent outcome chart and report. Horizon zero and censoring at zero remain valid.
+- Bundle rtichoke_viz v0.24.3 for offline rendering.
+
 - Fixed outcome-only heuristic reports rejecting accumulated floating-point endpoint roundoff in larger cohorts; substantive out-of-range estimates still raise errors.
 
 - Added `create_reals_summary_report_times()` for offline outcome-only reports, with optional interactive censoring/competing-event controls across all eight combinations (`heuristics=True`).
