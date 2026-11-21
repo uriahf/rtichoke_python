@@ -30,7 +30,9 @@ def embedded_report(path):
     )
 
 
-@pytest.mark.parametrize("name", REFERENCE["cases"])
+@pytest.mark.parametrize(
+    "name", [name for name in REFERENCE["cases"] if name != "zero_ties"]
+)
 def test_public_report_preserves_every_independent_reference_row(name, tmp_path):
     case = REFERENCE["cases"][name]
     reals = [row["event"] for row in case["data"]]
@@ -109,7 +111,7 @@ def test_public_report_preserves_every_independent_reference_row(name, tmp_path)
 
 
 def test_default_is_raw_and_has_no_controls_or_performance_sections(tmp_path):
-    reals, times, horizons = [1, 2, 0], [0, 2, 3], [4, 2, 4]
+    reals, times, horizons = [1, 2, 0], [1, 2, 0], [4, 2, 4]
     result = create_reals_summary_report_times(
         reals, times, horizons, output_file=tmp_path / "raw.html"
     )
@@ -202,3 +204,16 @@ def test_large_complete_cohort_endpoint_roundoff_does_not_abort_public_report(
                 )
             elif row["horizon"] == n // 2:
                 assert values["event_free"] == pytest.approx(0.5, abs=1e-12)
+
+
+@pytest.mark.parametrize("heuristics", [False, True])
+@pytest.mark.parametrize("event", [1, 2])
+def test_report_rejects_events_at_time_zero(tmp_path, heuristics, event):
+    with pytest.raises(ValueError, match="events must occur after time zero"):
+        create_reals_summary_report_times(
+            [event, 0],
+            [0, 0],
+            [1],
+            output_file=tmp_path / "report.html",
+            heuristics=heuristics,
+        )

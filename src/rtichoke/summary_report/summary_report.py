@@ -60,7 +60,10 @@ from rtichoke.processing.send_post_request_to_r_rtichoke import (
     send_requests_to_rtichoke_r,
 )
 from rtichoke.processing.transforms import _create_list_data_to_adjust
-from rtichoke.reals_distribution import _outcome_distribution_v2_spec
+from rtichoke.reals_distribution import (
+    _outcome_distribution_v2_spec,
+    _validate_outcome_event_times,
+)
 
 SummaryReportRenderer = Literal["r", "browser"]
 RealsSummaryReportRenderer = Literal["browser", "rtichoke_viz"]
@@ -362,7 +365,8 @@ def create_reals_summary_report_times(
         Dictionary keys name distinct populations and must match ``times``
         in both keys and order. Each population must be nonempty.
     times : Union[np.ndarray, list[float], Dict[str, Any]]
-        Follow-up times.
+        Follow-up times. Target and competing events require positive times.
+        Censoring may occur at time zero.
     fixed_time_horizons : list[float]
         Nonempty finite nonnegative horizons; sorted, deduplicated, with zero
         included. Events at the horizon are included; censoring at the horizon
@@ -483,6 +487,7 @@ def _reals_report_inputs(
             raise ValueError("times must contain finite nonnegative numbers.")
         if np.iscomplexobj(r):
             raise ValueError("reals must contain numeric outcome labels 0, 1, or 2.")
+        _validate_outcome_event_times(r, t)
         populations[name] = pl.DataFrame(
             {"id": np.arange(1, len(r) + 1), "reals": r, "times": t}
         )
