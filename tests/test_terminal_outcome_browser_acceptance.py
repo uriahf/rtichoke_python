@@ -165,7 +165,10 @@ def test_public_outcome_only_report_controls_and_offline_loading(tmp_path: Path)
     )
     populations = {
         name: reference["cases"][case]["data"]
-        for name, case in [("censored", "all_censored"), ("zero ties", "zero_ties")]
+        for name, case in [
+            ("censored", "all_censored"),
+            ("tied events", "tied_events_censor"),
+        ]
     }
     reals = {name: [r["event"] for r in rows] for name, rows in populations.items()}
     times = {name: [r["time"] for r in rows] for name, rows in populations.items()}

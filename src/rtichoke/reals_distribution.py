@@ -30,6 +30,11 @@ _STATE_ORDER = [
 _SUPPORTED_REALS_DISTRIBUTION_RENDERERS = ("browser", "rtichoke_viz")
 
 
+def _validate_outcome_event_times(reals: np.ndarray, times: np.ndarray) -> None:
+    if np.any(np.isin(reals, [1, 2]) & (times == 0)):
+        raise ValueError("Target and competing events must occur after time zero.")
+
+
 def _outcome_distribution_v2_spec(
     reals: Union[np.ndarray, List[int], Dict[str, Any]],
     times: Union[np.ndarray, List[float], Dict[str, Any]],
@@ -93,6 +98,8 @@ def _outcome_distribution_v2_spec(
             raise ValueError(
                 f"Length mismatch between reals ({n_obs}) and times ({len(times_arr)}) for {group_name!r}."
             )
+
+        _validate_outcome_event_times(reals_arr, times_arr)
 
         # 1. fixed_time_horizon stateDistributions
 
