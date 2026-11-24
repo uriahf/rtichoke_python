@@ -136,6 +136,7 @@ def create_calibration_curve_times(
     ],
     *,
     n_bins: int = 10,
+    binning: str = "rank",
 ) -> Figure:
     """Create a time-dependent calibration curve across fixed horizons.
 
@@ -175,6 +176,11 @@ def create_calibration_curve_times(
         List of hex color strings for traces.
     n_bins : int, optional
         Number of bins for discrete calibration curves. Defaults to 10.
+    binning : {"rank", "type7"}, optional
+        Use the existing grouping rule or, for censoring-adjusted discrete
+        calibration, use right-closed Type-7 quantile groups. Equal scores
+        stay together and empty groups are omitted. Use five bins to match
+        the R time-dependent report.
 
     Returns
     -------
@@ -212,6 +218,7 @@ def create_calibration_curve_times(
         size=size,
         color_values=color_values,
         n_bins=n_bins,
+        binning=binning,
     )
 
     fig = _create_plotly_curve_from_calibration_curve_list_times(
@@ -1201,20 +1208,41 @@ def _aj_risk_at_horizon(df: pl.DataFrame, horizon: float) -> float:
 
 
 def _make_adjusted_calibration_bins_data(
-    df: pl.DataFrame, horizon: float, n_bins: int = 10
+    df: pl.DataFrame, horizon: float, n_bins: int = 10, *, binning: str = "rank"
 ) -> pl.DataFrame:
     """Create calibration groups using within-group Aalen-Johansen risks."""
     n_bins = _validate_n_bins(n_bins)
-    grouped = df.with_columns(
-        (
-            (pl.col("prob").rank("average").over("reference_group") - 1)
-            * n_bins
-            // pl.len().over("reference_group")
-            + 1
+    if binning == "type7":
+        grouped = df.with_columns(
+            pl.col("prob")
+            .map_batches(
+                lambda scores: pl.Series(
+                    np.searchsorted(
+                        np.quantile(
+                            scores.to_numpy(), np.linspace(0, 1, n_bins + 1)[1:-1]
+                        ),
+                        scores.to_numpy(),
+                        side="left",
+                    )
+                    + 1,
+                    dtype=pl.Int64,
+                ),
+                return_dtype=pl.Int64,
+            )
+            .over("reference_group")
+            .alias("bin")
         )
-        .cast(pl.Int64)
-        .alias("bin")
-    )
+    else:
+        grouped = df.with_columns(
+            (
+                (pl.col("prob").rank("average").over("reference_group") - 1)
+                * n_bins
+                // pl.len().over("reference_group")
+                + 1
+            )
+            .cast(pl.Int64)
+            .alias("bin")
+        )
     rows = []
     for key, group_df in grouped.group_by(["reference_group", "bin"]):
         reference_group, bin_val = key
@@ -1358,11 +1386,21 @@ def _create_calibration_curve_list_times(
     ],
     *,
     n_bins: int = 10,
+    binning: str = "rank",
 ) -> Dict[str, Any]:
     """
     Creates the data structures needed for a time-dependent calibration curve plot.
     """
     n_bins = _validate_n_bins(n_bins)
+    if binning not in ("rank", "type7"):
+        raise ValueError("binning must be 'rank' or 'type7'.")
+    if binning == "type7" and (
+        calibration_type != "discrete"
+        or any(h["censoring_heuristic"] != "adjusted" for h in heuristics_sets)
+    ):
+        raise ValueError(
+            "Type-7 binning requires censoring-adjusted discrete calibration."
+        )
     effective_n_bins = n_bins if calibration_type == "discrete" else 10
 
     # Part 1: Prepare initial dataframe from inputs
@@ -1390,7 +1428,7 @@ def _create_calibration_curve_list_times(
                     continue
 
                 calibration_bins_data = _make_adjusted_calibration_bins_data(
-                    df_adj, horizon, n_bins=effective_n_bins
+                    df_adj, horizon, n_bins=effective_n_bins, binning=binning
                 )
                 probs_adj = {
                     key[0]: group_df["prob"].to_numpy()
