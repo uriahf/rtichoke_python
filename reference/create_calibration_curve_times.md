@@ -19,7 +19,8 @@ create_calibration_curve_times(
     size=600,
     color_values=["#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#07004D", "#E6AB02", "#FE5F55", "#54494B", "#006E90", "#BC96E6", "#52050A", "#1F271B", "#BE7C4D", "#63768D", "#08A045", "#320A28", "#82FF9E", "#2176FF", "#D1603D", "#585123"],
     *,
-    n_bins=10
+    n_bins=10,
+    binning="rank"
 )
 ```
 
@@ -84,6 +85,9 @@ List of hex color strings for traces.
 
 `n_bins: int = ``10`  
 Number of bins for discrete calibration curves. Defaults to 10.
+
+`binning: (rank, type7) = ``"rank"`  
+Use the existing grouping rule or, for censoring-adjusted discrete calibration, use right-closed Type-7 quantile groups. Equal scores stay together and empty groups are omitted. Use five bins to match the R time-dependent report.
 
 
 ## Returns
