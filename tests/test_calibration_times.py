@@ -398,3 +398,29 @@ def test_secondary_cox_duplicate_knots_fallback():
 
     assert len(smooth_trace.x) == 101
     assert np.all(np.isfinite(y_vals))
+
+
+def test_type7_time_calibration_matches_r_groups_and_risk():
+    # R's right-closed Type-7 quintiles for this tied score vector.
+    scores = np.array([0.1, 0.1, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.9])
+    groups = [slice(0, 3), slice(3, 5), slice(5, 7), slice(7, 9), slice(9, 12)]
+    events = np.resize([1, 2, 0], 12)
+    times = np.arange(1, 13)
+    for horizon in (3, 8, 12):
+        figure = create_calibration_curve_times(
+            {"Model": scores},
+            events,
+            times,
+            fixed_time_horizons=[horizon],
+            n_bins=5,
+            binning="type7",
+        )
+        trace = figure.data[1]
+        assert list(trace.x) == pytest.approx([scores[g].mean() for g in groups])
+        expected = [
+            AalenJohansenFitter()
+            .fit(times[g], events[g], event_of_interest=1)
+            .predict(horizon)
+            for g in groups
+        ]
+        assert list(trace.y) == pytest.approx(expected)
