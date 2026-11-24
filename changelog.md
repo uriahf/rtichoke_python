@@ -3,6 +3,98 @@
 This changelog is generated automatically from [GitHub Releases](https://github.com/uriahf/rtichoke_python/releases).
 
 
+# v0.1.37
+
+*2026-11-21* · [GitHub](https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.37)
+
+
+## What's Changed
+
+- Sync lockfile with 0.1.36 by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/360
+- Sync current main into rtichoke_viz integration branch by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/361
+- Prove vendored rtichoke_viz ROC rendering by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/358
+- Prove vendored rtichoke_viz calibration rendering by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/362
+- Pin vendored rtichoke_viz assets to v0.1.0 by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/363
+- Define cross-language evaluation semantics by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/364
+- Characterize static evaluation semantics by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/365
+- Characterize time-dependent evaluation semantics by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/366
+- Document cross-language semantic parity matrix by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/367
+- Add internal evaluation semantic metadata by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/369
+- BREAKING: use population metadata for time references by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/368
+- Preserve model vs population semantics in performance tables by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/371
+- Fix time-dependent gains reference ownership by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/370
+- Vendor rtichoke_viz v0.2.0 release by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/374
+- Sync v0.2.0 vendoring into ROC v2 builder branch by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/375
+- Add internal canonical ROC v2 spec builder by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/373
+- Add internal canonical gains v2 builder by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/376
+- Integrate rtichoke_viz v0.3.0 renderer selection by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/377
+- Add canonical time-dependent gains rendering by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/378
+- Build canonical v2 Lift specs in Python by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/379
+- Add ty pre-commit hook by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/381
+- Fix canonical Lift v2 y-axis domain by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/380
+- Adopt rtichoke_viz v0.4.0 and enable browser Lift by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/382
+- Add canonical PerformanceTableSpec producers by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/383
+- Add internal canonical ReportSpec assembler by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/384
+- Adopt rtichoke_viz v0.5.0 browser ReportSpec rendering by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/385
+- Add canonical calibration-v2 production builder by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/386
+- Add opt-in canonical browser summary reports by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/387
+- Fix direct-open browser summary reports by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/388
+- test: add Quarto browser summary report acceptance proof by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/389
+- Add static Precision-Recall browser rendering by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/390
+- Fix static Interventions Avoided per-100 scaling by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/391
+- Add static Decision Curve browser rendering by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/392
+- Add agent PR completion protocol by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/393
+- Add static Interventions Avoided browser rendering by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/394
+- Document persistent repository operating rules by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/395
+- Adopt time-dependent conventional Decision Curve browser rendering by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/396
+- Adopt time-dependent Precision-Recall browser rendering by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/397
+- Adopt time-dependent Interventions Avoided browser rendering by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/398
+- Complete static browser summary report parity by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/399
+- Restore static browser summary report parity by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/400
+- Add canonical browser time-dependent summary report by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/401
+- Adopt rtichoke_viz v0.18.0 by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/402
+- Activate browser operating-point controls by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/403
+- Add canonical browser support for time ROC by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/404
+- Add event risk to time summary reports by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/405
+- Adopt published rtichoke_viz v0.20.0 in Python consumer by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/407
+- Adopt published rtichoke_viz v0.20.1 by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/408
+- Generalize calibration bins by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/409
+- Make browser summary reports single-file by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/410
+- Adopt rtichoke_viz v0.20.2 by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/411
+- Fix time-dependent interventions avoided calculation ([\#412](https://github.com/uriahf/rtichoke_python/issues/412)) by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/413
+- Implement internal prediction-distribution data producer by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/414
+- Implement producer-owned prediction distribution rank_bins by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/415
+- fix: expose effective probability cutoff for PPCR operating points by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/416
+- Update PR [\#417](https://github.com/uriahf/rtichoke_python/issues/417) to published rtichoke_viz v0.22.1 release artifact by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/418
+- Add Prediction Distribution to browser Summary Report by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/419
+- Align Python browser summary report prediction distribution placement by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/420
+- Align Python browser Summary Report presentation parity with R reference by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/421
+- Align Python browser Summary Report presentation with R by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/422
+- Align time-dependent summary report presentation and terminology by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/423
+- docs: update browser summary report documentation and docstrings by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/425
+- Set HTML document title from ReportSpec title in browser report by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/424
+- Add Performance Metrics Cheat Sheet to static Summary Report by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/426
+- Vendor published rtichoke_viz v0.22.2 release by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/427
+- Vendor published rtichoke_viz v0.22.3 release by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/428
+- Vendor rtichoke_viz v0.23.0 by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/429
+- Add time-dependent prediction distribution data preparation by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/430
+- Add time-dependent reals distribution report producer by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/431
+- Adjust create_reals_distribution_times state labels and validation for R parity by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/432
+- Vendor rtichoke_viz v0.23.2 into rtichoke_python by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/434
+- Fix Exact-Horizon Censoring Semantics by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/439
+- Implement create_reals_distribution_steps API for discrete-step outcome distributions by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/437
+- feat: continuous observed-step outcome distribution with R parity by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/440
+- test: add independent terminal-event KM and AJ references by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/441
+- feat: prepare internal terminal outcome population variants by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/442
+- feat: adopt viz v0.24.2 and serialize terminal estimate statuses by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/443
+- feat: expose outcome-only time reports with interactive heuristics by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/444
+- Fix terminal-report failures from accumulated endpoint roundoff by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/445
+- Require positive times for incident terminal events by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/446
+- Prepare v0.1.37 release by [<span class="citation" data-cites="uriahf">@uriahf</span>](https://github.com/uriahf) in https://github.com/uriahf/rtichoke_python/pull/447
+
+**Full Changelog**: [https://github.com/uriahf/rtichoke_python/compare/v0.1.36…v0.1.37](https://github.com/uriahf/rtichoke_python/compare/v0.1.36...v0.1.37)
+
+
 # v0.1.36
 
 *2026-08-21* · [GitHub](https://github.com/uriahf/rtichoke_python/releases/tag/v0.1.36)
