@@ -140,16 +140,17 @@ def test_adjusted_discrete_calibration_uses_kaplan_meier_risk():
     assert calibration_trace.y[0] == pytest.approx(reference)
 
 
-def test_adjusted_discrete_calibration_matches_aalen_johansen():
+@pytest.mark.parametrize("time_dtype, horizon", [(float, 3.5), (int, 3.5), (float, 3)])
+def test_adjusted_discrete_calibration_matches_aalen_johansen(time_dtype, horizon):
     probs = {"model_1": np.repeat(0.4, 5)}
     reals = np.array([1, 2, 0, 2, 0])
-    times = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+    times = np.arange(1, 6, dtype=time_dtype)
 
     fig = create_calibration_curve_times(
         probs,
         reals,
         times,
-        fixed_time_horizons=[3.5],
+        fixed_time_horizons=[horizon],
         heuristics_sets=[
             {
                 "censoring_heuristic": "adjusted",
@@ -159,7 +160,7 @@ def test_adjusted_discrete_calibration_matches_aalen_johansen():
     )
 
     reference = (
-        AalenJohansenFitter().fit(times, reals, event_of_interest=1).predict(3.5)
+        AalenJohansenFitter().fit(times, reals, event_of_interest=1).predict(horizon)
     )
     assert fig.data[1].y[0] == pytest.approx(reference)
 

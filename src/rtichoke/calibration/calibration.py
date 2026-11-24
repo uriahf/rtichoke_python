@@ -1191,9 +1191,12 @@ def _prepare_adjusted_event_data(
 def _aj_risk_at_horizon(df: pl.DataFrame, horizon: float) -> float:
     """Estimate target-event cumulative incidence at one horizon."""
     event_table = prepare_event_table(
-        df.select(pl.col("time").alias("times"), pl.col("real").alias("reals"))
+        df.select(
+            pl.col("time").cast(pl.Float64).alias("times"),
+            pl.col("real").alias("reals"),
+        )
     )
-    estimate = predict_aj_estimates(event_table, pl.Series([horizon]))
+    estimate = predict_aj_estimates(event_table, pl.Series([horizon], dtype=pl.Float64))
     return float(estimate["state_occupancy_probability_1"][0])
 
 
