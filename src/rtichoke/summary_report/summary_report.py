@@ -85,6 +85,8 @@ def create_summary_report_times(
     by: float = 0.01,
     *,
     output_file: str | Path = "summary_report_times.html",
+    n_bins: int = 10,
+    binning: str = "rank",
 ) -> Path:
     """Create a canonical browser time-dependent model-performance summary report.
 
@@ -120,6 +122,12 @@ def create_summary_report_times(
         Defaults to 0.01.
     output_file : str or pathlib.Path, optional
         HTML destination file path. Defaults to ``"summary_report_times.html"``.
+
+    n_bins : int, optional
+        Number of groups for discrete calibration. Defaults to 10.
+    binning : {"rank", "type7"}, optional
+        Grouping for discrete calibration. Type-7 requires adjusted censoring.
+        Use five groups for the grouping rule in the R time report.
 
     Returns
     -------
@@ -165,6 +173,8 @@ def create_summary_report_times(
         fixed_time_horizons=fixed_time_horizons,
         heuristics_sets=heuristics_sets,
         calibration_type="discrete",
+        n_bins=n_bins,
+        binning=binning,
     )
 
     calib_smooth_spec = _calibration_v2_spec_from_curve_list(
