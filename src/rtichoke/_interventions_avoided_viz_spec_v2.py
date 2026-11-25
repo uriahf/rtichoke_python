@@ -7,6 +7,7 @@ recompute model statistics or threshold membership.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 
 import polars as pl
@@ -343,12 +344,14 @@ def _interventions_avoided_times_v2_spec_from_performance_data(
             candidates = risk_values.get(key, set())
             if not candidates:
                 continue
-            if len(candidates) != 1:
+            if not math.isclose(
+                min(candidates), max(candidates), rel_tol=0, abs_tol=1e-12
+            ):
                 raise ValueError(
                     "Time-dependent Interventions Avoided must have one calculated "
                     f"event risk per population and horizon: {population} at {horizon}"
                 )
-            event_risk = next(iter(candidates))
+            event_risk = min(candidates)
             references.append(
                 {
                     "type": "path",
