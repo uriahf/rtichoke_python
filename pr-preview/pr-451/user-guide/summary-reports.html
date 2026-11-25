@@ -82,7 +82,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-cca44feb53e15e129b6281a2a49c98be.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-41d4a511bab802f43a7b8208bc7e75c0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
-    <span class="navbar-title">rtichoke <span class="version-badge" title="Released 2026-11-21">v0.1.37</span></span>
+    <span class="navbar-title">rtichoke</span>
     </a>
   </div>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
@@ -197,15 +197,11 @@ document.addEventListener('DOMContentLoaded', () => {
     <a class="nav-link" href="../reference/index.html"> 
 <span class="menu-text">Reference</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../changelog.html"> 
-<span class="menu-text">Changelog</span></a>
-  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
     <span class="nav-link">
-<div id="github-widget" data-owner="uriahf" data-repo="rtichoke_python" data-stars="1" data-forks="0"></div>
+<div id="github-widget" data-owner="uriahf" data-repo="rtichoke_python"></div>
     </span>
   </li>  
 </ul>
@@ -333,6 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <li><a href="#static-browser-summary-report" id="toc-static-browser-summary-report" class="nav-link active" data-scroll-target="#static-browser-summary-report">Static browser Summary Report</a></li>
   <li><a href="#time-dependent-summary-report" id="toc-time-dependent-summary-report" class="nav-link" data-scroll-target="#time-dependent-summary-report">Time-dependent Summary Report</a>
   <ul class="collapse">
+  <li><a href="#use-calibration-predictions-from-each-horizon" id="toc-use-calibration-predictions-from-each-horizon" class="nav-link" data-scroll-target="#use-calibration-predictions-from-each-horizon">Use calibration predictions from each horizon</a></li>
   <li><a href="#architectural-differences-from-static-reports" id="toc-architectural-differences-from-static-reports" class="nav-link" data-scroll-target="#architectural-differences-from-static-reports">Architectural differences from static reports</a></li>
   </ul></li>
   </ul>
@@ -417,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>reals <span class="op">=</span> np.array([<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>])</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> np.array([<span class="dv">10</span>, <span class="dv">12</span>, <span class="dv">15</span>, <span class="dv">8</span>, <span class="dv">20</span>, <span class="dv">25</span>, <span class="dv">30</span>, <span class="dv">18</span>, <span class="dv">22</span>, <span class="dv">14</span>, <span class="dv">19</span>, <span class="dv">28</span>])</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>times <span class="op">=</span> np.array([<span class="dv">10</span>, <span class="dv">12</span>, <span class="dv">15</span>, <span class="dv">8</span>, <span class="dv">20</span>, <span class="dv">25</span>, <span class="dv">30</span>, <span class="dv">18</span>, <span class="dv">22</span>, <span class="dv">14</span>, <span class="dv">19</span>, <span class="dv">28</span>], dtype<span class="op">=</span><span class="bu">float</span>)</span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>create_summary_report_times(</span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    probs,</span>
@@ -440,6 +437,28 @@ document.addEventListener('DOMContentLoaded', () => {
 <li><strong>Utility</strong>: Displays time-dependent Decision Curve and Interventions Avoided curves.</li>
 <li><strong>Performance Table</strong>: Displays time-dependent performance tables grouped <strong>By Probability Threshold</strong> and <strong>By Predicted Positives Condition Rate (PPCR)</strong>.</li>
 </ol>
+<section id="use-calibration-predictions-from-each-horizon" class="level2">
+<h2 class="anchored" data-anchor-id="use-calibration-predictions-from-each-horizon">Use calibration predictions from each horizon</h2>
+<p>If your model produces an event probability for each horizon, pass those vectors through <code>calibration_probs_by_horizon</code>. Supply a vector for each requested horizon and each key in <code>probs</code>, with subjects in the same order as in the first example.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>calibration_probs_by_horizon <span class="op">=</span> {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="fl">15.0</span>: {</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Model A"</span>: np.array(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>            [<span class="fl">0.01</span>, <span class="fl">0.04</span>, <span class="fl">0.07</span>, <span class="fl">0.10</span>, <span class="fl">0.16</span>, <span class="fl">0.21</span>, <span class="fl">0.28</span>, <span class="fl">0.36</span>, <span class="fl">0.45</span>, <span class="fl">0.58</span>, <span class="fl">0.71</span>, <span class="fl">0.85</span>]</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    },</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="fl">25.0</span>: {<span class="st">"Model A"</span>: probs[<span class="st">"Model A"</span>]},</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>create_summary_report_times(</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    probs,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    reals,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    times,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    fixed_time_horizons<span class="op">=</span>[<span class="fl">15.0</span>, <span class="fl">25.0</span>],</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    calibration_probs_by_horizon<span class="op">=</span>calibration_probs_by_horizon,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    output_file<span class="op">=</span><span class="st">"summary_report_times_by_horizon.html"</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>Both smooth and discrete calibration use the vectors for the selected horizon. The report continues to use the original <code>probs</code> input for discrimination, utility, and the performance tables.</p>
+</section>
 <section id="architectural-differences-from-static-reports" class="level2">
 <h2 class="anchored" data-anchor-id="architectural-differences-from-static-reports">Architectural differences from static reports</h2>
 <p>The time-dependent summary report intentionally differs from the binary static report in three key ways:</p>
