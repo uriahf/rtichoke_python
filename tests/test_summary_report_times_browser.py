@@ -557,3 +557,27 @@ def test_performance_table_missing_confusion_values_suppresses_disclosure(tmp_pa
         )
         assert len(errors) == 0
         browser.close()
+
+
+def test_summary_report_offers_type7_calibration(tmp_path):
+    scores = np.arange(1, 13) / 13
+    events = np.resize([1, 2, 0], 12)
+    times = np.arange(1, 13, dtype=float)
+    output = create_summary_report_times(
+        {"Model": scores},
+        events,
+        times,
+        [3.0, 8.0],
+        by=0.2,
+        output_file=tmp_path / "type7.html",
+        n_bins=5,
+        binning="type7",
+    )
+    report = _embedded_report(output.read_text(encoding="utf-8"))
+    section = next(
+        section for section in report["sections"] if section["id"] == "calibration"
+    )
+    discrete = next(
+        item["spec"] for item in section["items"] if item["id"] == "calibration"
+    )
+    assert [point["total"] for point in discrete["data"]] == [3, 2, 2, 2, 3] * 2
