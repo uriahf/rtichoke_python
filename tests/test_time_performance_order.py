@@ -1,4 +1,5 @@
 import numpy as np
+from polars.testing import assert_frame_equal
 
 from rtichoke import prepare_performance_data_times
 
@@ -55,3 +56,17 @@ def test_prepare_performance_data_times_groups_reference_groups_for_comparison()
         .to_list()
     )
     assert observed_horizons == horizons
+
+
+def test_integer_follow_up_times_match_float_times_at_fractional_horizons():
+    probs = {"model": np.array([0.8, 0.2, 0.6, 0.4])}
+    reals = np.array([1, 0, 2, 1])
+    times = np.array([2, 7, 4, 9])
+    horizons = [2.0, 4.5, 8.5]
+
+    result = prepare_performance_data_times(probs, reals, times, horizons, by=0.2)
+    expected = prepare_performance_data_times(
+        probs, reals, times.astype(float), horizons, by=0.2
+    )
+
+    assert_frame_equal(result, expected)
