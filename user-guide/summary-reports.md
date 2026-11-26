@@ -60,7 +60,7 @@ probs = {
     )
 }
 reals = np.array([0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1])
-times = np.array([10, 12, 15, 8, 20, 25, 30, 18, 22, 14, 19, 28])
+times = np.array([10, 12, 15, 8, 20, 25, 30, 18, 22, 14, 19, 28], dtype=float)
 
 create_summary_report_times(
     probs,
@@ -82,6 +82,33 @@ The time-dependent browser report contains five top-level sections in exact orde
     - **Gains**
 4.  **Utility**: Displays time-dependent Decision Curve and Interventions Avoided curves.
 5.  **Performance Table**: Displays time-dependent performance tables grouped **By Probability Threshold** and **By Predicted Positives Condition Rate (PPCR)**.
+
+
+## Use calibration predictions from each horizon
+
+If your model produces an event probability for each horizon, pass those vectors through `calibration_probs_by_horizon`. Supply a vector for each requested horizon and each key in `probs`, with subjects in the same order as in the first example.
+
+``` python
+calibration_probs_by_horizon = {
+    15.0: {
+        "Model A": np.array(
+            [0.01, 0.04, 0.07, 0.10, 0.16, 0.21, 0.28, 0.36, 0.45, 0.58, 0.71, 0.85]
+        )
+    },
+    25.0: {"Model A": probs["Model A"]},
+}
+
+create_summary_report_times(
+    probs,
+    reals,
+    times,
+    fixed_time_horizons=[15.0, 25.0],
+    calibration_probs_by_horizon=calibration_probs_by_horizon,
+    output_file="summary_report_times_by_horizon.html",
+)
+```
+
+Both smooth and discrete calibration use the vectors for the selected horizon. The report continues to use the original `probs` input for discrimination, utility, and the performance tables.
 
 
 ## Architectural differences from static reports

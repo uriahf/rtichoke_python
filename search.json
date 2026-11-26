@@ -10,6 +10,16 @@
     ]
   },
   {
+    "objectID": "user-guide/summary-reports.html#use-calibration-predictions-from-each-horizon",
+    "href": "user-guide/summary-reports.html#use-calibration-predictions-from-each-horizon",
+    "title": "Summary reports",
+    "section": "Use calibration predictions from each horizon",
+    "text": "Use calibration predictions from each horizon\nIf your model produces an event probability for each horizon, pass those vectors through calibration_probs_by_horizon. Supply a vector for each requested horizon and each key in probs, with subjects in the same order as in the first example.\ncalibration_probs_by_horizon = {\n    15.0: {\n        \"Model A\": np.array(\n            [0.01, 0.04, 0.07, 0.10, 0.16, 0.21, 0.28, 0.36, 0.45, 0.58, 0.71, 0.85]\n        )\n    },\n    25.0: {\"Model A\": probs[\"Model A\"]},\n}\n\ncreate_summary_report_times(\n    probs,\n    reals,\n    times,\n    fixed_time_horizons=[15.0, 25.0],\n    calibration_probs_by_horizon=calibration_probs_by_horizon,\n    output_file=\"summary_report_times_by_horizon.html\",\n)\nBoth smooth and discrete calibration use the vectors for the selected horizon. The report continues to use the original probs input for discrimination, utility, and the performance tables.",
+    "crumbs": [
+      "Summary reports"
+    ]
+  },
+  {
     "objectID": "user-guide/summary-reports.html#architectural-differences-from-static-reports",
     "href": "user-guide/summary-reports.html#architectural-differences-from-static-reports",
     "title": "Summary reports",
