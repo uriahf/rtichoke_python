@@ -316,6 +316,8 @@ def _create_list_data_to_adjust(
             .with_columns(pl.col("reference_group").cast(reference_group_enum))
         )
 
+    # Continuous-time horizons use Float64 in the Aalen–Johansen as-of join.
+    data_to_adjust = data_to_adjust.with_columns(pl.col("times").cast(pl.Float64))
     data_to_adjust = add_cutoff_strata(
         data_to_adjust, by=by, stratified_by=stratified_by
     )
