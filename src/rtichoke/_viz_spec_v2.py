@@ -1059,12 +1059,12 @@ def _gains_population_horizon_risk(
         if (population, horizon) in values
     ):
         candidates = values[key]
-        if len(candidates) != 1:
+        if not math.isclose(min(candidates), max(candidates), rel_tol=0, abs_tol=1e-12):
             raise ValueError(
                 "Time-dependent gains must have one calculated event risk per "
                 f"population and horizon: {key[0]} at {key[1]}"
             )
-        risks[key] = next(iter(candidates))
+        risks[key] = min(candidates)
     return risks
 
 

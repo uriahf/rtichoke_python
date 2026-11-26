@@ -87,6 +87,7 @@ def create_summary_report_times(
     output_file: str | Path = "summary_report_times.html",
     n_bins: int = 10,
     binning: str = "rank",
+    calibration_probs_by_horizon: dict[float, dict[str, np.ndarray]] | None = None,
 ) -> Path:
     """Create a canonical browser time-dependent model-performance summary report.
 
@@ -129,6 +130,12 @@ def create_summary_report_times(
         Grouping for discrete calibration. Type-7 requires adjusted censoring.
         Use five groups for the grouping rule in the R time report.
 
+    calibration_probs_by_horizon : dict, optional
+        Calibration predictions keyed by horizon, then by the model or
+        population names in ``probs``. Include every requested horizon.
+        Vectors follow the same subject order as ``probs``. Other report
+        sections use ``probs``.
+
     Returns
     -------
     pathlib.Path
@@ -136,6 +143,22 @@ def create_summary_report_times(
     """
     if heuristics_sets is None:
         heuristics_sets = [dict(_DEFAULT_TIME_HEURISTICS[0])]
+
+    if calibration_probs_by_horizon is not None:
+        if set(calibration_probs_by_horizon) != set(fixed_time_horizons):
+            raise ValueError(
+                "Calibration predictions must match the requested horizons."
+            )
+        for horizon, predictions in calibration_probs_by_horizon.items():
+            if predictions.keys() != probs.keys():
+                raise ValueError(
+                    f"Calibration prediction keys at horizon {horizon} must match probs."
+                )
+            for name, values in predictions.items():
+                if values.ndim != 1 or values.shape != probs[name].shape:
+                    raise ValueError(
+                        f"Calibration vector for {name!r} at horizon {horizon} must match probs."
+                    )
 
     metadata = _build_evaluation_metadata(probs, reals, times)
 
@@ -158,31 +181,46 @@ def create_summary_report_times(
         by=by,
     )
 
-    calibration_curve_list_smooth = _create_calibration_curve_list_times(
-        probs,
-        reals,
-        times,
-        fixed_time_horizons=fixed_time_horizons,
-        heuristics_sets=heuristics_sets,
-        calibration_type="smooth",
-    )
-    calibration_curve_list_discrete = _create_calibration_curve_list_times(
-        probs,
-        reals,
-        times,
-        fixed_time_horizons=fixed_time_horizons,
-        heuristics_sets=heuristics_sets,
-        calibration_type="discrete",
-        n_bins=n_bins,
-        binning=binning,
-    )
+    calibration_heuristics = heuristics_sets
 
-    calib_smooth_spec = _calibration_v2_spec_from_curve_list(
-        calibration_curve_list_smooth, metadata, calibration_type="smooth"
-    )
-    calib_discrete_spec = _calibration_v2_spec_from_curve_list(
-        calibration_curve_list_discrete, metadata, calibration_type="discrete"
-    )
+    def calibration_spec(method: str) -> dict[str, Any]:
+        options: dict[str, Any] = (
+            {"n_bins": n_bins, "binning": binning} if method == "discrete" else {}
+        )
+        if calibration_probs_by_horizon is None:
+            curves = _create_calibration_curve_list_times(
+                probs,
+                reals,
+                times,
+                fixed_time_horizons=fixed_time_horizons,
+                heuristics_sets=calibration_heuristics,
+                calibration_type=method,
+                **options,
+            )
+        else:
+            by_horizon = [
+                _create_calibration_curve_list_times(
+                    calibration_probs_by_horizon[horizon],
+                    reals,
+                    times,
+                    fixed_time_horizons=[horizon],
+                    heuristics_sets=calibration_heuristics,
+                    calibration_type=method,
+                    **options,
+                )
+                for horizon in fixed_time_horizons
+            ]
+            point_key = "calibration_bins_dat" if method == "discrete" else "smooth_dat"
+            curves = {
+                key: pl.concat([curve[key] for curve in by_horizon])
+                for key in (point_key, "histogram_for_calibration")
+            }
+        return _calibration_v2_spec_from_curve_list(
+            curves, metadata, calibration_type=method
+        )
+
+    calib_smooth_spec = calibration_spec("smooth")
+    calib_discrete_spec = calibration_spec("discrete")
 
     roc_thresh_spec = _roc_times_v2_spec_from_performance_data(
         perf_data_thresh, metadata, operating_point_dimension="probability_threshold"

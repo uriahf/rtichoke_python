@@ -4,10 +4,15 @@ from typing import Any, cast
 import matplotlib.figure
 import numpy as np
 import plotly.graph_objects as go
+import polars as pl
+import pytest
 
 from rtichoke import create_gains_curve_times
 from rtichoke._renderers import RtichokeBrowserChart
-from rtichoke._viz_spec_v2 import _gains_times_v2_spec_from_performance_data
+from rtichoke._viz_spec_v2 import (
+    _gains_population_horizon_risk,
+    _gains_times_v2_spec_from_performance_data,
+)
 from rtichoke.performance_data.performance_data_times import (
     prepare_performance_data_times,
 )
@@ -166,3 +171,27 @@ def test_time_gains_renderers_preserve_plotly_default_and_horizons(tmp_path: Pat
         "Fixed Time Horizon: 5",
         "Fixed Time Horizon: 10",
     ]
+
+
+def test_shared_event_risk_accepts_roundoff_and_rejects_conflicts():
+    probs, reals, times = _shared_inputs()
+    metadata = _build_evaluation_metadata(probs, reals, times)
+    risk = 0.30430789752316895
+
+    def performance(second_risk):
+        return pl.DataFrame(
+            {
+                "chosen_cutoff": [0.0, 0.0],
+                "reference_group": list(probs),
+                "fixed_time_horizon": [5.0, 5.0],
+                "real_positives": [risk, second_risk],
+                "n": [1, 1],
+            }
+        )
+
+    rounding = performance(np.nextafter(risk, 1.0))
+    expected = {(_SHARED_POPULATION, 5.0): risk}
+    assert _gains_population_horizon_risk(rounding, metadata) == expected
+    assert _gains_population_horizon_risk(rounding.reverse(), metadata) == expected
+    with pytest.raises(ValueError, match="one calculated event risk"):
+        _gains_population_horizon_risk(performance(risk + 1e-6), metadata)

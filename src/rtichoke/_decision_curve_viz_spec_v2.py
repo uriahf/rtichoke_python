@@ -7,6 +7,7 @@ statistics or threshold membership.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 
 import polars as pl
@@ -329,12 +330,12 @@ def _decision_curve_times_v2_spec_from_performance_data(
         if (population, horizon) in values
     ):
         candidates = values[key]
-        if len(candidates) != 1:
+        if not math.isclose(min(candidates), max(candidates), rel_tol=0, abs_tol=1e-12):
             raise ValueError(
                 "Time-dependent Decision Curve must have one calculated event risk per "
                 f"population and horizon: {key[0]} at {key[1]}"
             )
-        population_horizon_risks[key] = next(iter(candidates))
+        population_horizon_risks[key] = min(candidates)
 
     # Thresholds per (population, horizon)
     population_horizon_thresholds: dict[tuple[str, float], list[float]] = {}

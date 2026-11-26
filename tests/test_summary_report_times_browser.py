@@ -581,3 +581,32 @@ def test_summary_report_offers_type7_calibration(tmp_path):
         item["spec"] for item in section["items"] if item["id"] == "calibration"
     )
     assert [point["total"] for point in discrete["data"]] == [3, 2, 2, 2, 3] * 2
+
+
+def test_summary_report_uses_horizon_specific_calibration_scores(tmp_path):
+    probs, reals, times, horizons = _inputs()
+    model, scores = next(iter(probs.items()))
+    output = create_summary_report_times(
+        probs,
+        reals,
+        times,
+        horizons,
+        by=0.2,
+        n_bins=1,
+        binning="type7",
+        calibration_probs_by_horizon={
+            horizons[0]: {model: scores / 2},
+            horizons[1]: {model: scores},
+        },
+        output_file=tmp_path / "specific.html",
+    )
+    report = _embedded_report(output.read_text(encoding="utf-8"))
+    section = next(s for s in report["sections"] if s["id"] == "calibration")
+    spec = next(
+        item["spec"] for item in section["items"] if item["id"] == "calibration"
+    )
+    series = {row["id"]: row["horizon"] for row in spec["series"]}
+    predicted = {series[row["seriesId"]]: row["predicted"] for row in spec["data"]}
+    assert predicted == pytest.approx(
+        {horizons[0]: scores.mean() / 2, horizons[1]: scores.mean()}
+    )
