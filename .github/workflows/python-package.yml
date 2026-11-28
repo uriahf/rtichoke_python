@@ -26,7 +26,7 @@ jobs:
       - name: Regenerate R reference and compare Python AJ
         env:
           RSCRIPT: Rscript
-        run: uv run pytest tests/test_multistate_r_reference.py tests/test_terminal_event_reference.py -v
+        run: uv run pytest tests/test_multistate_r_reference.py tests/test_terminal_event_reference.py tests/test_pbc_calibration_reference.py -v
 
   build:
     runs-on: ubuntu-latest
